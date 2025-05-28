@@ -3,7 +3,7 @@ import FormInputText from "../../components/ui/FormInputText";
 import GenderChoice from "../../components/ui/GenderChoice";
 import { validateRules } from "../../components/Validation/validateRulesRegister";
 import React, { useState, useRef } from "react";
-import "./Register.css";
+import "../../assets/Register.css";
 
 function Register() {
   const [formData, setFormData] = useState({
