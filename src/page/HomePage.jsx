@@ -2,7 +2,6 @@ import React from "react";
 import logo_gender from "../assets/gender_healthcare_logo.png";
 import icon_search from "../assets/ico_search.png";
 import { Link } from "react-router-dom";
-
 export const HomePage = () => {
   return (
     <div className="wrap">
@@ -15,16 +14,16 @@ export const HomePage = () => {
           </h1>
           <nav className="mr-28 hidden lg:block ml-auto">
             <ul className="flex items-center gap-10 font-medium">
-              <li className="relative after:absolute text-sm after:h-[1.5px] after:bg-black after:left-0 after:bottom-[-2px] after:transition-all after:duration-300 after:w-full after:scale-x-0 hover:after:-scale-x-100">
+              <li className="relative after:absolute text-[15px] after:h-[1.5px] after:bg-blue-800 after:left-0 after:bottom-[-2px] after:transition-all after:duration-300 after:w-full after:scale-x-0 hover:after:-scale-x-100  hover:text-blue-900 transition-colors duration-200">
                 <Link to="/">Trang chủ</Link>
               </li>
-              <li className="relative after:absolute text-sm after:h-[1.5px] after:bg-black after:left-0 after:bottom-[-2px] after:transition-all after:duration-300 after:w-full after:scale-x-0 hover:after:-scale-x-100">
+              <li className="relative after:absolute text-[15px] after:h-[1.5px] after:bg-blue-800 after:left-0 after:bottom-[-2px] after:transition-all after:duration-300 after:w-full after:scale-x-0 hover:after:-scale-x-100  hover:text-blue-900 transition-colors duration-200">
                 <a href="#">Các loại dịch vụ</a>
               </li>
-              <li className="relative after:absolute text-sm after:h-[1.5px] after:bg-black after:left-0 after:bottom-[-2px] after:transition-all after:duration-300 after:w-full after:scale-x-0 hover:after:-scale-x-100">
+              <li className="relative after:absolute text-[15px] after:h-[1.5px] after:bg-blue-800 after:left-0 after:bottom-[-2px] after:transition-all after:duration-300 after:w-full after:scale-x-0 hover:after:-scale-x-100  hover:text-blue-900 transition-colors duration-200">
                 <a href="#">Về chúng tôi</a>
               </li>
-              <li className="relative after:absolute text-sm after:h-[1.5px] after:bg-black after:left-0 after:bottom-[-2px] after:transition-all after:duration-300 after:w-full after:scale-x-0 hover:after:-scale-x-100">
+              <li className="relative after:absolute text-[15px] after:h-[1.5px] after:bg-blue-800 after:left-0 after:bottom-[-2px] after:transition-all after:duration-300 after:w-full after:scale-x-0 hover:after:-scale-x-100  hover:text-blue-900 transition-colors duration-200">
                 <a href="#">Blog</a>
               </li>
             </ul>
@@ -58,7 +57,127 @@ export const HomePage = () => {
           </div>
         </div>
       </header>
-      <main></main>
+      <main>
+        <section className="bg-[#3b82f6] py-8 lg:py-0">
+          <div className="container mx-auto">
+            <div className="flex flex-col lg:flex-row items-center">
+              {/* Phần nội dung bên trái */}
+              <div className="w-full lg:w-1/2 px-4 lg:px-6 py-6 lg:py-16">
+                <h1 className="text-2xl md:text-4xl font-bold text-white mb-6">
+                  Phòng khám và xét nghiệm GenCare
+                </h1>
+
+                {/* Ô tìm kiếm */}
+                <div className="relative w-full mb-6">
+                  <input
+                    type="text"
+                    placeholder="Tìm kiếm..."
+                    className="w-full px-5 py-3 pl-12 text-gray-700 bg-white border-0 rounded-lg shadow-md focus:outline-none"
+                  />
+                  <div className="absolute inset-y-0 left-0 flex items-center pl-4">
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      className="h-5 w-5 text-gray-500"
+                      fill="none"
+                      viewBox="0 0 24 24"
+                      stroke="currentColor"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
+                      />
+                    </svg>
+                  </div>
+                </div>
+
+                {/* Các nút chức năng dạng nút tròn */}
+                <div className="flex flex-wrap gap-3">
+                  {/* Nút đặt lịch hẹn */}
+                  <Link
+                    to="/booking"
+                    className="flex items-center bg-white rounded-lg py-2 px-5 hover:shadow-md transition-shadow"
+                  >
+                    <div className="bg-blue-100 p-2 rounded-full mr-3">
+                      <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        className="h-5 w-5 text-blue-600"
+                        fill="none"
+                        viewBox="0 0 24 24"
+                        stroke="currentColor"
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth={2}
+                          d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"
+                        />
+                      </svg>
+                    </div>
+                    <span className="text-gray-800 text-sm font-medium">
+                      Đặt lịch xét nghiệm
+                    </span>
+                  </Link>
+
+                  {/* Nút khám phá gói xét nghiệm */}
+                  <Link
+                    to="/packages"
+                    className="flex items-center bg-white rounded-lg py-2 px-5 hover:shadow-md transition-shadow max-w-[235px]"
+                  >
+                    <div className="bg-green-100 p-2 rounded-full mr-3">
+                      <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        className="h-5 w-5 text-green-600"
+                        fill="none"
+                        viewBox="0 0 24 24"
+                        stroke="currentColor"
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth={2}
+                          d="M19.428 15.428a2 2 0 00-1.022-.547l-2.387-.477a6 6 0 00-3.86.517l-.318.158a6 6 0 01-3.86.517L6.05 15.21a2 2 0 00-1.806.547M8 4h8l-1 1v5.172a2 2 0 00.586 1.414l5 5c1.26 1.26.367 3.414-1.415 3.414H4.828c-1.782 0-2.674-2.154-1.414-3.414l5-5A2 2 0 009 10.172V5L8 4z"
+                        />
+                      </svg>
+                    </div>
+                    <span className="text-gray-800 text-sm font-medium">
+                      Khám phá gói xét nghiệm
+                    </span>
+                  </Link>
+
+                  {/* Nút tra cứu triệu chứng */}
+                  <Link
+                    to="/symptoms"
+                    className="flex items-center bg-white rounded-lg py-2 px-5 hover:shadow-md transition-shadow"
+                  >
+                    <div className="bg-red-100 p-2 rounded-full mr-3">
+                      <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        className="h-5 w-5 text-red-600"
+                        fill="none"
+                        viewBox="0 0 24 24"
+                        stroke="currentColor"
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth={2}
+                          d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"
+                        />
+                      </svg>
+                    </div>
+                    <span className="text-gray-800 text-sm font-medium">
+                      Đặt lịch tư vấn
+                    </span>
+                  </Link>
+                </div>
+              </div>
+              {/* Phần hình ảnh bên phải - Carousel tự động */}
+            </div>
+          </div>
+        </section>
+      </main>
       <footer className="bg-gray-100 text-gray-700 text-sm">
         <div className="max-w-7xl mx-auto px-4 py-8">
           {/* Logo và hotline */}
@@ -118,11 +237,10 @@ export const HomePage = () => {
                 <br />
                 <strong>Địa chỉ:</strong>
                 <br />
-                Phòng khám Đa khoa – Trung tâm Xét nghiệm và Chẩn đoán Y khoa –
-                GenCare Center,
+                Trung tâm Xét nghiệm và Tư vấn Y khoa – GenCare Center,
                 <br />
-                Lầu 3, Số 75 Nguyễn Thông, Phường 9, Quận 3, Thành phố Hồ Chí
-                Minh, Việt Nam.
+                Số 75 Nguyễn Thông, Phường 9, Quận 3, Thành phố Hồ Chí Minh,
+                Việt Nam.
               </p>
               <div className="mt-4">
                 <p>
@@ -168,7 +286,6 @@ export const HomePage = () => {
               </ul>
             </div>
 
-            {/* Menu: Khách hàng */}
             <div>
               <h3 className="font-semibold mb-2">Dịch vụ</h3>
               <ul className="space-y-1">
@@ -240,23 +357,6 @@ export const HomePage = () => {
                     <path d="M8.051 1.999h.089c.822.003 4.987.033 6.11.335a2.01 2.01 0 0 1 1.415 1.42c.101.38.172.883.22 1.402l.01.104.022.26.008.104c.065.914.073 1.77.074 1.957v.075c-.001.194-.01 1.108-.082 2.06l-.008.105-.009.104c-.05.572-.124 1.14-.235 1.558a2.007 2.007 0 0 1-1.415 1.42c-1.16.312-5.569.334-6.18.335h-.142c-.309 0-1.587-.006-2.927-.052l-.17-.006-.087-.004-.171-.007-.171-.007c-1.11-.049-2.167-.128-2.654-.26a2.007 2.007 0 0 1-1.415-1.419c-.111-.417-.185-.986-.235-1.558L.09 9.82l-.008-.104A31.4 31.4 0 0 1 0 7.68v-.123c.002-.215.01-.958.064-1.778l.007-.103.003-.052.008-.104.022-.26.01-.104c.048-.519.119-1.023.22-1.402a2.007 2.007 0 0 1 1.415-1.42c.487-.13 1.544-.21 2.654-.26l.17-.007.172-.006.086-.003.171-.007A99.788 99.788 0 0 1 7.858 2h.193zM6.4 5.209v4.818l4.157-2.408L6.4 5.209z" />
                   </svg>
                 </a>
-              </div>
-
-              <div className="mt-6">
-                <h3 className="font-semibold mb-2">Đăng ký nhận tin</h3>
-                <p className="text-xs mb-2">
-                  Nhận thông tin mới nhất về sức khỏe giới tính
-                </p>
-                <div className="flex mt-2">
-                  <input
-                    type="email"
-                    placeholder="Email của bạn"
-                    className="px-3 py-1 text-sm border border-gray-300 rounded-l-md focus:outline-none focus:ring-1 focus:ring-[#2a3e64] w-full"
-                  />
-                  <button className="bg-[#2a3e64] text-white px-3 py-1 rounded-r-md hover:bg-[#1c2e4d] text-sm">
-                    Gửi
-                  </button>
-                </div>
               </div>
             </div>
           </div>
