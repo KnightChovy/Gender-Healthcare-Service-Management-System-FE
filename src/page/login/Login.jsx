@@ -2,6 +2,7 @@ import React, { useState, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import FormInputText from "../../components/ui/FormInputText";
 import { validateRulesLogin } from "../../components/Validation/validateRulesLogin";
+
 function Login() {
   const [isStaff, setIsStaff] = useState(false);
   const [formData, setFormData] = useState({
@@ -13,7 +14,7 @@ function Login() {
   const navigate = useNavigate();
 
   const inputRefs = useRef({
-    username: "",
+    username: null,
     password: null,
   });
 
