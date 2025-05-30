@@ -2,7 +2,7 @@ import React, { useState, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import FormInputText from "../../components/ui/FormInputText";
 import { validateRulesLogin } from "../../components/Validation/validateRulesLogin";
-
+import "./Register.css";
 function Login() {
   const [isStaff, setIsStaff] = useState(false);
   const [formData, setFormData] = useState({
