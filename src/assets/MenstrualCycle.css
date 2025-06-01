@@ -1,0 +1,955 @@
+* {
+  box-sizing: border-box;
+  transition: all 0.3s ease;
+}
+
+.menstrual-cycle {
+  min-height: 100vh;
+  background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+  padding: 20px;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+/* Header Styles */
+header {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  text-align: center;
+  padding: 40px 30px;
+  border-radius: 16px;
+  box-shadow: 0 4px 20px rgba(102, 126, 234, 0.3);
+  margin-bottom: 30px;
+}
+
+header h1 {
+  font-size: 2.8rem;
+  font-weight: 700;
+  margin: 0 0 15px 0;
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+  letter-spacing: -0.5px;
+}
+
+header h1::before {
+  content: '🌸';
+  margin-right: 15px;
+  font-size: 0.9em;
+}
+
+header p {
+  font-size: 1.2rem;
+  margin: 0;
+  opacity: 0.9;
+  font-weight: 400;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+}
+
+
+/* Grid Layout */
+.cycle-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+  gap: 25px;
+  max-width: 1400px;
+  margin: 0 auto;
+}
+
+/* Card Base Styles */
+.input-section,
+.current-status,
+.notifications-section,
+.health-tips {
+  background: rgba(255, 255, 255, 0.98);
+  padding: 30px;
+  border-radius: 20px;
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.08);
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.5);
+  transition: all 0.3s ease;
+  position: relative;
+  overflow: hidden;
+}
+
+.input-section::before,
+.current-status::before,
+.notifications-section::before,
+.health-tips::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 4px;
+  background: linear-gradient(90deg, #3498db, #2ecc71);
+}
+
+.input-section:hover,
+.current-status:hover,
+.notifications-section:hover,
+.health-tips:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 15px 35px rgba(0, 0, 0, 0.12);
+}
+
+/* Section Headers */
+.input-section h2,
+.current-status h2,
+.notifications-section h2,
+.health-tips h2 {
+  color: #2c3e50;
+  font-size: 1.5rem;
+  font-weight: 600;
+  margin-bottom: 25px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.input-section h2::before {
+  content: '📝';
+  font-size: 1.2em;
+}
+
+.current-status h2::before {
+  content: '📊';
+  font-size: 1.2em;
+}
+
+.notifications-section h2::before {
+  content: '🔔';
+  font-size: 1.2em;
+}
+
+.health-tips h2::before {
+  content: '💡';
+  font-size: 1.2em;
+}
+
+/* Form Styles */
+.form-group {
+  margin-bottom: 25px;
+}
+
+.form-group label {
+  display: block;
+  margin-bottom: 8px;
+  color: #34495e;
+  font-weight: 500;
+  font-size: 0.95rem;
+}
+
+.form-group input {
+  width: 100%;
+  padding: 15px;
+  border: 2px solid #e9ecef;
+  border-radius: 12px;
+  font-size: 1rem;
+  transition: all 0.3s ease;
+  background: #fafbfc;
+}
+
+.form-group input:focus {
+  border-color: #3498db;
+  outline: none;
+  background: white;
+  box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.1);
+}
+
+.form-group input:hover {
+  border-color: #bdc3c7;
+}
+
+/* Phase Indicator */
+.phase-indicator {
+  text-align: center;
+  padding: 25px;
+  border-radius: 15px;
+  color: white;
+  margin-bottom: 25px;
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
+  position: relative;
+  overflow: hidden;
+}
+
+.form-group:has(.time-input-container) {
+  background: linear-gradient(135deg, #fff0f6 0%, #f0f8ff 100%);
+  border: 2px solid #ff8fab;
+  border-radius: 20px;
+  padding: 25px;
+  margin: 30px 0;
+  position: relative;
+  box-shadow: 0 10px 30px rgba(255, 143, 171, 0.15);
+  transition: all 0.3s ease;
+}
+
+.form-group:has(.time-input-container):hover {
+  transform: translateY(-3px);
+  box-shadow: 0 15px 40px rgba(255, 143, 171, 0.2);
+  border-color: #ff6b9d;
+}
+
+.form-group:has(.time-input-container)::before {
+  content: '💊';
+  position: absolute;
+  top: -15px;
+  right: 20px;
+  font-size: 2.5rem;
+  background: linear-gradient(135deg, #ff6b9d, #c44569);
+  padding: 10px;
+  border-radius: 50%;
+  box-shadow: 0 5px 15px rgba(255, 107, 157, 0.3);
+}
+
+.form-group:has(.time-input-container) > span {
+  color: #c44569;
+  font-weight: 700;
+  font-size: 1.1rem;
+  margin-bottom: 20px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.form-group:has(.time-input-container) > span::before {
+  content: '⏰';
+  font-size: 1.3em;
+  animation: pulse 2s infinite;
+}
+
+.form-group:has(.time-input-container) small {
+  background: linear-gradient(135deg, #fff5f8 0%, #f0f8ff 100%);
+  border: 1px solid #ffe0ec;
+  border-left: 4px solid #ff6b9d;
+  padding: 12px 16px;
+  border-radius: 10px;
+  color: #c44569 !important;
+  font-weight: 600 !important;
+  text-align: center;
+  display: block !important;
+  margin-top: 20px !important;
+  box-shadow: 0 3px 10px rgba(255, 107, 157, 0.1);
+}
+
+.time-input-container {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  background: white;
+  border: 2px solid #ffe0ec;
+  border-radius: 16px;
+  padding: 20px;
+  box-shadow: 0 5px 20px rgba(255, 107, 157, 0.1);
+  margin-bottom: 20px;
+}
+
+.time-input-container:hover {
+  border-color: #ff6b9d;
+  box-shadow: 0 8px 25px rgba(255, 107, 157, 0.2);
+}
+
+.time-input {
+  flex: 1;
+}
+
+.current-time-btn {
+  padding: 12px 16px;
+  background: linear-gradient(135deg, #f39c12 0%, #e67e22 100%);
+  color: white;
+  border: none;
+  border-radius: 8px;
+  font-size: 0.9rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  white-space: nowrap;
+}
+
+.current-time-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(243, 156, 18, 0.3);
+}
+
+.quick-time-buttons {
+  background: linear-gradient(135deg, #ffffff 0%, #fef7f7 100%);
+  border: 2px solid #ffe0ec;
+  border-radius: 18px;
+  padding: 25px;
+  box-shadow: 0 8px 25px rgba(255, 107, 157, 0.1);
+  position: relative;
+  overflow: hidden;
+}
+
+.quick-time-buttons::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 4px;
+  background: linear-gradient(90deg, #ff6b9d, #c44569, #ff8fab);
+  border-radius: 18px 18px 0 0;
+}
+
+.quick-time-label {
+  color: #c44569;
+  font-weight: 700;
+  font-size: 1.1rem;
+  text-align: center;
+  margin-bottom: 20px;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  position: relative;
+}
+
+.quick-time-label::before {
+  content: '🕐';
+  margin-right: 10px;
+  font-size: 1.2em;
+}
+
+.time-buttons-grid {
+  display: grid;
+  margin-top: 12px;
+  grid-template-columns: repeat(auto-fit, minmax(80px, 1fr));
+  gap: 8px;
+}
+
+.quick-time-btn {
+  padding: 16px 22px;
+  background: linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%);
+  color: #c44569;
+  border: 2px solid #ffe0ec;
+  border-radius: 12px;
+  font-size: 1rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  text-align: center;
+  position: relative;
+  overflow: hidden;
+  box-shadow: 0 4px 15px rgba(255, 107, 157, 0.08);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.quick-time-btn span {
+  position: relative;
+  z-index: 2;
+}
+
+.quick-time-btn:hover {
+  border-color: #ff6b9d;
+  color: #c44569;
+  transform: translateY(-3px) scale(1.05);
+  box-shadow: 0 8px 25px rgba(255, 107, 157, 0.3);
+}
+
+
+.quick-time-btn:active {
+  transform: translateY(-1px) scale(1.02);
+}
+
+.form-group:has(.time-input-container)::after {
+  content: '';
+  position: absolute;
+  bottom: -10px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 60%;
+  height: 4px;
+  background: linear-gradient(90deg, transparent, #ff6b9d, transparent);
+  border-radius: 2px;
+  opacity: 0.6;
+}
+
+/* Reminder Button */
+.reminder-btn {
+  width: 100%;
+  padding: 14px 24px;
+  background: linear-gradient(135deg, #00b894 0%, #00a085 100%);
+  color: white;
+  border: none;
+  border-radius: 12px;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  white-space: nowrap;
+  position: relative;
+  overflow: hidden;
+  box-shadow: 0 4px 15px rgba(0, 184, 148, 0.3);
+  margin-top: 15px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.reminder-btn::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent);
+  transition: left 0.5s;
+}
+
+.reminder-btn:hover {
+  transform: translateY(-3px) scale(1.02);
+  box-shadow: 0 8px 25px rgba(0, 184, 148, 0.4);
+  background: linear-gradient(135deg, #00cec9 0%, #00b894 100%);
+}
+
+.reminder-btn:hover::before {
+  left: 100%;
+}
+
+.reminder-btn:active {
+  transform: translateY(-1px) scale(0.98);
+}
+
+/* Active State */
+.reminder-btn.active {
+  background: linear-gradient(135deg, #e17055 0%, #d63031 100%);
+  box-shadow: 0 4px 15px rgba(225, 112, 85, 0.3);
+  animation: activePulse 2s infinite;
+}
+
+.reminder-btn.active:hover {
+  background: linear-gradient(135deg, #fd79a8 0%, #e84393 100%);
+  box-shadow: 0 8px 25px rgba(225, 112, 85, 0.4);
+}
+
+/* Icon animation */
+.reminder-btn:not(.active):hover {
+  animation: shake 0.5s ease-in-out;
+}
+
+.phase-indicator h3 {
+  margin: 0;
+  font-size: 1.4rem;
+  font-weight: 600;
+  position: relative;
+  z-index: 1;
+}
+
+.phase-indicator::before {
+  content: '';
+  position: absolute;
+  top: -50%;
+  left: -50%;
+  width: 200%;
+  height: 200%;
+  background: radial-gradient(circle, rgba(255, 255, 255, 0.1) 0%, transparent 70%);
+  animation: shimmer 3s infinite;
+}
+
+/* Status Grid */
+.status-grid {
+  display: grid;
+  gap: 20px;
+}
+
+.status-item {
+  padding: 20px;
+  background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+  border-radius: 12px;
+  text-align: center;
+  border-left: 4px solid #3498db;
+  transition: all 0.3s ease;
+  position: relative;
+}
+
+.status-item:hover {
+  transform: scale(1.02);
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+}
+
+.status-item.fertility {
+  border-left-color: #e74c3c;
+  background: linear-gradient(135deg, #fff5f5 0%, #ffe6e6 100%);
+}
+
+.status-item h4 {
+  margin: 0 0 15px 0;
+  color: #2c3e50;
+  font-size: 1rem;
+  font-weight: 600;
+}
+
+.status-item .date {
+  font-size: 1.2rem;
+  font-weight: 700;
+  color: #34495e;
+  margin: 8px 0;
+}
+
+.status-item .days {
+  color: #7f8c8d;
+  font-size: 0.9rem;
+  margin: 0;
+  font-style: italic;
+}
+
+.status-item .warning {
+  color: #e74c3c;
+  font-weight: 600;
+  font-size: 0.9rem;
+  margin: 8px 0 0 0;
+  padding: 5px 10px;
+  background: rgba(231, 76, 60, 0.1);
+  border-radius: 20px;
+  display: inline-block;
+}
+
+/* Notifications */
+.notifications-section {
+  background: white;
+  border: 1px solid #e9ecef;
+  border-radius: 12px;
+  padding: 20px;
+}
+
+.notifications-section h2 {
+  color: #2c3e50;
+  font-size: 1.3rem;
+  margin-bottom: 20px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+/* Horizontal Layout for Notifications */
+.notification-options {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 15px;
+  margin-bottom: 20px;
+}
+
+.checkbox-label {
+  display: flex;
+  align-items: center;
+  cursor: pointer;
+  padding: 12px 16px;
+  border-radius: 8px;
+  transition: all 0.3s ease;
+  background: #f8f9fa;
+  border: 1px solid #e9ecef;
+}
+
+.checkbox-label:hover {
+  background: #e9ecef;
+  border-color: #3498db;
+}
+
+.checkbox-label input[type="checkbox"] {
+  width: 18px;
+  height: 18px;
+  margin-right: 12px;
+  accent-color: #3498db;
+  cursor: pointer;
+}
+
+.checkbox-label span {
+  font-weight: 500;
+  color: #2c3e50;
+  font-size: 0.95rem;
+}
+
+.checkbox-label:has(input:checked) {
+  background: #e3f2fd;
+  border-color: #3498db;
+}
+
+.checkbox-label:has(input:checked) span {
+  color: #2980b9;
+  font-weight: 600;
+}
+
+/* Action Buttons - Horizontal */
+.notification-actions {
+  display: flex;
+  gap: 12px;
+  justify-content: flex-end;
+  padding-top: 15px;
+  border-top: 1px solid #e9ecef;
+}
+
+.save-btn,
+.cancel-btn {
+  padding: 10px 20px;
+  border: none;
+  border-radius: 8px;
+  font-size: 0.9rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.save-btn {
+  background: #27ae60;
+  color: white;
+}
+
+.save-btn:hover {
+  background: #2ecc71;
+  transform: translateY(-1px);
+}
+
+.cancel-btn {
+  background: #ff7d19;
+  color: white;
+}
+
+.cancel-btn:hover {
+  background: #c0392b;
+  transform: translateY(-1px);
+}
+
+/* Health Tips */
+.health-tips {
+  grid-column: span 1;
+}
+
+.tips-content {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.tip {
+  padding: 20px;
+  background: linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%);
+  border: 2px solid #e9ecef;
+  border-left: 4px solid #3498db;
+  border-radius: 12px;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08);
+  transition: all 0.3s ease;
+}
+
+.tip:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.12);
+  border-left-color: #2ecc71;
+}
+
+.tip h4 {
+  margin: 0 0 15px 0;
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: #2c3e50;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.tip h4::before {
+  content: '💡';
+  font-size: 1.2em;
+}
+
+.tip ul {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.tip li {
+  margin-bottom: 10px;
+  padding-left: 20px;
+  line-height: 1.5;
+  color: #34495e;
+  position: relative;
+  font-size: 0.95rem;
+}
+
+.tip li::before {
+  content: '✓';
+  position: absolute;
+  left: 0;
+  color: #2ecc71;
+  font-weight: bold;
+  font-size: 1.1em;
+}
+
+.tip li:last-child {
+  margin-bottom: 0;
+}
+
+.general-tip {
+  padding: 25px;
+  background: linear-gradient(135deg, #e8f5e8 0%, #f0f8f0 100%);
+  border: 2px solid #2ecc71;
+  border-radius: 12px;
+  text-align: center;
+  box-shadow: 0 4px 15px rgba(46, 204, 113, 0.15);
+  margin-top: 20px;
+}
+
+.general-tip h4 {
+  margin: 0 0 15px 0;
+  font-size: 1.2rem;
+  font-weight: 600;
+  color: #27ae60;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+}
+
+.general-tip h4::before {
+  content: '🌟';
+  font-size: 1.3em;
+}
+
+.general-tip p {
+  margin: 0;
+  line-height: 1.6;
+  font-size: 1rem;
+  color: #2c3e50;
+}
+
+/* Responsive Design */
+@media (max-width: 1200px) {
+  .cycle-grid {
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  }
+  
+  .health-tips {
+    grid-column: span 1;
+  }
+  
+  .tips-content {
+    grid-template-columns: 1fr;
+  }
+  
+  .general-tip {
+    grid-column: span 1;
+  }
+}
+
+@media (max-width: 768px) {
+  .menstrual-cycle {
+    padding: 15px;
+  }
+  
+  header {
+    padding: 30px 20px;
+    margin-bottom: 20px;
+  }
+  
+  header h1 {
+    font-size: 2.2rem;
+  }
+  
+  header p {
+    font-size: 1rem;
+  }
+  
+  .cycle-grid {
+    grid-template-columns: 1fr;
+    gap: 20px;
+  }
+  
+  .input-section,
+  .current-status,
+  .notifications-section,
+  .health-tips {
+    padding: 25px 20px;
+  }
+
+  .tip {
+    padding: 15px;
+  }
+  
+  .tip h4 {
+    font-size: 1rem;
+  }
+  
+  .tip li {
+    font-size: 0.9rem;
+    margin-bottom: 8px;
+  }
+  
+  .general-tip {
+    padding: 20px;
+  }
+  
+  .general-tip h4 {
+    font-size: 1.1rem;
+  }
+  
+  .general-tip p {
+    font-size: 0.95rem;
+  }
+
+  .checkbox-label {
+    padding: 14px 16px;
+  }
+  
+  .checkbox-label span {
+    font-size: 0.95rem;
+  }
+  
+  .notification-options {
+    grid-template-columns: 1fr;
+    gap: 10px;
+  }
+  
+  .notification-actions {
+    flex-direction: column;
+    gap: 8px;
+  }
+  
+  .save-btn,
+  .cancel-btn {
+    width: 100%;
+    padding: 12px;
+  }
+}
+
+@media (max-width: 480px) {
+  header {
+    padding: 25px 15px;
+    border-radius: 12px;
+  }
+  
+  header h1 {
+    font-size: 1.8rem;
+    margin-bottom: 10px;
+  }
+  
+  header h1::before {
+    margin-right: 10px;
+  }
+  
+  header p {
+    font-size: 0.95rem;
+  }
+  
+  .input-section,
+  .current-status,
+  .notifications-section,
+  .health-tips {
+    padding: 20px 15px;
+  }
+  
+  .form-group input {
+    padding: 12px;
+  }
+  
+  .phase-indicator {
+    padding: 20px;
+  }
+  
+  .status-item {
+    padding: 15px;
+  }
+
+  .time-input-container {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  
+  .current-time-btn {
+    margin-top: 10px;
+  }
+  
+  .time-buttons-grid {
+    grid-template-columns: repeat(3, 1fr);
+  }
+
+  .reminder-btn {
+    padding: 12px 20px;
+    font-size: 0.9rem;
+    width: 100%;
+    margin-top: 15px;
+  }
+
+  .notifications-section {
+    padding: 20px 15px;
+  }
+  
+  .checkbox-label {
+    padding: 12px 14px;
+  }
+  
+  .checkbox-label input[type="checkbox"] {
+    width: 18px;
+    height: 18px;
+    margin-right: 12px;
+  }
+  
+  .checkbox-label span {
+    font-size: 0.9rem;
+  }
+  
+  .save-btn,
+  .cancel-btn {
+    padding: 14px 20px;
+    font-size: 0.9rem;
+  }
+
+  .tips-content {
+    gap: 15px;
+  }
+  
+  .tip {
+    padding: 12px;
+  }
+  
+  .general-tip {
+    padding: 15px;
+    margin-top: 15px;
+  }
+}
+
+/* Animation */
+@keyframes pulse {
+  0% { opacity: 1; }
+  50% { opacity: 0.7; }
+  100% { opacity: 1; }
+}
+
+@keyframes shake {
+  0%, 100% { transform: translateY(-3px) scale(1.02) rotate(0deg); }
+  25% { transform: translateY(-3px) scale(1.02) rotate(-2deg); }
+  75% { transform: translateY(-3px) scale(1.02) rotate(2deg); }
+}
+
+@keyframes activePulse {
+  0%, 100% { 
+    box-shadow: 0 4px 15px rgba(225, 112, 85, 0.3);
+  }
+  50% { 
+    box-shadow: 0 6px 20px rgba(225, 112, 85, 0.5);
+  }
+}
+
+@keyframes shimmer {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+.loading {
+  animation: pulse 2s infinite;
+}
+
+/* Scrollbar styling */
+::-webkit-scrollbar {
+  width: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: #ecf0f1;
+  border-radius: 10px;
+}
+
+::-webkit-scrollbar-thumb {
+  background: linear-gradient(135deg, #3498db, #2ecc71);
+  border-radius: 10px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: linear-gradient(135deg, #2980b9, #27ae60);
+}

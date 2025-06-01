@@ -1,5 +1,4 @@
 import { useState, useEffect } from "react";
-import "../../assets/Register.css";
 
 function DateOfBirth({ onChange, showErrors }) {
   const [birthDate, setBirthDate] = useState({

@@ -1,6 +1,5 @@
 import React from "react";
 import { useState, useEffect, forwardRef } from "react";
-import "../../assets/Register.css";
 
 const FormInputText = forwardRef(
   (

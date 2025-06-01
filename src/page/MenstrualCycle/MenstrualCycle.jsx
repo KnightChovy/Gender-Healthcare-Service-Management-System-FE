@@ -1,5 +1,10 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import Header from './MenstrualCycleItems/Header';
+import CycleInputForm from './MenstrualCycleItems/CycleInputForm';
+import CurrentStatus from './MenstrualCycleItems/CurrentStatus';
+import NotificationSettings from './MenstrualCycleItems/NotificationSettings';
+import HealthTips from './MenstrualCycleItems/HealthTips';
+import "../../assets/MenstrualCycle.css";
 
 function MenstrualCycle() {
     const [cycleData, setCycleData] = useState({
@@ -7,7 +12,7 @@ function MenstrualCycle() {
         cycleLength: 28,
         periodLength: 5,
         birthControlTime: '',
-        notification: {
+        notifications: {
             ovulation: true,
             fertility: true,
             period: true,
@@ -22,6 +27,12 @@ function MenstrualCycle() {
     });
 
     const [currentPhase, setCurrentPhase] = useState('');
+
+    useEffect(() => {
+        if (cycleData.lastPeriodDate) {
+            calculatePredictions();
+        }
+    })
 
     const calculatePredictions = () => {
         const lastPeriod = new Date(cycleData.lastPeriodDate);
@@ -66,7 +77,28 @@ function MenstrualCycle() {
     }
 
     return (
-        <Header />
+        <div className="menstrual-cycle">
+            <Header />
+
+            <div className="cycle-grid">
+                <CycleInputForm 
+                    cycleData={cycleData}
+                    onDataChange={handleCycleDataChange}
+                />
+
+                <CurrentStatus
+                    predictions={predictions}
+                    currentPhase={currentPhase}
+                />
+
+                <HealthTips currentPhase={currentPhase} />
+
+                <NotificationSettings
+                    notifications={cycleData.notifications}
+                    onNotificationChange={handleCycleDataChange}
+                />
+            </div>
+        </div>
     );
 }
 

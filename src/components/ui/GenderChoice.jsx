@@ -1,6 +1,5 @@
 import React from "react";
 import { useState } from "react";
-import "../../assets/Register.css";
 
 function GenderChoice({ onChange }) {
   const [selectedGender, setSelectedGender] = useState("M");
