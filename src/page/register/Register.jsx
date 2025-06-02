@@ -129,7 +129,7 @@ function Register() {
             </span>
             <div className="form-row">
               <FormInputText
-                textHolder="Nhập tên"
+                textHolder="firstName"
                 textName="firstname"
                 value={formData.firstname}
                 onChange={handleInputChange}
@@ -137,7 +137,7 @@ function Register() {
                 showErrors={showErrors}
               />
               <FormInputText
-                textHolder="Nhập họ"
+                textHolder="lastName"
                 textName="lastname"
                 value={formData.lastname}
                 onChange={handleInputChange}
@@ -157,7 +157,7 @@ function Register() {
               Tên đăng nhập (<span style={{ marginTop: "2px" }}>*</span>)
             </span>
             <FormInputText
-              textHolder="Nhập tên đăng nhập"
+              textHolder="username"
               textName="username"
               value={formData.username}
               onChange={handleInputChange}
@@ -168,7 +168,7 @@ function Register() {
               Địa chỉ Email (<span style={{ marginTop: "2px" }}>*</span>)
             </span>
             <FormInputText
-              textHolder="Nhập địa chỉ email (ví dụ: abc@example.com)"
+              textHolder="email"
               textName="email"
               value={formData.email}
               onChange={handleInputChange}
@@ -179,7 +179,7 @@ function Register() {
               Số điện thoại (<span style={{ marginTop: "2px" }}>*</span>)
             </span>
             <FormInputText
-              textHolder="Nhập số điện thoại"
+              textHolder="phone"
               textName="phone"
               value={formData.phone}
               onChange={handleInputChange}
@@ -190,7 +190,7 @@ function Register() {
               Địa chỉ (<span style={{ marginTop: "2px" }}>*</span>)
             </span>
             <FormInputText
-              textHolder="Nhập địa chỉ"
+              textHolder="address"
               textName="address"
               value={formData.address}
               onChange={handleInputChange}
@@ -201,7 +201,7 @@ function Register() {
               Mật khẩu (<span style={{ marginTop: "2px" }}>*</span>)
             </span>
             <FormInputText
-              textHolder="Nhập mật khẩu"
+              textHolder="password"
               textName="password"
               value={formData.password}
               onChange={handleInputChange}
@@ -210,7 +210,7 @@ function Register() {
             />
             <span>Xác nhận mật khẩu</span>
             <FormInputText
-              textHolder="Nhập lại mật khẩu"
+              textHolder="confirmPassword"
               textName="confirmPassword"
               value={formData.confirmPassword}
               onChange={handleInputChange}

@@ -17,19 +17,53 @@ const FormInputText = forwardRef(
     const [error, setError] = useState("");
     const [touched, setTouched] = useState(false);
 
+    const getPlaceholder = (textHolder) => {
+      const placeholderMap = {
+        'firstName': 'Nhập tên',
+        'lastName': 'Nhập họ',
+        'email': 'Nhập địa chỉ email ví dụ: abc@example.com',
+        'phone': 'Nhập số điện thoại',
+        'password': 'Nhập mật khẩu',
+        'confirmPassword': 'Nhập lại mật khẩu',
+        'address': 'Nhập địa chỉ',
+        'username': 'Nhập tên đăng nhập',
+      }
+
+      if (placeholderMap[textHolder]) {
+        return placeholderMap[textHolder];
+      }
+    };
+
+    const getErrorHolder = (textHolder) => {
+      const errorMap = {
+        'firstName': 'Tên',
+        'lastName': 'Họ',
+        'email': 'Email',
+        'phone': 'Số điện thoại',
+        'password': 'Mật khẩu',
+        'confirmPassword': 'Mật khẩu xác nhận',
+        'address': 'Địa chỉ',
+        'username': 'Tên đăng nhập',
+      }
+
+      if (errorMap[textHolder]) {
+        return errorMap[textHolder];
+      }
+    };
+
     const validateInput = (inputValue) => {
       if (!validation) return "";
 
       if (validation.required && !inputValue.trim()) {
-        return `${textHolder} là bắt buộc`;
+        return `Nhập ${getErrorHolder(textHolder)} là bắt buộc`;
       }
 
       if (validation.minLength && inputValue.length < validation.minLength) {
-        return `${textHolder} phải có ít nhất ${validation.minLength} ký tự`;
+        return `${getErrorHolder(textHolder)} phải có ít nhất ${validation.minLength} ký tự`;
       }
 
       if (validation.pattern && !validation.pattern.test(inputValue)) {
-        return validation.message || `${textHolder} không hợp lệ`;
+        return validation.message || `${getErrorHolder(textHolder)} không hợp lệ`;
       }
 
       if (validation.confirmPassword && inputValue !== value) {
@@ -61,7 +95,7 @@ const FormInputText = forwardRef(
 
     useEffect(() => {
       if (showErrors && !value.trim()) {
-        setError(`${textHolder} là bắt buộc`);
+        setError(`Nhập ${getErrorHolder(textHolder)} là bắt buộc`);
         setTouched(true);
       }
     }, [showErrors, value, textHolder]);
@@ -76,7 +110,7 @@ const FormInputText = forwardRef(
             ref={ref}
             type={type}
             name={textName}
-            placeholder={textHolder}
+            placeholder={getPlaceholder(textHolder)}
             value={value}
             onChange={handleChange}
             onBlur={handleBlur}
