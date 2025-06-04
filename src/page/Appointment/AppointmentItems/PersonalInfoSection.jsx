@@ -1,12 +1,16 @@
 import React from "react";
+import classNames from "classnames/bind";
+import styles from "../Appointment.module.scss";
+
+const cx = classNames.bind(styles);
 
 function PersonalInfoSection({formData, errors, onChange}) {
     return (  
-        <div className="form-section">
+        <div className={cx('form-section')}>
             <h3>📋 Thông tin cá nhân</h3>
-            
-            <div className="form-row">
-                <div className="form-group" style={{ display: 'block'}}>
+
+            <div className={cx('form-row')}>
+                <div className={cx('form-group')} style={{ display: 'block'}}>
                     <label htmlFor="fullName">Họ và tên *</label>
                     <input
                         type="text"
@@ -15,12 +19,12 @@ function PersonalInfoSection({formData, errors, onChange}) {
                         value={formData.fullName}
                         onChange={onChange}
                         placeholder="Nhập họ và tên đầy đủ"
-                        className={errors.fullName ? 'error' : ''}
+                        className={errors.fullName ? cx('error') : ''}
                     />
-                    {errors.fullName && <span className="error-message">{errors.fullName}</span>}
+                    {errors.fullName && <span className={cx('error-message')}>{errors.fullName}</span>}
                 </div>
 
-                <div className="form-group" style={{ display: 'block'}}>
+                <div className={cx('form-group')} style={{ display: 'block'}}>
                     <label htmlFor="phone">Số điện thoại *</label>
                     <input
                         type="tel"
@@ -29,14 +33,14 @@ function PersonalInfoSection({formData, errors, onChange}) {
                         value={formData.phone}
                         onChange={onChange}
                         placeholder="0123456789"
-                        className={errors.phone ? 'error' : ''}
+                        className={errors.phone ? cx('error') : ''}
                     />
-                    {errors.phone && <span className="error-message">{errors.phone}</span>}
+                    {errors.phone && <span className={cx('error-message')}>{errors.phone}</span>}
                 </div>
             </div>
 
-            <div className="form-row">
-                <div className="form-group" style={{ display: 'block'}}>
+            <div className={cx('form-row')}>
+                <div className={cx('form-group')} style={{ display: 'block'}}>
                     <label htmlFor="email">Email *</label>
                     <input
                         type="email"
@@ -45,12 +49,12 @@ function PersonalInfoSection({formData, errors, onChange}) {
                         value={formData.email}
                         onChange={onChange}
                         placeholder="example@email.com"
-                        className={errors.email ? 'error' : ''}
+                        className={errors.email ? cx('error') : ''}
                     />
-                    {errors.email && <span className="error-message">{errors.email}</span>}
+                    {errors.email && <span className={cx('error-message')}>{errors.email}</span>}
                 </div>
 
-                <div className="form-group" style={{ display: 'block'}}>
+                <div className={cx('form-group')} style={{ display: 'block'}}>
                     <label htmlFor="birthDate">Ngày sinh *</label>
                     <input
                         type="date"
@@ -59,16 +63,16 @@ function PersonalInfoSection({formData, errors, onChange}) {
                         value={formData.birthDate}
                         onChange={onChange}
                         max={new Date().toISOString().split('T')[0]}
-                        className={errors.birthDate ? 'error' : ''}
+                        className={errors.birthDate ? cx('error') : ''}
                     />
-                    {errors.birthDate && <span className="error-message">{errors.birthDate}</span>}
+                    {errors.birthDate && <span className={cx('error-message')}>{errors.birthDate}</span>}
                 </div>
             </div>
 
-            <div className="form-group" style={{ display: 'block'}}>
+            <div className={cx('form-group')} style={{ display: 'block'}}>
                 <label htmlFor="gender-female">Giới tính *</label>
-                <div className="radio-group">
-                    <label className="radio-label">
+                <div className={cx('radio-group')}>
+                    <label className={cx('radio-label')}>
                         <input
                             type="radio"
                             id="gender-female"
@@ -79,7 +83,7 @@ function PersonalInfoSection({formData, errors, onChange}) {
                         />
                         <span>Nữ</span>
                     </label>
-                    <label className="radio-label">
+                    <label className={cx('radio-label')}>
                         <input
                             type="radio"
                             name="gender"
@@ -89,18 +93,8 @@ function PersonalInfoSection({formData, errors, onChange}) {
                         />
                         <span>Nam</span>
                     </label>
-                    <label className="radio-label">
-                        <input
-                            type="radio"
-                            name="gender"
-                            value="other"
-                            checked={formData.gender === 'other'}
-                            onChange={onChange}
-                        />
-                        <span>Khác</span>
-                    </label>
                 </div>
-                {errors.gender && <span className="error-message">{errors.gender}</span>}
+                {errors.gender && <span className={cx('error-message')}>{errors.gender}</span>}
             </div>
         </div>
     );

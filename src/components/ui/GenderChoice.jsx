@@ -1,5 +1,8 @@
-import React from "react";
-import { useState } from "react";
+import React, { useState } from "react";
+import classNames from "classnames/bind";
+import styles from "../../assets/Register.module.scss";
+
+const cx = classNames.bind(styles);
 
 function GenderChoice({ onChange }) {
   const [selectedGender, setSelectedGender] = useState("M");
@@ -12,12 +15,12 @@ function GenderChoice({ onChange }) {
   };
 
   return (
-    <div className="gender-choice">
+    <div className={cx("gender-choice")}>
       <span style={{ display: "flex" }}>
         Giới tính (<span style={{ marginTop: "2px" }}>*</span>)
       </span>
-      <div className="gender-options">
-        <label className="gender-item">
+      <div className={cx("gender-options")}>
+        <label className={cx("gender-item")}>
           Nam{" "}
           <input
             type="radio"
@@ -27,7 +30,7 @@ function GenderChoice({ onChange }) {
             onChange={(e) => handleGenderChange(e.target.value)}
           />
         </label>
-        <label className="gender-item">
+        <label className={cx("gender-item")}>
           Nữ{" "}
           <input
             type="radio"

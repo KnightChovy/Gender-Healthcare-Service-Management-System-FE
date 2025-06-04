@@ -4,7 +4,10 @@ import CycleInputForm from './MenstrualCycleItems/CycleInputForm';
 import CurrentStatus from './MenstrualCycleItems/CurrentStatus';
 import NotificationSettings from './MenstrualCycleItems/NotificationSettings';
 import HealthTips from './MenstrualCycleItems/HealthTips';
-import "../../assets/MenstrualCycle.css";
+import classNames from 'classnames/bind';
+import styles from '../../assets/MenstrualCycle.module.scss';  
+
+const cx = classNames.bind(styles);
 
 function MenstrualCycle() {
     const [cycleData, setCycleData] = useState({
@@ -77,11 +80,11 @@ function MenstrualCycle() {
     }
 
     return (
-        <div className="menstrual-cycle">
+        <div className={cx("menstrual-cycle")}>
             <Header />
 
-            <div className="cycle-grid">
-                <CycleInputForm 
+            <div className={cx("cycle-grid")}>
+                <CycleInputForm
                     cycleData={cycleData}
                     onDataChange={handleCycleDataChange}
                 />

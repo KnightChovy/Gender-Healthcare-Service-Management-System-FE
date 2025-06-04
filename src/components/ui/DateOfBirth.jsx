@@ -1,4 +1,8 @@
 import { useState, useEffect } from "react";
+import classNames from "classnames/bind";
+import styles from "../../assets/Register.module.scss";
+
+const cx = classNames.bind(styles);
 
 function DateOfBirth({ onChange, showErrors }) {
   const [birthDate, setBirthDate] = useState({
@@ -119,15 +123,15 @@ function DateOfBirth({ onChange, showErrors }) {
     error && (touched.day || touched.month || touched.year || showErrors);
 
   return (
-    <div className="date-of-birth">
+    <div className={cx("date-of-birth")}>
       <span style={{ display: "flex" }}>
         Ngày sinh nhật (<span style={{ marginTop: "2px" }}>*</span>)
       </span>
-      <div className="date-inputs">
+      <div className={cx("date-inputs")}>
         <select
           value={birthDate.day}
           onChange={(e) => handleDateChange("day", e.target.value)}
-          className={`day-select ${hasError ? "error" : ""}`}
+          className={cx("day-select", { error: hasError })}
         >
           <option value="">Ngày</option>
           {validDays.map((day) => (
@@ -140,7 +144,7 @@ function DateOfBirth({ onChange, showErrors }) {
         <select
           value={birthDate.month}
           onChange={(e) => handleDateChange("month", e.target.value)}
-          className={`month-select ${hasError ? "error" : ""}`}
+          className={cx("month-select", { error: hasError })}
         >
           <option value="">Tháng</option>
           {months.map((month) => (
@@ -153,7 +157,7 @@ function DateOfBirth({ onChange, showErrors }) {
         <select
           value={birthDate.year}
           onChange={(e) => handleDateChange("year", e.target.value)}
-          className={`year-select ${hasError ? "error" : ""}`}
+          className={cx("year-select", { error: hasError })}
         >
           <option value="">Năm</option>
           {years.map((year) => (
@@ -163,7 +167,7 @@ function DateOfBirth({ onChange, showErrors }) {
           ))}
         </select>
       </div>
-      {hasError && <span className="error-message">{error}</span>}
+      {hasError && <span className={cx("error-message")}>{error}</span>}
     </div>
   );
 }

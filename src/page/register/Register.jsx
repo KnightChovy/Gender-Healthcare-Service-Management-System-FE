@@ -3,7 +3,10 @@ import FormInputText from "../../components/ui/FormInputText";
 import GenderChoice from "../../components/ui/GenderChoice";
 import { validateRules } from "../../components/Validation/validateRulesRegister";
 import React, { useState, useRef } from "react";
-import "../../assets/Register.css";
+import classNames from "classnames/bind";
+import styles from "../../assets/Register.module.scss";
+
+const cx = classNames.bind(styles);
 
 function Register() {
   const [formData, setFormData] = useState({
@@ -111,23 +114,23 @@ function Register() {
   const validate = () => validateRules(formData);
 
   return (
-    <div className="register-container">
-      <div className="register-header">
+    <div className={cx("register-container")}>
+      <div className={cx("register-header")}>
         <h1>GenCare Center</h1>
       </div>
 
-      <div className="register-content">
-        <div className="register-introduction">
+      <div className={cx("register-content")}>
+        <div className={cx("register-introduction")}>
           <h2>Tạo một tài khoản mới</h2>
           <p>Nhanh chóng và dễ dàng</p>
         </div>
 
-        <div className="register-form">
+        <div className={cx("register-form")}>
           <form>
             <span style={{ display: "flex" }}>
               Họ và tên (<span style={{ marginTop: "2px" }}>*</span>)
             </span>
-            <div className="form-row">
+            <div className={cx("form-row")}>
               <FormInputText
                 textHolder="firstName"
                 textName="firstname"
@@ -219,12 +222,12 @@ function Register() {
 
             <p>
               Bằng cách nhấp vào Đăng ký, bạn đồng ý với{" "}
-              <a href="/terms" className="terms-link">
+              <a href="/terms" className={cx("terms-link")}>
                 {" "}
                 Điều khoản Dịch vụ{" "}
               </a>{" "}
               và{" "}
-              <a href="/privacy" className="privacy-link">
+              <a href="/privacy" className={cx("privacy-link")}>
                 {" "}
                 Chính sách Bảo mật{" "}
               </a>{" "}
@@ -233,12 +236,12 @@ function Register() {
             </p>
             <button
               type="submit"
-              className="register-button"
+              className={cx("register-button")}
               onClick={handleSubmit}
             >
               Đăng ký
             </button>
-            <p className="register-footer">
+            <p className={cx("register-footer")}>
               Bạn đã có tài khoản? <a href="/login">Đăng nhập</a>
             </p>
           </form>

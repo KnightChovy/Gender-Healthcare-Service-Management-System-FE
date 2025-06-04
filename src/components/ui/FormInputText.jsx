@@ -1,5 +1,8 @@
-import React from "react";
-import { useState, useEffect, forwardRef } from "react";
+import React, { useState, useEffect, forwardRef } from "react";
+import classNames from "classnames/bind";
+import styles from "../../assets/Register.module.scss";
+
+const cx = classNames.bind(styles);
 
 const FormInputText = forwardRef(
   (
@@ -104,8 +107,8 @@ const FormInputText = forwardRef(
     const hasError = (error && touched) || (showErrors && !value.trim());
 
     return (
-      <div className="form-input-text-container">
-        <div className="form-input-text">
+      <div className={cx("form-input-text-container")}>
+        <div className={cx("form-input-text")}>
           <input
             ref={ref}
             type={type}
@@ -114,11 +117,11 @@ const FormInputText = forwardRef(
             value={value}
             onChange={handleChange}
             onBlur={handleBlur}
-            className={hasError ? "error" : ""}
+            className={hasError ? cx("error") : ""}
           />
-          {error && touched && <span className="error-key">!</span>}
+          {error && touched && <span className={cx("error-key")}>!</span>}
         </div>
-        {error && touched && <span className="error-message">{error}</span>}
+        {error && touched && <span className={cx("error-message")}>{error}</span>}
       </div>
     );
   }

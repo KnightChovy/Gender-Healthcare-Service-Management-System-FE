@@ -1,4 +1,8 @@
 import React from 'react';
+import classNames from 'classnames/bind';
+import styles from '../../../assets/MenstrualCycle.module.scss';
+
+const cx = classNames.bind(styles);
 
 function CurrentStatus({ predictions, currentPhase }) {
     const formatDate = (date) => {
@@ -37,31 +41,31 @@ function CurrentStatus({ predictions, currentPhase }) {
     };
 
     return ( 
-        <div className='current-status'>
+        <div className={cx('current-status')}>
             <h2>Trạng thái hiện tại</h2>
 
-            <div className='phase-indicator' style={{ backgroundColor: getPhaseColor(currentPhase) }}>
+            <div className={cx('phase-indicator')} style={{ backgroundColor: getPhaseColor(currentPhase) }}>
                 <h3>{currentPhase}</h3>
             </div>
 
             {predictions.nextPeriod && (
-                <div className='status-grid'>
-                    <div className='status-item'>
+                <div className={cx('status-grid')}>
+                    <div className={cx('status-item')}>
                         <h4>Kì kinh nguyệt tiếp theo</h4>
-                        <p className='date'>{formatDate(predictions.nextPeriod)}</p>
-                        <p className='days'>{getDaysUntil(predictions.nextPeriod)}</p>
+                        <p className={cx('date')}>{formatDate(predictions.nextPeriod)}</p>
+                        <p className={cx('days')}>{getDaysUntil(predictions.nextPeriod)}</p>
                     </div>
 
-                    <div className='status-item'>
+                    <div className={cx('status-item')}>
                         <h4>Ngày rụng trứng dự kiến</h4>
-                        <p className='date'>{formatDate(predictions.ovulationDate)}</p>
-                        <p className='days'>{getDaysUntil(predictions.ovulationDate)}</p>
+                        <p className={cx('date')}>{formatDate(predictions.ovulationDate)}</p>
+                        <p className={cx('days')}>{getDaysUntil(predictions.ovulationDate)}</p>
                     </div>
 
-                    <div className='status-item fertility'>
+                    <div className={cx('status-item', 'fertility')}>
                         <h4>Cửa sổ thụ thai</h4>
-                        <p className='date'>{formatDate(predictions.fertilityWindow.start)} - {formatDate(predictions.fertilityWindow.end)}</p>
-                        <p className='warning'>Khả năng mang thai cao</p>
+                        <p className={cx('date')}>{formatDate(predictions.fertilityWindow.start)} - {formatDate(predictions.fertilityWindow.end)}</p>
+                        <p className={cx('warning')}>Khả năng mang thai cao</p>
                     </div>
                 </div>
             )}

@@ -1,5 +1,9 @@
 import React from 'react'
 import { useState } from 'react';
+import classNames from 'classnames/bind';
+import styles from '../../../assets/MenstrualCycle.module.scss';
+
+const cx = classNames.bind(styles);
 
 function CycleInputForm({ cycleData, onDataChange }) {
     const [timer, setTimer] = useState(null);
@@ -135,10 +139,10 @@ function CycleInputForm({ cycleData, onDataChange }) {
     }
 
     return (
-        <div className='input-section'>
+        <div className={cx('input-section')}>
             <h2>Thông tin chu kì</h2>
 
-            <div className="form-group" style={{ display: 'block' }}>
+            <div className={cx("form-group")} style={{ display: 'block' }}>
                 <span>Ngày đầu kì kinh nguyệt gần nhất:</span>
                 <input
                     type='date'
@@ -149,7 +153,7 @@ function CycleInputForm({ cycleData, onDataChange }) {
                 />
             </div>
 
-            <div className="form-group" style={{ display: 'block' }}>
+            <div className={cx("form-group")} style={{ display: 'block' }}>
                 <span>Độ dài chu kì (ngày):</span>
                 <input
                     type='number'
@@ -162,7 +166,7 @@ function CycleInputForm({ cycleData, onDataChange }) {
                 />
             </div>
 
-            <div className="form-group" style={{ display: 'block' }}>
+            <div className={cx("form-group")} style={{ display: 'block' }}>
                 <span>Số ngày kinh nguyệt:</span>
                 <input
                     type='number'
@@ -175,9 +179,9 @@ function CycleInputForm({ cycleData, onDataChange }) {
                 />
             </div>
 
-            <div className="form-group">
+            <div className={cx("form-group")}>
                 <span>Thời gian uống thuốc tránh thai:</span>
-                <div className="time-input-container">
+                <div className={cx("time-input-container")}>
                     <input
                         type='time'
                         name="birthControlTime"
@@ -185,12 +189,12 @@ function CycleInputForm({ cycleData, onDataChange }) {
                         onChange={handleInputChange}
                         min="06:00"
                         max="23:00"
-                        className='time-input'
+                        className={cx('time-input')}
                     />
 
                     <button
                         type='button'
-                        className='current-time-btn'
+                        className={cx('current-time-btn')}
                         onClick={() => setQuickTime(getCurrentTime())}
                         title='Đặt thời gian hiện tại'
                     >
@@ -198,47 +202,47 @@ function CycleInputForm({ cycleData, onDataChange }) {
                     </button>
                 </div>
 
-                <div className="quick-time-buttons">
-                    <span className="quick-time-label">Thời gian phổ biến:</span>
-                    <div className="time-buttons-grid">
+                <div className={cx("quick-time-buttons")}>
+                    <span className={cx("quick-time-label")}>Thời gian phổ biến:</span>
+                    <div className={cx("time-buttons-grid")}>
                         <button
                             type="button"
-                            className="quick-time-btn"
+                            className={cx("quick-time-btn")}
                             onClick={() => setQuickTime('07:00')}
                         >
                             7:00 AM
                         </button>
                         <button
                             type="button"
-                            className="quick-time-btn"
+                            className={cx("quick-time-btn")}
                             onClick={() => setQuickTime('08:00')}
                         >
                             8:00 AM
                         </button>
                         <button
                             type="button"
-                            className="quick-time-btn"
+                            className={cx("quick-time-btn")}
                             onClick={() => setQuickTime('12:00')}
                         >
                             12:00 CH
                         </button>
                         <button
                             type="button"
-                            className="quick-time-btn"
+                            className={cx("quick-time-btn")}
                             onClick={() => setQuickTime('18:00')}
                         >
                             6:00 CH
                         </button>
                         <button
                             type="button"
-                            className="quick-time-btn"
+                            className={cx("quick-time-btn")}
                             onClick={() => setQuickTime('20:00')}
                         >
                             8:00 CH
                         </button>
                         <button
                             type="button"
-                            className="quick-time-btn"
+                            className={cx("quick-time-btn")}
                             onClick={() => setQuickTime('22:00')}
                         >
                             10:00 CH
@@ -246,13 +250,13 @@ function CycleInputForm({ cycleData, onDataChange }) {
                     </div>
                 </div>
 
-                <div className="day-selection-container">
-                    <div className="day-selection-header">
-                        <span className="day-selection-label">Chọn ngày trong tuần:</span>
-                        <div className="day-selection-actions">
+                <div className={cx("day-selection-container")}>
+                    <div className={cx("day-selection-header")}>
+                        <span className={cx("day-selection-label")}>Chọn ngày trong tuần:</span>
+                        <div className={cx("day-selection-actions")}>
                             <button 
                                 type="button" 
-                                className="select-all-btn"
+                                className={cx("select-all-btn")}
                                 onClick={selectAllDays}
                                 title="Chọn tất cả ngày"
                             >
@@ -260,7 +264,7 @@ function CycleInputForm({ cycleData, onDataChange }) {
                             </button>
                             <button 
                                 type="button" 
-                                className="clear-all-btn"
+                                className={cx("clear-all-btn")}
                                 onClick={clearAllDays}
                                 title="Bỏ chọn tất cả"
                             >
@@ -269,34 +273,34 @@ function CycleInputForm({ cycleData, onDataChange }) {
                         </div>
                     </div>
 
-                    <div className="days-grid">
+                    <div className={cx("days-grid")}>
                         {daysOfWeek.map(day => (
                             <label 
                                 key={day.value}
-                                className={`day-checkbox ${selectedDays.includes(day.value) ? 'selected' : ''}`}
+                                className={cx("day-checkbox", { selected: selectedDays.includes(day.value) })}
                             >
                                 <input
                                     type="checkbox"
                                     checked={selectedDays.includes(day.value)}
                                     onChange={() => handleDaySelection(day.value)}
                                 />
-                                <span className="day-short">{day.short}</span>
-                                <span className="day-full">{day.label}</span>
+                                <span className={cx("day-short")}>{day.short}</span>
+                                <span className={cx("day-full")}>{day.label}</span>
                             </label>
                         ))}
                     </div>
                     
                     {selectedDays.length > 0 && (
-                        <div className="selected-days-info">
+                        <div className={cx("selected-days-info")}>
                             <span>✅ Đã chọn: {selectedDays.length} ngày</span>
                         </div>
                     )}
                 </div>
 
-                <div className="reminder-section">
+                <div className={cx("reminder-section")}>
                     <button
                         type='button'
-                        className={`reminder-btn ${isTimerActive ? 'active' : ''}`}
+                        className={cx("reminder-btn", { active: isTimerActive })}
                         onClick={setReminder}
                         title={isTimerActive ? 'Hủy hẹn giờ' : 'Đặt hẹn giờ'}
                         disabled={!cycleData.birthControlTime || selectedDays.length === 0}
@@ -305,8 +309,8 @@ function CycleInputForm({ cycleData, onDataChange }) {
                     </button>
 
                     {isTimerActive && (
-                        <div className="reminder-status">
-                            <span className="status-text">
+                        <div className={cx("reminder-status")}>
+                            <span className={cx("status-text")}>
                                 🔔 Đang hoạt động cho {selectedDays.length} ngày/tuần
                             </span>
                         </div>

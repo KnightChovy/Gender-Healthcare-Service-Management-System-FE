@@ -1,4 +1,8 @@
 import React from 'react';
+import classNames from 'classnames/bind';
+import styles from '../../../assets/MenstrualCycle.module.scss';
+
+const cx = classNames.bind(styles);
 
 function HealthTips({ currentPhase }) {
     const getPhaseTips = (phase) => {
@@ -49,11 +53,11 @@ function HealthTips({ currentPhase }) {
     const phaseTips = getPhaseTips(currentPhase);
 
     return ( 
-        <div className='health-tips'>
+        <div className={cx('health-tips')}>
             <h2>Lời khuyên sức khỏe</h2>
-            <div className='tips-content'>
+            <div className={cx('tips-content')}>
                 {currentPhase && (
-                    <div className='tip'>
+                    <div className={cx('tip')}>
                         <h4>{phaseTips.title}</h4>
                         <ul>
                             {phaseTips.tips.map((tip, index) => (
@@ -63,7 +67,7 @@ function HealthTips({ currentPhase }) {
                     </div>
                 )}
 
-                <div className='general-tip'>
+                <div className={cx('general-tip')}>
                     <h4>Lưu ý chung:</h4>
                     <p>
                         Hãy theo dõi thường xuyên và ghi chép các triệu chứng để có 

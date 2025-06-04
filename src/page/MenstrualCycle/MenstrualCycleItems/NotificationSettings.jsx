@@ -1,5 +1,9 @@
 import React from 'react';
 import { useState, useEffect } from 'react';
+import classNames from 'classnames/bind';
+import styles from '../../../assets/MenstrualCycle.module.scss';
+
+const cx = classNames.bind(styles);
 
 function NotificationSettings({ notifications, onNotificationChange }) {
     const [tempNotifications, setTempNotifications] = useState(notifications);
@@ -37,11 +41,11 @@ function NotificationSettings({ notifications, onNotificationChange }) {
     };
 
     return (
-        <div className='notifications-section'>
+        <div className={cx('notifications-section')}>
             <h2>Cài đặt thông báo</h2>
-            
-            <div className='notification-options'>
-                <label className='checkbox-label'>
+
+            <div className={cx('notification-options')}>
+                <label className={cx('checkbox-label')}>
                     <input
                         type="checkbox"
                         name='notications.period'
@@ -51,7 +55,7 @@ function NotificationSettings({ notifications, onNotificationChange }) {
                     <span>Nhắc nhở kì kinh nguyệt</span>
                 </label>
 
-                <label className='checkbox-label'>
+                <label className={cx('checkbox-label')}>
                     <input
                         type='checkbox'
                         name='notifications.ovulation'
@@ -61,7 +65,7 @@ function NotificationSettings({ notifications, onNotificationChange }) {
                     <span>Nhắc nhở kì rụng trứng</span>
                 </label>
 
-                <label className='checkbox-label'>
+                <label className={cx('checkbox-label')}>
                     <input
                         type='checkbox'
                         name='notifications.fertility'
@@ -71,7 +75,7 @@ function NotificationSettings({ notifications, onNotificationChange }) {
                     <span>Nhắc nhở cửa sổ thụ thai</span>
                 </label>
 
-                <label className='checkbox-label'>
+                <label className={cx('checkbox-label')}>
                     <input
                         type='checkbox'
                         name='notifications.birthControl'
@@ -83,16 +87,16 @@ function NotificationSettings({ notifications, onNotificationChange }) {
             </div>
 
             {hasChanges && (
-                <div className="notification-actions">
-                    <button 
-                        className="save-btn"
+                <div className={cx("notification-actions")}>
+                    <button
+                        className={cx("save-btn")}
                         onClick={handleSave}
                         title="Lưu cài đặt thông báo"
                     >
                         💾 Lưu
                     </button>
-                    <button 
-                        className="cancel-btn"
+                    <button
+                        className={cx("cancel-btn")}
                         onClick={handleCancel}
                         title="Hủy các thay đổi"
                     >

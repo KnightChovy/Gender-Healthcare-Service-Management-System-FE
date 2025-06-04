@@ -338,10 +338,6 @@
     content: '♂️ ';
 }
 
-.radio-label:has(input[value="other"]) span::before {
-    content: '⚧️ ';
-}
-
 /* ===== TIME SLOTS ===== */
 .time-grid {
     display: grid;

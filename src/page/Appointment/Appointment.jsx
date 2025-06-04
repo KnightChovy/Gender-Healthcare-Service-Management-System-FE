@@ -6,7 +6,10 @@ import ConsultationSection from './AppointmentItems/ConsultationSection';
 import DateTimeSection from './AppointmentItems/DateTimeSection';
 import AdditionalInfoSection from './AppointmentItems/AdditionalInfoSection';
 import FormActions from './AppointmentItems/FormActions';
-import './Appointment.css';
+import classNames from 'classnames/bind';
+import styles from './Appointment.module.scss';
+
+const cx = classNames.bind(styles);
 
 function Appointment() {
     const [isLoggedIn, setIsLoggedIn] = useState(false);
@@ -147,7 +150,7 @@ function Appointment() {
     // }
 
     return ( 
-        <div className='appointment-container'>
+        <div className={cx('appointment-container')}>
             <Header isLoggedIn={isLoggedIn} />
             
             {/* <UserStatusCard 
@@ -156,7 +159,7 @@ function Appointment() {
                 onLogin={handleLogin}
             /> */}
 
-            <form onSubmit={handleSubmit} className="appointment-form">
+            <form onSubmit={handleSubmit} className={cx('appointment-form')}>
                 {!isLoggedIn && (
                     <PersonalInfoSection
                         formData={formData}

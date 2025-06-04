@@ -1,11 +1,15 @@
 import React from 'react'
+import classNames from 'classnames/bind';
+import styles from '../Appointment.module.scss';
+
+const cx = classNames.bind(styles);
 
 function AdditionalInfoSection({ formData, onChange }) {
     return (  
-        <div className="form-section">
+        <div className={cx('form-section')}>
             <h3>📝 Thông tin bổ sung</h3>
             
-            <div className="form-group" style={{ display: 'block' }}>
+            <div className={cx('form-group')} style={{ display: 'block' }}>
                 <label htmlFor="priority">Mức độ ưu tiên</label>
                 <select
                     id="priority"
@@ -19,7 +23,7 @@ function AdditionalInfoSection({ formData, onChange }) {
                 </select>
             </div>
 
-            <div className="form-group" style={{ display: 'block' }}>
+            <div className={cx('form-group')} style={{ display: 'block' }}>
                 <label htmlFor="symptoms">Triệu chứng/Lý do khám</label>
                 <textarea
                     id="symptoms"
@@ -31,7 +35,7 @@ function AdditionalInfoSection({ formData, onChange }) {
                 />
             </div>
 
-            <div className="form-group" style={{ display: 'block' }}>
+            <div className={cx('form-group')} style={{ display: 'block' }}>
                 <label htmlFor="notes">Ghi chú thêm</label>
                 <textarea
                     id="notes"

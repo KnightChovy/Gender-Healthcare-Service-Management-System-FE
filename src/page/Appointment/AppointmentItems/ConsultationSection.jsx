@@ -1,4 +1,8 @@
 import React from 'react'
+import classNames from 'classnames/bind';
+import styles from '../Appointment.module.scss';
+
+const cx = classNames.bind(styles);
 
 function ConsultationSection({ formData, errors, onChange }) {
     const consultationTypes = [
@@ -11,13 +15,13 @@ function ConsultationSection({ formData, errors, onChange }) {
     ];
 
     return (  
-        <div className="form-section">
+        <div className={cx('form-section')}>
             <h3>🩺 Loại tư vấn</h3>
-            <div className="consultation-grid">
+            <div className={cx('consultation-grid')}>
                 {consultationTypes.map(type => (
-                    <label 
-                        key={type.value} 
-                        className={`consultation-card ${formData.consultationType === type.value ? 'selected' : ''}`}
+                    <label
+                        key={type.value}
+                        className={cx('consultation-card', { selected: formData.consultationType === type.value })}
                         aria-label={type.label}
                     >
                         <input
@@ -27,14 +31,14 @@ function ConsultationSection({ formData, errors, onChange }) {
                             checked={formData.consultationType === type.value}
                             onChange={onChange}
                         />
-                        <div className="card-content">
-                            <span className="card-icon">{type.icon}</span>
-                            <span className="card-label">{type.label}</span>
+                        <div className={cx('card-content')}>
+                            <span className={cx('card-icon')}>{type.icon}</span>
+                            <span className={cx('card-label')}>{type.label}</span>
                         </div>
                     </label>
                 ))}
             </div>
-            {errors.consultationType && <span className="error-message">{errors.consultationType}</span>}
+            {errors.consultationType && <span className={cx('error-message')}>{errors.consultationType}</span>}
         </div>
     );
 }
