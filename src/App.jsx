@@ -1,10 +1,13 @@
 import "./App.css";
-import Register from "./page/register";
+import ForgetPassword from "./page/ForgetPassword";
+import Login from "./page/login/Login";
+// import Register from "./page/register";
 
 function App() {
   return (
     <>
-      <Register />
+      {/* <Register /> */}
+      <Login />
     </>
   );
 }
