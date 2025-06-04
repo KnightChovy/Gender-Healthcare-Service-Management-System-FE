@@ -6,7 +6,7 @@ function PersonalInfoSection({formData, errors, onChange}) {
             <h3>📋 Thông tin cá nhân</h3>
             
             <div className="form-row">
-                <div className="form-group">
+                <div className="form-group" style={{ display: 'block'}}>
                     <label htmlFor="fullName">Họ và tên *</label>
                     <input
                         type="text"
@@ -20,7 +20,7 @@ function PersonalInfoSection({formData, errors, onChange}) {
                     {errors.fullName && <span className="error-message">{errors.fullName}</span>}
                 </div>
 
-                <div className="form-group">
+                <div className="form-group" style={{ display: 'block'}}>
                     <label htmlFor="phone">Số điện thoại *</label>
                     <input
                         type="tel"
@@ -36,7 +36,7 @@ function PersonalInfoSection({formData, errors, onChange}) {
             </div>
 
             <div className="form-row">
-                <div className="form-group">
+                <div className="form-group" style={{ display: 'block'}}>
                     <label htmlFor="email">Email *</label>
                     <input
                         type="email"
@@ -50,7 +50,7 @@ function PersonalInfoSection({formData, errors, onChange}) {
                     {errors.email && <span className="error-message">{errors.email}</span>}
                 </div>
 
-                <div className="form-group">
+                <div className="form-group" style={{ display: 'block'}}>
                     <label htmlFor="birthDate">Ngày sinh *</label>
                     <input
                         type="date"
@@ -65,12 +65,13 @@ function PersonalInfoSection({formData, errors, onChange}) {
                 </div>
             </div>
 
-            <div className="form-group">
-                <label>Giới tính *</label>
+            <div className="form-group" style={{ display: 'block'}}>
+                <label htmlFor="gender-female">Giới tính *</label>
                 <div className="radio-group">
                     <label className="radio-label">
                         <input
                             type="radio"
+                            id="gender-female"
                             name="gender"
                             value="female"
                             checked={formData.gender === 'female'}

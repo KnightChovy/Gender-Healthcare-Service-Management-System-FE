@@ -359,14 +359,6 @@
   margin-left: 4px;
 }
 
-.error-message  {
-  border: none !important;
-  background-color: inherit !important;
-  padding: 0 !important;
-  border-radius: 0 !important;
-  margin-left: 5px;
-}
-
 /* Responsive design */
 @media (max-width: 480px) {
   .register-container {

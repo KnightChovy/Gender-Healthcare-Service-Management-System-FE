@@ -138,17 +138,18 @@ function CycleInputForm({ cycleData, onDataChange }) {
         <div className='input-section'>
             <h2>Thông tin chu kì</h2>
 
-            <div className="form-group">
+            <div className="form-group" style={{ display: 'block' }}>
                 <span>Ngày đầu kì kinh nguyệt gần nhất:</span>
                 <input
                     type='date'
                     name="lastPeriodDate"
                     value={cycleData.lastPeriodDate}
                     onChange={handleInputChange}
+                    style={{ width: '100%' }}
                 />
             </div>
 
-            <div className="form-group">
+            <div className="form-group" style={{ display: 'block' }}>
                 <span>Độ dài chu kì (ngày):</span>
                 <input
                     type='number'
@@ -157,10 +158,11 @@ function CycleInputForm({ cycleData, onDataChange }) {
                     onChange={handleInputChange}
                     min="21"
                     max="35"
+                    style={{ width: '100%' }}
                 />
             </div>
 
-            <div className="form-group">
+            <div className="form-group" style={{ display: 'block' }}>
                 <span>Số ngày kinh nguyệt:</span>
                 <input
                     type='number'
@@ -169,6 +171,7 @@ function CycleInputForm({ cycleData, onDataChange }) {
                     onChange={handleInputChange}
                     min="3"
                     max="8"
+                    style={{ width: '100%' }}
                 />
             </div>
 

@@ -129,16 +129,15 @@ header p {
   margin-bottom: 25px;
 }
 
-.form-group label {
-  display: block;
+.form-group span {
   margin-bottom: 8px;
   color: #34495e;
   font-weight: 500;
   font-size: 0.95rem;
+  justify-content: left;
 }
 
 .form-group input {
-  width: 100%;
   padding: 15px;
   border: 2px solid #e9ecef;
   border-radius: 12px;
@@ -179,6 +178,8 @@ header p {
   position: relative;
   box-shadow: 0 10px 30px rgba(255, 143, 171, 0.15);
   transition: all 0.3s ease;
+  display: flex;
+  flex-direction: column;
 }
 
 .form-group:has(.time-input-container):hover {
@@ -239,6 +240,7 @@ header p {
   padding: 20px;
   box-shadow: 0 5px 20px rgba(255, 107, 157, 0.1);
   margin-bottom: 20px;
+  width: 100%;
 }
 
 .time-input-container:hover {
@@ -276,6 +278,7 @@ header p {
   box-shadow: 0 8px 25px rgba(255, 107, 157, 0.1);
   position: relative;
   overflow: hidden;
+  width: 100%;
 }
 
 .quick-time-buttons::before {

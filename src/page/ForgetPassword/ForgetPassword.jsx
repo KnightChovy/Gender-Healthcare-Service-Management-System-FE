@@ -1,8 +1,9 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faPhone, faKey, faArrowLeft, faArrowRight } from '@fortawesome/free-solid-svg-icons';
+import { faArrowLeft, faArrowRight } from '@fortawesome/free-solid-svg-icons';
 import FormInputText from '../../components/ui/FormInputText';
+import { validateRules } from "../../components/Validation/validateRulesRegister";
 import './ForgetPassword.css';
 
 function ForgetPassword() {
@@ -13,7 +14,7 @@ function ForgetPassword() {
         newPassword: '',
         confirmPassword: ''
     });
-
+    const [showErrors, setShowErrors] = useState(false);
     const [errors, setErrors] = useState('');
     const [isLoading, setIsLoading] = useState(false);
     const navigate = useNavigate();
@@ -24,10 +25,23 @@ function ForgetPassword() {
             [name]: value
         }));
         setErrors('');
+
+        if (showErrors) {
+            setShowErrors(false);
+            setTimeout(() => {
+                setShowErrors(true);
+            }, 0);
+        }
     }
 
     const handleSendOTP = async (e) => {
         e.preventDefault();
+        const isEmpty = !formData.phone;
+        
+        if (isEmpty) {
+            setErrors('Vui lòng nhập số điện thoại của bạn.');
+            return;
+        }
 
         setIsLoading(true);
         try {
@@ -138,15 +152,14 @@ function ForgetPassword() {
                 {step === 1 && (
                     <form onSubmit={handleSendOTP}>
                         <div className='form-group'>
-                            <div className='input-icon'>
-                                <FontAwesomeIcon icon={faPhone} />
-                            </div>
                             <FormInputText 
                                 textHolder='phone'
                                 textName='phone'
                                 type='text'
                                 value={formData.phone}
                                 onChange={handleInputChange}
+                                validation={validateRules(formData.phone)}
+                                showErrors={showErrors}
                             />
                         </div>
 
@@ -191,9 +204,6 @@ function ForgetPassword() {
                 {step === 3 && (
                     <form onSubmit={handleResetPassword}>
                         <div className='form-group'>
-                            <div className='input-icon'>
-                                <FontAwesomeIcon icon={faKey} />
-                            </div>
                             <FormInputText
                                 textHolder='password'
                                 textName='newPassword'
@@ -204,9 +214,6 @@ function ForgetPassword() {
                         </div>
 
                         <div className='form-group'>
-                            <div className='input-icon'>
-                                <FontAwesomeIcon icon={faKey} />
-                            </div>
                             <FormInputText
                                 textHolder='confirmPassword'
                                 textName='confirmPassword'

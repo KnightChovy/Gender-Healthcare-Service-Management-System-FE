@@ -21,7 +21,7 @@ function DateTimeSection({ formData, errors, onChange }) {
         <div className="form-section">
             <h3>📆 Thời gian hẹn</h3>
             <div className="datetime-row">
-                <div className="form-group">
+                <div className="form-group" style={{ display: 'block' }}>
                     <label htmlFor="preferredDate">Ngày hẹn *</label>
                     <input
                         type="date"
@@ -36,7 +36,7 @@ function DateTimeSection({ formData, errors, onChange }) {
                     {errors.preferredDate && <span className="error-message">{errors.preferredDate}</span>}
                 </div>
 
-                <div className="form-group">
+                <div className="form-group" style={{ display: 'block' }}>
                     <label htmlFor='preferredTime'>Giờ hẹn *</label>
                     <div className="time-grid">
                         {timeSlots.map(time => (

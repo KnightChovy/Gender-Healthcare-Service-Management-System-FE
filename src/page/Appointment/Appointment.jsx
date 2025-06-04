@@ -141,19 +141,20 @@ function Appointment() {
         }
     };
 
-    const handleLogin = () => {
-        window.location.href = '/login';
-    }
+    // Uncomment this section if you want to handle login redirection
+    // const handleLogin = () => {
+    //     window.location.href = '/login';
+    // }
 
     return ( 
         <div className='appointment-container'>
             <Header isLoggedIn={isLoggedIn} />
             
-            <UserStatusCard 
+            {/* <UserStatusCard 
                 isLoggedIn={isLoggedIn}
                 userProfile={userProfile}
                 onLogin={handleLogin}
-            />
+            /> */}
 
             <form onSubmit={handleSubmit} className="appointment-form">
                 {!isLoggedIn && (

@@ -1,3 +1,5 @@
+import React from 'react';
+
 function UserStatusCard({ isLoggedIn, userProfile, onLogin }) {
     if (isLoggedIn) {
         return (

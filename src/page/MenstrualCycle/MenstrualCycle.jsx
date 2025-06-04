@@ -32,7 +32,7 @@ function MenstrualCycle() {
         if (cycleData.lastPeriodDate) {
             calculatePredictions();
         }
-    })
+    }, [cycleData]);
 
     const calculatePredictions = () => {
         const lastPeriod = new Date(cycleData.lastPeriodDate);
@@ -93,10 +93,10 @@ function MenstrualCycle() {
 
                 <HealthTips currentPhase={currentPhase} />
 
-                {/* <NotificationSettings
+                <NotificationSettings
                     notifications={cycleData.notifications}
                     onNotificationChange={handleCycleDataChange}
-                /> */}
+                />
             </div>
         </div>
     );
