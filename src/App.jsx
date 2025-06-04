@@ -1,16 +1,18 @@
 import "./App.css";
-import Appointment from "./page/Appointment";
-// import MenstrualCycle from "./page/MenstrualCycle";
 // Uncomment the following line to import the Register component
+// import MenstrualCycle from "./page/MenstrualCycle";
+// import Appointment from "./page/Appointment";
 // import Register from "./page/Register";
+import ForgetPassword from "./page/ForgetPassword";
 
 
 function App() {
   return (
     <div>
-      {/* <Register /> */}
-      {/* <MenstrualCycle /> */}
-      <Appointment />
+      {/* <Register />
+      <MenstrualCycle />
+      <Appointment /> */}
+      <ForgetPassword />
     </div>
   );
 }

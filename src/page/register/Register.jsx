@@ -113,7 +113,7 @@ function Register() {
   return (
     <div className="register-container">
       <div className="register-header">
-        <h1>Để tên web nha "chưa nghĩ ra tên nào hay"</h1>
+        <h1>GenCare Center</h1>
       </div>
 
       <div className="register-content">

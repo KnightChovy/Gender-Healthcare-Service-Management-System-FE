@@ -93,10 +93,10 @@ function MenstrualCycle() {
 
                 <HealthTips currentPhase={currentPhase} />
 
-                <NotificationSettings
+                {/* <NotificationSettings
                     notifications={cycleData.notifications}
                     onNotificationChange={handleCycleDataChange}
-                />
+                /> */}
             </div>
         </div>
     );

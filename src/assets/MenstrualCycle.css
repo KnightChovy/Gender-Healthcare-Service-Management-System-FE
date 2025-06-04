@@ -192,8 +192,8 @@ header p {
   position: absolute;
   top: -15px;
   right: 20px;
-  font-size: 2.5rem;
-  background: linear-gradient(135deg, #ff6b9d, #c44569);
+  font-size: 1rem;
+  background: linear-gradient(135deg, #ff6b9d, #e67676);
   padding: 10px;
   border-radius: 50%;
   box-shadow: 0 5px 15px rgba(255, 107, 157, 0.3);
@@ -361,7 +361,156 @@ header p {
   opacity: 0.6;
 }
 
+/* Birth Control Section */
+.birth-control-section {
+    background: linear-gradient(135deg, #fff0f6 0%, #f8fcff 100%);
+    border: 2px solid #ff8fab;
+    border-radius: 16px;
+    padding: 25px;
+    margin: 30px 0;
+    position: relative;
+}
+
+/* Day Selection Container */
+.day-selection-container {
+    margin: 20px 0;
+    padding: 20px;
+    background: white;
+    border: 2px solid #ffe0ec;
+    border-radius: 12px;
+    box-shadow: 0 2px 10px rgba(255, 107, 157, 0.1);
+}
+
+.day-selection-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 15px;
+    flex-wrap: wrap;
+    gap: 10px;
+}
+
+.day-selection-label {
+    font-weight: 600;
+    color: #c44569;
+    font-size: 1rem;
+}
+
+.day-selection-actions {
+    display: flex;
+    gap: 8px;
+}
+
+.select-all-btn,
+.clear-all-btn {
+    padding: 6px 12px;
+    border: 1px solid #e9ecef;
+    border-radius: 6px;
+    font-size: 0.8rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.select-all-btn {
+    background: #e3f2fd;
+    color: #1976d2;
+    border-color: #1976d2;
+}
+
+.select-all-btn:hover {
+    background: #1976d2;
+    color: white;
+}
+
+.clear-all-btn {
+    background: #fce4ec;
+    color: #c2185b;
+    border-color: #c2185b;
+}
+
+.clear-all-btn:hover {
+    background: #c2185b;
+    color: white;
+}
+
+/* Days Grid */
+.days-grid {
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    gap: 8px;
+    margin-bottom: 15px;
+}
+
+.day-checkbox {
+    display: flex !important;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 12px 8px;
+    border: 2px solid #e9ecef;
+    border-radius: 10px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    background: white;
+    text-align: center;
+    position: relative;
+    min-height: 60px;
+}
+
+.day-checkbox input[type="checkbox"] {
+    position: absolute;
+    opacity: 0;
+    width: 100% !important;
+    height: 100% !important;
+    margin: 0 !important;
+    padding: 0 !important;
+}
+
+.day-checkbox:hover {
+    border-color: #ff6b9d;
+    background: #fff0f6;
+    transform: translateY(-2px);
+}
+
+.day-checkbox.selected {
+    border-color: #ff6b9d;
+    background: linear-gradient(135deg, #ff6b9d 0%, #c44569 100%);
+    color: white;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(255, 107, 157, 0.3);
+}
+
+.day-short {
+    font-weight: 700;
+    font-size: 0.9rem;
+    display: block;
+    margin-bottom: 2px;
+}
+
+.day-full {
+    font-size: 0.7rem;
+    opacity: 0.8;
+    display: block;
+}
+
+.selected-days-info {
+    text-align: center;
+    padding: 10px;
+    background: #e8f5e8;
+    border: 1px solid #4caf50;
+    border-radius: 8px;
+    color: #2e7d32;
+    font-weight: 500;
+    font-size: 0.9rem;
+}
+
 /* Reminder Button */
+.reminder-section {
+    margin-top: 20px;
+    text-align: center;
+}
+
 .reminder-btn {
   width: 100%;
   padding: 14px 24px;
