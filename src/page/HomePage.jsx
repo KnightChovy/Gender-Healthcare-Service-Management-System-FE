@@ -9,6 +9,7 @@ import { TestimonialsSection } from "../components/Layouts/LayoutHomePage/Testim
 import { BlogSection } from "../components/Layouts/LayoutHomePage/BlogSection";
 import { FAQSection } from "../components/Layouts/LayoutHomePage/FAQSection";
 import { Footer } from "../components/Layouts/LayoutHomePage/Footer";
+
 export const HomePage = () => {
   return (
     <div className="wrap">
