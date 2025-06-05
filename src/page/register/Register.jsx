@@ -8,9 +8,7 @@ import styles from "../../assets/Register.module.scss";
 
 const cx = classNames.bind(styles);
 
-
 function Register() {
-  const navigate = useNavigate();
   const [formData, setFormData] = useState({
     firstname: "",
     lastname: "",
@@ -109,14 +107,11 @@ function Register() {
       focusFirstError();
       return;
     }
+    // Here you can handle form submission, e.g., send data to the server
     console.log("Form submitted:", formData);
   };
 
   const validate = () => validateRules(formData);
-
-  const handleLoginRedirect = () => {
-    navigate("/");
-  };
 
   return (
     <div className={cx("register-container")}>
@@ -246,22 +241,8 @@ function Register() {
             >
               Đăng ký
             </button>
-            <p className="register-footer">
-              Bạn đã có tài khoản?{" "}
-              <button
-                type="button"
-                onClick={handleLoginRedirect}
-                className="login-link"
-                style={{
-                  background: "none",
-                  border: "none",
-                  color: "#1877f2",
-                  textDecoration: "underline",
-                  cursor: "pointer",
-                  padding: "0",
-                  marginLeft: "5px",
-                }}
-              >Đăng nhập</button>
+            <p className={cx("register-footer")}>
+              Bạn đã có tài khoản? <a href="/login">Đăng nhập</a>
             </p>
           </form>
         </div>
