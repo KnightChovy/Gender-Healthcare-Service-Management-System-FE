@@ -1,61 +1,13 @@
 import React from "react";
 import logo_gender from "../assets/gender_healthcare_logo.png";
-import icon_search from "../assets/ico_search.png";
 import banner_page from "../assets/banner_gender.jpg";
 import { Link } from "react-router-dom";
+import { Navbar } from "../components/Layouts/LayoutUser/Navbar";
 export const HomePage = () => {
   return (
     <div className="wrap">
       <header className="py-2 lg:py-3 sticky top-0 z-10 bg-white shadow-lg">
-        <div className="container flex items-center justify-center">
-          <div className="flex-shrink-0">
-            <Link className="block max-w-[80px]" to="/">
-              <img className="max-w-full" src={logo_gender} alt="logo_gender" />
-            </Link>
-          </div>
-          <nav className="hidden lg:flex flex-1 justify-center">
-            <ul className="flex items-center gap-10 font-medium">
-              <li className="relative after:absolute text-[15px] after:h-[1.5px] after:bg-blue-800 after:left-0 after:bottom-[-2px] after:transition-all after:duration-300 after:w-full after:scale-x-0 hover:after:scale-x-100 hover:text-blue-900 transition-colors duration-200">
-                <Link to="/">Trang chủ</Link>
-              </li>
-              <li className="relative after:absolute text-[15px] after:h-[1.5px] after:bg-blue-800 after:left-0 after:bottom-[-2px] after:transition-all after:duration-300 after:w-full after:scale-x-0 hover:after:scale-x-100 hover:text-blue-900 transition-colors duration-200">
-                <a href="#">Các loại dịch vụ</a>
-              </li>
-              <li className="relative after:absolute text-[15px] after:h-[1.5px] after:bg-blue-800 after:left-0 after:bottom-[-2px] after:transition-all after:duration-300 after:w-full after:scale-x-0 hover:after:scale-x-100 hover:text-blue-900 transition-colors duration-200">
-                <a href="#">Về chúng tôi</a>
-              </li>
-              <li className="relative after:absolute text-[15px] after:h-[1.5px] after:bg-blue-800 after:left-0 after:bottom-[-2px] after:transition-all after:duration-300 after:w-full after:scale-x-0 hover:after:scale-x-100 hover:text-blue-900 transition-colors duration-200">
-                <a href="#">Blog</a>
-              </li>
-            </ul>
-          </nav>
-
-          <div className="flex items-center gap-4">
-            <div className="flex items-center pl-3">
-              <span>
-                <img
-                  className="size-5 cursor-pointer"
-                  src={icon_search}
-                  alt=""
-                />
-              </span>
-            </div>
-
-            <Link
-              to="/register"
-              className="text-sm font-medium hover:text-blue-600 transition-colors duration-200"
-            >
-              Đăng Ký
-            </Link>
-            <div className="h-4 w-px bg-gray-300"></div>
-            <Link
-              to="/Login"
-              className="text-sm font-medium hover:text-blue-600 transition-colors duration-200"
-            >
-              Đăng Nhập
-            </Link>
-          </div>
-        </div>
+        <Navbar />
       </header>
       <main>
         <section className="relative">
@@ -68,8 +20,9 @@ export const HomePage = () => {
             <div className="container mx-auto">
               <div className="flex flex-col lg:flex-row items-center">
                 <div className="w-full lg:w-1/2 px-4 lg:px-6 py-6 lg:py-16">
-                  <h1 className="text-2xl md:text-4xl font-bold text-blue-800 mb-6">
-                    Phòng khám và xét nghiệm GenCare
+                  <h1 className="text-2xl md:text-4xl font-bold text-blue-800 mb-6 ">
+                    Trung tâm Xét nghiệm và Tư vấn Chăm sóc Sức khỏe Giới tính
+                    GenCare
                   </h1>
 
                   <div className="relative w-full mb-6">
@@ -1469,7 +1422,7 @@ export const HomePage = () => {
                   <path d="M1.5 8.67v8.58a3 3 0 003 3h15a3 3 0 003-3V8.67l-8.928 5.493a3 3 0 01-3.144 0L1.5 8.67z" />
                   <path d="M22.5 6.908V6.75a3 3 0 00-3-3h-15a3 3 0 00-3 3v.158l9.714 5.978a1.5 1.5 0 001.572 0L22.5 6.908z" />
                 </svg>
-                <span>info@gencare.com.vn</span>
+                <span>gencare@gmail.com.vn</span>
               </a>
             </div>
           </div>
@@ -1496,7 +1449,8 @@ export const HomePage = () => {
                 <br />
                 <strong>Địa chỉ:</strong>
                 <br />
-                Trung tâm Xét nghiệm và Tư vấn Y khoa – GenCare Center,
+                Trung tâm Xét nghiệm và Tư vấn Chăm sóc Sức khỏe Giới tính -
+                GenCare Center,
                 <br />
                 Số 75 Nguyễn Thông, Phường 9, Quận 3, Thành phố Hồ Chí Minh,
                 Việt Nam.
