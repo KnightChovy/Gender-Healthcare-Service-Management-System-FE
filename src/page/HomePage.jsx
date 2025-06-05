@@ -1,6 +1,4 @@
-
 import React from "react";
-
 import { Navbar } from "../components/Layouts/LayoutHomePage/Navbar";
 import { SectionHero } from "../components/Layouts/LayoutHomePage/SectionHero";
 import { WhyChooseUs } from "../components/Layouts/LayoutHomePage/WhyChooseUs";

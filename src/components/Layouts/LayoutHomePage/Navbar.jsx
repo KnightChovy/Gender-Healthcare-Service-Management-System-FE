@@ -1,4 +1,3 @@
-
 import React from "react";
 import logo_gender from "../../../assets/gender_healthcare_logo.png";
 import { Link } from "react-router-dom";
@@ -37,7 +36,7 @@ export const Navbar = () => {
           </Link>
           <div className="h-4 w-px bg-gray-300"></div>
           <Link
-            to="/Login"
+            to="/login"
             className="text-[16px] font-medium hover:text-blue-600 transition-colors duration-200"
           >
             Đăng Nhập
