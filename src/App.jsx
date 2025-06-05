@@ -1,18 +1,14 @@
-// Uncomment the following line to import the Register component
-import MenstrualCycle from "./page/MenstrualCycle";
-import Appointment from "./page/Appointment";
+import { Route, Routes } from "react-router-dom";
+import "./App.css";
+import { HomePage } from "./page/HomePage";
 import Register from "./page/Register";
-import ForgetPassword from "./page/ForgetPassword";
-
 
 function App() {
   return (
-    <div>
-      <Register />
-      <MenstrualCycle />
-      <Appointment />
-      <ForgetPassword />
-    </div>
+    <Routes>
+      <Route path="/" element={<HomePage />} />
+      <Route path="/register" element={<Register />} />
+    </Routes>
   );
 }
 
