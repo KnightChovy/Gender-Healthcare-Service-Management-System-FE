@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faArrowLeft, faArrowRight, faPhone, faKey, faLock } from '@fortawesome/free-solid-svg-icons';
+import { faArrowLeft, faArrowRight, faPhone, faKey, faLock, faUser } from '@fortawesome/free-solid-svg-icons';
 import classNames from 'classnames/bind';
 import styles from './ForgetPassword.module.scss';
 
@@ -11,6 +11,7 @@ function ForgetPassword() {
     const [step, setStep] = useState(1);
     const [formData, setFormData] = useState({
         phone: '',
+        username: '',
         otp: '',
         newPassword: '',
         confirmPassword: ''
@@ -23,10 +24,24 @@ function ForgetPassword() {
     const validatePhone = (phone) => {
         const phoneRegex = /^(0[3|5|7|8|9])+([0-9]{8})$/;
         if (!phone) {
-            return 'Vui lòng nhập số điện thoại';
+            return '';
         }
         if (!phoneRegex.test(phone)) {
             return 'Số điện thoại không hợp lệ (VD: 0901234567)';
+        }
+        return '';
+    };
+
+    // Validate username
+    const validateUsername = (username) => {
+        if (!username) {
+            return '';
+        }
+        if (username.length < 3) {
+            return 'Tên đăng nhập phải có ít nhất 3 ký tự';
+        }
+        if (!/^[a-zA-Z0-9_]+$/.test(username)) {
+            return 'Tên đăng nhập chỉ được chứa chữ cái, số và dấu gạch dưới';
         }
         return '';
     };
@@ -53,8 +68,8 @@ function ForgetPassword() {
         if (password.length < 8) {
             return 'Mật khẩu phải có ít nhất 8 ký tự';
         }
-        if (!/(?=.*[a-z])(?=.*[A-Z])(?=.*\d)/.test(password)) {
-            return 'Mật khẩu phải chứa ít nhất 1 chữ hoa, 1 chữ thường và 1 số';
+        if (!/(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[!@#$%^&*])/ .test(password)) {
+            return 'Mật khẩu phải chứa ít nhất 1 chữ hoa, 1 chữ thường, 1 số, 1 ký tự đặc biệt';
         }
         return '';
     };
@@ -104,9 +119,28 @@ function ForgetPassword() {
     const handleSendOTP = async (e) => {
         e.preventDefault();
         
+        // Validate both fields
         const phoneError = validatePhone(formData.phone);
-        if (phoneError) {
-            setErrors({ phone: phoneError });
+        const usernameError = validateUsername(formData.username);
+        
+        // Check if at least one field is filled and valid
+        const hasValidPhone = formData.phone && !phoneError;
+        const hasValidUsername = formData.username && !usernameError;
+        
+        let newErrors = {};
+        
+        if (!hasValidPhone && !hasValidUsername) {
+            if (!formData.phone && !formData.username) {
+                newErrors.general = 'Vui lòng nhập ít nhất một trong hai: số điện thoại hoặc tên đăng nhập';
+            } else {
+                if (formData.phone && phoneError) {
+                    newErrors.phone = phoneError;
+                }
+                if (formData.username && usernameError) {
+                    newErrors.username = usernameError;
+                }
+            }
+            setErrors(newErrors);
             return;
         }
 
@@ -190,6 +224,14 @@ function ForgetPassword() {
         }
     };
 
+    // Get sent target for step 2 message
+    const getSentTarget = () => {
+        const targets = [];
+        if (formData.phone) targets.push(`số ${formData.phone}`);
+        if (formData.username) targets.push(`tài khoản ${formData.username}`);
+        return targets.join(' và ');
+    };
+
     return (
         <div className={cx('forget-password-page')}>
             <div className={cx('forget-password-container')}>
@@ -209,8 +251,8 @@ function ForgetPassword() {
                         {step === 3 && 'Đặt mật khẩu mới'}
                     </h2>
                     <p>
-                        {step === 1 && 'Vui lòng nhập số điện thoại để nhận mã OTP'}
-                        {step === 2 && `Mã OTP đã được gửi đến số ${formData.phone}`}
+                        {step === 1 && 'Vui lòng nhập thông tin để nhận mã OTP (có thể nhập một hoặc cả hai)'}
+                        {step === 2 && `Mã OTP đã được gửi đến ${getSentTarget()}`}
                         {step === 3 && 'Tạo mật khẩu mới cho tài khoản của bạn'}
                     </p>
                 </div>
@@ -223,6 +265,27 @@ function ForgetPassword() {
 
                 {step === 1 && (
                     <form onSubmit={handleSendOTP}>
+                        {/* Username Input */}
+                        <div className={cx('form-group')}>
+                            <div className={cx('input-container')}>
+                                <div className={cx('input-icon')}>
+                                    <FontAwesomeIcon icon={faUser} />
+                                </div>
+                                <input
+                                    type="text"
+                                    name="username"
+                                    placeholder="Nhập tên đăng nhập"
+                                    value={formData.username}
+                                    onChange={handleInputChange}
+                                    className={cx('input-field', { error: errors.username })}
+                                />
+                            </div>
+                            {errors.username && (
+                                <span className={cx('error-text')}>{errors.username}</span>
+                            )}
+                        </div>
+
+                        {/* Phone Number Input */}
                         <div className={cx('form-group')}>
                             <div className={cx('input-container')}>
                                 <div className={cx('input-icon')}>
@@ -231,7 +294,7 @@ function ForgetPassword() {
                                 <input
                                     type="text"
                                     name="phone"
-                                    placeholder="Nhập số điện thoại (VD: 0901234567)"
+                                    placeholder="Nhập số điện thoại (VD: 0123456789)"
                                     value={formData.phone}
                                     onChange={handleInputChange}
                                     className={cx('input-field', { error: errors.phone })}
@@ -352,6 +415,9 @@ function ForgetPassword() {
                                 </li>
                                 <li className={cx({ valid: /\d/.test(formData.newPassword) })}>
                                     Ít nhất 1 chữ số
+                                </li>
+                                <li className={cx({ valid: /[!@#$%^&*]/.test(formData.newPassword) })}>
+                                    Ít nhất 1 ký tự đặc biệt
                                 </li>
                                 <li className={cx({ valid: formData.newPassword.length >= 8 })}>
                                     Tối thiểu 8 ký tự

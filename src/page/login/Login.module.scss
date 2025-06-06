@@ -5,7 +5,7 @@
   --staff-gradient: linear-gradient(to right, #1c7eb6, #8edbed);
   --customer-gradient: linear-gradient(to right, #4b6cb7, #182848);
   --staff-color: #2193b0;
-  --customer-color: #4b6cb7;
+  --customer-color: #150c93;
   --text-color: #333;
   --text-light: #777;
   --error-color: #e74c3c;
@@ -23,6 +23,7 @@
   padding: 20px;
   position: relative;
   overflow: hidden;
+  background: var(--primary-gradient);
 }
 
 .login-page::before {
@@ -372,14 +373,14 @@
   margin-right: 5px;
 }
 
-.register-link a {
+.register-button {
   color: var(--customer-color);
   font-weight: 600;
   text-decoration: none;
   transition: 0.3s;
 }
 
-.register-link a:hover {
+.register-button:hover {
   text-decoration: underline;
 }
 
