@@ -6,6 +6,7 @@ import { validateRules } from "../../components/Validation/validateRulesRegister
 import React, { useState, useRef } from "react";
 import classNames from "classnames/bind";
 import styles from "../../assets/Register.module.scss";
+import { Footer } from "../../components/Layouts/LayoutHomePage/Footer";
 
 const cx = classNames.bind(styles);
 
@@ -121,10 +122,6 @@ function Register() {
       </header>
 
       <div className={cx("register-container")}>
-        <div className={cx("register-header")}>
-          <h1>GenCare Center</h1>
-        </div>
-
         <div className={cx("register-content")}>
           <div className={cx("register-introduction")}>
             <h2>Tạo một tài khoản mới</h2>
@@ -237,8 +234,8 @@ function Register() {
                   {" "}
                   Chính sách Bảo mật{" "}
                 </a>{" "}
-                của chúng tôi. Bạn có thể nhận được thông báo SMS từ chúng tôi và
-                có thể từ chối bất cứ lúc nào.
+                của chúng tôi. Bạn có thể nhận được thông báo SMS từ chúng tôi
+                và có thể từ chối bất cứ lúc nào.
               </p>
               <button
                 type="submit"
@@ -254,8 +251,10 @@ function Register() {
           </div>
         </div>
       </div>
+      <footer className="bg-gray-100 text-gray-700 text-sm">
+        <Footer />
+      </footer>
     </div>
-
   );
 }
 

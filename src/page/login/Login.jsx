@@ -4,9 +4,17 @@ import FormInputText from "../../components/ui/FormInputText";
 import { Navbar } from "../../components/Layouts/LayoutHomePage/Navbar";
 import { validateRulesLogin } from "../../components/Validation/validateRulesLogin";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faArrowLeft, faArrowRight, faUser, faLock, faBuilding, faUserAlt } from "@fortawesome/free-solid-svg-icons";
+import {
+  faArrowLeft,
+  faArrowRight,
+  faUser,
+  faLock,
+  faBuilding,
+  faUserAlt,
+} from "@fortawesome/free-solid-svg-icons";
 import classNames from "classnames/bind";
 import styles from "./Login.module.scss";
+import { Footer } from "../../components/Layouts/LayoutHomePage/Footer";
 
 const cx = classNames.bind(styles);
 
@@ -14,7 +22,7 @@ function Login() {
   const [showStaffLogin, setShowStaffLogin] = useState(false);
   const [formData, setFormData] = useState({
     username: "",
-    password: ""
+    password: "",
   });
   const [showErrors, setShowErrors] = useState(false);
   const [touchedFields, setTouchedFields] = useState({});
@@ -23,7 +31,7 @@ function Login() {
 
   const inputRefs = useRef({
     username: null,
-    password: null
+    password: null,
   });
 
   const validate = () => validateRulesLogin(formData);
@@ -72,15 +80,15 @@ function Login() {
     setIsLoading(true);
 
     try {
-      await new Promise(resolve => setTimeout(resolve, 1500));
+      await new Promise((resolve) => setTimeout(resolve, 1500));
 
       if (formData.username && formData.password) {
         if (isStaff) {
           console.log("Nhân viên/Admin đăng nhập:", formData);
-          navigate('/admin-dashboard');
+          navigate("/admin-dashboard");
         } else {
           console.log("Khách hàng đăng nhập:", formData);
-          navigate('/dashboard');
+          navigate("/dashboardcustomer");
         }
       }
     } catch (error) {
@@ -95,7 +103,7 @@ function Login() {
     // Reset form data when switching between forms
     setFormData({
       username: "",
-      password: ""
+      password: "",
     });
     setTouchedFields({});
     setShowErrors(false);
@@ -108,7 +116,10 @@ function Login() {
       </header>
 
       <div className={cx("login-page")}>
-        <div className={cx("container", { "right-panel-active": showStaffLogin })} id="container">
+        <div
+          className={cx("container", { "right-panel-active": showStaffLogin })}
+          id="container"
+        >
           {/* Admin/Staff Login Form */}
           <div className={cx("form-container", "staff-container")}>
             <form onSubmit={(e) => handleLogin(e, true)}>
@@ -117,7 +128,9 @@ function Login() {
                   <FontAwesomeIcon icon={faBuilding} />
                 </div>
                 <h1>Đăng nhập Hệ thống</h1>
-                <p className={cx("subtitle")}>Dành cho nhân viên và quản trị viên</p>
+                <p className={cx("subtitle")}>
+                  Dành cho nhân viên và quản trị viên
+                </p>
               </div>
 
               <div className={cx("form-group")}>
@@ -135,7 +148,9 @@ function Login() {
                     showErrors={shouldShowError("username")}
                     ref={(el) => (inputRefs.current.username = el)}
                   />
-                  <small className={cx("error-message")}>{shouldShowError("username") && validate().username}</small>
+                  <small className={cx("error-message")}>
+                    {shouldShowError("username") && validate().username}
+                  </small>
                 </div>
               </div>
 
@@ -155,17 +170,23 @@ function Login() {
                     showErrors={shouldShowError("password")}
                     ref={(el) => (inputRefs.current.password = el)}
                   />
-                  <small className={cx("error-message")}>{shouldShowError("password") && validate().password}</small>
+                  <small className={cx("error-message")}>
+                    {shouldShowError("password") && validate().password}
+                  </small>
                 </div>
               </div>
 
               <div className={cx("form-options", "staff-options")}>
-                <Link to="/forgetpassword" className={cx("forgot-password")}>Quên mật khẩu?</Link>
+                <Link to="/forgetpassword" className={cx("forgot-password")}>
+                  Quên mật khẩu?
+                </Link>
               </div>
 
               <button
                 type="submit"
-                className={cx("login-button", "staff-button", { loading: isLoading })}
+                className={cx("login-button", "staff-button", {
+                  loading: isLoading,
+                })}
                 disabled={isLoading}
               >
                 {isLoading ? (
@@ -173,7 +194,10 @@ function Login() {
                 ) : (
                   <>
                     <span>Đăng nhập</span>
-                    <FontAwesomeIcon icon={faArrowRight} className={cx("button-icon")} />
+                    <FontAwesomeIcon
+                      icon={faArrowRight}
+                      className={cx("button-icon")}
+                    />
                   </>
                 )}
               </button>
@@ -182,13 +206,18 @@ function Login() {
 
           {/* Customer Login Form */}
           <div className={cx("form-container", "customer-container")}>
-            <form className={cx("form-lg")} onSubmit={(e) => handleLogin(e, false)}>
+            <form
+              className={cx("form-lg")}
+              onSubmit={(e) => handleLogin(e, false)}
+            >
               <div className={cx("form-header")}>
                 <div className={cx("icon-container", "customer-icon")}>
                   <FontAwesomeIcon icon={faUserAlt} />
                 </div>
                 <h1>Đăng nhập Khách hàng</h1>
-                <p className={cx("subtitle")}>Chào mừng bạn đến với GenCare Center</p>
+                <p className={cx("subtitle")}>
+                  Chào mừng bạn đến với GenCare Center
+                </p>
               </div>
 
               <div className={cx("form-group")}>
@@ -206,7 +235,9 @@ function Login() {
                     showErrors={shouldShowError("username")}
                     ref={(el) => (inputRefs.current.username = el)}
                   />
-                  <small className={cx("error-message")}>{shouldShowError("username") && validate().username}</small>
+                  <small className={cx("error-message")}>
+                    {shouldShowError("username") && validate().username}
+                  </small>
                 </div>
               </div>
 
@@ -226,17 +257,23 @@ function Login() {
                     showErrors={shouldShowError("password")}
                     ref={(el) => (inputRefs.current.password = el)}
                   />
-                  <small className={cx("error-message")}>{shouldShowError("password") && validate().password}</small>
+                  <small className={cx("error-message")}>
+                    {shouldShowError("password") && validate().password}
+                  </small>
                 </div>
               </div>
 
               <div className={cx("form-options", "customer-options")}>
-                <Link to="/forgetpassword" className={cx("forgot-password")}>Quên mật khẩu?</Link>
+                <Link to="/forgetpassword" className={cx("forgot-password")}>
+                  Quên mật khẩu?
+                </Link>
               </div>
 
               <button
                 type="submit"
-                className={cx("login-button", "customer-button", { loading: isLoading })}
+                className={cx("login-button", "customer-button", {
+                  loading: isLoading,
+                })}
                 disabled={isLoading}
               >
                 {isLoading ? (
@@ -244,7 +281,10 @@ function Login() {
                 ) : (
                   <>
                     <span>Đăng nhập</span>
-                    <FontAwesomeIcon icon={faArrowRight} className={cx("button-icon")} />
+                    <FontAwesomeIcon
+                      icon={faArrowRight}
+                      className={cx("button-icon")}
+                    />
                   </>
                 )}
               </button>
@@ -267,9 +307,16 @@ function Login() {
                   <span className={cx("role-text")}>Khách hàng</span>
                 </h1>
                 <p>Đăng nhập để quản lý sức khỏe và đặt lịch hẹn của bạn</p>
-                <button className={cx("ghost")} id="login" onClick={toggleStaffLogin}>
+                <button
+                  className={cx("ghost")}
+                  id="login"
+                  onClick={toggleStaffLogin}
+                >
                   <span>Đăng nhập khách hàng</span>
-                  <FontAwesomeIcon icon={faArrowLeft} className={cx("button-icon")} />
+                  <FontAwesomeIcon
+                    icon={faArrowLeft}
+                    className={cx("button-icon")}
+                  />
                 </button>
               </div>
 
@@ -278,18 +325,26 @@ function Login() {
                   <span className={cx("welcome-text")}>Dành cho</span>
                   <span className={cx("role-text")}>Nhân viên</span>
                 </h1>
-                <p>
-                  Đăng nhập để truy cập hệ thống quản lý dịch vụ y tế
-                </p>
-                <button className={cx("ghost")} id="register" onClick={toggleStaffLogin}>
+                <p>Đăng nhập để truy cập hệ thống quản lý dịch vụ y tế</p>
+                <button
+                  className={cx("ghost")}
+                  id="register"
+                  onClick={toggleStaffLogin}
+                >
                   <span>Đăng nhập hệ thống</span>
-                  <FontAwesomeIcon icon={faArrowRight} className={cx("button-icon")} />
+                  <FontAwesomeIcon
+                    icon={faArrowRight}
+                    className={cx("button-icon")}
+                  />
                 </button>
               </div>
             </div>
           </div>
         </div>
       </div>
+      <footer className="bg-gray-100 text-gray-700 text-sm">
+        <Footer />
+      </footer>
     </div>
   );
 }

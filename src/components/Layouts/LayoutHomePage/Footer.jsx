@@ -2,7 +2,7 @@ import React from "react";
 import logo_gender from "../../../assets/gender_healthcare_logo.png";
 export const Footer = () => {
   return (
-    <div className="max-w-7xl mx-auto px-4 py-8">
+    <div className="container mx-auto px-4 py-8">
       {/* Logo và hotline */}
       <div className="flex items-center justify-between mb-6">
         <div className="flex-shrink-0">
