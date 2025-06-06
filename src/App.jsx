@@ -5,6 +5,7 @@ import Register from "./page/register";
 import Login from "./page/login";
 import ForgetPassword from "./page/forgetPassword";
 import { DashboardCustomer } from "./components/Layouts/LayoutAccount/DashboardCustomer";
+import { Services } from "./components/Layouts/LayoutAccount/Services";
 function App() {
   return (
     <Routes>
@@ -13,6 +14,7 @@ function App() {
       <Route path="/login" element={<Login />} />
       <Route path="/forgetpassword" element={<ForgetPassword />} />
       <Route path="/dashboardcustomer" element={<DashboardCustomer />} />
+      <Route path="/services" element={<Services />} />
     </Routes>
   );
 }

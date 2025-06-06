@@ -1,7 +1,7 @@
 import React, { useState, useRef } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import FormInputText from "../../components/ui/FormInputText";
-import { Navbar } from "../../components/Layouts/LayoutHomePage/Navbar";
+
 import { validateRulesLogin } from "../../components/Validation/validateRulesLogin";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
@@ -15,6 +15,7 @@ import {
 import classNames from "classnames/bind";
 import styles from "./Login.module.scss";
 import { Footer } from "../../components/Layouts/LayoutHomePage/Footer";
+import { Navbar } from "../../components/ui/Navbar";
 
 const cx = classNames.bind(styles);
 

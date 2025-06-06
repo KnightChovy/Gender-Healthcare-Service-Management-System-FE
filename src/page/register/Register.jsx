@@ -1,12 +1,13 @@
 import DateOfBirth from "./RegisterItems/DateOfBirth";
 import FormInputText from "../../components/ui/FormInputText";
 import GenderChoice from "./RegisterItems/GenderChoice";
-import { Navbar } from "../../components/Layouts/LayoutHomePage/Navbar";
+
 import { validateRules } from "../../components/Validation/validateRulesRegister";
 import React, { useState, useRef } from "react";
 import classNames from "classnames/bind";
 import styles from "../../assets/Register.module.scss";
 import { Footer } from "../../components/Layouts/LayoutHomePage/Footer";
+import { Navbar } from "../../components/ui/Navbar";
 
 const cx = classNames.bind(styles);
 

@@ -11,8 +11,9 @@ import {
 } from "@fortawesome/free-solid-svg-icons";
 import classNames from "classnames/bind";
 import styles from "./ForgetPassword.module.scss";
-import { Navbar } from "../../components/Layouts/LayoutHomePage/Navbar";
+
 import { Footer } from "../../components/Layouts/LayoutHomePage/Footer";
+import { Navbar } from "../../components/ui/Navbar";
 
 const cx = classNames.bind(styles);
 

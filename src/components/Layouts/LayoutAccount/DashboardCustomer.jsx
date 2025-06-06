@@ -1,5 +1,14 @@
 import React from "react";
+import { Navbar } from "../../ui/Navbar";
 
 export const DashboardCustomer = () => {
-  return <div>DashboardCustomer</div>;
+  return (
+    <div className="wrap">
+      <header>
+        <Navbar />
+      </header>
+      <main></main>
+      <footer></footer>
+    </div>
+  );
 };
