@@ -5,7 +5,7 @@ import CurrentStatus from './MenstrualCycleItems/CurrentStatus';
 import NotificationSettings from './MenstrualCycleItems/NotificationSettings';
 import HealthTips from './MenstrualCycleItems/HealthTips';
 import classNames from 'classnames/bind';
-import styles from '../../assets/MenstrualCycle.module.scss';  
+import styles from './MenstrualCycle.module.scss';  
 
 const cx = classNames.bind(styles);
 

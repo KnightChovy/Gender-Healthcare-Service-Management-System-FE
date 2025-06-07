@@ -1,6 +1,6 @@
 import React, { useState, useEffect, forwardRef } from "react";
 import classNames from "classnames/bind";
-import styles from "../../assets/Register.module.scss";
+import styles from "../../page/Register/Register.module.scss";
 
 const cx = classNames.bind(styles);
 

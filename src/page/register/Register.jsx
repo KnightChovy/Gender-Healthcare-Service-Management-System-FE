@@ -5,7 +5,7 @@ import GenderChoice from "./RegisterItems/GenderChoice";
 import { validateRules } from "../../components/Validation/validateRulesRegister";
 import React, { useState, useRef } from "react";
 import classNames from "classnames/bind";
-import styles from "../../assets/Register.module.scss";
+import styles from "./Register.module.scss";
 import { Footer } from "../../components/Layouts/LayoutHomePage/Footer";
 import { Navbar } from "../../components/ui/Navbar";
 

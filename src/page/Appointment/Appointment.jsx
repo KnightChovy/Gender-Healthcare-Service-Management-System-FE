@@ -151,7 +151,7 @@ function Appointment() {
 
     return ( 
         <div className={cx('appointment-container')}>
-            <Header isLoggedIn={isLoggedIn} />
+            <Header />
             
             {/* <UserStatusCard 
                 isLoggedIn={isLoggedIn}
