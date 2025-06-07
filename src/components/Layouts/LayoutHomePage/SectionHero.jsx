@@ -44,7 +44,7 @@ export const SectionHero = () => {
 
               <div className="flex flex-wrap gap-3">
                 <Link
-                  to="/booking"
+                  to="/testorder"
                   className="flex items-center bg-white rounded-lg py-2 px-5 hover:shadow-md transition-shadow"
                 >
                   <div className="bg-blue-100 p-2 rounded-full mr-3">
@@ -94,7 +94,7 @@ export const SectionHero = () => {
                 </Link>
 
                 <Link
-                  to="/symptoms"
+                  to="/appointment"
                   className="flex items-center bg-white rounded-lg py-2 px-5 hover:shadow-md transition-shadow"
                 >
                   <div className="bg-red-100 p-2 rounded-full mr-3">
