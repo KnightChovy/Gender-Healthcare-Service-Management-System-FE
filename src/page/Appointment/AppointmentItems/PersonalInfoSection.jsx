@@ -69,7 +69,7 @@ function PersonalInfoSection({formData, errors, onChange}) {
                 </div>
             </div>
 
-            <div className={cx('form-group')} style={{ display: 'block'}}>
+            <div className={cx('form-group')}>
                 <label htmlFor="gender-female">Giới tính *</label>
                 <div className={cx('radio-group')}>
                     <label className={cx('radio-label')}>

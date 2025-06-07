@@ -39,7 +39,7 @@ function Appointment() {
         const token = localStorage.getItem('userToken');
         const savedProfile = localStorage.getItem('userProfile');
 
-        if( token && savedProfile) {
+        if (token && savedProfile) {
             setIsLoggedIn(true);
             setUserProfile(JSON.parse(savedProfile));
         } else {
@@ -53,7 +53,7 @@ function Appointment() {
             ...prev,
             [name]: value
         }));
-        
+
         if (errors[name]) {
             setErrors(prev => ({
                 ...prev,
@@ -64,7 +64,7 @@ function Appointment() {
 
     const validateForm = () => {
         const newErrors = {};
-        
+
         if (!isLoggedIn) {
             if (!formData.fullName.trim())
                 newErrors.fullName = 'Vui lòng nhập họ tên';
@@ -77,7 +77,7 @@ function Appointment() {
 
             if (!formData.phone.trim())
                 newErrors.phone = 'Vui lòng nhập số điện thoại';
-            else if (!/^[0-9]{10,11}$/.test(formData.phone)) 
+            else if (!/^[0-9]{10,11}$/.test(formData.phone))
                 newErrors.phone = 'Số điện thoại không hợp lệ';
 
             if (!formData.email.trim())
@@ -135,7 +135,7 @@ function Appointment() {
                 notes: '',
                 priority: 'normal'
             }));
-            
+
         } catch (error) {
             console.error(error);
             alert('❌ Có lỗi xảy ra. Vui lòng thử lại!');
@@ -149,24 +149,31 @@ function Appointment() {
     //     window.location.href = '/login';
     // }
 
-    return ( 
+    return (
         <div className={cx('appointment-container')}>
             <Header />
-            
-            {/* <UserStatusCard 
-                isLoggedIn={isLoggedIn}
-                userProfile={userProfile}
-                onLogin={handleLogin}
-            /> */}
 
             <form onSubmit={handleSubmit} className={cx('appointment-form')}>
-                {!isLoggedIn && (
-                    <PersonalInfoSection
+                <div className={cx('form-row')}>
+                    {/* <UserStatusCard 
+                        isLoggedIn={isLoggedIn}
+                        userProfile={userProfile}
+                        onLogin={handleLogin}
+                    /> */}
+
+                    {!isLoggedIn && (
+                        <PersonalInfoSection
+                            formData={formData}
+                            errors={errors}
+                            onChange={handleInputChange}
+                        />
+                    )}
+
+                    <AdditionalInfoSection
                         formData={formData}
-                        errors={errors}
                         onChange={handleInputChange}
                     />
-                )}
+                </div>
 
                 <ConsultationSection
                     formData={formData}
@@ -180,17 +187,12 @@ function Appointment() {
                     onChange={handleInputChange}
                 />
 
-                <AdditionalInfoSection
-                    formData={formData}
-                    onChange={handleInputChange}
-                />
-
                 <FormActions
                     isSubmitting={isSubmitting}
                 />
             </form>
         </div>
-     );
+    );
 }
 
 export default Appointment;
