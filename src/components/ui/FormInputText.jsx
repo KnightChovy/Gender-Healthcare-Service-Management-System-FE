@@ -58,7 +58,7 @@ const FormInputText = forwardRef(
       if (!validation) return "";
 
       if (validation.required && !inputValue.trim()) {
-        return `Nhập ${getErrorHolder(textHolder)} là bắt buộc`;
+        return `Vui lòng nhập ${getErrorHolder(textHolder)}`;
       }
 
       if (validation.minLength && inputValue.length < validation.minLength) {
