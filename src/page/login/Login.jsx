@@ -21,23 +21,45 @@ const cx = classNames.bind(styles);
 
 function Login() {
   const [showStaffLogin, setShowStaffLogin] = useState(false);
-  const [formData, setFormData] = useState({
+  
+  // Tách riêng formData cho từng form
+  const [customerFormData, setCustomerFormData] = useState({
     username: "",
     password: "",
   });
-  const [showErrors, setShowErrors] = useState(false);
-  const [touchedFields, setTouchedFields] = useState({});
+  
+  const [staffFormData, setStaffFormData] = useState({
+    username: "",
+    password: "",
+  });
+
+  // Tách riêng error states cho từng form
+  const [customerShowErrors, setCustomerShowErrors] = useState(false);
+  const [customerTouchedFields, setCustomerTouchedFields] = useState({});
+  
+  const [staffShowErrors, setStaffShowErrors] = useState(false);
+  const [staffTouchedFields, setStaffTouchedFields] = useState({});
+
   const [isLoading, setIsLoading] = useState(false);
+  const [success, setSuccess] = useState(false);
   const navigate = useNavigate();
 
-  const inputRefs = useRef({
+  // Tách riêng refs cho từng form
+  const customerInputRefs = useRef({
     username: null,
     password: null,
   });
 
-  const validate = () => validateRulesLogin(formData);
+  const staffInputRefs = useRef({
+    username: null,
+    password: null,
+  });
 
-  const focusFirstError = (errors) => {
+  // Validation functions cho từng form
+  const validateCustomer = () => validateRulesLogin(customerFormData);
+  const validateStaff = () => validateRulesLogin(staffFormData);
+
+  const focusFirstError = (errors, inputRefs) => {
     if (errors.username && inputRefs.current.username) {
       inputRefs.current.username.focus();
     } else if (errors.password && inputRefs.current.password) {
@@ -45,45 +67,106 @@ function Login() {
     }
   };
 
-  const handleInputChange = (name, value) => {
-    setFormData((prev) => ({
+  // Customer form handlers
+  const handleCustomerInputChange = (name, value) => {
+    setCustomerFormData((prev) => ({
       ...prev,
       [name]: value,
     }));
 
-    if (showErrors) {
-      setShowErrors(false);
+    if (customerShowErrors) {
+      setCustomerShowErrors(false);
     }
   };
 
-  const handleBlur = (fieldName) => {
-    setTouchedFields((prev) => ({
+  const handleCustomerBlur = (fieldName) => {
+    setCustomerTouchedFields((prev) => ({
       ...prev,
       [fieldName]: true,
     }));
   };
 
-  const shouldShowError = (fieldName) => {
-    return touchedFields[fieldName] || showErrors;
+  const shouldShowCustomerError = (fieldName) => {
+    return customerTouchedFields[fieldName] || customerShowErrors;
+  };
+
+  // Staff form handlers
+  const handleStaffInputChange = (name, value) => {
+    setStaffFormData((prev) => ({
+      ...prev,
+      [name]: value,
+    }));
+
+    if (staffShowErrors) {
+      setStaffShowErrors(false);
+    }
+  };
+
+  const handleStaffBlur = (fieldName) => {
+    setStaffTouchedFields((prev) => ({
+      ...prev,
+      [fieldName]: true,
+    }));
+  };
+
+  const shouldShowStaffError = (fieldName) => {
+    return staffTouchedFields[fieldName] || staffShowErrors;
   };
 
   const handleLogin = async (e, isStaff = false) => {
     e.preventDefault();
 
+    // Sử dụng data và validation tương ứng với form đang submit
+    const formData = isStaff ? staffFormData : customerFormData;
+    const validate = isStaff ? validateStaff : validateCustomer;
+    const inputRefs = isStaff ? staffInputRefs : customerInputRefs;
+    const setShowErrors = isStaff ? setStaffShowErrors : setCustomerShowErrors;
+
+    const isEmpty = !formData.username || !formData.password;
     const errors = validate();
 
-    if (Object.keys(errors).length > 0) {
-      setShowErrors(true);
-      focusFirstError(errors);
-      return;
-    }
-
-    setIsLoading(true);
-
     try {
-      await new Promise((resolve) => setTimeout(resolve, 1500));
+      if (isEmpty) {
+        setShowErrors(true);
+        focusFirstError(errors, inputRefs);
+        return;
+      }
 
-      if (formData.username && formData.password) {
+      setIsLoading(true);
+      setShowErrors('');
+
+      if (process.env.NODE_ENV === "development") {
+        // Giả lập đăng nhập thành công sau 1 giây
+        await new Promise((resolve) => setTimeout(resolve, 1500));
+
+        // Mô phỏng đăng nhập thành công
+        localStorage.setItem("token", "demo-token-12345");
+        setSuccess(true);
+      } else {
+        // Thêm credentials để gửi cookies nếu cần
+        const res = await fetch("http://44.204.71.234:3000/login", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          credentials: "include",
+          body: JSON.stringify(formData),
+        });
+
+        if (res.ok) {
+          const data = await res.json();
+          localStorage.setItem("token", data.token);
+          setSuccess(true);
+        } else {
+          const errorData = await res.json();
+          setShowErrors(
+            errorData.message ||
+              "Đăng nhập thất bại. Vui lòng kiểm tra lại thông tin."
+          );
+        }
+      }
+
+      if (success) {
         if (isStaff) {
           console.log("Nhân viên/Admin đăng nhập:", formData);
           navigate("/admin-dashboard");
@@ -93,6 +176,7 @@ function Login() {
         }
       }
     } catch (error) {
+      setShowErrors("Lỗi kết nối. Vui lòng thử lại sau.");
       console.error("Login failed:", error);
     } finally {
       setIsLoading(false);
@@ -101,13 +185,21 @@ function Login() {
 
   const toggleStaffLogin = () => {
     setShowStaffLogin(!showStaffLogin);
-    // Reset form data when switching between forms
-    setFormData({
+    
+    // Reset tất cả states cho cả 2 form
+    setCustomerFormData({
       username: "",
       password: "",
     });
-    setTouchedFields({});
-    setShowErrors(false);
+    setStaffFormData({
+      username: "",
+      password: "",
+    });
+    
+    setCustomerTouchedFields({});
+    setStaffTouchedFields({});
+    setCustomerShowErrors(false);
+    setStaffShowErrors(false);
   };
 
   return (
@@ -134,6 +226,12 @@ function Login() {
                 </p>
               </div>
 
+              {staffShowErrors && typeof staffShowErrors === 'string' && (
+                <div className={cx("error-message", "general-error")}>
+                  {staffShowErrors}
+                </div>
+              )}
+
               <div className={cx("form-group")}>
                 <div className={cx("input-icon")}>
                   <FontAwesomeIcon icon={faUser} />
@@ -142,16 +240,13 @@ function Login() {
                   <FormInputText
                     textHolder="username"
                     textName="username"
-                    value={formData.username}
-                    onChange={handleInputChange}
-                    onBlur={() => handleBlur("username")}
-                    validation={validate().username}
-                    showErrors={shouldShowError("username")}
-                    ref={(el) => (inputRefs.current.username = el)}
+                    value={staffFormData.username}
+                    onChange={handleStaffInputChange}
+                    onBlur={() => handleStaffBlur("username")}
+                    validation={validateStaff().username}
+                    showErrors={shouldShowStaffError("username")}
+                    ref={(el) => (staffInputRefs.current.username = el)}
                   />
-                  <small className={cx("error-message")}>
-                    {shouldShowError("username") && validate().username}
-                  </small>
                 </div>
               </div>
 
@@ -164,16 +259,13 @@ function Login() {
                     textHolder="password"
                     textName="password"
                     type="password"
-                    value={formData.password}
-                    onChange={handleInputChange}
-                    onBlur={() => handleBlur("password")}
-                    validation={validate().password}
-                    showErrors={shouldShowError("password")}
-                    ref={(el) => (inputRefs.current.password = el)}
+                    value={staffFormData.password}
+                    onChange={handleStaffInputChange}
+                    onBlur={() => handleStaffBlur("password")}
+                    validation={validateStaff().password}
+                    showErrors={shouldShowStaffError("password")}
+                    ref={(el) => (staffInputRefs.current.password = el)}
                   />
-                  <small className={cx("error-message")}>
-                    {shouldShowError("password") && validate().password}
-                  </small>
                 </div>
               </div>
 
@@ -221,6 +313,12 @@ function Login() {
                 </p>
               </div>
 
+              {customerShowErrors && typeof customerShowErrors === 'string' && (
+                <div className={cx("error-message", "general-error")}>
+                  {customerShowErrors}
+                </div>
+              )}
+
               <div className={cx("form-group")}>
                 <div className={cx("input-icon")}>
                   <FontAwesomeIcon icon={faUser} />
@@ -229,16 +327,13 @@ function Login() {
                   <FormInputText
                     textHolder="username"
                     textName="username"
-                    value={formData.username}
-                    onChange={handleInputChange}
-                    onBlur={() => handleBlur("username")}
-                    validation={validate().username}
-                    showErrors={shouldShowError("username")}
-                    ref={(el) => (inputRefs.current.username = el)}
+                    value={customerFormData.username}
+                    onChange={handleCustomerInputChange}
+                    onBlur={() => handleCustomerBlur("username")}
+                    validation={validateCustomer().username}
+                    showErrors={shouldShowCustomerError("username")}
+                    ref={(el) => (customerInputRefs.current.username = el)}
                   />
-                  <small className={cx("error-message")}>
-                    {shouldShowError("username") && validate().username}
-                  </small>
                 </div>
               </div>
 
@@ -251,16 +346,13 @@ function Login() {
                     textHolder="password"
                     textName="password"
                     type="password"
-                    value={formData.password}
-                    onChange={handleInputChange}
-                    onBlur={() => handleBlur("password")}
-                    validation={validate().password}
-                    showErrors={shouldShowError("password")}
-                    ref={(el) => (inputRefs.current.password = el)}
+                    value={customerFormData.password}
+                    onChange={handleCustomerInputChange}
+                    onBlur={() => handleCustomerBlur("password")}
+                    validation={validateCustomer().password}
+                    showErrors={shouldShowCustomerError("password")}
+                    ref={(el) => (customerInputRefs.current.password = el)}
                   />
-                  <small className={cx("error-message")}>
-                    {shouldShowError("password") && validate().password}
-                  </small>
                 </div>
               </div>
 

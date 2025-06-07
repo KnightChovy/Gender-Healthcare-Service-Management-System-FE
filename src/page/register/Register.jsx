@@ -4,10 +4,11 @@ import GenderChoice from "./RegisterItems/GenderChoice";
 
 import { validateRules } from "../../components/Validation/validateRulesRegister";
 import React, { useState, useRef } from "react";
-import classNames from "classnames/bind";
-import styles from "./Register.module.scss";
 import { Footer } from "../../components/Layouts/LayoutHomePage/Footer";
 import { Navbar } from "../../components/ui/Navbar";
+import { useNavigate, Link } from "react-router-dom";
+import classNames from "classnames/bind";
+import styles from "./Register.module.scss";
 
 const cx = classNames.bind(styles);
 
@@ -28,6 +29,8 @@ function Register() {
     },
   });
 
+  const navigate = useNavigate();
+  const [isLoading, setIsLoading] = useState(false);
   const [showErrors, setShowErrors] = useState(false);
 
   const inputRefs = useRef({
@@ -89,7 +92,7 @@ function Register() {
     }
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     const isEmpty =
       !formData.firstname ||
@@ -105,13 +108,71 @@ function Register() {
       !formData.birthDate.year ||
       !formData.gender;
 
-    if (isEmpty) {
-      setShowErrors(true);
-      focusFirstError();
-      return;
+    const errors = validate();
+    try {
+      if (isEmpty) {
+        setShowErrors(true);
+        focusFirstError(errors);
+        return;
+      }
+
+      // Chuẩn bị dữ liệu để gửi đến API
+      const userData = {
+        username: formData.username,
+        password: formData.password,
+        confirm_password: formData.confirmPassword, // API yêu cầu trường này
+        email: formData.email,
+        phone: formData.phone,
+        gender: formData.gender,
+        birthday: formData.birthDate,
+        address: formData.address,
+        first_name: formData.firstname,
+        last_name: formData.lastname,
+      };
+
+      console.log("Sending data to API:", userData);
+
+      // Gọi API
+      const response = await fetch("http://44.204.71.234:3000/v1/users", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(userData),
+      });
+
+      const responseData = await response.json();
+
+      // Xử lý phản hồi
+      if (response.ok) {
+        console.log("Registration successful:", responseData);
+
+        // Hiển thị thông báo thành công
+        alert("Đăng ký thành công! Vui lòng đăng nhập để tiếp tục.");
+        navigate("/login");
+      } else {
+        // Xử lý lỗi từ server
+        let errorMessage = "Đăng ký thất bại: ";
+
+        console.error("Registration error:", responseData);
+
+        if (responseData.message) {
+          errorMessage += responseData.message;
+        }
+
+        if (responseData.errors && responseData.errors.length > 0) {
+          errorMessage += "\n• " + responseData.errors.join("\n• ");
+        }
+
+        alert(errorMessage);
+      }
+    } catch (error) {
+      console.error("Error during registration:", error);
+      alert("Đã xảy ra lỗi trong quá trình đăng ký. Vui lòng thử lại sau.");
+    } finally {
+      setIsLoading(false);
     }
-    // Here you can handle form submission, e.g., send data to the server
-    console.log("Form submitted:", formData);
+    
   };
 
   const validate = () => validateRules(formData);
@@ -136,6 +197,7 @@ function Register() {
               </span>
               <div className={cx("form-row")}>
                 <FormInputText
+                  ref={(el) => (inputRefs.current.firstname = el)}
                   textHolder="firstName"
                   textName="firstname"
                   value={formData.firstname}
@@ -144,6 +206,7 @@ function Register() {
                   showErrors={showErrors}
                 />
                 <FormInputText
+                  ref={(el) => (inputRefs.current.lastname = el)}
                   textHolder="lastName"
                   textName="lastname"
                   value={formData.lastname}
@@ -154,6 +217,7 @@ function Register() {
               </div>
 
               <DateOfBirth
+                ref={(el) => (inputRefs.current.birthDate = el)}
                 onChange={(name, value) => handleInputChange(name, value)}
                 showErrors={showErrors}
               />
@@ -164,6 +228,7 @@ function Register() {
                 Số điện thoại (<span style={{ marginTop: "2px" }}>*</span>)
               </span>
               <FormInputText
+                ref={(el) => (inputRefs.current.phone = el)}
                 textHolder="phone"
                 textName="phone"
                 value={formData.phone}
@@ -175,6 +240,7 @@ function Register() {
                 Địa chỉ (<span style={{ marginTop: "2px" }}>*</span>)
               </span>
               <FormInputText
+                ref={(el) => (inputRefs.current.address = el)}
                 textHolder="address"
                 textName="address"
                 value={formData.address}
@@ -186,6 +252,7 @@ function Register() {
                 Địa chỉ Email (<span style={{ marginTop: "2px" }}>*</span>)
               </span>
               <FormInputText
+                ref={(el) => (inputRefs.current.email = el)}
                 textHolder="email"
                 textName="email"
                 value={formData.email}
@@ -197,6 +264,7 @@ function Register() {
                 Tên đăng nhập (<span style={{ marginTop: "2px" }}>*</span>)
               </span>
               <FormInputText
+                ref={(el) => (inputRefs.current.username = el)}
                 textHolder="username"
                 textName="username"
                 value={formData.username}
@@ -208,6 +276,7 @@ function Register() {
                 Mật khẩu (<span style={{ marginTop: "2px" }}>*</span>)
               </span>
               <FormInputText
+                ref={(el) => (inputRefs.current.password = el)}
                 textHolder="password"
                 textName="password"
                 value={formData.password}
@@ -217,6 +286,7 @@ function Register() {
               />
               <span>Xác nhận mật khẩu</span>
               <FormInputText
+                ref={(el) => (inputRefs.current.confirmPassword = el)}
                 textHolder="confirmPassword"
                 textName="confirmPassword"
                 value={formData.confirmPassword}
@@ -242,11 +312,12 @@ function Register() {
                 type="submit"
                 className={cx("register-button")}
                 onClick={handleSubmit}
+                disabled={isLoading}
               >
-                Đăng ký
+                {isLoading ? "Đang xử lý..." : "Đăng ký"}
               </button>
               <p className={cx("register-footer")}>
-                Bạn đã có tài khoản? <a href="/login">Đăng nhập</a>
+                Bạn đã có tài khoản? <Link to="/login">Đăng nhập</Link>
               </p>
             </form>
           </div>
