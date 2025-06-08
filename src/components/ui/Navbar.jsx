@@ -79,7 +79,7 @@ export const Navbar = () => {
               <Link to={"/"}>Về chúng tôi</Link>
             </li>
             <li className="relative after:absolute after:h-[1.5px] after:bg-blue-800 after:left-0 after:bottom-[-2px] after:transition-all after:duration-300 after:w-full after:scale-x-0 hover:after:scale-x-100 hover:text-blue-900 transition-colors duration-200">
-              <Link to={"/"}>Blog</Link>
+              <Link to={"/blog"}>Blog</Link>
             </li>
           </ul>
         </nav>

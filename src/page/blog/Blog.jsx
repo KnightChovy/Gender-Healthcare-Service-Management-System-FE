@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
+import { Navbar } from "../../components/ui/Navbar";
 
 function Blog() {
   // State để lưu trữ bài viết blog
@@ -103,7 +104,10 @@ function Blog() {
       : blogPosts.filter((post) => post.category === selectedCategory);
 
   return (
-    <div className="container mx-auto px-4 py-8">
+    <div className="container mx-auto px-4 pb-8">
+      <header className="py-2 lg:py-3 sticky top-0 z-10 bg-white shadow-lg">
+        <Navbar />
+      </header>
       {/* Banner & Intro */}
       <div className="bg-gradient-to-r from-blue-500 to-purple-600 text-white rounded-lg p-8 mb-8">
         <h1 className="text-3xl md:text-4xl font-bold mb-4">
@@ -230,20 +234,8 @@ function Blog() {
             ))}
           </div>
 
-          {/* Pagination Component (to be implemented) */}
-          <div className="mt-12 flex justify-center">
-            <nav className="flex items-center space-x-2">
-              <button className="px-3 py-1 rounded border text-sm">
-                Trước
-              </button>
-              <button className="px-3 py-1 rounded bg-blue-600 text-white text-sm">
-                1
-              </button>
-              <button className="px-3 py-1 rounded border text-sm">2</button>
-              <button className="px-3 py-1 rounded border text-sm">3</button>
-              <button className="px-3 py-1 rounded border text-sm">Sau</button>
-            </nav>
-          </div>
+          
+          
         </>
       )}
 
