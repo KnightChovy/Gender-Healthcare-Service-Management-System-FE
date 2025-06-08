@@ -3,6 +3,7 @@ import Header from './AppointmentItems/Header';
 import UserStatusCard from './AppointmentItems/UserStatusCard';
 import PersonalInfoSection from './AppointmentItems/PersonalInfoSection';
 import ConsultationSection from './AppointmentItems/ConsultationSection';
+import DoctorSelection from './AppointmentItems/DoctorSelection';
 import DateTimeSection from './AppointmentItems/DateTimeSection';
 import AdditionalInfoSection from './AppointmentItems/AdditionalInfoSection';
 import FormActions from './AppointmentItems/FormActions';
@@ -20,7 +21,9 @@ function Appointment() {
         gender: '',
         phone: '',
         email: '',
-        consultantionType: '',
+        consultationType: '',
+        selectedDoctor: '',
+        doctorName: '',
         preferredDate: '',
         preferredTime: '',
         symptoms: '',
@@ -86,8 +89,11 @@ function Appointment() {
                 newErrors.email = 'Email không hợp lệ';
         }
 
-        if (!formData.consultantionType)
-            newErrors.consultantionType = 'Vui lòng chọn loại tư vấn';
+        if (!formData.consultationType)
+            newErrors.consultationType = 'Vui lòng chọn loại tư vấn';
+
+        if (!formData.selectedDoctor)
+            newErrors.selectedDoctor = 'Vui lòng chọn bác sĩ tư vấn';
 
         if (!formData.preferredDate)
             newErrors.preferredDate = 'Vui lòng chọn ngày ưu tiên';
@@ -128,11 +134,13 @@ function Appointment() {
 
             setFormData(prev => ({
                 ...prev,
-                consultationType: '',
+                consultationType: '', // Sửa: bỏ chữ "n"
+                selectedDoctor: '',
+                doctorName: '',
                 preferredDate: '',
                 preferredTime: '',
                 symptoms: '',
-                notes: '',
+                note: '', // Sửa: đổi từ notes thành note
                 priority: 'normal'
             }));
 
@@ -144,23 +152,12 @@ function Appointment() {
         }
     };
 
-    // Uncomment this section if you want to handle login redirection
-    // const handleLogin = () => {
-    //     window.location.href = '/login';
-    // }
-
     return (
         <div className={cx('appointment-container')}>
             <Header />
 
             <form onSubmit={handleSubmit} className={cx('appointment-form')}>
                 <div className={cx('form-row')}>
-                    {/* <UserStatusCard 
-                        isLoggedIn={isLoggedIn}
-                        userProfile={userProfile}
-                        onLogin={handleLogin}
-                    /> */}
-
                     {!isLoggedIn && (
                         <PersonalInfoSection
                             formData={formData}
@@ -176,6 +173,12 @@ function Appointment() {
                 </div>
 
                 <ConsultationSection
+                    formData={formData}
+                    errors={errors}
+                    onChange={handleInputChange}
+                />
+
+                <DoctorSelection
                     formData={formData}
                     errors={errors}
                     onChange={handleInputChange}

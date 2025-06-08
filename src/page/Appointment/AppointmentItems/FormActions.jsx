@@ -29,7 +29,7 @@ function FormActions({ isSubmitting }) {
             <div className={cx('form-notice')}>
                 <p>⚡ Lịch hẹn sẽ được xác nhận trong vòng 1-2 giờ</p>
                 <p>📞 Hotline hỗ trợ: <strong>1900-1133</strong></p>
-                <p>⏰ Thời gian làm việc: 7:30 - 17:00 (T2 - T6)</p>
+                <p>⏰ Thời gian làm việc: 7:30 - 17:00 (T2 - T6) | 7:30 - 12:00 (T7)</p>
             </div>
         </>
     );
