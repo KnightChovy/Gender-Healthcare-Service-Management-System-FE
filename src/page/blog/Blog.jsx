@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import { Navbar } from "../../components/ui/Navbar";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { faSearch } from "@fortawesome/free-solid-svg-icons";
 
 function Blog() {
   // State để lưu trữ bài viết blog
@@ -110,9 +112,16 @@ function Blog() {
       </header>
       {/* Banner & Intro */}
       <div className="bg-gradient-to-r from-blue-500 to-purple-600 text-white rounded-lg p-8 mb-8">
-        <h1 className="text-3xl md:text-4xl font-bold mb-4">
-          Blog Sức Khỏe Giới Tính
-        </h1>
+        <div className="flex justify-between">
+          <h1 className="text-3xl md:text-4xl font-bold mb-4 w-[60%]">
+            Blog chia sẻ kinh nghiệm
+          </h1>
+          <div className="border-1 h-[35px] w-[150px] flex items-center justify-center gap-2">
+            <p>Tìm kiếm</p>
+            <FontAwesomeIcon icon={faSearch} />
+          </div>
+        </div>
+
         <p className="text-lg md:text-xl">
           Nơi chia sẻ kiến thức và kinh nghiệm về giáo dục giới tính, sức khỏe
           sinh sản và chăm sóc sức khỏe toàn diện.
@@ -233,9 +242,6 @@ function Blog() {
               </div>
             ))}
           </div>
-
-          
-          
         </>
       )}
 
