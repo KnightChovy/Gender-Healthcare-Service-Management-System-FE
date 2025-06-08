@@ -198,6 +198,7 @@ function Register() {
               <div className={cx("form-row")}>
                 <FormInputText
                   ref={(el) => (inputRefs.current.firstname = el)}
+                  type="text"
                   textHolder="firstName"
                   textName="firstname"
                   value={formData.firstname}
@@ -207,6 +208,7 @@ function Register() {
                 />
                 <FormInputText
                   ref={(el) => (inputRefs.current.lastname = el)}
+                  type="text"
                   textHolder="lastName"
                   textName="lastname"
                   value={formData.lastname}
@@ -229,6 +231,7 @@ function Register() {
               </span>
               <FormInputText
                 ref={(el) => (inputRefs.current.phone = el)}
+                type="text"
                 textHolder="phone"
                 textName="phone"
                 value={formData.phone}
@@ -241,6 +244,7 @@ function Register() {
               </span>
               <FormInputText
                 ref={(el) => (inputRefs.current.address = el)}
+                type="text"
                 textHolder="address"
                 textName="address"
                 value={formData.address}
@@ -253,6 +257,7 @@ function Register() {
               </span>
               <FormInputText
                 ref={(el) => (inputRefs.current.email = el)}
+                type="email"
                 textHolder="email"
                 textName="email"
                 value={formData.email}
@@ -265,6 +270,7 @@ function Register() {
               </span>
               <FormInputText
                 ref={(el) => (inputRefs.current.username = el)}
+                type="text"
                 textHolder="username"
                 textName="username"
                 value={formData.username}
@@ -277,6 +283,7 @@ function Register() {
               </span>
               <FormInputText
                 ref={(el) => (inputRefs.current.password = el)}
+                type="password"
                 textHolder="password"
                 textName="password"
                 value={formData.password}
@@ -287,6 +294,7 @@ function Register() {
               <span>Xác nhận mật khẩu</span>
               <FormInputText
                 ref={(el) => (inputRefs.current.confirmPassword = el)}
+                type="password"
                 textHolder="confirmPassword"
                 textName="confirmPassword"
                 value={formData.confirmPassword}

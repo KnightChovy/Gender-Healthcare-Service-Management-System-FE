@@ -5,7 +5,7 @@ import styles from "../Register.module.scss";
 const cx = classNames.bind(styles);
 
 function GenderChoice({ onChange }) {
-  const [selectedGender, setSelectedGender] = useState("M");
+  const [selectedGender, setSelectedGender] = useState('');
 
   const handleGenderChange = (value) => {
     setSelectedGender(value);
