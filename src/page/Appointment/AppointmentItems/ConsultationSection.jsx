@@ -7,11 +7,11 @@ const cx = classNames.bind(styles);
 function ConsultationSection({ formData, errors, onChange }) {
     const consultationTypes = [
         { value: 'gynecology', label: 'Khám phụ khoa', icon: '🩺' },
-        { value: 'menstrual', label: 'Tư vấn chu kỳ kinh nguyệt', icon: '📅' },
+        { value: 'menstrual_cycle', label: 'Tư vấn chu kỳ kinh nguyệt', icon: '📅' },
         { value: 'contraception', label: 'Tư vấn tránh thai', icon: '💊' },
         { value: 'pregnancy', label: 'Tư vấn thai kỳ', icon: '🤱' },
         { value: 'fertility', label: 'Tư vấn sinh sản', icon: '👶' },
-        { value: 'general', label: 'Tư vấn chung', icon: '💬' }
+        { value: 'general_consultation', label: 'Tư vấn chung', icon: '💬' }
     ];
 
     return (  

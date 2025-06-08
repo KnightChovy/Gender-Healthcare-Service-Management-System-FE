@@ -86,6 +86,7 @@ function PersonalInfoSection({formData, errors, onChange}) {
                     <label className={cx('radio-label')}>
                         <input
                             type="radio"
+                            id="gender-male"
                             name="gender"
                             value="male"
                             checked={formData.gender === 'male'}

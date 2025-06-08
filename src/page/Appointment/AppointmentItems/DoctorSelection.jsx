@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { 
-  faUserMd, 
+import {
+  faUserMd,
   faStar,
   faGraduationCap,
   faStethoscope,
@@ -19,8 +19,8 @@ function DoctorSelection({ formData, errors, onChange }) {
   // Filter doctors based on consultation type
   useEffect(() => {
     if (formData.consultationType) {
-      const filtered = doctorsData.filter(doctor => 
-        doctor.consultationTypes.includes(formData.consultationType)
+      const filtered = doctorsData.filter(doctor =>
+        doctor.specialty.includes(formData.consultationType)
       );
       setFilteredDoctors(filtered);
     } else {
@@ -31,7 +31,6 @@ function DoctorSelection({ formData, errors, onChange }) {
   const handleDoctorSelect = (doctor) => {
     onChange({ target: { name: 'selectedDoctor', value: doctor.id } });
     onChange({ target: { name: 'doctorName', value: doctor.name } });
-    // Reset time selection when doctor changes
     onChange({ target: { name: 'preferredTime', value: '' } });
   };
 
@@ -45,29 +44,34 @@ function DoctorSelection({ formData, errors, onChange }) {
       {/* Doctor Selection */}
       <div className={cx('doctors-grid')}>
         {filteredDoctors.map((doctor) => (
-          <div
+          <button
+            type="button"
             key={doctor.id}
-            className={cx('doctor-card', { 
-              selected: formData.selectedDoctor === doctor.id 
+            className={cx('doctor-card', {
+              selected: formData.selectedDoctor === doctor.id
             })}
             onClick={() => handleDoctorSelect(doctor)}
           >
             <div className={cx('doctor-avatar')}>
               <img src={doctor.avatar} alt={doctor.name} />
             </div>
-            
+
             <div className={cx('doctor-info')}>
               <h4>{doctor.name}</h4>
-              <p className={cx('specialty')}>
-                <FontAwesomeIcon icon={faStethoscope} />
-                {doctor.specialty}
-              </p>
+              {doctor.specialty.map((spec, index) => (
+                <p className={cx('specialty')} key={index}>
+                  <FontAwesomeIcon icon={faStethoscope} />
+                  <span  className={cx('specialty-item')}>
+                    {spec}
+                  </span>
+                </p>
+              ))}
               <p className={cx('experience')}>
                 <FontAwesomeIcon icon={faGraduationCap} />
                 {doctor.experience}
               </p>
               <p className={cx('education')}>{doctor.education}</p>
-              
+
               <div className={cx('rating')}>
                 <FontAwesomeIcon icon={faStar} />
                 <span>{doctor.rating}</span>
@@ -78,7 +82,7 @@ function DoctorSelection({ formData, errors, onChange }) {
             <div className={cx('selection-indicator')}>
               <FontAwesomeIcon icon={faCheckCircle} />
             </div>
-          </div>
+          </button>
         ))}
       </div>
 
