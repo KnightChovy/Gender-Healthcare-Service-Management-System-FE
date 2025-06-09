@@ -8,6 +8,7 @@ import { DashboardCustomer } from "./components/Layouts/LayoutAccount/DashboardC
 import { Services } from "./components/Layouts/LayoutAccount/Services";
 import Appointment from "./page/Appointment";
 import Blog from "./page/blog/Blog";
+import PaymentAppointment from "./page/Payment/PaymentAppointment";
 function App() {
   return (
     <Routes>
@@ -19,6 +20,7 @@ function App() {
       <Route path="/services" element={<Services />} />
       <Route path="/appointment" element={<Appointment />} />
       <Route path="/blog" element={<Blog />} />
+      <Route path="/paymentappointment" element={<PaymentAppointment />} />
     </Routes>
   );
 }

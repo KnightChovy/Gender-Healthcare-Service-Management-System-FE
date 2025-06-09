@@ -1,9 +1,9 @@
+import React, { useState, useRef } from "react";
+
 import DateOfBirth from "./RegisterItems/DateOfBirth";
 import FormInputText from "../../components/ui/FormInputText";
 import GenderChoice from "./RegisterItems/GenderChoice";
-
 import { validateRules } from "../../components/Validation/validateRulesRegister";
-import React, { useState, useRef } from "react";
 import { Footer } from "../../components/Layouts/LayoutHomePage/Footer";
 import { Navbar } from "../../components/ui/Navbar";
 import { useNavigate, Link } from "react-router-dom";
@@ -59,6 +59,7 @@ function Register() {
       "address",
       "password",
       "confirmPassword",
+      "gender"
     ];
 
     for (const field of fieldOrder) {
@@ -77,6 +78,19 @@ function Register() {
           behavior: "smooth",
           block: "center",
         });
+      }
+    }
+
+    if (!formData.gender && inputRefs.current.gender) {
+      inputRefs.current.gender.scrollIntoView({
+        behavior: "smooth",
+        block: "center",
+      });
+
+      // Focus vào radio button đầu tiên
+      const firstRadio = inputRefs.current.gender.querySelector("input[type='radio']");
+      if (firstRadio) {
+        firstRadio.focus();
       }
     }
   };
@@ -116,6 +130,14 @@ function Register() {
         return;
       }
 
+      const formatBirthDate = () => {
+      const { day, month, year } = formData.birthDate;
+      // Đảm bảo day và month có 2 chữ số
+      const formattedDay = day.toString().padStart(2, '0');
+      const formattedMonth = month.toString().padStart(2, '0');
+      return `${year}-${formattedMonth}-${formattedDay}`;
+    };
+
       // Chuẩn bị dữ liệu để gửi đến API
       const userData = {
         username: formData.username,
@@ -124,7 +146,7 @@ function Register() {
         email: formData.email,
         phone: formData.phone,
         gender: formData.gender,
-        birthday: formData.birthDate,
+        birthday: formatBirthDate(),
         address: formData.address,
         first_name: formData.firstname,
         last_name: formData.lastname,
@@ -172,7 +194,7 @@ function Register() {
     } finally {
       setIsLoading(false);
     }
-    
+
   };
 
   const validate = () => validateRules(formData);
@@ -224,7 +246,9 @@ function Register() {
                 showErrors={showErrors}
               />
               <GenderChoice
+                ref={(el) => (inputRefs.current.gender = el)}
                 onChange={(name, value) => handleInputChange(name, value)}
+                showError={showErrors}
               />
               <span style={{ display: "flex" }}>
                 Số điện thoại (<span style={{ marginTop: "2px" }}>*</span>)

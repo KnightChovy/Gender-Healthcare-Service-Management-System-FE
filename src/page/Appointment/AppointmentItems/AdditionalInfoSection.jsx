@@ -19,7 +19,6 @@ function AdditionalInfoSection({ formData, onChange }) {
                 >
                     <option value="normal">Bình thường</option>
                     <option value="urgent">Khẩn cấp</option>
-                    <option value="high">Cao</option>
                 </select>
             </div>
 

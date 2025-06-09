@@ -4,7 +4,7 @@ import styles from "../Register.module.scss";
 
 const cx = classNames.bind(styles);
 
-function GenderChoice({ onChange }) {
+function GenderChoice({ onChange, showError }) {
   const [selectedGender, setSelectedGender] = useState('');
 
   const handleGenderChange = (value) => {
@@ -20,27 +20,33 @@ function GenderChoice({ onChange }) {
         Giới tính (<span style={{ marginTop: "2px" }}>*</span>)
       </span>
       <div className={cx("gender-options")}>
-        <label className={cx("gender-item")}>
+        <label className={cx("gender-item", {hasError: showError})}>
           Nam{" "}
           <input
             type="radio"
             name="gender"
-            value="M"
-            checked={selectedGender === "M"}
+            value="male"
+            checked={selectedGender === "male"}
             onChange={(e) => handleGenderChange(e.target.value)}
           />
         </label>
-        <label className={cx("gender-item")}>
+        <label className={cx("gender-item", {hasError: showError})}>
           Nữ{" "}
           <input
             type="radio"
             name="gender"
-            value="F"
-            checked={selectedGender === "F"}
+            value="female"
+            checked={selectedGender === "female"}
             onChange={(e) => handleGenderChange(e.target.value)}
           />
         </label>
       </div>
+
+      {showError && (
+        <span className={cx("error-message")}>
+          Vui lòng chọn giới tính
+        </span>
+      )}
     </div>
   );
 }
