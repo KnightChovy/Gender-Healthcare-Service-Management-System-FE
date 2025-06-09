@@ -1,7 +1,10 @@
+import React from "react";
+
 
 import React from "react";
 
 import { Navbar } from "../components/Layouts/LayoutHomePage/Navbar";
+
 import { SectionHero } from "../components/Layouts/LayoutHomePage/SectionHero";
 import { WhyChooseUs } from "../components/Layouts/LayoutHomePage/WhyChooseUs";
 import { MainServiceSection } from "../components/Layouts/LayoutHomePage/MainServiceSection";
@@ -11,6 +14,11 @@ import { TestimonialsSection } from "../components/Layouts/LayoutHomePage/Testim
 import { BlogSection } from "../components/Layouts/LayoutHomePage/BlogSection";
 import { FAQSection } from "../components/Layouts/LayoutHomePage/FAQSection";
 import { Footer } from "../components/Layouts/LayoutHomePage/Footer";
+
+import { Navbar } from "../components/ui/Navbar";
+
+
+
 export const HomePage = () => {
   return (
     <div className="wrap">

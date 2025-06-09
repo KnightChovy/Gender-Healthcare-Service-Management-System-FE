@@ -4,15 +4,12 @@ import styles from '../Appointment.module.scss';
 
 const cx = classNames.bind(styles);
 
-function Header({ isLoggedIn }) {
+function Header() {
     return (
         <div className={cx('appointment-header')}>
             <h1>📅 Đặt lịch hẹn tư vấn</h1>
             <p>
-                {isLoggedIn
-                    ? 'Chào mừng bạn! Hãy chọn dịch vụ và thời gian phù hợp.'
-                    : 'Đăng nhập để đặt lịch nhanh chóng hoặc nhập thông tin bên dưới.'
-                }
+                Chào mừng bạn! Hãy chọn dịch vụ và thời gian phù hợp.
             </p>
         </div>
     );

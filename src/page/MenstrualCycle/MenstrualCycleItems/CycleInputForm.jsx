@@ -1,7 +1,7 @@
 import React from 'react'
 import { useState } from 'react';
 import classNames from 'classnames/bind';
-import styles from '../../../assets/MenstrualCycle.module.scss';
+import styles from '../MenstrualCycle.module.scss';
 
 const cx = classNames.bind(styles);
 
