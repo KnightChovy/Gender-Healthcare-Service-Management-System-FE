@@ -1,13 +1,18 @@
 import { Route, Routes } from "react-router-dom";
 import "./App.css";
 import { HomePage } from "./page/HomePage";
-import Register from "./page/register";
+import Register from "./page/Register";
 import Login from "./page/login";
 import ForgetPassword from "./page/forgetPassword";
 import { DashboardCustomer } from "./components/Layouts/LayoutAccount/DashboardCustomer";
 import { Services } from "./components/Layouts/LayoutAccount/Services";
 import Appointment from "./page/Appointment";
 import Blog from "./page/blog/Blog";
+import PaymentAppointment from "./page/Payment/PaymentAppointment";
+import LayoutAdmin from "./components/Layouts/LayoutAdmin/LayoutAdmin";
+import { AdminRouter } from "./routes/AdminRouter";
+import About from "./page/AboutUs/About";
+
 function App() {
   return (
     <Routes>
@@ -19,6 +24,19 @@ function App() {
       <Route path="/services" element={<Services />} />
       <Route path="/appointment" element={<Appointment />} />
       <Route path="/blog" element={<Blog />} />
+      <Route path="/paymentappointment" element={<PaymentAppointment />} />
+      <Route path="/about" element={<About />} />
+      
+      {/* Admin Routes */}
+
+      <Route
+        path="/admin"
+        element={
+          <AdminRouter>
+            <LayoutAdmin />
+          </AdminRouter>
+        }
+      ></Route>
     </Routes>
   );
 }

@@ -307,6 +307,23 @@
   box-shadow: 0 0 0 1px rgba(49, 130, 206, 0.2);
 }
 
+.gender-choice .error-message {
+  color: #e53e3e;
+  font-size: 13px;
+  margin-top: 5px;
+  display: block;
+  font-weight: 500;
+}
+
+.gender-choice .hasError {
+  border-color: #e53e3e;
+}
+
+.gender-choice .hasError:focus {
+  border-color: #e53e3e;
+  box-shadow: 0 0 0 3px rgba(229, 62, 62, 0.15);
+}
+
 /* Date of Birth */
 .date-of-birth {
   margin-bottom: 16px;
@@ -414,14 +431,6 @@
   color: #e53e3e;
   font-weight: bold;
   margin-left: 4px;
-}
-
-.error-message {
-  border: none !important;
-  background-color: inherit !important;
-  padding: 0 !important;
-  border-radius: 0 !important;
-  margin-left: 5px;
 }
 
 @keyframes ripple {
