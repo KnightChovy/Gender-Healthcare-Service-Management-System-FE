@@ -8,6 +8,8 @@ import { DashboardCustomer } from "./components/Layouts/LayoutAccount/DashboardC
 import { Services } from "./components/Layouts/LayoutAccount/Services";
 import Appointment from "./page/Appointment";
 import Blog from "./page/blog/Blog";
+import LayoutAdmin from "./components/Layouts/LayoutAdmin/LayoutAdmin";
+import { AdminRouter } from "./routes/AdminRouter";
 function App() {
   return (
     <Routes>
@@ -19,6 +21,15 @@ function App() {
       <Route path="/services" element={<Services />} />
       <Route path="/appointment" element={<Appointment />} />
       <Route path="/blog" element={<Blog />} />
+
+      <Route
+        path="/admin"
+        element={
+          <AdminRouter>
+            <LayoutAdmin />
+          </AdminRouter>
+        }
+      ></Route>
     </Routes>
   );
 }
