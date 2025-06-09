@@ -11,6 +11,7 @@ import Blog from "./page/blog/Blog";
 import PaymentAppointment from "./page/Payment/PaymentAppointment";
 import LayoutAdmin from "./components/Layouts/LayoutAdmin/LayoutAdmin";
 import { AdminRouter } from "./routes/AdminRouter";
+import About from "./page/AboutUs/About";
 
 function App() {
   return (
@@ -24,6 +25,9 @@ function App() {
       <Route path="/appointment" element={<Appointment />} />
       <Route path="/blog" element={<Blog />} />
       <Route path="/paymentappointment" element={<PaymentAppointment />} />
+      <Route path="/about" element={<About />} />
+      
+      {/* Admin Routes */}
 
       <Route
         path="/admin"

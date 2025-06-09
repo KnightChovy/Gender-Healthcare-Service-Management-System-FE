@@ -6,6 +6,7 @@ import ico_user from "../../assets/ico_user.png";
 export const Navbar = () => {
   const [isUser, setIsUser] = useState(false);
   const [showService, setShowService] = useState(false);
+  const [showAbout, setShowAbout] = useState(false);
   const location = useLocation();
 
   useEffect(() => {
@@ -75,8 +76,51 @@ export const Navbar = () => {
                 </div>
               )}
             </li>
-            <li className="relative after:absolute after:h-[1.5px] after:bg-blue-800 after:left-0 after:bottom-[-2px] after:transition-all after:duration-300 after:w-full after:scale-x-0 hover:after:scale-x-100 hover:text-blue-900 transition-colors duration-200">
-              <Link to={"/"}>Về chúng tôi</Link>
+            <li
+              className="relative"
+              onMouseEnter={() => setShowAbout(true)}
+              onMouseLeave={() => setShowAbout(false)}
+            >
+              <button className="flex items-center cursor-pointer gap-1 relative after:absolute after:h-[1.5px] after:bg-blue-800 after:left-0 after:bottom-[-2px] after:transition-all after:duration-300 after:w-full after:scale-x-0 hover:after:scale-x-100 hover:text-blue-900 transition-colors duration-200">
+                Về chúng tôi
+                <svg
+                  className="w-4 h-4 ml-1"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                  xmlns="http://www.w3.org/2000/svg"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth="2"
+                    d="M19 9l-7 7-7-7"
+                  ></path>
+                </svg>
+              </button>
+
+              {showAbout && (
+                <div className="absolute top-[120%] -left-8 mt-1 bg-ghostwhite hover:bg-white shadow-lg rounded-md py-2 min-w-[220px] z-50">
+                  <Link
+                    to="/about?tab=vision"
+                    className="block px-4 py-2 hover:bg-blue-50 transition-colors text-[16px]"
+                  >
+                    Tầm nhìn - Sứ mệnh
+                  </Link>
+                  <Link
+                    to="/about?tab=organization"
+                    className="block px-4 py-2 hover:bg-blue-50 transition-colors text-[16px]"
+                  >
+                    Sơ đồ tổ chức
+                  </Link>
+                  <Link
+                    to="/about?tab=recruitment"
+                    className="block px-4 py-2 hover:bg-blue-50 transition-colors text-[16px]"
+                  >
+                    Thông tin tuyển dụng
+                  </Link>
+                </div>
+              )}
             </li>
             <li className="relative after:absolute after:h-[1.5px] after:bg-blue-800 after:left-0 after:bottom-[-2px] after:transition-all after:duration-300 after:w-full after:scale-x-0 hover:after:scale-x-100 hover:text-blue-900 transition-colors duration-200">
               <Link to={"/blog"}>Blog</Link>
