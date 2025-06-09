@@ -7,6 +7,8 @@ import ConsultationSection from './AppointmentItems/ConsultationSection';
 import DoctorSelection from './AppointmentItems/DoctorSelection';
 import DateTimeSection from './AppointmentItems/DateTimeSection';
 import AdditionalInfoSection from './AppointmentItems/AdditionalInfoSection';
+import { Navbar } from '../../components/ui/Navbar';
+import { Footer } from '../../components/Layouts/LayoutHomePage/Footer';
 import classNames from 'classnames/bind';
 import styles from './Appointment.module.scss';
 
@@ -75,18 +77,18 @@ function Appointment() {
     // Tính tuổi từ ngày sinh
     const calculateAge = (birthDate) => {
         if (!birthDate) return null;
-        
+
         const birth = new Date(birthDate);
         const today = new Date();
-        
+
         let age = today.getFullYear() - birth.getFullYear();
         const monthDiff = today.getMonth() - birth.getMonth();
         const dayDiff = today.getDate() - birth.getDate();
-        
+
         if (monthDiff < 0 || (monthDiff === 0 && dayDiff < 0)) {
             age--;
         }
-        
+
         return age;
     };
 
@@ -109,7 +111,7 @@ function Appointment() {
         if (name === 'birthDate' && value) {
             const birthDate = new Date(value);
             const today = new Date();
-            
+
             if (birthDate > today) {
                 setErrors(prev => ({
                     ...prev,
@@ -176,20 +178,20 @@ function Appointment() {
             } else {
                 const birthDate = new Date(formData.birthDate);
                 const today = new Date();
-                
+
                 // Kiểm tra ngày sinh không được trong tương lai
                 if (birthDate > today) {
                     newErrors.birthDate = 'Ngày sinh không được trong tương lai';
                 } else {
                     // Kiểm tra tuổi hợp lệ (từ 0 đến 120 tuổi)
                     const age = calculateAge(formData.birthDate);
-                    
+
                     if (age < 0) {
                         newErrors.birthDate = 'Ngày sinh không hợp lệ';
                     } else if (age > 120) {
                         newErrors.birthDate = 'Tuổi không được vượt quá 120';
                     }
-                    
+
                     // Kiểm tra định dạng ngày hợp lệ
                     if (isNaN(birthDate.getTime())) {
                         newErrors.birthDate = 'Định dạng ngày sinh không hợp lệ';
@@ -241,7 +243,7 @@ function Appointment() {
             // Kiểm tra ngày không được quá xa trong tương lai (6 tháng)
             const sixMonthsFromNow = new Date();
             sixMonthsFromNow.setMonth(sixMonthsFromNow.getMonth() + 6);
-            
+
             if (selectedDate > sixMonthsFromNow) {
                 newErrors.appointmentDate = 'Ngày tư vấn không được quá 6 tháng kể từ hôm nay';
             }
@@ -257,9 +259,15 @@ function Appointment() {
 
     const handleSubmit = async (e) => {
         e.preventDefault();
-        
+
         // Validation logic here...
-        
+        if (!validateForm()) {
+            console.warn('❌ Form validation failed:', errors);
+            alert('Vui lòng kiểm tra lại thông tin đã nhập.');
+            return;
+        }
+        setIsSubmitting(true);
+
         try {
             // Tạo appointment data đơn giản
             const appointmentData = {
@@ -269,21 +277,21 @@ function Appointment() {
                 email: formData.email,
                 birthDate: formData.birthDate,
                 address: formData.address,
-                
+
                 // Thông tin cuộc hẹn
                 consultationType: formData.consultationType,
                 doctorName: formData.doctorName || formData.selectedDoctor,
                 appointmentDate: formData.appointmentDate,
                 appointmentTime: formData.appointmentTime,
-                
+
                 // Thông tin y tế
                 symptoms: formData.symptoms,
                 medicalHistory: formData.medicalHistory,
                 notes: formData.notes,
-                
+
                 // Thông tin thanh toán
                 fee: calculateFee(formData.consultationType),
-                
+
                 // Metadata
                 id: `APT${Date.now()}`,
                 createdAt: new Date().toISOString(),
@@ -292,7 +300,7 @@ function Appointment() {
 
             // Lưu vào pendingAppointment thay vì appointmentFormData
             localStorage.setItem('pendingAppointment', JSON.stringify(appointmentData));
-            
+
             console.log('✅ Appointment data saved to pendingAppointment');
 
             // Chuyển hướng đến trang thanh toán
@@ -320,212 +328,222 @@ function Appointment() {
     };
 
     return (
-        <div className={cx('appointment-container')}>
-            <Header />
+        <div className={cx('wrap')}>
+            <header className="py-2 lg:py-3 sticky top-0 z-10 bg-white shadow-lg">
+                <Navbar />
+            </header>
 
-            {/* User Status Card */}
-            {/* <UserStatusCard 
-                isLoggedIn={isLoggedIn}
-                userProfile={userProfile}
-                onLoginRequired={() => navigate('/login')}
-            /> */}
+            <div className={cx('appointment-container')}>
+                {/* Header Section */}
+                <Header />
 
-            <form onSubmit={handleSubmit} className={cx('appointment-form')}>
-                <div className={cx('form-row')}>
-                    {/* Personal Info Section - chỉ hiển thị nếu chưa đăng nhập */}
-                    {!isLoggedIn && (
-                        <PersonalInfoSection
+                {/* User Status Card */}
+                {/* <UserStatusCard 
+                    isLoggedIn={isLoggedIn}
+                    userProfile={userProfile}
+                    onLoginRequired={() => navigate('/login')}
+                /> */}
+
+                <form onSubmit={handleSubmit} className={cx('appointment-form')}>
+                    <div className={cx('form-row')}>
+                        {/* Personal Info Section - chỉ hiển thị nếu chưa đăng nhập */}
+                        {!isLoggedIn && (
+                            <PersonalInfoSection
+                                formData={formData}
+                                errors={errors}
+                                onChange={handleInputChange}
+                            />
+                        )}
+
+                        {/* Additional Info Section */}
+                        <AdditionalInfoSection
                             formData={formData}
-                            errors={errors}
                             onChange={handleInputChange}
                         />
-                    )}
+                    </div>
 
-                    {/* Additional Info Section */}
-                    <AdditionalInfoSection
+                    {/* Consultation Section */}
+                    <ConsultationSection
                         formData={formData}
+                        errors={errors}
                         onChange={handleInputChange}
                     />
-                </div>
 
-                {/* Consultation Section */}
-                <ConsultationSection
-                    formData={formData}
-                    errors={errors}
-                    onChange={handleInputChange}
-                />
+                    {/* Doctor Selection */}
+                    <DoctorSelection
+                        formData={formData}
+                        errors={errors}
+                        onChange={handleInputChange}
+                        onDoctorSelect={handleDoctorSelect}
+                    />
 
-                {/* Doctor Selection */}
-                <DoctorSelection
-                    formData={formData}
-                    errors={errors}
-                    onChange={handleInputChange}
-                    onDoctorSelect={handleDoctorSelect}
-                />
+                    {/* Date Time Section */}
+                    <DateTimeSection
+                        formData={formData}
+                        errors={errors}
+                        onChange={handleInputChange}
+                    />
 
-                {/* Date Time Section */}
-                <DateTimeSection
-                    formData={formData}
-                    errors={errors}
-                    onChange={handleInputChange}
-                />
+                    {/* Form Actions */}
+                    <div className={cx('form-actions')}>
+                        <button
+                            type="submit"
+                            className={cx('submit-btn')}
+                            disabled={isSubmitting}
+                        >
+                            {isSubmitting ? (
+                                <>
+                                    <span className={cx('loading-spinner')}></span>{" "}
+                                    Đang xử lý...
+                                </>
+                            ) : (
+                                <>
+                                    💳 Tiếp tục thanh toán
+                                </>
+                            )}
+                        </button>
 
-                {/* Form Actions */}
-                <div className={cx('form-actions')}>
-                    <button
-                        type="submit"
-                        className={cx('submit-btn')}
-                        disabled={isSubmitting}
-                    >
-                        {isSubmitting ? (
-                            <>
-                                <span className={cx('loading-spinner')}></span>{" "}
-                                Đang xử lý...
-                            </>
-                        ) : (
-                            <>
-                                💳 Tiếp tục thanh toán
-                            </>
-                        )}
-                    </button>
+                        {/* Nút hủy/quay lại */}
+                        <button
+                            type="button"
+                            className={cx('cancel-btn')}
+                            onClick={() => {
+                                if (window.confirm('Bạn có chắc muốn hủy đặt lịch hẹn?')) {
+                                    // Reset form hoặc quay lại trang trước
+                                    window.history.back();
+                                }
+                            }}
+                            disabled={isSubmitting}
+                        >
+                            ↩️ Hủy bỏ
+                        </button>
+                    </div>
 
-                    {/* Nút hủy/quay lại */}
-                    <button
-                        type="button"
-                        className={cx('cancel-btn')}
-                        onClick={() => {
-                            if (window.confirm('Bạn có chắc muốn hủy đặt lịch hẹn?')) {
-                                // Reset form hoặc quay lại trang trước
-                                window.history.back();
-                            }
-                        }}
-                        disabled={isSubmitting}
-                    >
-                        ↩️ Hủy bỏ
-                    </button>
-                </div>
+                    {/* Validation Summary */}
+                    <div className={cx('validation-summary')}>
+                        <h4>Trạng thái form:</h4>
+                        <div className={cx('validation-grid')}>
+                            {!isLoggedIn && (
+                                <>
+                                    <div className={cx('validation-item', { 'valid': formData.fullName && !errors.fullName })}>
+                                        <span className={cx('validation-icon')}>
+                                            {formData.fullName && !errors.fullName ? '✅' : '❌'}
+                                        </span>
+                                        <span>Họ và tên</span>
+                                    </div>
 
-                {/* Validation Summary */}
-                <div className={cx('validation-summary')}>
-                    <h4>Trạng thái form:</h4>
-                    <div className={cx('validation-grid')}>
-                        {!isLoggedIn && (
-                            <>
-                                <div className={cx('validation-item', { 'valid': formData.fullName && !errors.fullName })}>
-                                    <span className={cx('validation-icon')}>
-                                        {formData.fullName && !errors.fullName ? '✅' : '❌'}
-                                    </span>
-                                    <span>Họ và tên</span>
-                                </div>
+                                    <div className={cx('validation-item', { 'valid': formData.birthDate && !errors.birthDate })}>
+                                        <span className={cx('validation-icon')}>
+                                            {formData.birthDate && !errors.birthDate ? '✅' : '❌'}
+                                        </span>
+                                        <span>Ngày sinh</span>
+                                        {formData.birthDate && !errors.birthDate && (
+                                            <span className={cx('age-info')}>({calculateAge(formData.birthDate)} tuổi)</span>
+                                        )}
+                                    </div>
 
-                                <div className={cx('validation-item', { 'valid': formData.birthDate && !errors.birthDate })}>
-                                    <span className={cx('validation-icon')}>
-                                        {formData.birthDate && !errors.birthDate ? '✅' : '❌'}
-                                    </span>
-                                    <span>Ngày sinh</span>
-                                    {formData.birthDate && !errors.birthDate && (
-                                        <span className={cx('age-info')}>({calculateAge(formData.birthDate)} tuổi)</span>
-                                    )}
-                                </div>
+                                    <div className={cx('validation-item', { 'valid': formData.phone && !errors.phone })}>
+                                        <span className={cx('validation-icon')}>
+                                            {formData.phone && !errors.phone ? '✅' : '❌'}
+                                        </span>
+                                        <span>Số điện thoại</span>
+                                    </div>
 
-                                <div className={cx('validation-item', { 'valid': formData.phone && !errors.phone })}>
-                                    <span className={cx('validation-icon')}>
-                                        {formData.phone && !errors.phone ? '✅' : '❌'}
-                                    </span>
-                                    <span>Số điện thoại</span>
-                                </div>
+                                    <div className={cx('validation-item', { 'valid': formData.email && !errors.email })}>
+                                        <span className={cx('validation-icon')}>
+                                            {formData.email && !errors.email ? '✅' : '❌'}
+                                        </span>
+                                        <span>Email</span>
+                                    </div>
+                                </>
+                            )}
 
-                                <div className={cx('validation-item', { 'valid': formData.email && !errors.email })}>
-                                    <span className={cx('validation-icon')}>
-                                        {formData.email && !errors.email ? '✅' : '❌'}
-                                    </span>
-                                    <span>Email</span>
-                                </div>
-                            </>
-                        )}
+                            <div className={cx('validation-item', { 'valid': formData.consultationType })}>
+                                <span className={cx('validation-icon')}>
+                                    {formData.consultationType ? '✅' : '❌'}
+                                </span>
+                                <span>Loại tư vấn</span>
+                            </div>
 
-                        <div className={cx('validation-item', { 'valid': formData.consultationType })}>
-                            <span className={cx('validation-icon')}>
-                                {formData.consultationType ? '✅' : '❌'}
-                            </span>
-                            <span>Loại tư vấn</span>
-                        </div>
+                            <div className={cx('validation-item', { 'valid': formData.selectedDoctor || formData.doctorName })}>
+                                <span className={cx('validation-icon')}>
+                                    {formData.selectedDoctor || formData.doctorName ? '✅' : '❌'}
+                                </span>
+                                <span>Bác sĩ</span>
+                            </div>
 
-                        <div className={cx('validation-item', { 'valid': formData.selectedDoctor || formData.doctorName })}>
-                            <span className={cx('validation-icon')}>
-                                {formData.selectedDoctor || formData.doctorName ? '✅' : '❌'}
-                            </span>
-                            <span>Bác sĩ</span>
-                        </div>
+                            <div className={cx('validation-item', { 'valid': formData.appointmentDate && !errors.appointmentDate })}>
+                                <span className={cx('validation-icon')}>
+                                    {formData.appointmentDate && !errors.appointmentDate ? '✅' : '❌'}
+                                </span>
+                                <span>Ngày tư vấn</span>
+                            </div>
 
-                        <div className={cx('validation-item', { 'valid': formData.appointmentDate && !errors.appointmentDate })}>
-                            <span className={cx('validation-icon')}>
-                                {formData.appointmentDate && !errors.appointmentDate ? '✅' : '❌'}
-                            </span>
-                            <span>Ngày tư vấn</span>
-                        </div>
-
-                        <div className={cx('validation-item', { 'valid': formData.appointmentTime })}>
-                            <span className={cx('validation-icon')}>
-                                {formData.appointmentTime ? '✅' : '❌'}
-                            </span>
-                            <span>Giờ tư vấn</span>
+                            <div className={cx('validation-item', { 'valid': formData.appointmentTime })}>
+                                <span className={cx('validation-icon')}>
+                                    {formData.appointmentTime ? '✅' : '❌'}
+                                </span>
+                                <span>Giờ tư vấn</span>
+                            </div>
                         </div>
                     </div>
-                </div>
 
-                {/* Form Notice */}
-                <div className={cx('form-notice')}>
-                    <div className={cx('notice-item', 'highlight')}>
-                        <span className={cx('notice-icon')}>💡</span>
-                        <p>
-                            <strong>Lưu ý:</strong> Sau khi thanh toán thành công, lịch hẹn sẽ được xác nhận tự động
-                        </p>
+                    {/* Form Notice */}
+                    <div className={cx('form-notice')}>
+                        <div className={cx('notice-item', 'highlight')}>
+                            <span className={cx('notice-icon')}>💡</span>
+                            <p>
+                                <strong>Lưu ý:</strong> Sau khi thanh toán thành công, lịch hẹn sẽ được xác nhận tự động
+                            </p>
+                        </div>
+
+                        <div className={cx('notice-item')}>
+                            <span className={cx('notice-icon')}>⚡</span>
+                            <p>Thời gian xử lý: <strong>1-2 giờ</strong> sau khi thanh toán</p>
+                        </div>
+
+                        <div className={cx('notice-item')}>
+                            <span className={cx('notice-icon')}>📞</span>
+                            <p>Hotline hỗ trợ: <strong>1900-1133</strong></p>
+                        </div>
+
+                        <div className={cx('notice-item')}>
+                            <span className={cx('notice-icon')}>⏰</span>
+                            <p>Giờ làm việc: <strong>7:30-17:00</strong> (T2-T6) | <strong>7:30-12:00</strong> (T7)</p>
+                        </div>
+
+                        <div className={cx('notice-item', 'security')}>
+                            <span className={cx('notice-icon')}>🔒</span>
+                            <p>Thông tin của bạn được <strong>mã hóa và bảo mật</strong> tuyệt đối</p>
+                        </div>
                     </div>
 
-                    <div className={cx('notice-item')}>
-                        <span className={cx('notice-icon')}>⚡</span>
-                        <p>Thời gian xử lý: <strong>1-2 giờ</strong> sau khi thanh toán</p>
+                    {/* Help Section */}
+                    <div className={cx('help-section')}>
+                        <button
+                            type="button"
+                            className={cx('help-btn')}
+                            onClick={() => {
+                                alert(`
+                                    Bạn cần hỗ trợ?
+
+                                    📞 Gọi ngay: 1900-1133
+                                    📧 Email: support@healthcare.vn
+
+                                    Chúng tôi luôn sẵn sàng hỗ trợ bạn 24/7!
+                                `);
+                            }}
+                            title="Cần hỗ trợ?"
+                        >
+                            ❓ Cần hỗ trợ?
+                        </button>
                     </div>
-
-                    <div className={cx('notice-item')}>
-                        <span className={cx('notice-icon')}>📞</span>
-                        <p>Hotline hỗ trợ: <strong>1900-1133</strong></p>
-                    </div>
-
-                    <div className={cx('notice-item')}>
-                        <span className={cx('notice-icon')}>⏰</span>
-                        <p>Giờ làm việc: <strong>7:30-17:00</strong> (T2-T6) | <strong>7:30-12:00</strong> (T7)</p>
-                    </div>
-
-                    <div className={cx('notice-item', 'security')}>
-                        <span className={cx('notice-icon')}>🔒</span>
-                        <p>Thông tin của bạn được <strong>mã hóa và bảo mật</strong> tuyệt đối</p>
-                    </div>
-                </div>
-
-                {/* Help Section */}
-                <div className={cx('help-section')}>
-                    <button
-                        type="button"
-                        className={cx('help-btn')}
-                        onClick={() => {
-                            alert(`
-                                Bạn cần hỗ trợ?
-
-                                📞 Gọi ngay: 1900-1133
-                                💬 Chat trực tuyến: Nhấn vào biểu tượng chat
-                                📧 Email: support@healthcare.vn
-
-                                Chúng tôi luôn sẵn sàng hỗ trợ bạn 24/7!
-                            `);
-                        }}
-                        title="Cần hỗ trợ?"
-                    >
-                        ❓ Cần hỗ trợ?
-                    </button>
-                </div>
-            </form>
+                </form>
+            </div>
+            
+            <footer className="bg-gray-100 text-gray-700 text-sm">
+                <Footer />
+            </footer>
         </div>
     );
 }
