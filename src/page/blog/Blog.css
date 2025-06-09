@@ -1,0 +1,25 @@
+/* Featured Blog Posts Carousel - Display two posts at once */
+.featured-posts-container {
+    width: 100%;
+    overflow: hidden;
+    position: relative;
+}
+
+.featured-posts-slider {
+    display: flex;
+    transition: transform 0.5s ease-in-out;
+    width: max-content;
+}
+
+.featured-post-item {
+    min-width: 50%;
+    /* Show 2 posts instead of 1 */
+    padding: 0 15px;
+    box-sizing: border-box;
+}
+
+/* For mobile screens, show only one post */
+@media (max-width: 768px) {
+    .featured-post-item {
+        min-width: 100%;
+    } }
