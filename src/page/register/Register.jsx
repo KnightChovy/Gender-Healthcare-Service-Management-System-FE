@@ -4,8 +4,6 @@ import DateOfBirth from "./RegisterItems/DateOfBirth";
 import FormInputText from "../../components/ui/FormInputText";
 import GenderChoice from "./RegisterItems/GenderChoice";
 import { validateRules } from "../../components/Validation/validateRulesRegister";
-import { Footer } from "../../components/Layouts/LayoutHomePage/Footer";
-import { Navbar } from "../../components/ui/Navbar";
 import { useNavigate, Link } from "react-router-dom";
 import classNames from "classnames/bind";
 import styles from "./Register.module.scss";
@@ -59,7 +57,7 @@ function Register() {
       "address",
       "password",
       "confirmPassword",
-      "gender"
+      "gender",
     ];
 
     for (const field of fieldOrder) {
@@ -88,7 +86,9 @@ function Register() {
       });
 
       // Focus vào radio button đầu tiên
-      const firstRadio = inputRefs.current.gender.querySelector("input[type='radio']");
+      const firstRadio = inputRefs.current.gender.querySelector(
+        "input[type='radio']"
+      );
       if (firstRadio) {
         firstRadio.focus();
       }
@@ -131,12 +131,12 @@ function Register() {
       }
 
       const formatBirthDate = () => {
-      const { day, month, year } = formData.birthDate;
-      // Đảm bảo day và month có 2 chữ số
-      const formattedDay = day.toString().padStart(2, '0');
-      const formattedMonth = month.toString().padStart(2, '0');
-      return `${year}-${formattedMonth}-${formattedDay}`;
-    };
+        const { day, month, year } = formData.birthDate;
+        // Đảm bảo day và month có 2 chữ số
+        const formattedDay = day.toString().padStart(2, "0");
+        const formattedMonth = month.toString().padStart(2, "0");
+        return `${year}-${formattedMonth}-${formattedDay}`;
+      };
 
       // Chuẩn bị dữ liệu để gửi đến API
       const userData = {
@@ -194,17 +194,12 @@ function Register() {
     } finally {
       setIsLoading(false);
     }
-
   };
 
   const validate = () => validateRules(formData);
 
   return (
     <div>
-      <header className="py-2 lg:py-3 sticky top-0 z-10 bg-white shadow-lg">
-        <Navbar />
-      </header>
-
       <div className={cx("register-container")}>
         <div className={cx("register-content")}>
           <div className={cx("register-introduction")}>
@@ -355,9 +350,6 @@ function Register() {
           </div>
         </div>
       </div>
-      <footer className="bg-gray-100 text-gray-700 text-sm">
-        <Footer />
-      </footer>
     </div>
   );
 }

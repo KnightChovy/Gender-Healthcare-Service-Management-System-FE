@@ -234,7 +234,7 @@ function Blog() {
     text-white placeholder-white placeholder-opacity-80 focus:outline-none focus:ring-2 
     focus:ring-white focus:ring-opacity-50 transition-all"
               />
-              <button className="absolute right-3 top-1/2 transform -translate-y-1/2 text-white hover:text-black-200">
+              <button className="absolute right-3 top-1/3 transform -translate-y-1/2 text-white hover:text-black-200">
                 <FontAwesomeIcon icon={faSearch} />
               </button>
             </div>
