@@ -36,19 +36,23 @@ export const Navbar = () => {
   const handleLogout = () => {
     dispatch(logout());
     setShowUserMenu(false);
-
     navigate("/");
   };
   return (
     <div className="container mx-auto px-4">
       <div className="flex items-center justify-between">
         <div className="flex-shrink-0">
-          <Link to="/" className="block max-w-[70px]">
-            <img
-              className="max-w-full"
-              src={logo_gender}
-              alt="Gender Healthcare Logo"
-            />
+          <Link to="/" className="flex items-center gap-2">
+            <div className="w-12 h-12">
+              <img
+                className="w-full h-full object-contain"
+                src={logo_gender}
+                alt="Gender Healthcare Logo"
+              />
+            </div>
+            <h2 className="text-xl font-bold text-blue-700 tracking-tight">
+              Gen<span className="text-teal-600">Care</span>
+            </h2>
           </Link>
         </div>
 
@@ -58,21 +62,18 @@ export const Navbar = () => {
               <Link to="/">Trang chủ</Link>
             </li>
             <li className="relative" ref={serviceMenuRef}>
-              {/* Thay đổi button này để kiểm tra user và điều hướng */}
               <button
                 onClick={() => {
                   if (user) {
-                    // Nếu đã đăng nhập: Hiển thị dropdown
                     setShowService(!showService);
                   } else {
-                    // Nếu chưa đăng nhập: Chuyển đến trang đăng nhập
                     navigate("/login");
                   }
                 }}
                 className="flex items-center cursor-pointer gap-1 relative after:absolute after:h-[1.5px] after:bg-blue-800 after:left-0 after:bottom-[-2px] after:transition-all after:duration-300 after:w-full after:scale-x-0 hover:after:scale-x-100 hover:text-blue-900 transition-colors duration-200"
               >
                 Các loại dịch vụ
-                {user && ( // Chỉ hiện mũi tên khi đã đăng nhập
+                {user && (
                   <svg
                     className={`w-4 h-4 ml-1 transition-transform ${
                       showService ? "rotate-180" : ""

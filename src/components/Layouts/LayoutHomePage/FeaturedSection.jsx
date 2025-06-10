@@ -7,7 +7,7 @@ export const FeaturedSection = () => {
       <div className="container mx-auto px-4">
         <div className="text-center mb-12">
           <h2 className="text-3xl font-bold text-gray-800 mb-4">
-            Gói dịch vụ nổi bật
+            Dịch vụ xét nghiệm
           </h2>
           <p className="text-gray-600 max-w-3xl mx-auto">
             Các gói xét nghiệm và tư vấn toàn diện, được thiết kế phù hợp với

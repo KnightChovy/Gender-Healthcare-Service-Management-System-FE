@@ -1,39 +1,56 @@
 import React from "react";
-import logo_gender from "../../../assets/gender_healthcare_logo.png";
+
 export const Footer = () => {
   return (
     <div className="container mx-auto px-4 py-8">
       {/* Logo và hotline */}
       <div className="flex items-center justify-between mb-6">
         <div className="flex-shrink-0">
-          <img src={logo_gender} alt="Logo" className="h-20 w-auto" />
+          <h2 className="text-2xl md:text-3xl font-extrabold bg-gradient-to-r from-blue-700 via-teal-500 to-purple-600 bg-clip-text text-transparent drop-shadow-sm tracking-wide">
+            Gen<span className="font-bold italic">Care</span>
+          </h2>
+          <p className="text-sm text-gray-600 mt-1 text-center sm:text-left">
+            Chăm sóc sức khỏe giới tính toàn diện
+          </p>
         </div>
-        <div className="flex flex-col sm:flex-row gap-3">
+        <div className="flex flex-col sm:flex-row gap-4">
           <a
             href="tel:19001133"
-            className="flex items-center gap-2 text-[#2a3e64] hover:underline text-lg font-medium"
+            className="flex items-center gap-2 text-gray-800 hover:text-blue-700 transition-colors"
           >
-            <img
-              src="https://diag.vn/wp-content/themes/diag-v2/assets/img/phone.svg"
-              alt=""
-              className="w-auto h-9"
-            />
-            <span className="text-lg font-medium">1900 1133</span>
+            <div className="bg-blue-50 rounded-full p-2">
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                viewBox="0 0 24 24"
+                fill="currentColor"
+                className="w-5 h-5 text-blue-600"
+              >
+                <path
+                  fillRule="evenodd"
+                  d="M1.5 4.5a3 3 0 013-3h1.372c.86 0 1.61.586 1.819 1.42l1.105 4.423a1.875 1.875 0 01-.694 1.955l-1.293.97c-.135.101-.164.249-.126.352a11.285 11.285 0 006.697 6.697c.103.038.25.009.352-.126l.97-1.293a1.875 1.875 0 011.955-.694l4.423 1.105c.834.209 1.42.959 1.42 1.82V19.5a3 3 0 01-3 3h-2.25C8.552 22.5 1.5 15.448 1.5 6.75V4.5z"
+                  clipRule="evenodd"
+                />
+              </svg>
+            </div>
+            <span className="text-base font-medium">1900 1133</span>
           </a>
+
           <a
-            href="mailto:info@gencare.com.vn"
-            className="flex items-center gap-2 text-[#2a3e64] hover:underline text-lg font-medium sm:ml-4"
+            href="mailto:gencare@gmail.com.vn"
+            className="flex items-center gap-2 text-gray-800 hover:text-blue-700 transition-colors"
           >
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              viewBox="0 0 24 24"
-              fill="currentColor"
-              className="w-6 h-6"
-            >
-              <path d="M1.5 8.67v8.58a3 3 0 003 3h15a3 3 0 003-3V8.67l-8.928 5.493a3 3 0 01-3.144 0L1.5 8.67z" />
-              <path d="M22.5 6.908V6.75a3 3 0 00-3-3h-15a3 3 0 00-3 3v.158l9.714 5.978a1.5 1.5 0 001.572 0L22.5 6.908z" />
-            </svg>
-            <span>gencare@gmail.com.vn</span>
+            <div className="bg-blue-50 rounded-full p-2">
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                viewBox="0 0 24 24"
+                fill="currentColor"
+                className="w-5 h-5 text-blue-600"
+              >
+                <path d="M1.5 8.67v8.58a3 3 0 003 3h15a3 3 0 003-3V8.67l-8.928 5.493a3 3 0 01-3.144 0L1.5 8.67z" />
+                <path d="M22.5 6.908V6.75a3 3 0 00-3-3h-15a3 3 0 00-3 3v.158l9.714 5.978a1.5 1.5 0 001.572 0L22.5 6.908z" />
+              </svg>
+            </div>
+            <span className="text-base font-medium">gencare@gmail.com.vn</span>
           </a>
         </div>
       </div>

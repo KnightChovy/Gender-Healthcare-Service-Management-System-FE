@@ -10,6 +10,7 @@ import { AdminRouter } from "./routes/AdminRouter";
 import { TestServicePage } from "./page/testservice/TestServicePage";
 import ScrollToTop from "./components/ui/ScrollToTop";
 import MeetWidget from "./components/ui/MeetWidget";
+import About from "./page/AboutUs/About";
 function App() {
   return (
     <>
@@ -52,6 +53,14 @@ function App() {
           element={
             <LayoutAccount>
               <Blog />
+            </LayoutAccount>
+          }
+        ></Route>
+        <Route
+          path="/about"
+          element={
+            <LayoutAccount>
+              <About />
             </LayoutAccount>
           }
         ></Route>
