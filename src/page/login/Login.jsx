@@ -129,9 +129,6 @@ function Login() {
             navigate("/manager");
             break;
           case "user":
-            navigate("/dashboardcustomer");
-            break;
-          default:
             navigate("/");
             break;
         }
@@ -156,10 +153,6 @@ function Login() {
 
   return (
     <div>
-      <header className="py-2 lg:py-3 sticky top-0 z-10 bg-white shadow-lg">
-        <Navbar />
-      </header>
-
       <div className={cx("login-page")}>
         <div className={cx("unified-container")}>
           <div className={cx("form-container")}>
@@ -251,9 +244,6 @@ function Login() {
           </div>
         </div>
       </div>
-      <footer className="bg-gray-100 text-gray-700 text-sm">
-        <Footer />
-      </footer>
     </div>
   );
 }

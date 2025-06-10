@@ -1,29 +1,61 @@
 import { Route, Routes } from "react-router-dom";
 import "./App.css";
-import { HomePage } from "./page/HomePage";
-import Register from "./page/Register";
-import Login from "./page/login";
-import ForgetPassword from "./page/forgetPassword";
-import { DashboardCustomer } from "./components/Layouts/LayoutAccount/DashboardCustomer";
-import { Services } from "./components/Layouts/LayoutAccount/Services";
-import Appointment from "./page/Appointment";
-import Blog from "./page/blog/Blog";
-import PaymentAppointment from "./page/Payment/PaymentAppointment";
+import { HomePage } from "./page/account/HomePage";
+import { LayoutAccount } from "./components/Layouts/LayoutAccount/LayoutAccount";
+import Login from "./page/login/Login";
+import Register from "./page/register/Register";
 import LayoutAdmin from "./components/Layouts/LayoutAdmin/LayoutAdmin";
+import Blog from "./page/blog/Blog";
 import { AdminRouter } from "./routes/AdminRouter";
+import { TestServicePage } from "./page/testservice/TestServicePage";
+import { ConsultationPage } from "./page/consultation/ConsultationPage";
+// import CycleTrackingPage from "./page/CycleTrackingPage";
+// import AdminLayout from "./components/Layouts/";
 
 function App() {
   return (
     <Routes>
-      <Route path="/" element={<HomePage />} />
-      <Route path="/register" element={<Register />} />
-      <Route path="/login" element={<Login />} />
-      <Route path="/forgetpassword" element={<ForgetPassword />} />
-      <Route path="/dashboardcustomer" element={<DashboardCustomer />} />
-      <Route path="/services" element={<Services />} />
-      <Route path="/appointment" element={<Appointment />} />
-      <Route path="/blog" element={<Blog />} />
-      <Route path="/paymentappointment" element={<PaymentAppointment />} />
+      <Route
+        path=""
+        element={
+          <LayoutAccount>
+            <HomePage />
+          </LayoutAccount>
+        }
+      ></Route>
+      <Route
+        path="/service"
+        element={
+          <LayoutAccount>
+            <TestServicePage />
+          </LayoutAccount>
+        }
+      ></Route>
+      <Route
+        path="/register"
+        element={
+          <LayoutAccount>
+            <Register />
+          </LayoutAccount>
+        }
+      ></Route>
+      <Route
+        path="/login"
+        element={
+          <LayoutAccount>
+            <Login />
+          </LayoutAccount>
+        }
+      ></Route>
+
+      <Route
+        path="/blog"
+        element={
+          <LayoutAccount>
+            <Blog />
+          </LayoutAccount>
+        }
+      ></Route>
 
       <Route
         path="/admin"

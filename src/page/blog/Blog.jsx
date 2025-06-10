@@ -219,11 +219,6 @@ function Blog() {
 
   return (
     <>
-      <div>
-        <header className="py-2 lg:py-3 sticky top-0 z-10 bg-white shadow-lg">
-          <Navbar />
-        </header>
-      </div>
       <div className="container mx-auto px-4 pb-8">
         {/* Banner & Intro */}
         <div className="bg-gradient-to-r from-blue-500 to-purple-600 text-white rounded-lg p-8 mb-8">
@@ -424,7 +419,6 @@ function Blog() {
             </div>
           </>
         )}
-        <Footer />
       </div>
     </>
   );
