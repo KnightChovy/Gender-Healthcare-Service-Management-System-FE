@@ -225,7 +225,7 @@ function Login() {
                   <div className={cx("spinner")}></div>
                 ) : (
                   <>
-                    <span>Đăng nhập</span>
+                    <span>Đăng nhập </span>
                     <FontAwesomeIcon
                       icon={faArrowRight}
                       className={cx("button-icon")}
@@ -235,7 +235,7 @@ function Login() {
               </button>
 
               <div className={cx("register-link")}>
-                <span>Chưa có tài khoản?</span>
+                <span>Chưa có tài khoản? </span>
                 <Link to="/register" className={cx("register-button")}>
                   <span>Đăng ký ngay</span>
                 </Link>

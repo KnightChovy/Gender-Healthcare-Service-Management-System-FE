@@ -67,6 +67,7 @@
   text-align: center;
   padding: var(--spacing-xl) var(--spacing-lg);
   margin: 0 auto var(--spacing-xl);
+  margin-top: var(--spacing-md);
   background: var(--background-primary);
   border-radius: var(--radius-xl);
   box-shadow: var(--shadow-md);
@@ -1029,7 +1030,7 @@
   justify-content: center;
   align-items: center;
   flex-wrap: wrap;
-  margin: var(--spacing-2xl) 0;
+  margin: var(--spacing-md) 0;
   padding: var(--spacing-xl);
   background: var(--background-secondary);
   border-radius: var(--radius-lg);

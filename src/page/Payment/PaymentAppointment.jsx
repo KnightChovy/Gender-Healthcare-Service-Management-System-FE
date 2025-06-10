@@ -3,6 +3,8 @@ import { useNavigate } from 'react-router-dom';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faMobileAlt, faShieldAlt, faCheckCircle, faTimesCircle, faSpinner, faArrowLeft, faCalendarAlt, faUserMd, faClock, faMapMarkerAlt } from '@fortawesome/free-solid-svg-icons';
 import { specialtyMapping } from '../../components/Data/Doctor';
+import { Footer } from '../../components/Layouts/LayoutHomePage/Footer';
+import { Navbar } from '../../components/ui/Navbar';
 
 import classNames from 'classnames/bind';
 import styles from './Payment.module.scss';
@@ -11,7 +13,7 @@ const cx = classNames.bind(styles);
 
 function PaymentAppointment() {
     const navigate = useNavigate();
-    
+
     // State
     const [appointmentData, setAppointmentData] = useState(null);
     const [paymentMethod, setPaymentMethod] = useState('');
@@ -26,11 +28,11 @@ function PaymentAppointment() {
         if (specialtyKey) {
             return specialtyMapping[specialtyKey];
         }
-        
+
         if (specialtyMapping[consultationType]) {
             return specialtyMapping[consultationType];
         }
-        
+
         return consultationType;
     };
 
@@ -46,7 +48,7 @@ function PaymentAppointment() {
                 navigate('/appointment');
             }
         };
-        
+
         loadData();
     }, [navigate]);
 
@@ -107,13 +109,13 @@ function PaymentAppointment() {
         try {
             // Simulate payment processing
             await new Promise(resolve => setTimeout(resolve, 3000));
-            
+
             // 90% success rate
             const isSuccess = Math.random() > 0.1;
 
             if (isSuccess) {
                 setPaymentStatus('success');
-                
+
                 // Save to appointments list
                 const existingAppointments = JSON.parse(localStorage.getItem('userAppointments') || '[]');
                 const newAppointment = {
@@ -124,10 +126,10 @@ function PaymentAppointment() {
                 };
                 existingAppointments.push(newAppointment);
                 localStorage.setItem('userAppointments', JSON.stringify(existingAppointments));
-                
+
                 // Clear pending appointment
                 localStorage.removeItem('pendingAppointment');
-                
+
                 // Redirect after success
                 setTimeout(() => {
                     alert('Thanh toán thành công! Cuộc hẹn đã được xác nhận.');
@@ -200,138 +202,148 @@ function PaymentAppointment() {
 
     // Main payment UI
     return (
-        <div className={cx('container')}>
-            {/* Header */}
-            <div className={cx('header')}>
-                <button
-                    className={cx('back-btn')}
-                    onClick={() => navigate(-1)}
-                >
-                    <FontAwesomeIcon icon={faArrowLeft} />
-                    Quay lại
-                </button>
-                <h1 className={cx('title')}>Thanh toán cuộc hẹn</h1>
-                <div className={cx('security-badge')}>
-                    <FontAwesomeIcon icon={faShieldAlt} />
-                    <span>Bảo mật SSL</span>
-                </div>
-            </div>
+        <div className={cx('wrap')}>
+            <header className="py-2 lg:py-3 sticky top-0 z-10 bg-white shadow-lg">
+                <Navbar />
+            </header>
+            <div className={cx('container')}>
 
-            <div className={cx('content')}>
-                {/* Appointment Summary */}
-                <div className={cx('section')}>
-                    <h3 className={cx('section-title')}>
-                        <FontAwesomeIcon icon={faCalendarAlt} className={cx('detail-icon')} />
-                        Thông tin cuộc hẹn
-                    </h3>
-
-                    <div className={cx('detail-item')}>
-                        <FontAwesomeIcon icon={faUserMd} className={cx('detail-icon')} />
-                        <div className={cx('detail-text')}>
-                            <strong className={cx('detail-label')}>{appointmentData.doctorName || 'Bác sĩ tư vấn'}</strong>
-                            <span className={cx('detail-value')}>{getConsultationTypeDisplay(appointmentData.consultationType)}</span>
-                        </div>
-                    </div>
-
-                    <div className={cx('detail-item')}>
-                        <FontAwesomeIcon icon={faCalendarAlt} className={cx('detail-icon')} />
-                        <div className={cx('detail-text')}>
-                            <strong className={cx('detail-label')}>Ngày khám</strong>
-                            <span className={cx('detail-value')}>{formatDate(appointmentData.appointmentDate)}</span>
-                        </div>
-                    </div>
-
-                    <div className={cx('detail-item')}>
-                        <FontAwesomeIcon icon={faClock} className={cx('detail-icon')} />
-                        <div className={cx('detail-text')}>
-                            <strong className={cx('detail-label')}>Giờ khám</strong>
-                            <span className={cx('detail-value')}>{appointmentData.appointmentTime}</span>
-                        </div>
-                    </div>
-
-                    <div className={cx('detail-item')}>
-                        <FontAwesomeIcon icon={faMapMarkerAlt} className={cx('detail-icon')} />
-                        <div className={cx('detail-text')}>
-                            <strong className={cx('detail-label')}>Hình thức</strong>
-                            <span className={cx('detail-value')}>Tư vấn trực tuyến</span>
-                        </div>
-                    </div>
-
-                    {/* Price */}
-                    <div className={cx('price-breakdown')}>
-                        <div className={cx('price-item')}>
-                            <span>Phí tư vấn</span>
-                            <span>{formatCurrency(appointmentData.fee || 500000)}</span>
-                        </div>
-                        <div className={cx('price-item')}>
-                            <span>Phí dịch vụ</span>
-                            <span>{formatCurrency(serviceFee)}</span>
-                        </div>
-                        <div className={cx('price-total')}>
-                            <span>Tổng cộng</span>
-                            <span>{formatCurrency(totalAmount)}</span>
-                        </div>
+                {/* Header */}
+                <div className={cx('header')}>
+                    <button
+                        className={cx('back-btn')}
+                        onClick={() => navigate(-1)}
+                    >
+                        <FontAwesomeIcon icon={faArrowLeft} />
+                        Quay lại
+                    </button>
+                    <h1 className={cx('title')}>Thanh toán cuộc hẹn</h1>
+                    <div className={cx('security-badge')}>
+                        <FontAwesomeIcon icon={faShieldAlt} />
+                        <span>Bảo mật SSL</span>
                     </div>
                 </div>
 
-                {/* Payment Methods */}
-                <div className={cx('section')}>
-                    <h3 className={cx('section-title')}>Chọn phương thức thanh toán</h3>
+                <div className={cx('content')}>
+                    {/* Appointment Summary */}
+                    <div className={cx('section')}>
+                        <h3 className={cx('section-title')}>
+                            <FontAwesomeIcon icon={faCalendarAlt} className={cx('detail-icon')} />
+                            Thông tin cuộc hẹn
+                        </h3>
 
-                    <div className={cx('payment-options')}>
-                        {paymentMethods.map((method) => (
-                            <label
-                                key={method.id}
-                                className={cx('payment-option', {
-                                    'selected': paymentMethod === method.id
-                                })}
-                            >
-                                <input
-                                    type="radio"
-                                    name="paymentMethod"
-                                    value={method.id}
-                                    checked={paymentMethod === method.id}
-                                    onChange={(e) => setPaymentMethod(e.target.value)}
-                                />
-                                <div className={cx('option-content')}>
-                                    <FontAwesomeIcon icon={method.icon} className={cx('option-icon')} />
-                                    <div className={cx('option-text')}>
-                                        <span className={cx('option-name')}>{method.name}</span>
-                                        <span className={cx('option-description')}>{method.description}</span>
+                        <div className={cx('detail-item')}>
+                            <FontAwesomeIcon icon={faUserMd} className={cx('detail-icon')} />
+                            <div className={cx('detail-text')}>
+                                <strong className={cx('detail-label')}>{appointmentData.doctorName || 'Bác sĩ tư vấn'}</strong>
+                                <span className={cx('detail-value')}>{getConsultationTypeDisplay(appointmentData.consultationType)}</span>
+                            </div>
+                        </div>
+
+                        <div className={cx('detail-item')}>
+                            <FontAwesomeIcon icon={faCalendarAlt} className={cx('detail-icon')} />
+                            <div className={cx('detail-text')}>
+                                <strong className={cx('detail-label')}>Ngày khám</strong>
+                                <span className={cx('detail-value')}>{formatDate(appointmentData.appointmentDate)}</span>
+                            </div>
+                        </div>
+
+                        <div className={cx('detail-item')}>
+                            <FontAwesomeIcon icon={faClock} className={cx('detail-icon')} />
+                            <div className={cx('detail-text')}>
+                                <strong className={cx('detail-label')}>Giờ khám</strong>
+                                <span className={cx('detail-value')}>{appointmentData.appointmentTime}</span>
+                            </div>
+                        </div>
+
+                        <div className={cx('detail-item')}>
+                            <FontAwesomeIcon icon={faMapMarkerAlt} className={cx('detail-icon')} />
+                            <div className={cx('detail-text')}>
+                                <strong className={cx('detail-label')}>Hình thức</strong>
+                                <span className={cx('detail-value')}>Tư vấn trực tuyến</span>
+                            </div>
+                        </div>
+
+                        {/* Price */}
+                        <div className={cx('price-breakdown')}>
+                            <div className={cx('price-item')}>
+                                <span>Phí tư vấn</span>
+                                <span>{formatCurrency(appointmentData.fee || 500000)}</span>
+                            </div>
+                            <div className={cx('price-item')}>
+                                <span>Phí dịch vụ</span>
+                                <span>{formatCurrency(serviceFee)}</span>
+                            </div>
+                            <div className={cx('price-total')}>
+                                <span>Tổng cộng</span>
+                                <span>{formatCurrency(totalAmount)}</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    {/* Payment Methods */}
+                    <div className={cx('section')}>
+                        <h3 className={cx('section-title')}>Chọn phương thức thanh toán</h3>
+
+                        <div className={cx('payment-options')}>
+                            {paymentMethods.map((method) => (
+                                <label
+                                    key={method.id}
+                                    className={cx('payment-option', {
+                                        'selected': paymentMethod === method.id
+                                    })}
+                                >
+                                    <input
+                                        type="radio"
+                                        name="paymentMethod"
+                                        value={method.id}
+                                        checked={paymentMethod === method.id}
+                                        onChange={(e) => setPaymentMethod(e.target.value)}
+                                    />
+                                    <div className={cx('option-content')}>
+                                        <FontAwesomeIcon icon={method.icon} className={cx('option-icon')} />
+                                        <div className={cx('option-text')}>
+                                            <span className={cx('option-name')}>{method.name}</span>
+                                            <span className={cx('option-description')}>{method.description}</span>
+                                        </div>
                                     </div>
-                                </div>
-                            </label>
-                        ))}
+                                </label>
+                            ))}
+                        </div>
                     </div>
-                </div>
 
-                {/* Payment Button */}
-                <div className={cx('section')}>
-                    <div style={{ textAlign: 'center' }}>
-                        <button
-                            className={cx('pay-button')}
-                            onClick={handlePayment}
-                            disabled={!paymentMethod || isProcessing}
-                        >
-                            {isProcessing ? (
-                                <>
-                                    <FontAwesomeIcon icon={faSpinner} className={cx('spinner')} />
-                                    Đang xử lý thanh toán...
-                                </>
-                            ) : (
-                                <>
-                                    Thanh toán {formatCurrency(totalAmount)}
-                                </>
-                            )}
-                        </button>
+                    {/* Payment Button */}
+                    <div className={cx('section')}>
+                        <div style={{ textAlign: 'center' }}>
+                            <button
+                                className={cx('pay-button')}
+                                onClick={handlePayment}
+                                disabled={!paymentMethod || isProcessing}
+                            >
+                                {isProcessing ? (
+                                    <>
+                                        <FontAwesomeIcon icon={faSpinner} className={cx('spinner')} />
+                                        Đang xử lý thanh toán...
+                                    </>
+                                ) : (
+                                    <>
+                                        Thanh toán {formatCurrency(totalAmount)}
+                                    </>
+                                )}
+                            </button>
 
-                        <div className={cx('security-info')}>
-                            <FontAwesomeIcon icon={faShieldAlt} style={{ color: '#22c55e' }} />
-                            <span>Thông tin thanh toán được mã hóa và bảo mật tuyệt đối</span>
+                            <div className={cx('security-info')}>
+                                <FontAwesomeIcon icon={faShieldAlt} style={{ color: '#22c55e' }} />
+                                <span>Thông tin thanh toán được mã hóa và bảo mật tuyệt đối</span>
+                            </div>
                         </div>
                     </div>
                 </div>
+
             </div>
+            <footer className="bg-gray-100 text-gray-700 text-sm">
+                <Footer />
+            </footer>
         </div>
     );
 }
