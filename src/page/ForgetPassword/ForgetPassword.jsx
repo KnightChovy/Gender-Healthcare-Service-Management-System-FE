@@ -12,9 +12,6 @@ import {
 import classNames from "classnames/bind";
 import styles from "./ForgetPassword.module.scss";
 
-import { Footer } from "../../components/Layouts/LayoutHomePage/Footer";
-import { Navbar } from "../../components/ui/Navbar";
-
 const cx = classNames.bind(styles);
 
 function ForgetPassword() {
@@ -247,10 +244,7 @@ function ForgetPassword() {
   };
 
   return (
-    <div>
-      <header className="py-2 lg:py-3 sticky top-0 z-10 bg-white shadow-lg">
-        <Navbar />
-      </header>
+    <div className="wrapper">
       <div className={cx("forget-password-page")}>
         <div className={cx("forget-password-container")}>
           <button
@@ -487,9 +481,6 @@ function ForgetPassword() {
           )}
         </div>
       </div>
-      <footer className="bg-gray-100 text-gray-700 text-sm">
-        <Footer />
-      </footer>
     </div>
   );
 }

@@ -3,8 +3,6 @@ import { useNavigate } from 'react-router-dom';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faMobileAlt, faShieldAlt, faCheckCircle, faTimesCircle, faSpinner, faArrowLeft, faCalendarAlt, faUserMd, faClock, faMapMarkerAlt } from '@fortawesome/free-solid-svg-icons';
 import { specialtyMapping } from '../../components/Data/Doctor';
-import { Footer } from '../../components/Layouts/LayoutHomePage/Footer';
-import { Navbar } from '../../components/ui/Navbar';
 
 import classNames from 'classnames/bind';
 import styles from './Payment.module.scss';
@@ -203,9 +201,6 @@ function PaymentAppointment() {
     // Main payment UI
     return (
         <div className={cx('wrap')}>
-            <header className="py-2 lg:py-3 sticky top-0 z-10 bg-white shadow-lg">
-                <Navbar />
-            </header>
             <div className={cx('container')}>
 
                 {/* Header */}
@@ -339,11 +334,7 @@ function PaymentAppointment() {
                         </div>
                     </div>
                 </div>
-
             </div>
-            <footer className="bg-gray-100 text-gray-700 text-sm">
-                <Footer />
-            </footer>
         </div>
     );
 }
