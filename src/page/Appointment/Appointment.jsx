@@ -1,7 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Header from './AppointmentItems/Header';
-import UserStatusCard from './AppointmentItems/UserStatusCard';
 import PersonalInfoSection from './AppointmentItems/PersonalInfoSection';
 import ConsultationSection from './AppointmentItems/ConsultationSection';
 import DoctorSelection from './AppointmentItems/DoctorSelection';
@@ -330,13 +329,6 @@ function Appointment() {
             <div className={cx('appointment-container')}>
                 {/* Header Section */}
                 <Header />
-
-                {/* User Status Card */}
-                {/* <UserStatusCard 
-                    isLoggedIn={isLoggedIn}
-                    userProfile={userProfile}
-                    onLoginRequired={() => navigate('/login')}
-                /> */}
 
                 <form onSubmit={handleSubmit} className={cx('appointment-form')}>
                     <div className={cx('form-row')}>
