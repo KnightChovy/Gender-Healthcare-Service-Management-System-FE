@@ -22,18 +22,18 @@ function Appointment() {
         gender: '',
         phone: '',
         email: '',
-        idCard: '',
+        address: '',
 
         // Thông tin cuộc hẹn
         consultationType: '',
-        selectedDoctor: null,
+        selectedDoctor: '',
         doctorName: '',
-        specialty: '',
         appointmentDate: '',
         appointmentTime: '',
 
         // Thông tin bổ sung
         symptoms: '',
+        medicalHistory: '',
         notes: '',
         priority: 'normal',
 
@@ -49,24 +49,34 @@ function Appointment() {
     }, []);
 
     const checkUserStatus = () => {
-        const token = localStorage.getItem('userToken');
-        const savedProfile = localStorage.getItem('userProfile');
+        try {
+            const isLoggedIn = localStorage.getItem('isLoggedIn') === 'true';
+            const userInfo = localStorage.getItem('userInfo');
 
-        if (token && savedProfile) {
-            setIsLoggedIn(true);
-            const profile = JSON.parse(savedProfile);
-            setUserProfile(profile);
+            if (isLoggedIn && userInfo) {
+                const profile = JSON.parse(userInfo);
+                setIsLoggedIn(true);
+                setUserProfile(profile);
 
-            // Auto-fill form với thông tin user nếu đã đăng nhập
-            setFormData(prev => ({
-                ...prev,
-                fullName: profile.fullName || '',
-                phone: profile.phone || '',
-                email: profile.email || '',
-                birthDate: profile.birthDate || '',
-                gender: profile.gender || '',
-            }));
-        } else {
+                // Auto-fill form với thông tin user
+                setFormData(prev => ({
+                    ...prev,
+                    fullName: profile.fullName || `${profile.first_name || ''} ${profile.last_name || ''}`.trim(),
+                    phone: profile.phone || '',
+                    email: profile.email || '',
+                    birthDate: profile.birthday || profile.birth_date || '',
+                    gender: profile.gender || '',
+                    address: profile.address || ''
+                }));
+
+                console.log('✅ User logged in, auto-filled form data');
+            } else {
+                setIsLoggedIn(false);
+                setUserProfile(null);
+                console.log('ℹ️ User not logged in');
+            }
+        } catch (error) {
+            console.error('❌ Error checking user status:', error);
             setIsLoggedIn(false);
         }
     };
@@ -91,6 +101,7 @@ function Appointment() {
 
     const handleInputChange = (e) => {
         const { name, value } = e.target;
+        
         setFormData(prev => ({
             ...prev,
             [name]: value
@@ -106,114 +117,97 @@ function Appointment() {
 
         // Validate ngày sinh realtime
         if (name === 'birthDate' && value) {
-            const birthDate = new Date(value);
-            const today = new Date();
+            validateBirthDate(value);
+        }
 
-            if (birthDate > today) {
-                setErrors(prev => ({
-                    ...prev,
-                    birthDate: 'Ngày sinh không được trong tương lai'
-                }));
-            } else {
-                const age = calculateAge(value);
-                if (age < 0) {
-                    setErrors(prev => ({
-                        ...prev,
-                        birthDate: 'Ngày sinh không hợp lệ'
-                    }));
-                } else if (age > 120) {
-                    setErrors(prev => ({
-                        ...prev,
-                        birthDate: 'Tuổi không được vượt quá 120'
-                    }));
-                } else {
-                    // Clear error nếu valid
-                    setErrors(prev => ({
-                        ...prev,
-                        birthDate: ''
-                    }));
-                }
-            }
+        // Auto calculate fee khi chọn consultation type
+        if (name === 'consultationType') {
+            const newFee = calculateFee(value);
+            setFormData(prev => ({
+                ...prev,
+                fee: newFee
+            }));
         }
     };
 
-    // Handle special cases for complex inputs
-    const handleDoctorSelect = (doctor) => {
-        setFormData(prev => ({
-            ...prev,
-            selectedDoctor: doctor,
-            doctorName: doctor.name,
-            specialty: doctor.specialty,
-            fee: doctor.fee || 200000
-        }));
+    const validateBirthDate = (birthDate) => {
+        const birth = new Date(birthDate);
+        const today = new Date();
 
-        if (errors.selectedDoctor) {
+        if (birth > today) {
             setErrors(prev => ({
                 ...prev,
-                selectedDoctor: ''
+                birthDate: 'Ngày sinh không được trong tương lai'
             }));
+        } else {
+            const age = calculateAge(birthDate);
+            if (age < 0) {
+                setErrors(prev => ({
+                    ...prev,
+                    birthDate: 'Ngày sinh không hợp lệ'
+                }));
+            } else if (age > 120) {
+                setErrors(prev => ({
+                    ...prev,
+                    birthDate: 'Tuổi không được vượt quá 120'
+                }));
+            } else {
+                setErrors(prev => ({
+                    ...prev,
+                    birthDate: ''
+                }));
+            }
         }
     };
 
     const validateForm = () => {
         const newErrors = {};
 
-        // Validate thông tin cá nhân (nếu chưa đăng nhập)
-        if (!isLoggedIn) {
-            // Validate họ tên
-            if (!formData.fullName.trim()) {
-                newErrors.fullName = 'Vui lòng nhập họ tên';
-            } else if (formData.fullName.trim().length < 2) {
-                newErrors.fullName = 'Họ tên phải có ít nhất 2 ký tự';
-            } else if (!/^[a-zA-ZÀ-ỹ\s]+$/.test(formData.fullName.trim())) {
-                newErrors.fullName = 'Họ tên chỉ được chứa chữ cái và khoảng trắng';
-            }
+        // Validate thông tin cá nhân (bắt buộc cho cả user đã đăng nhập và chưa đăng nhập)
+        if (!formData.fullName.trim()) {
+            newErrors.fullName = 'Vui lòng nhập họ tên';
+        } else if (formData.fullName.trim().length < 2) {
+            newErrors.fullName = 'Họ tên phải có ít nhất 2 ký tự';
+        } else if (!/^[a-zA-ZÀ-ỹ\s]+$/.test(formData.fullName.trim())) {
+            newErrors.fullName = 'Họ tên chỉ được chứa chữ cái và khoảng trắng';
+        }
 
-            // Validate ngày sinh
-            if (!formData.birthDate) {
-                newErrors.birthDate = 'Vui lòng chọn ngày sinh';
+        // Validate ngày sinh
+        if (!formData.birthDate) {
+            newErrors.birthDate = 'Vui lòng chọn ngày sinh';
+        } else {
+            const birthDate = new Date(formData.birthDate);
+            const today = new Date();
+
+            if (birthDate > today) {
+                newErrors.birthDate = 'Ngày sinh không được trong tương lai';
             } else {
-                const birthDate = new Date(formData.birthDate);
-                const today = new Date();
-
-                // Kiểm tra ngày sinh không được trong tương lai
-                if (birthDate > today) {
-                    newErrors.birthDate = 'Ngày sinh không được trong tương lai';
-                } else {
-                    // Kiểm tra tuổi hợp lệ (từ 0 đến 120 tuổi)
-                    const age = calculateAge(formData.birthDate);
-
-                    if (age < 0) {
-                        newErrors.birthDate = 'Ngày sinh không hợp lệ';
-                    } else if (age > 120) {
-                        newErrors.birthDate = 'Tuổi không được vượt quá 120';
-                    }
-
-                    // Kiểm tra định dạng ngày hợp lệ
-                    if (isNaN(birthDate.getTime())) {
-                        newErrors.birthDate = 'Định dạng ngày sinh không hợp lệ';
-                    }
+                const age = calculateAge(formData.birthDate);
+                if (age < 0) {
+                    newErrors.birthDate = 'Ngày sinh không hợp lệ';
+                } else if (age > 120) {
+                    newErrors.birthDate = 'Tuổi không được vượt quá 120';
                 }
             }
+        }
 
-            // Validate giới tính
-            if (!formData.gender) {
-                newErrors.gender = 'Vui lòng chọn giới tính';
-            }
+        // Validate giới tính
+        if (!formData.gender) {
+            newErrors.gender = 'Vui lòng chọn giới tính';
+        }
 
-            // Validate số điện thoại
-            if (!formData.phone.trim()) {
-                newErrors.phone = 'Vui lòng nhập số điện thoại';
-            } else if (!/^[0-9]{10,11}$/.test(formData.phone.replace(/\s+/g, ''))) {
-                newErrors.phone = 'Số điện thoại không hợp lệ (10-11 chữ số)';
-            }
+        // Validate số điện thoại
+        if (!formData.phone.trim()) {
+            newErrors.phone = 'Vui lòng nhập số điện thoại';
+        } else if (!/^[0-9]{10,11}$/.test(formData.phone.replace(/\s+/g, ''))) {
+            newErrors.phone = 'Số điện thoại không hợp lệ (10-11 chữ số)';
+        }
 
-            // Validate email
-            if (!formData.email.trim()) {
-                newErrors.email = 'Vui lòng nhập email';
-            } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) {
-                newErrors.email = 'Email không hợp lệ';
-            }
+        // Validate email
+        if (!formData.email.trim()) {
+            newErrors.email = 'Vui lòng nhập email';
+        } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) {
+            newErrors.email = 'Email không hợp lệ';
         }
 
         // Validate thông tin cuộc hẹn
@@ -221,14 +215,11 @@ function Appointment() {
             newErrors.consultationType = 'Vui lòng chọn loại tư vấn';
         }
 
-        if (!formData.selectedDoctor && !formData.doctorName) {
-            newErrors.selectedDoctor = 'Vui lòng chọn bác sĩ tư vấn';
-        }
+        // Doctor selection is optional - system will auto-assign if not selected
 
         if (!formData.appointmentDate) {
             newErrors.appointmentDate = 'Vui lòng chọn ngày tư vấn';
         } else {
-            // Kiểm tra ngày không được trong quá khứ
             const selectedDate = new Date(formData.appointmentDate);
             const today = new Date();
             today.setHours(0, 0, 0, 0);
@@ -237,7 +228,6 @@ function Appointment() {
                 newErrors.appointmentDate = 'Ngày tư vấn không được trong quá khứ';
             }
 
-            // Kiểm tra ngày không được quá xa trong tương lai (6 tháng)
             const sixMonthsFromNow = new Date();
             sixMonthsFromNow.setMonth(sixMonthsFromNow.getMonth() + 6);
 
@@ -257,27 +247,30 @@ function Appointment() {
     const handleSubmit = async (e) => {
         e.preventDefault();
 
-        // Validation logic here...
         if (!validateForm()) {
             console.warn('❌ Form validation failed:', errors);
             alert('Vui lòng kiểm tra lại thông tin đã nhập.');
             return;
         }
+
         setIsSubmitting(true);
 
         try {
-            // Tạo appointment data đơn giản
+            // Tạo appointment data
             const appointmentData = {
                 // Thông tin bệnh nhân
                 fullName: formData.fullName,
                 phone: formData.phone,
                 email: formData.email,
                 birthDate: formData.birthDate,
+                gender: formData.gender,
+                age: calculateAge(formData.birthDate),
                 address: formData.address,
 
                 // Thông tin cuộc hẹn
                 consultationType: formData.consultationType,
-                doctorName: formData.doctorName || formData.selectedDoctor,
+                selectedDoctor: formData.selectedDoctor || null, // null if not selected
+                doctorName: formData.doctorName || 'Hệ thống sẽ phân công bác sĩ',
                 appointmentDate: formData.appointmentDate,
                 appointmentTime: formData.appointmentTime,
 
@@ -285,20 +278,23 @@ function Appointment() {
                 symptoms: formData.symptoms,
                 medicalHistory: formData.medicalHistory,
                 notes: formData.notes,
+                priority: formData.priority,
 
                 // Thông tin thanh toán
-                fee: calculateFee(formData.consultationType),
+                fee: formData.fee,
 
                 // Metadata
                 id: `APT${Date.now()}`,
                 createdAt: new Date().toISOString(),
-                status: 'pending'
+                status: 'pending',
+                isUserLoggedIn: isLoggedIn,
+                userId: userProfile?.id || null
             };
 
-            // Lưu vào pendingAppointment thay vì appointmentFormData
+            // Lưu vào localStorage
             localStorage.setItem('pendingAppointment', JSON.stringify(appointmentData));
 
-            console.log('✅ Appointment data saved to pendingAppointment');
+            console.log('✅ Appointment data saved successfully:', appointmentData);
 
             // Chuyển hướng đến trang thanh toán
             navigate('/paymentappointment');
@@ -319,9 +315,29 @@ function Appointment() {
             'Tư vấn tránh thai': 250000,
             'Tư vấn thai kỳ': 250000,
             'Tư vấn sinh sản': 300000,
-            'Tư vấn chung': 350000,
+            'Tư vấn chung': 200000,
         };
-        return feeMap[consultationType] || 300000;
+        return feeMap[consultationType] || 200000;
+    };
+
+    // Format currency
+    const formatCurrency = (amount) => {
+        return new Intl.NumberFormat('vi-VN', {
+            style: 'currency',
+            currency: 'VND'
+        }).format(amount);
+    };
+
+    // Check if form is valid
+    const isFormValid = () => {
+        return formData.fullName && 
+               formData.birthDate && 
+               formData.gender && 
+               formData.phone && 
+               formData.email && 
+               formData.consultationType && 
+               formData.appointmentDate && 
+               formData.appointmentTime;
     };
 
     return (
@@ -331,118 +347,148 @@ function Appointment() {
                 <Header />
 
                 <form onSubmit={handleSubmit} className={cx('appointment-form')}>
-                    <div className={cx('form-row')}>
-                        {/* Personal Info Section - chỉ hiển thị nếu chưa đăng nhập */}
-                        {!isLoggedIn && (
+                    {/* User Status Display */}
+                    {isLoggedIn && userProfile && (
+                        <div className={cx('user-status-section')}>
+                            <div className={cx('user-welcome')}>
+                                <span className={cx('welcome-icon')}>👋</span>
+                                <div className={cx('welcome-text')}>
+                                    <h3>Xin chào, {userProfile.fullName || userProfile.first_name}!</h3>
+                                    <p>Thông tin của bạn đã được tự động điền từ tài khoản</p>
+                                </div>
+                            </div>
+                        </div>
+                    )}
+
+                    <div className={cx('form-content')}>
+                        <div className={cx('form-row')}>
+                            {/* Personal Info Section */}
                             <PersonalInfoSection
                                 formData={formData}
                                 errors={errors}
                                 onChange={handleInputChange}
                             />
-                        )}
 
-                        {/* Additional Info Section */}
-                        <AdditionalInfoSection
+                            {/* Additional Info Section */}
+                            <AdditionalInfoSection
+                                formData={formData}
+                                onChange={handleInputChange}
+                            />
+                        </div>
+
+                        {/* Consultation Section */}
+                        <ConsultationSection
                             formData={formData}
+                            errors={errors}
+                            onChange={handleInputChange}
+                        />
+
+                        {/* Doctor Selection */}
+                        <DoctorSelection
+                            formData={formData}
+                            errors={errors}
+                            onChange={handleInputChange}
+                        />
+
+                        {/* Date Time Section */}
+                        <DateTimeSection
+                            formData={formData}
+                            errors={errors}
                             onChange={handleInputChange}
                         />
                     </div>
 
-                    {/* Consultation Section */}
-                    <ConsultationSection
-                        formData={formData}
-                        errors={errors}
-                        onChange={handleInputChange}
-                    />
-
-                    {/* Doctor Selection */}
-                    <DoctorSelection
-                        formData={formData}
-                        errors={errors}
-                        onChange={handleInputChange}
-                        onDoctorSelect={handleDoctorSelect}
-                    />
-
-                    {/* Date Time Section */}
-                    <DateTimeSection
-                        formData={formData}
-                        errors={errors}
-                        onChange={handleInputChange}
-                    />
+                    {/* Fee Summary */}
+                    {formData.consultationType && (
+                        <div className={cx('fee-summary')}>
+                            <div className={cx('fee-content')}>
+                                <h4>💰 Chi phí dự kiến</h4>
+                                <div className={cx('fee-breakdown')}>
+                                    <div className={cx('fee-item')}>
+                                        <span>Loại tư vấn:</span>
+                                        <span>{formData.consultationType}</span>
+                                    </div>
+                                    <div className={cx('fee-item', 'total')}>
+                                        <span>Tổng chi phí:</span>
+                                        <span className={cx('fee-amount')}>{formatCurrency(formData.fee)}</span>
+                                    </div>
+                                </div>
+                                <p className={cx('fee-note')}>
+                                    💡 Chi phí có thể thay đổi tùy thuộc vào yêu cầu cụ thể của bạn
+                                </p>
+                            </div>
+                        </div>
+                    )}
 
                     {/* Form Actions */}
                     <div className={cx('form-actions')}>
                         <button
                             type="submit"
-                            className={cx('submit-btn')}
-                            disabled={isSubmitting}
+                            className={cx('submit-btn', {
+                                'disabled': !isFormValid() || isSubmitting
+                            })}
+                            disabled={!isFormValid() || isSubmitting}
                         >
                             {isSubmitting ? (
                                 <>
-                                    <span className={cx('loading-spinner')}></span>{" "}
+                                    <span className={cx('spinner')}></span>
                                     Đang xử lý...
                                 </>
                             ) : (
                                 <>
-                                    💳 Tiếp tục thanh toán
+                                    💳 Tiếp tục thanh toán ({formatCurrency(formData.fee)})
                                 </>
                             )}
                         </button>
 
-                        {/* Nút hủy/quay lại */}
                         <button
                             type="button"
                             className={cx('cancel-btn')}
                             onClick={() => {
                                 if (window.confirm('Bạn có chắc muốn hủy đặt lịch hẹn?')) {
-                                    // Reset form hoặc quay lại trang trước
-                                    window.history.back();
+                                    navigate(-1);
                                 }
                             }}
                             disabled={isSubmitting}
                         >
-                            ↩️ Hủy bỏ
+                            ↩️ Quay lại
                         </button>
                     </div>
 
                     {/* Validation Summary */}
                     <div className={cx('validation-summary')}>
-                        <h4>Trạng thái form:</h4>
+                        <h4>Kiểm tra thông tin</h4>
                         <div className={cx('validation-grid')}>
-                            {!isLoggedIn && (
-                                <>
-                                    <div className={cx('validation-item', { 'valid': formData.fullName && !errors.fullName })}>
-                                        <span className={cx('validation-icon')}>
-                                            {formData.fullName && !errors.fullName ? '✅' : '❌'}
-                                        </span>
-                                        <span>Họ và tên</span>
-                                    </div>
+                            <div className={cx('validation-item', { 'valid': formData.fullName && !errors.fullName })}>
+                                <span className={cx('validation-icon')}>
+                                    {formData.fullName && !errors.fullName ? '✅' : '❌'}
+                                </span>
+                                <span>Họ và tên</span>
+                            </div>
 
-                                    <div className={cx('validation-item', { 'valid': formData.birthDate && !errors.birthDate })}>
-                                        <span className={cx('validation-icon')}>
-                                            {formData.birthDate && !errors.birthDate ? '✅' : '❌'}
-                                        </span>
-                                        <span>Ngày sinh</span>
-                                        {formData.birthDate && !errors.birthDate && (
-                                            <span className={cx('age-info')}>({calculateAge(formData.birthDate)} tuổi)</span>
-                                        )}
-                                    </div>
+                            <div className={cx('validation-item', { 'valid': formData.birthDate && !errors.birthDate })}>
+                                <span className={cx('validation-icon')}>
+                                    {formData.birthDate && !errors.birthDate ? '✅' : '❌'}
+                                </span>
+                                <span>Ngày sinh</span>
+                                {formData.birthDate && !errors.birthDate && (
+                                    <span className={cx('age-info')}>({calculateAge(formData.birthDate)} tuổi)</span>
+                                )}
+                            </div>
 
-                                    <div className={cx('validation-item', { 'valid': formData.phone && !errors.phone })}>
-                                        <span className={cx('validation-icon')}>
-                                            {formData.phone && !errors.phone ? '✅' : '❌'}
-                                        </span>
-                                        <span>Số điện thoại</span>
-                                    </div>
+                            <div className={cx('validation-item', { 'valid': formData.phone && !errors.phone })}>
+                                <span className={cx('validation-icon')}>
+                                    {formData.phone && !errors.phone ? '✅' : '❌'}
+                                </span>
+                                <span>Số điện thoại</span>
+                            </div>
 
-                                    <div className={cx('validation-item', { 'valid': formData.email && !errors.email })}>
-                                        <span className={cx('validation-icon')}>
-                                            {formData.email && !errors.email ? '✅' : '❌'}
-                                        </span>
-                                        <span>Email</span>
-                                    </div>
-                                </>
-                            )}
+                            <div className={cx('validation-item', { 'valid': formData.email && !errors.email })}>
+                                <span className={cx('validation-icon')}>
+                                    {formData.email && !errors.email ? '✅' : '❌'}
+                                </span>
+                                <span>Email</span>
+                            </div>
 
                             <div className={cx('validation-item', { 'valid': formData.consultationType })}>
                                 <span className={cx('validation-icon')}>
@@ -451,11 +497,13 @@ function Appointment() {
                                 <span>Loại tư vấn</span>
                             </div>
 
-                            <div className={cx('validation-item', { 'valid': formData.selectedDoctor || formData.doctorName })}>
+                            <div className={cx('validation-item', { 'valid': formData.selectedDoctor || !formData.selectedDoctor })}>
                                 <span className={cx('validation-icon')}>
-                                    {formData.selectedDoctor || formData.doctorName ? '✅' : '❌'}
+                                    {formData.selectedDoctor ? '✅' : '🤖'}
                                 </span>
-                                <span>Bác sĩ</span>
+                                <span>
+                                    {formData.selectedDoctor ? 'Đã chọn bác sĩ' : 'Tự động phân công'}
+                                </span>
                             </div>
 
                             <div className={cx('validation-item', { 'valid': formData.appointmentDate && !errors.appointmentDate })}>
@@ -479,23 +527,20 @@ function Appointment() {
                         <div className={cx('notice-item', 'highlight')}>
                             <span className={cx('notice-icon')}>💡</span>
                             <p>
-                                <strong>Lưu ý:</strong> Sau khi thanh toán thành công, lịch hẹn sẽ được xác nhận tự động
+                                <strong>Lưu ý:</strong> Sau khi thanh toán thành công, lịch hẹn sẽ được xác nhận trong vòng 1-2 giờ
                             </p>
                         </div>
 
                         <div className={cx('notice-item')}>
-                            <span className={cx('notice-icon')}>⚡</span>
-                            <p>Thời gian xử lý: <strong>1-2 giờ</strong> sau khi thanh toán</p>
+                            <span className={cx('notice-icon')}>🤖</span>
+                            <p>
+                                Nếu không chọn bác sĩ cụ thể, hệ thống sẽ tự động phân công bác sĩ phù hợp nhất
+                            </p>
                         </div>
 
                         <div className={cx('notice-item')}>
                             <span className={cx('notice-icon')}>📞</span>
-                            <p>Hotline hỗ trợ: <strong>1900-1133</strong></p>
-                        </div>
-
-                        <div className={cx('notice-item')}>
-                            <span className={cx('notice-icon')}>⏰</span>
-                            <p>Giờ làm việc: <strong>7:30-17:00</strong> (T2-T6) | <strong>7:30-12:00</strong> (T7)</p>
+                            <p>Hotline hỗ trợ: <strong>1900-1133</strong> (24/7)</p>
                         </div>
 
                         <div className={cx('notice-item', 'security')}>
@@ -503,30 +548,10 @@ function Appointment() {
                             <p>Thông tin của bạn được <strong>mã hóa và bảo mật</strong> tuyệt đối</p>
                         </div>
                     </div>
-
-                    {/* Help Section */}
-                    <div className={cx('help-section')}>
-                        <button
-                            type="button"
-                            className={cx('help-btn')}
-                            onClick={() => {
-                                alert(`
-                                    Bạn cần hỗ trợ?
-
-                                    📞 Gọi ngay: 1900-1133
-                                    📧 Email: support@healthcare.vn
-
-                                    Chúng tôi luôn sẵn sàng hỗ trợ bạn 24/7!
-                                `);
-                            }}
-                            title="Cần hỗ trợ?"
-                        >
-                            ❓ Cần hỗ trợ?
-                        </button>
-                    </div>
                 </form>
             </div>
         </div>
     );
 }
+
 export default Appointment;
