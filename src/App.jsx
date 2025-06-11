@@ -9,17 +9,21 @@ import LayoutAdmin from "./components/Layouts/LayoutAdmin/LayoutAdmin";
 import Blog from "./page/blog/Blog";
 import Appointment from "./page/Appointment";
 import PaymentAppointment from "./page/Payment/PaymentAppointment";
-import { AdminRouter } from "./routes/AdminRouter";
+import { AdminRoute } from "./routes/AdminRouter";
 import { TestServicePage } from "./page/testservice/TestServicePage";
 import ScrollToTop from "./components/ui/ScrollToTop";
 import MeetWidget from "./components/ui/MeetWidget";
 import About from "./page/AboutUs/About";
+import { ToastContainer } from "react-toastify";
+import { EmployeesManagerment } from "./page/admin/EmployeesManagerment/EmployeesManagerment";
+import DashboardAdmin from "./page/admin/DashboardAdmin";
 function App() {
   return (
     <>
+      <ToastContainer />
       <Routes>
         <Route
-          path=""
+          path="/"
           element={
             <LayoutAccount>
               <HomePage />
@@ -69,14 +73,6 @@ function App() {
         ></Route>
 
         <Route
-          path="/admin"
-          element={
-            <AdminRouter>
-              <LayoutAdmin />
-            </AdminRouter>
-          }
-        ></Route>
-        <Route
           path="/paymentappointment"
           element={
             <LayoutAccount>
@@ -100,8 +96,21 @@ function App() {
             </LayoutAccount>
           }
         ></Route>
+        {/* Admin */}
+        <Route
+          path="/admin"
+          element={
+            <AdminRoute>
+              <LayoutAdmin />
+            </AdminRoute>
+          }
+        >
+          <Route index element={<DashboardAdmin />} />
+          <Route path="employees" element={<EmployeesManagerment />}></Route>
+        </Route>
       </Routes>
       {/* <MeetWidget /> */}
+
       <ScrollToTop />
     </>
   );

@@ -1,27 +1,21 @@
 import React, { useEffect, useRef, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import logo_gender from "../../assets/gender_healthcare_logo.png";
-import ico_bell from "../../assets/ico_bell.png";
-import ico_user from "../../assets/ico_user.png";
-import { useDispatch, useSelector } from "react-redux";
-import { logout } from "../../store/feature/auth/authenSlice";
+import ToggleAccountMenu from "../ui/ToggleAccountMenu";
+import { useSelector } from "react-redux";
 
 export const Navbar = () => {
   const [showService, setShowService] = useState(false);
-  const [showUserMenu, setShowUserMenu] = useState(false);
-  const user = useSelector((state) => state.auth.user);
 
-  console.log("user", user);
+  const { accessToken, user } = useSelector((state) => state.auth);
+
+  console.log("user", accessToken);
 
   const navigate = useNavigate();
-  const dispatch = useDispatch();
-  const userMenuRef = useRef();
+
   const serviceMenuRef = useRef();
   useEffect(() => {
     const handleClickOutSide = (e) => {
-      if (userMenuRef.current && !userMenuRef.current.contains(e.target)) {
-        setShowUserMenu(false);
-      }
       if (
         serviceMenuRef.current &&
         !serviceMenuRef.current.contains(e.target)
@@ -33,11 +27,6 @@ export const Navbar = () => {
     return () => document.removeEventListener("mousedown", handleClickOutSide);
   }, []);
 
-  const handleLogout = () => {
-    dispatch(logout());
-    setShowUserMenu(false);
-    navigate("/");
-  };
   return (
     <div className="container mx-auto px-4">
       <div className="flex items-center justify-between">
@@ -73,7 +62,7 @@ export const Navbar = () => {
                 className="flex items-center cursor-pointer gap-1 relative after:absolute after:h-[1.5px] after:bg-blue-800 after:left-0 after:bottom-[-2px] after:transition-all after:duration-300 after:w-full after:scale-x-0 hover:after:scale-x-100 hover:text-blue-900 transition-colors duration-200"
               >
                 Các loại dịch vụ
-                {user && (
+                {accessToken && (
                   <svg
                     className={`w-4 h-4 ml-1 transition-transform ${
                       showService ? "rotate-180" : ""
@@ -93,7 +82,7 @@ export const Navbar = () => {
                 )}
               </button>
 
-              {user && showService && (
+              {accessToken && showService && (
                 <div className="absolute top-[120%] -left-8 mt-1 bg-white shadow-lg rounded-md py-2 min-w-[220px] z-50">
                   <Link
                     to="/services/test"
@@ -131,7 +120,9 @@ export const Navbar = () => {
         </nav>
 
         <div className="flex items-center gap-4">
-          {!user ? (
+          {accessToken ? (
+            <ToggleAccountMenu />
+          ) : (
             <>
               <Link
                 to="/register"
@@ -148,60 +139,6 @@ export const Navbar = () => {
               >
                 Đăng Nhập
               </Link>
-            </>
-          ) : (
-            <>
-              <div className="relative cursor-pointer">
-                <div className="w-6 h-6 flex items-center justify-center hover:opacity-80 transition-opacity">
-                  <img
-                    src={ico_bell}
-                    alt="Thông báo"
-                    className="max-w-full max-h-full object-contain"
-                  />
-                </div>
-                <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full w-4 h-4 flex items-center justify-center">
-                  3
-                </span>
-              </div>
-
-              <div className="h-4 w-px bg-gray-300"></div>
-              <div className="relative" ref={userMenuRef}>
-                <div
-                  className="w-6 h-6 flex items-center justify-center hover:opacity-80 transition-opacity"
-                  onClick={() => setShowUserMenu(!showUserMenu)}
-                >
-                  <img
-                    src={ico_user}
-                    alt="User icon"
-                    className="max-w-full max-h-full object-contain"
-                  />
-                </div>
-
-                {showUserMenu && (
-                  <div className="absolute right-0 top-full mt-2 w-48 bg-white rounded-md shadow-lg z-50">
-                    <Link
-                      to="/profile"
-                      className="block px-4 py-2 hover:bg-blue-50"
-                      onClick={() => setShowUserMenu(false)}
-                    >
-                      Thông tin cá nhân
-                    </Link>
-                    <Link
-                      to="/appointments"
-                      className="block px-4 py-2 hover:bg-blue-50"
-                      onClick={() => setShowUserMenu(false)}
-                    >
-                      Lịch hẹn của tôi
-                    </Link>
-                    <button
-                      onClick={handleLogout}
-                      className="block w-full text-left px-4 py-2 hover:bg-blue-50 text-red-600"
-                    >
-                      Đăng xuất
-                    </button>
-                  </div>
-                )}
-              </div>
             </>
           )}
         </div>

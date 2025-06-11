@@ -17,6 +17,7 @@ import { Footer } from "../../components/Layouts/LayoutHomePage/Footer";
 import { Navbar } from "../../components/ui/Navbar";
 import { useDispatch } from "react-redux";
 import { doLogin } from "../../store/feature/auth/authenSlice";
+import { toast } from "react-toastify";
 
 const cx = classNames.bind(styles);
 
@@ -109,6 +110,13 @@ function Login() {
             access_token: accessToken,
           })
         );
+
+        // Thêm toast success khi đăng nhập thành công
+        toast.success("Đăng nhập thành công", {
+          autoClose: 1000,
+          position: "top-right",
+        });
+
         const userRole = userData.role?.toLowerCase();
         console.log("Role nè: ", userRole);
         if (!userRole) {
@@ -129,11 +137,18 @@ function Login() {
             navigate("/manager");
             break;
           case "user":
-            navigate("/");
+            navigate("/"); // Chuyển về trang chủ thay vì /account
             break;
         }
       } catch (error) {
         console.error("Login error: ", error);
+
+        // Thêm toast error khi đăng nhập thất bại
+        toast.error("Đăng nhập thất bại", {
+          autoClose: 1000,
+          position: "top-right",
+        });
+
         if (error.response) {
           setErrorMessage(
             error.response.data?.message ||
@@ -146,6 +161,12 @@ function Login() {
     } catch (error) {
       setErrorMessage("Đã xảy ra lỗi không mong muốn");
       console.log("Login failed: ", error);
+
+      // Thêm toast error cho lỗi không mong muốn
+      toast.error("Đăng nhập thất bại", {
+        autoClose: 1000,
+        position: "top-right",
+      });
     } finally {
       setIsLoading(false);
     }

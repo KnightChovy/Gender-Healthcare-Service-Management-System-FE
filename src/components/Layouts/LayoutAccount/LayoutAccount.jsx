@@ -5,7 +5,7 @@ import { Footer } from "../LayoutHomePage/Footer";
 export const LayoutAccount = ({ children }) => {
   return (
     <div className="wrap">
-      <header className="py-2 lg:py-3 sticky top-0 z-10 bg-white shadow-lg">
+      <header className="py-3 lg:py-4 sticky top-0 z-10 bg-white shadow-lg">
         <Navbar />
       </header>
       <main>{children}</main>
