@@ -1,7 +1,7 @@
 import React from "react";
 import { Route } from "react-router-dom";
 import { HomePage } from "../page/account/HomePage";
-import { TestServicePage } from "../page/testservice/TestServicePage";
+import { ServicePage } from "../page/testservice/TestServicePage";
 import Login from "../page/login";
 import Register from "../page/Register";
 import Appointment from "../page/Appointment";
@@ -26,7 +26,7 @@ export function AccountRoutes() {
         path="/service"
         element={
           <LayoutAccount>
-            <TestServicePage />
+            <ServicePage />
           </LayoutAccount>
         }
       />
