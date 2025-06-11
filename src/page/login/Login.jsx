@@ -93,7 +93,7 @@ function Login() {
       setErrorMessage("");
 
       try {
-        const res = await axiosClient.post("/login", {
+        const res = await axiosClient.post("/v1/auth/login", {
           username: formData.username,
           password: formData.password,
         });

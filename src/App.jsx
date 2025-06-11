@@ -74,7 +74,7 @@ function App() {
           }
         ></Route>
       </Routes>
-      <MeetWidget />
+      {/* <MeetWidget /> */}
       <ScrollToTop />
     </>
   );
