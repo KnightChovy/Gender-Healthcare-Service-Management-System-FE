@@ -1,14 +1,11 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Header from './AppointmentItems/Header';
-import UserStatusCard from './AppointmentItems/UserStatusCard';
 import PersonalInfoSection from './AppointmentItems/PersonalInfoSection';
 import ConsultationSection from './AppointmentItems/ConsultationSection';
 import DoctorSelection from './AppointmentItems/DoctorSelection';
 import DateTimeSection from './AppointmentItems/DateTimeSection';
 import AdditionalInfoSection from './AppointmentItems/AdditionalInfoSection';
-import { Navbar } from '../../components/ui/Navbar';
-import { Footer } from '../../components/Layouts/LayoutHomePage/Footer';
 import classNames from 'classnames/bind';
 import styles from './Appointment.module.scss';
 
@@ -329,20 +326,9 @@ function Appointment() {
 
     return (
         <div className={cx('wrap')}>
-            <header className="py-2 lg:py-3 sticky top-0 z-10 bg-white shadow-lg">
-                <Navbar />
-            </header>
-
             <div className={cx('appointment-container')}>
                 {/* Header Section */}
                 <Header />
-
-                {/* User Status Card */}
-                {/* <UserStatusCard 
-                    isLoggedIn={isLoggedIn}
-                    userProfile={userProfile}
-                    onLoginRequired={() => navigate('/login')}
-                /> */}
 
                 <form onSubmit={handleSubmit} className={cx('appointment-form')}>
                     <div className={cx('form-row')}>
@@ -540,10 +526,6 @@ function Appointment() {
                     </div>
                 </form>
             </div>
-            
-            <footer className="bg-gray-100 text-gray-700 text-sm">
-                <Footer />
-            </footer>
         </div>
     );
 }

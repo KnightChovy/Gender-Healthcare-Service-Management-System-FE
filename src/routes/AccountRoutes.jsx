@@ -2,8 +2,10 @@ import React from "react";
 import { Route } from "react-router-dom";
 import { HomePage } from "../page/account/HomePage";
 import { TestServicePage } from "../page/testservice/TestServicePage";
-import Login from "../page/login/Login";
-import Register from "../page/register/Register";
+import Login from "../page/login";
+import Register from "../page/Register";
+import Appointment from "../page/Appointment";
+import PaymentAppointment from "../page/Payment/PaymentAppointment";
 
 const LayoutAccount = React.lazy(() => {
   import("../components/Layouts/LayoutAccount/LayoutAccount");
@@ -41,6 +43,22 @@ export function AccountRoutes() {
         element={
           <LayoutAccount>
             <Register />
+          </LayoutAccount>
+        }
+      />
+      <Route
+        path="/appointment"
+        element={
+          <LayoutAccount>
+            <Appointment />
+          </LayoutAccount>
+        }
+      />
+      <Route
+        path="/paymentappointment"
+        element={
+          <LayoutAccount>
+            <PaymentAppointment />
           </LayoutAccount>
         }
       />
