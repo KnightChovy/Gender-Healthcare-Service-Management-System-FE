@@ -13,8 +13,7 @@ import {
 
 import classNames from "classnames/bind";
 import styles from "./Login.module.scss";
-import { Footer } from "../../components/Layouts/LayoutHomePage/Footer";
-import { Navbar } from "../../components/ui/Navbar";
+
 import { useDispatch } from "react-redux";
 import { doLogin } from "../../store/feature/auth/authenSlice";
 import { toast } from "react-toastify";
