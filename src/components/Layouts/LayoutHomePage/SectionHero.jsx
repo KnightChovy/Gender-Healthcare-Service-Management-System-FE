@@ -1,7 +1,10 @@
 import React from "react";
 import banner_page from "../../../assets/banner_gender.jpg";
 import { Link } from "react-router-dom";
+// import { useSelector } from "react-redux";
+
 export const SectionHero = () => {
+  // const user = useSelector((state) => state.auth.user);
   return (
     <section className="relative">
       <img
