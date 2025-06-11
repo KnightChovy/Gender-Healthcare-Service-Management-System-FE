@@ -17,6 +17,9 @@ import About from "./page/AboutUs/About";
 import { ToastContainer } from "react-toastify";
 import { EmployeesManagerment } from "./page/admin/EmployeesManagerment/EmployeesManagerment";
 import DashboardAdmin from "./page/admin/DashboardAdmin";
+import ManagerRoute from "./routes/ManagerRouter";
+import LayoutManager from "./components/Layouts/LayoutManager/LayoutManager";
+import { DashboardManager } from "./page/manager/DashboardManager";
 function App() {
   return (
     <>
@@ -108,7 +111,19 @@ function App() {
           <Route index element={<DashboardAdmin />} />
           <Route path="employees" element={<EmployeesManagerment />}></Route>
         </Route>
+        {/* Manager */}
+        <Route
+          path="/manager"
+          element={
+            <ManagerRoute>
+              <LayoutManager />
+            </ManagerRoute>
+          }
+        >
+          <Route index element={<DashboardManager />} />
+        </Route>
       </Routes>
+
       {/* <MeetWidget /> */}
 
       <ScrollToTop />
