@@ -253,7 +253,7 @@ function DateTimeSection({ formData, errors, onChange }) {
                     <div className={cx('selection-summary')}>
                         <div className={cx('summary-card')}>
                             <h4 className={cx('summary-title')}>
-                                ✅ Thông tin đã chọn
+                                Thông tin đã chọn
                             </h4>
                             <div className={cx('summary-details')}>
                                 <div className={cx('summary-item')}>
