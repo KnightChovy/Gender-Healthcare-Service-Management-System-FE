@@ -8,29 +8,100 @@ import {
   faCheckCircle,
   faDice,
   faShuffle,
-  faInfoCircle
+  faInfoCircle,
+  faSpinner
 } from '@fortawesome/free-solid-svg-icons';
 import classNames from 'classnames/bind';
 import styles from '../Appointment.module.scss';
-import { doctorsData } from '../../../components/Data/Doctor';
 
 const cx = classNames.bind(styles);
 
 function DoctorSelection({ formData, errors, onChange }) {
-  const [filteredDoctors, setFilteredDoctors] = useState(doctorsData);
+  const [filteredDoctors, setFilteredDoctors] = useState([]);
+  const [allDoctors, setAllDoctors] = useState([]);
   const [isRandomizing, setIsRandomizing] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
+  const [apiError, setApiError] = useState(null);
+
+  // Fetch doctors from API
+  useEffect(() => {
+    const fetchDoctors = async () => {
+      try {
+        setIsLoading(true);
+        setApiError(null);
+        
+        const response = await fetch('http://localhost:8017/v1/doctors');
+        
+        if (!response.ok) {
+          throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        
+        const apiData = await response.json();
+        
+        // Check if response has success flag and data
+        if (!apiData.success || !apiData.listAllDoctors) {
+          throw new Error('Invalid API response format');
+        }
+        
+        // Transform API data to match the expected format
+        const transformedDoctors = apiData.listAllDoctors.map(doctor => {
+          // Get specialization from certificates
+          const specializations = doctor.certificates?.map(cert => cert.specialization) || [];
+          
+          return {
+            id: doctor.doctor_id,
+            name: `${doctor.first_name} ${doctor.last_name}`.trim(),
+            specialty: specializations.length > 0 ? specializations : ['Tư vấn tổng quát'],
+            experience: `${doctor.experience_year} năm kinh nghiệm`,
+            rating: 4.5, // Default rating since not in API
+            reviews: Math.floor(Math.random() * 100) + 20, // Random reviews for demo
+            education: doctor.certificates?.[0]?.certificate || 'Bằng cấp y khoa',
+            avatar: doctor.avatar || `/api/placeholder/80/80?text=${doctor.first_name[0]}${doctor.last_name[0]}`,
+            bio: doctor.bio || 'Bác sĩ chuyên nghiệp với nhiều năm kinh nghiệm',
+            consultationTypes: specializations,
+            phone: doctor.phone,
+            email: doctor.email,
+            gender: doctor.gender,
+            status: doctor.status,
+            certificates: doctor.certificates || []
+          };
+        }).filter(doctor => doctor.status === 1); // Only active doctors
+        
+        setAllDoctors(transformedDoctors);
+        console.log('✅ Fetched doctors from API:', transformedDoctors);
+        
+      } catch (error) {
+        console.error('❌ Error fetching doctors:', error);
+        setApiError(error.message);
+        setAllDoctors([]);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchDoctors();
+  }, []);
 
   // Filter doctors based on consultation type
   useEffect(() => {
-    if (formData.consultationType) {
-      const filtered = doctorsData.filter(doctor =>
-        doctor.specialty.includes(formData.consultationType)
-      );
-      setFilteredDoctors(filtered);
+    if (formData.consultationType && allDoctors.length > 0) {
+      const filtered = allDoctors.filter(doctor => {
+        // Check if doctor's specialty matches consultation type
+        return doctor.specialty.some(spec => 
+          spec.toLowerCase().includes(formData.consultationType.toLowerCase()) ||
+          formData.consultationType.toLowerCase().includes(spec.toLowerCase())
+        ) || doctor.consultationTypes.some(type =>
+          type.toLowerCase().includes(formData.consultationType.toLowerCase()) ||
+          formData.consultationType.toLowerCase().includes(type.toLowerCase())
+        );
+      });
+      
+      // If no specific match, show all doctors (they can handle general consultations)
+      setFilteredDoctors(filtered.length > 0 ? filtered : allDoctors);
     } else {
-      setFilteredDoctors(doctorsData);
+      setFilteredDoctors(allDoctors);
     }
-  }, [formData.consultationType]);
+  }, [formData.consultationType, allDoctors]);
 
   const handleDoctorSelect = (doctor) => {
     onChange({ target: { name: 'selectedDoctor', value: doctor.id } });
@@ -52,7 +123,7 @@ function DoctorSelection({ formData, errors, onChange }) {
     
     // Create animation effect by cycling through doctors
     let cycleCount = 0;
-    const maxCycles = 8; // Reduced cycles for better UX
+    const maxCycles = 8;
     
     const cycleInterval = setInterval(() => {
       const randomIndex = Math.floor(Math.random() * filteredDoctors.length);
@@ -78,8 +149,55 @@ function DoctorSelection({ formData, errors, onChange }) {
           console.log(`🎲 Đã chọn ngẫu nhiên bác sĩ: ${finalRandomDoctor.name}`);
         }, 300);
       }
-    }, 120); // Slightly slower for better visual
+    }, 120);
   };
+
+  // Loading state
+  if (isLoading) {
+    return (
+      <div className={cx('form-section', 'doctor-selection-section')}>
+        <div className={cx('section-header')}>
+          <h3 className={cx('section-title')}>
+            <FontAwesomeIcon icon={faUserMd} />
+            Chọn bác sĩ tư vấn
+            <span className={cx('optional-badge')}>Tùy chọn</span>
+          </h3>
+        </div>
+        
+        <div className={cx('loading-state')}>
+          <FontAwesomeIcon icon={faSpinner} spin className={cx('loading-icon')} />
+          <p>Đang tải danh sách bác sĩ...</p>
+        </div>
+      </div>
+    );
+  }
+
+  // Error state
+  if (apiError) {
+    return (
+      <div className={cx('form-section', 'doctor-selection-section')}>
+        <div className={cx('section-header')}>
+          <h3 className={cx('section-title')}>
+            <FontAwesomeIcon icon={faUserMd} />
+            Chọn bác sĩ tư vấn
+            <span className={cx('optional-badge')}>Tùy chọn</span>
+          </h3>
+        </div>
+        
+        <div className={cx('error-state')}>
+          <p>❌ Không thể tải danh sách bác sĩ: {apiError}</p>
+          <p>Hệ thống sẽ tự động phân công bác sĩ phù hợp khi xử lý đơn đặt lịch.</p>
+          <button 
+            type="button" 
+            onClick={() => window.location.reload()}
+            className={cx('retry-btn')}
+          >
+            🔄 Thử lại
+          </button>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className={cx('form-section', 'doctor-selection-section')}>
@@ -165,7 +283,13 @@ function DoctorSelection({ formData, errors, onChange }) {
               disabled={isRandomizing}
             >
               <div className={cx('doctor-avatar')}>
-                <img src={doctor.avatar} alt={doctor.name} />
+                <img 
+                  src={doctor.avatar} 
+                  alt={doctor.name}
+                  onError={(e) => {
+                    e.target.src = `/api/placeholder/80/80?text=${doctor.name.split(' ').map(n => n[0]).join('')}`;
+                  }}
+                />
                 {isRandomizing && formData.selectedDoctor === doctor.id && (
                   <div className={cx('randomizing-overlay')}>
                     <FontAwesomeIcon icon={faDice} className={cx('dice-icon')} />
@@ -175,6 +299,8 @@ function DoctorSelection({ formData, errors, onChange }) {
 
               <div className={cx('doctor-info')}>
                 <h4>{doctor.name}</h4>
+                
+                {/* Display specialties */}
                 {doctor.specialty.map((spec, index) => (
                   <p className={cx('specialty')} key={index}>
                     <FontAwesomeIcon icon={faStethoscope} />
@@ -183,12 +309,22 @@ function DoctorSelection({ formData, errors, onChange }) {
                     </span>
                   </p>
                 ))}
+                
+                {/* Experience */}
                 <p className={cx('experience')}>
                   <FontAwesomeIcon icon={faGraduationCap} />
                   {doctor.experience}
                 </p>
+                
+                {/* Education/Certificates */}
                 <p className={cx('education')}>{doctor.education}</p>
+                
+                {/* Bio */}
+                {doctor.bio && (
+                  <p className={cx('bio')}>{doctor.bio}</p>
+                )}
 
+                {/* Rating */}
                 <div className={cx('rating')}>
                   <FontAwesomeIcon icon={faStar} />
                   <span>{doctor.rating}</span>
@@ -204,7 +340,7 @@ function DoctorSelection({ formData, errors, onChange }) {
         ) : (
           <div className={cx('no-doctors-message')}>
             <FontAwesomeIcon icon={faUserMd} />
-            <p>Không có bác sĩ nào chuyên về loại tư vấn đã chọn.</p>
+            <p>Không có bác sĩ nào có sẵn hiện tại.</p>
             <p>Hệ thống sẽ tự động phân công bác sĩ phù hợp khi xử lý đơn đặt lịch.</p>
           </div>
         )}
@@ -243,7 +379,8 @@ function DoctorSelection({ formData, errors, onChange }) {
         {filteredDoctors.length > 0 && (
           <div className={cx('doctors-stats')}>
             <span className={cx('stats-text')}>
-              📊 Có <strong>{filteredDoctors.length}</strong> bác sĩ chuyên về {formData.consultationType || 'tư vấn này'}
+              📊 Có <strong>{filteredDoctors.length}</strong> bác sĩ có sẵn
+              {formData.consultationType && ` chuyên về ${formData.consultationType}`}
             </span>
           </div>
         )}

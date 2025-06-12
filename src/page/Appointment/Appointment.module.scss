@@ -1817,6 +1817,48 @@
   }
 }
 
+/* ===== LOADING AND ERROR STATES ===== */
+.loading-state,
+.error-state {
+  text-align: center;
+  padding: 2rem;
+  
+  .loading-icon {
+    font-size: 2rem;
+    color: #2c9b95;
+    margin-bottom: 1rem;
+  }
+  
+  p {
+    color: #6c757d;
+    margin: 0.5rem 0;
+  }
+  
+  .retry-btn {
+    background: #2c9b95;
+    color: white;
+    border: none;
+    border-radius: 8px;
+    padding: 0.5rem 1rem;
+    font-size: 0.875rem;
+    cursor: pointer;
+    margin-top: 1rem;
+    transition: all 0.3s ease;
+    
+    &:hover {
+      background: #26a69a;
+    }
+  }
+}
+
+.bio {
+  font-size: 0.75rem;
+  color: #6c757d;
+  font-style: italic;
+  margin: 0.25rem 0;
+  line-height: 1.4;
+}
+
 /* ===== ANIMATIONS ===== */
 @keyframes spin {
   0% { transform: rotate(0deg); }

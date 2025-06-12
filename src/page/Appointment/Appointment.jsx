@@ -50,10 +50,10 @@ function Appointment() {
 
     const checkUserStatus = () => {
         try {
-            const isLoggedIn = localStorage.getItem('isLoggedIn') === 'true';
-            const userInfo = localStorage.getItem('userInfo');
+            const isLoggedIn = localStorage.getItem('user') === 'true';
+            const userInfo = localStorage.getItem('user');
 
-            if (isLoggedIn && userInfo) {
+            if (!isLoggedIn) {
                 const profile = JSON.parse(userInfo);
                 setIsLoggedIn(true);
                 setUserProfile(profile);
@@ -61,7 +61,7 @@ function Appointment() {
                 // Auto-fill form với thông tin user
                 setFormData(prev => ({
                     ...prev,
-                    fullName: profile.fullName || `${profile.first_name || ''} ${profile.last_name || ''}`.trim(),
+                    fullName: profile.fullName || `${profile.last_name || ''} ${profile.first_name || ''}`.trim(),
                     phone: profile.phone || '',
                     email: profile.email || '',
                     birthDate: profile.birthday || profile.birth_date || '',
