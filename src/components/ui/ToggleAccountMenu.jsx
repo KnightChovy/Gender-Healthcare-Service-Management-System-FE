@@ -88,15 +88,35 @@ export default function AccountMenu() {
         <MenuItem onClick={handleClose}>
           <Avatar /> Profile
         </MenuItem>
-        {user.role === "admin" ? (
-          <MenuItem onClick={() => navigate("/admin")}>
-            <Avatar /> My Admin
-          </MenuItem>
-        ) : (
-          <MenuItem onClick={handleClose}>
-            <Avatar /> My Account
-          </MenuItem>
-        )}
+        {(() => {
+          switch (user.role) {
+            case "admin":
+              return (
+                <MenuItem onClick={() => navigate("/admin")}>
+                  <Avatar /> My Admin
+                </MenuItem>
+              );
+            case "doctor":
+              return (
+                <MenuItem onClick={() => navigate("/doctor")}>
+                  <Avatar /> Doctor Dashboard
+                </MenuItem>
+              );
+            case "manager":
+              return (
+                <MenuItem onClick={() => navigate("/manager")}>
+                  <Avatar /> Manager Dashboard
+                </MenuItem>
+              );
+            case "user":
+            default:
+              return (
+                <MenuItem onClick={() => navigate("/")}>
+                  <Avatar /> My Account
+                </MenuItem>
+              );
+          }
+        })()}
 
         <Divider />
         <MenuItem onClick={handleClose}>
