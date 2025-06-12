@@ -30,7 +30,7 @@ function DoctorSelection({ formData, errors, onChange }) {
         setIsLoading(true);
         setApiError(null);
         
-        const response = await fetch('http://localhost:8017/v1/doctors');
+        const response = await fetch('http://44.204.71.234:3000/v1/doctors');
         
         if (!response.ok) {
           throw new Error(`HTTP error! status: ${response.status}`);
@@ -56,7 +56,6 @@ function DoctorSelection({ formData, errors, onChange }) {
             rating: 4.5, // Default rating since not in API
             reviews: Math.floor(Math.random() * 100) + 20, // Random reviews for demo
             education: doctor.certificates?.[0]?.certificate || 'Bằng cấp y khoa',
-            avatar: doctor.avatar || `/api/placeholder/80/80?text=${doctor.first_name[0]}${doctor.last_name[0]}`,
             bio: doctor.bio || 'Bác sĩ chuyên nghiệp với nhiều năm kinh nghiệm',
             consultationTypes: specializations,
             phone: doctor.phone,
@@ -282,21 +281,6 @@ function DoctorSelection({ formData, errors, onChange }) {
               onClick={() => handleDoctorSelect(doctor)}
               disabled={isRandomizing}
             >
-              <div className={cx('doctor-avatar')}>
-                <img 
-                  src={doctor.avatar} 
-                  alt={doctor.name}
-                  onError={(e) => {
-                    e.target.src = `/api/placeholder/80/80?text=${doctor.name.split(' ').map(n => n[0]).join('')}`;
-                  }}
-                />
-                {isRandomizing && formData.selectedDoctor === doctor.id && (
-                  <div className={cx('randomizing-overlay')}>
-                    <FontAwesomeIcon icon={faDice} className={cx('dice-icon')} />
-                  </div>
-                )}
-              </div>
-
               <div className={cx('doctor-info')}>
                 <h4>{doctor.name}</h4>
                 
