@@ -50,10 +50,10 @@ function Appointment() {
 
     const checkUserStatus = () => {
         try {
-            const isLoggedIn = localStorage.getItem('user') === 'true';
-            const userInfo = localStorage.getItem('user');
+            const isLoggedIn = localStorage.getItem('isLoggedIn') === 'true';
+            const userInfo = localStorage.getItem('userInfo');
 
-            if (!isLoggedIn) {
+            if (isLoggedIn && userInfo) {
                 const profile = JSON.parse(userInfo);
                 setIsLoggedIn(true);
                 setUserProfile(profile);
@@ -61,7 +61,7 @@ function Appointment() {
                 // Auto-fill form với thông tin user
                 setFormData(prev => ({
                     ...prev,
-                    fullName: profile.fullName || `${profile.last_name || ''} ${profile.first_name || ''}`.trim(),
+                    fullName: profile.fullName || `${profile.first_name || ''} ${profile.last_name || ''}`.trim(),
                     phone: profile.phone || '',
                     email: profile.email || '',
                     birthDate: profile.birthday || profile.birth_date || '',
@@ -101,7 +101,7 @@ function Appointment() {
 
     const handleInputChange = (e) => {
         const { name, value } = e.target;
-        
+
         setFormData(prev => ({
             ...prev,
             [name]: value
@@ -270,7 +270,7 @@ function Appointment() {
                 // Thông tin cuộc hẹn
                 consultationType: formData.consultationType,
                 selectedDoctor: formData.selectedDoctor || null, // null if not selected
-                doctorName: formData.doctorName || 'Hệ thống sẽ phân công bác sĩ',
+                doctorName: formData.doctorName || 'Hệ thống sẽ phân công',
                 appointmentDate: formData.appointmentDate,
                 appointmentTime: formData.appointmentTime,
 
@@ -286,25 +286,320 @@ function Appointment() {
                 // Metadata
                 id: `APT${Date.now()}`,
                 createdAt: new Date().toISOString(),
-                status: 'pending',
+                status: 'pending_confirmation', // Trạng thái chờ xác nhận
                 isUserLoggedIn: isLoggedIn,
                 userId: userProfile?.id || null
             };
 
-            // Lưu vào localStorage
+            // Lưu vào localStorage để theo dõi
             localStorage.setItem('pendingAppointment', JSON.stringify(appointmentData));
 
-            console.log('✅ Appointment data saved successfully:', appointmentData);
+            // Gửi API request để tạo appointment
+            // const response = await fetch('http://localhost:8017/v1/appointments', {
+            //     method: 'POST',
+            //     headers: {
+            //         'Content-Type': 'application/json',
+            //     },
+            //     body: JSON.stringify(appointmentData)
+            // });
 
-            // Chuyển hướng đến trang thanh toán
-            navigate('/paymentappointment');
+            console.log('✅ Appointment submitted successfully:', appointmentData);
+
+            // Hiển thị thông báo thành công
+            showSuccessNotification();
+
+            // Chuyển về trang chủ sau 3 giây
+            setTimeout(() => {
+                navigate('/');
+            }, 10000);
 
         } catch (error) {
-            console.error('❌ Error saving appointment:', error);
-            alert('Có lỗi xảy ra. Vui lòng thử lại.');
+            console.error('❌ Error submitting appointment:', error);
+            alert('Có lỗi xảy ra khi đặt lịch hẹn. Vui lòng thử lại.');
         } finally {
             setIsSubmitting(false);
         }
+    };
+
+    // Hiển thị thông báo thành công
+    const showSuccessNotification = () => {
+        // Tạo element thông báo
+        const notification = document.createElement('div');
+        notification.className = 'appointment-success-notification';
+        notification.innerHTML = `
+        <div class="notification-overlay"></div>
+        <div class="notification-content">
+            <div class="notification-text">
+                <h3>Lịch hẹn đã được gửi về hệ thống</h3>
+                <p class="main-message">Cảm ơn bạn đã tin tưởng dịch vụ của chúng tôi</p>
+                <div class="info-box">
+                    <div class="info-item">
+                        <span class="info-icon">⏱️</span>
+                        <span>Xác nhận trong 1-2 giờ</span>
+                    </div>
+                    <div class="info-item">
+                        <span class="info-icon">📧</span>
+                        <span>Thông tin thanh toán sẽ gửi sau khi hệ thống xác nhận</span>
+                    </div>
+                </div>
+                <div class="countdown">
+                    <div class="countdown-number">10</div>
+                    <span class="countdown-label">Đang chuyển về trang chủ...</span>
+                </div>
+
+                <button class="home-button" onclick="window.location.href='/'">
+                    🏠 Về trang chủ ngay
+                </button>
+            </div>
+        </div>
+    `;
+
+        // CSS đơn giản
+        const style = document.createElement('style');
+        style.textContent = `
+        .appointment-success-notification {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.7);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 10000;
+            animation: fadeIn 0.3s ease;
+        }
+        
+        .notification-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+        }
+        
+        .notification-content {
+            position: relative;
+            background: white;
+            padding: 2rem;
+            border-radius: 16px;
+            text-align: center;
+            max-width: 500px;
+            width: 90%;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+            animation: slideUp 0.4s ease;
+        }
+        
+        .success-icon {
+            font-size: 4rem;
+            margin-bottom: 1rem;
+            animation: bounce 0.6s ease;
+        }
+        
+        .notification-text h3 {
+            color: #28a745;
+            margin: 0 0 1rem 0;
+            font-size: 1.5rem;
+            font-weight: 600;
+        }
+        
+        .main-message {
+            color: #666;
+            margin: 0 0 1.5rem 0;
+            font-size: 1rem;
+            line-height: 1.5;
+        }
+        
+        .info-box {
+            background: #f8f9fa;
+            border-radius: 10px;
+            padding: 1.25rem;
+            margin: 1.5rem 0;
+            border: 1px solid #e9ecef;
+        }
+        
+        .info-item {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            padding: 0.5rem 0;
+            font-size: 0.95rem;
+            color: #495057;
+        }
+        
+        .info-item:not(:last-child) {
+            border-bottom: 1px solid #e9ecef;
+            margin-bottom: 0.5rem;
+            padding-bottom: 0.75rem;
+        }
+        
+        .info-icon {
+            font-size: 1.2rem;
+            width: 24px;
+            text-align: center;
+        }
+        
+        .countdown {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 1rem;
+            margin-top: 1.5rem;
+            padding: 1rem;
+            background: #e8f5e8;
+            border-radius: 10px;
+        }
+        
+        .countdown-number {
+            background: #28a745;
+            color: white;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.25rem;
+            font-weight: 600;
+            animation: pulse 1s infinite;
+        }
+        
+        .countdown-label {
+            color: #155724;
+            font-weight: 500;
+            font-size: 0.95rem;
+        }
+
+        .home-button {
+            background: #2c9b95;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 500;
+            cursor: pointer;
+            margin-top: 15px;
+            width: 100%;
+        }
+        
+        .home-button:hover {
+            background: #26a69a;
+        }
+        
+        /* ===== ANIMATIONS ===== */
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+        
+        @keyframes slideUp {
+            from { 
+                transform: translateY(50px);
+                opacity: 0;
+            }
+            to { 
+                transform: translateY(0);
+                opacity: 1;
+            }
+        }
+        
+        @keyframes bounce {
+            0%, 20%, 50%, 80%, 100% {
+                transform: translateY(0);
+            }
+            40% {
+                transform: translateY(-10px);
+            }
+            60% {
+                transform: translateY(-5px);
+            }
+        }
+        
+        @keyframes pulse {
+            0% {
+                transform: scale(1);
+                box-shadow: 0 0 0 0 rgba(40, 167, 69, 0.4);
+            }
+            50% {
+                transform: scale(1.05);
+                box-shadow: 0 0 0 10px rgba(40, 167, 69, 0);
+            }
+            100% {
+                transform: scale(1);
+                box-shadow: 0 0 0 0 rgba(40, 167, 69, 0);
+            }
+        }
+        
+        /* ===== RESPONSIVE ===== */
+        @media (max-width: 768px) {
+            .notification-content {
+                padding: 1.5rem;
+                margin: 1rem;
+            }
+            
+            .success-icon {
+                font-size: 3rem;
+            }
+            
+            .notification-text h3 {
+                font-size: 1.25rem;
+            }
+            
+            .countdown {
+                flex-direction: column;
+                gap: 0.75rem;
+            }
+        }
+        
+        @media (max-width: 480px) {
+            .notification-content {
+                padding: 1.25rem;
+            }
+            
+            .info-box {
+                padding: 1rem;
+            }
+            
+            .info-item {
+                font-size: 0.875rem;
+            }
+
+            .home-button {
+                font-size: 14px;
+                padding: 10px 20px;
+            }
+        }
+    `;
+
+        document.head.appendChild(style);
+        document.body.appendChild(notification);
+
+        // Countdown 10 giây
+        let countdown = 10;
+        const countdownElement = notification.querySelector('.countdown-number');
+
+        const countdownInterval = setInterval(() => {
+            countdown--;
+            if (countdown > 0) {
+                countdownElement.textContent = countdown;
+            } else {
+                countdownElement.textContent = '✓';
+                countdownElement.style.background = '#28a745';
+                clearInterval(countdownInterval);
+            }
+        }, 1000);
+
+        // Cleanup sau 10 giây
+        setTimeout(() => {
+            if (document.body.contains(notification)) {
+                document.body.removeChild(notification);
+            }
+            if (document.head.contains(style)) {
+                document.head.removeChild(style);
+            }
+        }, 10000);
     };
 
     // Helper function tính phí
@@ -330,14 +625,14 @@ function Appointment() {
 
     // Check if form is valid
     const isFormValid = () => {
-        return formData.fullName && 
-               formData.birthDate && 
-               formData.gender && 
-               formData.phone && 
-               formData.email && 
-               formData.consultationType && 
-               formData.appointmentDate && 
-               formData.appointmentTime;
+        return formData.fullName &&
+            formData.birthDate &&
+            formData.gender &&
+            formData.phone &&
+            formData.email &&
+            formData.consultationType &&
+            formData.appointmentDate &&
+            formData.appointmentTime
     };
 
     return (
@@ -414,7 +709,7 @@ function Appointment() {
                                     </div>
                                 </div>
                                 <p className={cx('fee-note')}>
-                                    💡 Chi phí có thể thay đổi tùy thuộc vào yêu cầu cụ thể của bạn
+                                    💡 Thông tin thanh toán sẽ được gửi qua email sau khi lịch hẹn được xác nhận
                                 </p>
                             </div>
                         </div>
@@ -436,7 +731,7 @@ function Appointment() {
                                 </>
                             ) : (
                                 <>
-                                    💳 Tiếp tục thanh toán ({formatCurrency(formData.fee)})
+                                    ✅ Xác nhận đặt lịch hẹn
                                 </>
                             )}
                         </button>
@@ -457,7 +752,7 @@ function Appointment() {
 
                     {/* Validation Summary */}
                     <div className={cx('validation-summary')}>
-                        <h4>Kiểm tra thông tin</h4>
+                        <h4>📋 Kiểm tra thông tin</h4>
                         <div className={cx('validation-grid')}>
                             <div className={cx('validation-item', { 'valid': formData.fullName && !errors.fullName })}>
                                 <span className={cx('validation-icon')}>
@@ -525,9 +820,16 @@ function Appointment() {
                     {/* Form Notice */}
                     <div className={cx('form-notice')}>
                         <div className={cx('notice-item', 'highlight')}>
-                            <span className={cx('notice-icon')}>💡</span>
+                            <span className={cx('notice-icon')}>⏱️</span>
                             <p>
-                                <strong>Lưu ý:</strong> Sau khi thanh toán thành công, lịch hẹn sẽ được xác nhận trong vòng 1-2 giờ
+                                <strong>Quy trình xác nhận:</strong> Sau khi nhấn "Xác nhận đặt lịch hẹn", chúng tôi sẽ xem xét và xác nhận lịch hẹn trong vòng 1-2 giờ
+                            </p>
+                        </div>
+
+                        <div className={cx('notice-item')}>
+                            <span className={cx('notice-icon')}>💳</span>
+                            <p>
+                                <strong>Thanh toán:</strong> Thông tin thanh toán sẽ được gửi qua email sau khi lịch hẹn được xác nhận
                             </p>
                         </div>
 

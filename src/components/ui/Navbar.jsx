@@ -3,6 +3,7 @@ import { Link, useNavigate } from "react-router-dom";
 import logo_gender from "../../assets/gender_healthcare_logo.png";
 import ToggleAccountMenu from "../ui/ToggleAccountMenu";
 import { useSelector } from "react-redux";
+import NotificationBell from "./NotificationBell";
 
 export const Navbar = () => {
   const [showService, setShowService] = useState(false);
@@ -121,7 +122,10 @@ export const Navbar = () => {
 
         <div className="flex items-center gap-4">
           {accessToken ? (
-            <ToggleAccountMenu />
+            <>
+              <NotificationBell />
+              <ToggleAccountMenu />
+            </>
           ) : (
             <>
               <Link
