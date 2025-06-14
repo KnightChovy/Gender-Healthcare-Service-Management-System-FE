@@ -20,6 +20,9 @@ import DashboardAdmin from "./page/admin/DashboardAdmin";
 import ManagerRoute from "./routes/ManagerRouter";
 import LayoutManager from "./components/Layouts/LayoutManager/LayoutManager";
 import { DashboardManager } from "./page/manager/DashboardManager";
+import DoctorRoute from "./routes/DoctorRoute";
+import DoctorLayout from "./components/Layouts/LayoutDoctor/DoctorLayout";
+import DoctorDashboard from "./page/Doctor/Dashboard";
 function App() {
   return (
     <>
@@ -111,6 +114,13 @@ function App() {
           <Route index element={<DashboardAdmin />} />
           <Route path="employees" element={<EmployeesManagerment />}></Route>
         </Route>
+
+        {/* Doctor */}
+        <Route path="/doctor" element={<DoctorLayout />}>
+          <Route path="dashboard" element={<DoctorDashboard />} />
+        </Route>
+        {/* Test Service */}
+
         {/* Manager */}
         <Route
           path="/manager"
