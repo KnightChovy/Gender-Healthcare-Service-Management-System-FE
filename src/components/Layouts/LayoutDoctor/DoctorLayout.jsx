@@ -1,12 +1,114 @@
 import React from "react";
-import { Outlet, NavLink } from "react-router-dom";
+import { Outlet, NavLink, Link } from "react-router-dom";
 
-// Header Component
+// Sidebar Component
+const Sidebar = () => {
+  return (
+    <div className="bg-blue-800 text-blue-100 w-64 space-y-6 py-7 px-2 absolute inset-y-0 left-0 transform -translate-x-full md:relative md:translate-x-0 transition duration-200 ease-in-out">
+      <div className="flex items-center space-x-2 px-4">
+        <span className="text-white text-2xl font-semibold">Doctor Portal</span>
+      </div>
+
+      <nav className="mt-6">
+        <NavLink
+          to="/doctor/dashboard"
+          className={({ isActive }) =>
+            `flex items-center space-x-2 py-2.5 px-4 rounded transition duration-200 ${
+              isActive ? "bg-blue-700 text-white" : "hover:bg-blue-700"
+            }`
+          }
+        >
+          <span className="text-xl">
+            <i className="fas fa-columns"></i>
+          </span>
+          <span>Dashboard</span>
+        </NavLink>
+
+        <NavLink
+          to="/doctor/appointments"
+          className={({ isActive }) =>
+            `flex items-center space-x-2 py-2.5 px-4 rounded transition duration-200 ${
+              isActive ? "bg-blue-700 text-white" : "hover:bg-blue-700"
+            }`
+          }
+        >
+          <span className="text-xl">
+            <i className="fas fa-calendar-alt"></i>
+          </span>
+          <span>Lịch hẹn</span>
+        </NavLink>
+
+        {/* Nút đăng ký lịch làm việc mới */}
+        <NavLink
+          to="/doctor/schedule"
+          className={({ isActive }) =>
+            `flex items-center space-x-2 py-2.5 px-4 rounded transition duration-200 ${
+              isActive ? "bg-blue-700 text-white" : "hover:bg-blue-700"
+            }`
+          }
+        >
+          <span className="text-xl">
+            <i className="fas fa-clock"></i>
+          </span>
+          <span>Đăng ký lịch làm việc</span>
+        </NavLink>
+
+        <NavLink
+          to="/doctor/patients"
+          className={({ isActive }) =>
+            `flex items-center space-x-2 py-2.5 px-4 rounded transition duration-200 ${
+              isActive ? "bg-blue-700 text-white" : "hover:bg-blue-700"
+            }`
+          }
+        >
+          <span className="text-xl">
+            <i className="fas fa-user-injured"></i>
+          </span>
+          <span>Bệnh nhân</span>
+        </NavLink>
+
+        <NavLink
+          to="/doctor/profile"
+          className={({ isActive }) =>
+            `flex items-center space-x-2 py-2.5 px-4 rounded transition duration-200 ${
+              isActive ? "bg-blue-700 text-white" : "hover:bg-blue-700"
+            }`
+          }
+        >
+          <span className="text-xl">
+            <i className="fas fa-user-md"></i>
+          </span>
+          <span>Hồ sơ</span>
+        </NavLink>
+
+        <div className="border-t border-blue-700 my-4"></div>
+
+        <button className="flex items-center space-x-2 py-2.5 px-4 rounded transition duration-200 hover:bg-blue-700 w-full text-left">
+          <span className="text-xl">
+            <i className="fas fa-sign-out-alt"></i>
+          </span>
+          <span>Đăng xuất</span>
+        </button>
+      </nav>
+    </div>
+  );
+};
+
+// Header Component - thêm nút Back Home
 const Header = () => {
   return (
     <header className="bg-white shadow-md py-4 px-4">
       <div className="flex items-center justify-between">
         <div className="flex items-center">
+          {/* Thêm nút Back Home mới */}
+          <Link
+            to="/"
+            className="mr-4 flex items-center text-blue-600 hover:text-blue-800 transition-colors"
+          >
+            <i className="fas fa-home mr-1"></i>
+            <span>Trang chủ</span>
+          </Link>
+
           <button className="text-gray-500 focus:outline-none md:hidden">
             <svg
               className="h-6 w-6"
@@ -101,84 +203,6 @@ const Header = () => {
         </div>
       </div>
     </header>
-  );
-};
-
-// Sidebar Component
-const Sidebar = () => {
-  return (
-    <div className="bg-blue-800 text-blue-100 w-64 space-y-6 py-7 px-2 absolute inset-y-0 left-0 transform -translate-x-full md:relative md:translate-x-0 transition duration-200 ease-in-out">
-      <div className="flex items-center space-x-2 px-4">
-        <span className="text-white text-2xl font-semibold">Doctor Portal</span>
-      </div>
-
-      <nav>
-        <NavLink
-          to="/doctor/dashboard"
-          className={({ isActive }) =>
-            `flex items-center space-x-2 py-2.5 px-4 rounded transition duration-200 ${
-              isActive ? "bg-blue-700 text-white" : "hover:bg-blue-700"
-            }`
-          }
-        >
-          <span className="text-xl">
-            <i className="fas fa-columns"></i>
-          </span>
-          <span>Dashboard</span>
-        </NavLink>
-
-        <NavLink
-          to="/doctor/appointments"
-          className={({ isActive }) =>
-            `flex items-center space-x-2 py-2.5 px-4 rounded transition duration-200 ${
-              isActive ? "bg-blue-700 text-white" : "hover:bg-blue-700"
-            }`
-          }
-        >
-          <span className="text-xl">
-            <i className="fas fa-calendar-alt"></i>
-          </span>
-          <span>Lịch hẹn</span>
-        </NavLink>
-
-        <NavLink
-          to="/doctor/patients"
-          className={({ isActive }) =>
-            `flex items-center space-x-2 py-2.5 px-4 rounded transition duration-200 ${
-              isActive ? "bg-blue-700 text-white" : "hover:bg-blue-700"
-            }`
-          }
-        >
-          <span className="text-xl">
-            <i className="fas fa-user-injured"></i>
-          </span>
-          <span>Bệnh nhân</span>
-        </NavLink>
-
-        <NavLink
-          to="/doctor/profile"
-          className={({ isActive }) =>
-            `flex items-center space-x-2 py-2.5 px-4 rounded transition duration-200 ${
-              isActive ? "bg-blue-700 text-white" : "hover:bg-blue-700"
-            }`
-          }
-        >
-          <span className="text-xl">
-            <i className="fas fa-user-md"></i>
-          </span>
-          <span>Hồ sơ</span>
-        </NavLink>
-
-        <div className="border-t border-blue-700 my-4"></div>
-
-        <button className="flex items-center space-x-2 py-2.5 px-4 rounded transition duration-200 hover:bg-blue-700 w-full text-left">
-          <span className="text-xl">
-            <i className="fas fa-sign-out-alt"></i>
-          </span>
-          <span>Đăng xuất</span>
-        </button>
-      </nav>
-    </div>
   );
 };
 
