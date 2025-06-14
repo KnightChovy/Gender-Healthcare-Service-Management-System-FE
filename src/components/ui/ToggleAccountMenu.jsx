@@ -112,7 +112,7 @@ export default function AccountMenu() {
             default:
               return (
                 <MenuItem onClick={() => navigate("/")}>
-                  <Avatar /> My Account
+                     <Avatar /> My Account
                 </MenuItem>
               );
           }

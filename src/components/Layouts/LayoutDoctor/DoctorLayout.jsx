@@ -179,20 +179,21 @@ const Header = () => {
               </button>
 
               <div className="absolute right-0 mt-2 py-2 w-48 bg-white rounded-md shadow-xl z-20 hidden">
+              {/* Nhớ đổi thẻ a thành Link của React router dom tao không rảnh đổi giúp đâu*/}
                 <a
-                  href="#"
+                  href="/"
                   className="block px-4 py-2 text-sm text-gray-700 hover:bg-blue-600 hover:text-white"
                 >
                   Hồ sơ
                 </a>
                 <a
-                  href="#"
+                  href="/"
                   className="block px-4 py-2 text-sm text-gray-700 hover:bg-blue-600 hover:text-white"
                 >
                   Cài đặt
                 </a>
                 <a
-                  href="#"
+                  href="/"
                   className="block px-4 py-2 text-sm text-gray-700 hover:bg-blue-600 hover:text-white"
                 >
                   Đăng xuất
