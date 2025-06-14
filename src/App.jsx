@@ -23,6 +23,10 @@ import { DashboardManager } from "./page/manager/DashboardManager";
 import DoctorRoute from "./routes/DoctorRoute";
 import DoctorLayout from "./components/Layouts/LayoutDoctor/DoctorLayout";
 import DoctorDashboard from "./page/Doctor/Dashboard";
+import Appointments from "./page/Doctor/Appointments";
+import Schedule from "./page/Doctor/Schedule";
+import Patients from "./page/Doctor/Patients";
+import Profile from "./page/Doctor/Profile";
 function App() {
   return (
     <>
@@ -118,6 +122,10 @@ function App() {
         {/* Doctor */}
         <Route path="/doctor" element={<DoctorLayout />}>
           <Route path="dashboard" element={<DoctorDashboard />} />
+          <Route path="appointments" element={<Appointments />} />
+          <Route path="schedule" element={<Schedule />} />
+          <Route path="patients" element={<Patients />} />
+          <Route path="profile" element={<Profile />} />
         </Route>
         {/* Test Service */}
 

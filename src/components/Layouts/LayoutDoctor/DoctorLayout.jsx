@@ -100,13 +100,13 @@ const Header = () => {
     <header className="bg-white shadow-md py-4 px-4">
       <div className="flex items-center justify-between">
         <div className="flex items-center">
-          {/* Thêm nút Back Home mới */}
+          {/* Thêm nút Back Home */}
           <Link
             to="/"
             className="mr-4 flex items-center text-blue-600 hover:text-blue-800 transition-colors"
           >
             <i className="fas fa-home mr-1"></i>
-            <span>Trang chủ</span>
+            <span>Trang Chủ</span>
           </Link>
 
           <button className="text-gray-500 focus:outline-none md:hidden">
