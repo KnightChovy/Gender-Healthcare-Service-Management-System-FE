@@ -5,6 +5,7 @@ import FormInputText from "../../components/ui/FormInputText";
 import GenderChoice from "./RegisterItems/GenderChoice";
 import { validateRules } from "../../components/Validation/validateRulesRegister";
 import { useNavigate, Link } from "react-router-dom";
+import axiosClient from "../../services/axiosClient";
 import classNames from "classnames/bind";
 import styles from "./Register.module.scss";
 
@@ -142,7 +143,7 @@ function Register() {
       const userData = {
         username: formData.username,
         password: formData.password,
-        confirm_password: formData.confirmPassword, // API yêu cầu trường này
+        confirm_password: formData.confirmPassword,
         email: formData.email,
         phone: formData.phone,
         gender: formData.gender,
@@ -154,29 +155,25 @@ function Register() {
 
       console.log("Sending data to API:", userData);
 
-      // Gọi API
-      const response = await fetch("http://44.204.71.234:3000/v1/users", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(userData),
-      });
-
-      const responseData = await response.json();
+      // Gọi API bằng axiosClient
+      const response = await axiosClient.post("/v1/users", userData);
 
       // Xử lý phản hồi
-      if (response.ok) {
-        console.log("Registration successful:", responseData);
+      console.log("Registration successful:", response.data);
 
-        // Hiển thị thông báo thành công
-        alert("Đăng ký thành công! Vui lòng đăng nhập để tiếp tục.");
-        navigate("/login");
-      } else {
-        // Xử lý lỗi từ server
-        let errorMessage = "Đăng ký thất bại: ";
+      // Hiển thị thông báo thành công
+      alert("Đăng ký thành công! Vui lòng đăng nhập để tiếp tục.");
+      navigate("/login");
 
-        console.error("Registration error:", responseData);
+    } catch (error) {
+      console.error("Error during registration:", error);
+
+      // Xử lý lỗi từ server
+      let errorMessage = "Đăng ký thất bại: ";
+
+      if (error.response) {
+        // Lỗi từ server (4xx, 5xx)
+        const responseData = error.response.data;
 
         if (responseData.message) {
           errorMessage += responseData.message;
@@ -185,12 +182,12 @@ function Register() {
         if (responseData.errors && responseData.errors.length > 0) {
           errorMessage += "\n• " + responseData.errors.join("\n• ");
         }
-
-        alert(errorMessage);
+      } else {
+        // Lỗi network hoặc lỗi khác
+        errorMessage += "Đã xảy ra lỗi trong quá trình đăng ký. Vui lòng thử lại sau.";
       }
-    } catch (error) {
-      console.error("Error during registration:", error);
-      alert("Đã xảy ra lỗi trong quá trình đăng ký. Vui lòng thử lại sau.");
+
+      alert(errorMessage);
     } finally {
       setIsLoading(false);
     }

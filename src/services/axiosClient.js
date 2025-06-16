@@ -1,7 +1,7 @@
 import axios from "axios";
 import { store } from "../store/store";
 import { doLogin, logout } from "../store/feature/auth/authenSlice";
-const BASE_URL = "http://44.204.71.234:3000";
+const BASE_URL = "http://52.4.72.106:3000";
 const rawAxios = axios.create({
   baseURL: BASE_URL,
   withCredentials: true,
