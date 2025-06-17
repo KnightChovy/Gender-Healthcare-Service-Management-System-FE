@@ -38,7 +38,7 @@ function NotificationBell() {
             if (pendingAppointment) {
                 const appointmentData = JSON.parse(pendingAppointment);
                 
-                if (appointmentData.id && appointmentData.status === 'pending_confirmation') {
+                if (appointmentData.id && appointmentData.status === 0) {
                     // CHỈ tạo confirmation notification
                     const confirmNotifId = `confirm_${appointmentData.id}`;
                     const hasConfirmNotif = notifications.some(n => n.id === confirmNotifId);
@@ -48,7 +48,7 @@ function NotificationBell() {
                             id: confirmNotifId,
                             type: 'appointment_pending',
                             title: 'Lịch hẹn đã được gửi',
-                            message: `Lịch hẹn ${appointmentData.consultationType} đã được gửi. Vui lòng đợi xác nhận từ phía quản lý.`,
+                            message: `Lịch hẹn ${appointmentData.consultant_type} đã được gửi. Vui lòng đợi xác nhận từ phía quản lý.`,
                             timestamp: Date.now(),
                             isRead: false,
                             appointmentId: appointmentData.id
@@ -59,11 +59,11 @@ function NotificationBell() {
             }
 
             // Check for manager-confirmed appointments - CHỈ khi manager xác nhận mới tạo payment notification
-            const confirmedAppointment = localStorage.getItem('confirmedAppointment');
+            const confirmedAppointment = localStorage.getItem('appointmentsList');
             if (confirmedAppointment) {
                 const appointmentData = JSON.parse(confirmedAppointment);
                 
-                if (appointmentData.id && appointmentData.fee && appointmentData.status === 'confirmed') {
+                if (appointmentData.id && appointmentData.price_apm && appointmentData.status === 'approved') {
                     // Tạo payment notification khi manager đã xác nhận
                     const paymentNotifId = `payment_${appointmentData.id}`;
                     const hasPaymentNotif = notifications.some(n => n.id === paymentNotifId);
@@ -73,10 +73,10 @@ function NotificationBell() {
                             id: paymentNotifId,
                             type: 'payment_required',
                             title: 'Lịch hẹn đã được xác nhận - Yêu cầu thanh toán',
-                            message: `Lịch hẹn ${appointmentData.consultationType} đã được xác nhận. Vui lòng thanh toán ${formatCurrency(appointmentData.fee)} để hoàn tất.`,
+                            message: `Lịch hẹn ${appointmentData.consultation_type} đã được xác nhận. Vui lòng thanh toán ${formatCurrency(appointmentData.price_apm)} để hoàn tất.`,
                             timestamp: Date.now(),
                             isRead: false,
-                            amount: appointmentData.fee,
+                            amount: appointmentData.price_apm,
                             appointmentId: appointmentData.id
                         };
                         notifications.unshift(paymentNotification);

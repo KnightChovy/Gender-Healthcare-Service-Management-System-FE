@@ -259,6 +259,7 @@ function Appointment() {
             // Tạo appointment data
             const appointmentData = {
                 // Thông tin bệnh nhân
+                user_id: userProfile?.user_id || null,
                 fullName: formData.fullName,
                 phone: formData.phone,
                 email: formData.email,
@@ -267,11 +268,12 @@ function Appointment() {
                 address: formData.address,
 
                 // Thông tin cuộc hẹn
-                consultationType: formData.consultationType,
-                selectedDoctor: formData.selectedDoctor || null, // null if not selected
+                consultant_type: formData.consultationType,
+                selectedDoctor: formData.selectedDoctor || null,
                 doctorName: formData.doctorName || 'Hệ thống sẽ phân công',
                 appointmentDate: formData.appointmentDate,
                 appointmentTime: formData.appointmentTime,
+                timeslot_id: 'TS001',
 
                 // Thông tin y tế
                 symptoms: formData.symptoms,
@@ -280,27 +282,30 @@ function Appointment() {
                 priority: formData.priority,
 
                 // Thông tin thanh toán
-                fee: formData.fee,
+                price_apm: formData.fee,
 
                 // Metadata
-                id: `APT${Date.now()}`,
-                createdAt: new Date().toISOString(),
-                status: 'pending_confirmation', // Trạng thái chờ xác nhận
+                created_at: new Date().toISOString(),
+                updated_at: new Date().toISOString(),
+                status: '0', // Trạng thái chờ xác nhận
                 isUserLoggedIn: isLoggedIn,
-                userId: userProfile?.id || null
+                id: `APT${Date.now()}`,
             };
 
             // Lưu vào localStorage để theo dõi
             localStorage.setItem('pendingAppointment', JSON.stringify(appointmentData));
 
             // Gửi API request để tạo appointment
-            // const response = await fetch('http://localhost:8017/v1/appointments', {
-            //     method: 'POST',
-            //     headers: {
-            //         'Content-Type': 'application/json',
-            //     },
-            //     body: JSON.stringify(appointmentData)
-            // });
+            const res = await fetch('http://52.4.72.106:3000/v1/appointments', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(appointmentData)
+            });
+            if (!res.ok) {
+                throw new Error(`HTTP error! status: ${res.status}`);
+            }
 
             console.log('✅ Appointment submitted successfully:', appointmentData);
 
