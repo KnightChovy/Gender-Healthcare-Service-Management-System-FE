@@ -26,10 +26,10 @@ const authSlice = createSlice({
       localStorage.setItem("user", JSON.stringify(user));
       localStorage.setItem("accessToken", access_token);
     },
-    logout: (state) => {
-      state.user = null;
-      state.accessToken = null;
-      localStorage.clear();
+    logout: (state, action) => {
+      const { access_token } = action.payload;
+
+      state.accessToken = access_token;
     },
   },
 });

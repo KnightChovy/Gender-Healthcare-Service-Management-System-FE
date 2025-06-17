@@ -24,9 +24,24 @@ export default function AccountMenu() {
 
   const handleLogout = async () => {
     try {
-      await axiosClient.post("/v1/auth/logout");
+      await axiosClient.post(
+        "/v1/auth/logout",
+        {},
+        {
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${accessToken}`,
+          },
+        }
+      );
 
-      dispatch(logout());
+      console.log(accessToken);
+
+      dispatch(
+        logout({
+          access_token: accessToken,
+        })
+      );
       navigate("/login");
     } catch (error) {
       console.error(
