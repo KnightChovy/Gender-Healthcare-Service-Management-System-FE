@@ -27,6 +27,7 @@ import Appointments from "./page/Doctor/Appointments";
 import Schedule from "./page/Doctor/Schedule";
 import Patients from "./page/Doctor/Patients";
 import Profile from "./page/Doctor/Profile";
+import { ConsultSchedulerManagerment } from "./page/manager/ConsultSchedulerManagerment/ConsultSchedulerManagerment";
 function App() {
   return (
     <>
@@ -139,6 +140,10 @@ function App() {
           }
         >
           <Route index element={<DashboardManager />} />
+          <Route
+            path="/manager/consultScheduler"
+            element={<ConsultSchedulerManagerment />}
+          />
         </Route>
       </Routes>
 
