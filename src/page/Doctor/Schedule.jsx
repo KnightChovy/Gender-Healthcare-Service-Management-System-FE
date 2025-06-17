@@ -11,10 +11,8 @@ const Schedule = () => {
     "Chủ nhật",
   ];
   const timeSlots = [
-    "08:00 - 10:00",
-    "10:00 - 12:00",
-    "13:00 - 15:00",
-    "15:00 - 17:00",
+    "08:00 - 11:00",
+    "13:30 - 17:00",
   ];
 
   // State cho lịch làm việc
@@ -31,16 +29,9 @@ const Schedule = () => {
   const [selectedDate, setSelectedDate] = useState(new Date());
   const [isLoading, setIsLoading] = useState(false);
 
-  // Xử lý khi click vào ô lịch
-  const handleToggleTimeSlot = (day, timeSlot) => {
-    setSchedule((prev) => ({
-      ...prev,
-      [day]: {
-        ...prev[day],
-        [timeSlot]: !prev[day][timeSlot],
-      },
-    }));
-  };
+  // Lấy ngày hiện tại đầu ngày (00:00:00) để so sánh chính xác
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
 
   // Tính tuần hiện tại
   const getWeekDates = () => {
@@ -49,6 +40,8 @@ const Schedule = () => {
     const diff = current.getDate() - day + (day === 0 ? -6 : 1);
 
     const monday = new Date(current.setDate(diff));
+    monday.setHours(0, 0, 0, 0); // Đặt về đầu ngày để so sánh chính xác
+
     const weekDates = [];
 
     for (let i = 0; i < 7; i++) {
@@ -61,6 +54,75 @@ const Schedule = () => {
   };
 
   const weekDates = getWeekDates();
+
+  // Kiểm tra xem một ngày có phải là quá khứ không
+  const isPastDate = (date) => {
+    return date < today;
+  };
+
+  // Kiểm tra xem một ô thời gian có nên vô hiệu hóa không
+  const isTimeSlotDisabled = (dayIndex, timeSlot) => {
+    const date = weekDates[dayIndex];
+
+    // Nếu ngày đã là quá khứ
+    if (isPastDate(date)) {
+      return true;
+    }
+
+    // Nếu ngày là hôm nay, kiểm tra thời gian
+    if (
+      date.getDate() === today.getDate() &&
+      date.getMonth() === today.getMonth() &&
+      date.getFullYear() === today.getFullYear()
+    ) {
+      // Lấy giờ hiện tại
+      const currentHour = new Date().getHours();
+
+      // Lấy giờ bắt đầu của timeSlot
+      const startHour = parseInt(timeSlot.split(":")[0]);
+
+      // Nếu giờ hiện tại đã qua giờ bắt đầu của slot
+      return currentHour >= startHour;
+    }
+
+    return false;
+  };
+
+  // Xử lý khi click vào ô lịch
+  const handleToggleTimeSlot = (day, timeSlot, dayIndex) => {
+    // Nếu ô đã vô hiệu hóa, không cho phép click
+    if (isTimeSlotDisabled(dayIndex, timeSlot)) {
+      return;
+    }
+
+    setSchedule((prev) => ({
+      ...prev,
+      [day]: {
+        ...prev[day],
+        [timeSlot]: !prev[day][timeSlot],
+      },
+    }));
+  };
+
+  // Xử lý khi chuyển đến tuần trước
+  const handlePreviousWeek = () => {
+    const prevWeek = new Date(selectedDate);
+    prevWeek.setDate(prevWeek.getDate() - 7);
+
+    // Không cho phép chọn tuần trong quá khứ
+    const mondayOfPrevWeek = new Date(prevWeek);
+    const day = mondayOfPrevWeek.getDay();
+    const diff = mondayOfPrevWeek.getDate() - day + (day === 0 ? -6 : 1);
+    mondayOfPrevWeek.setDate(diff);
+    mondayOfPrevWeek.setHours(0, 0, 0, 0);
+
+    if (mondayOfPrevWeek < today) {
+      alert("Không thể chọn lịch làm việc trong quá khứ");
+      return;
+    }
+
+    setSelectedDate(prevWeek);
+  };
 
   // Định dạng ngày hiển thị
   const formatDate = (date) => {
@@ -105,11 +167,7 @@ const Schedule = () => {
       {/* Week Navigation */}
       <div className="flex items-center justify-between mb-6">
         <button
-          onClick={() => {
-            const prevWeek = new Date(selectedDate);
-            prevWeek.setDate(prevWeek.getDate() - 7);
-            setSelectedDate(prevWeek);
-          }}
+          onClick={handlePreviousWeek}
           className="flex items-center justify-center px-4 py-2 border border-gray-300 rounded-md text-sm font-medium text-gray-700 bg-white hover:bg-gray-50"
         >
           <i className="fas fa-chevron-left mr-2"></i>
@@ -117,7 +175,7 @@ const Schedule = () => {
         </button>
 
         <h2 className="text-lg font-medium text-gray-900">
-          Tuần từ {formatDate(weekDates[0])} - {formatDate(weekDates[6])}
+          Từ {formatDate(weekDates[0])} - {formatDate(weekDates[6])}
         </h2>
 
         <button
@@ -143,46 +201,58 @@ const Schedule = () => {
               <thead>
                 <tr>
                   <th className="py-3 px-4 border-b border-gray-200 bg-gray-100 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Ngày
+                    Giờ / Ngày
                   </th>
-                  {timeSlots.map((slot) => (
+                  {days.map((day, index) => (
                     <th
-                      key={slot}
+                      key={day}
                       className="py-3 px-4 border-b border-gray-200 bg-gray-100 text-center text-xs font-medium text-gray-500 uppercase tracking-wider"
                     >
-                      {slot}
+                      <div
+                        className={
+                          isPastDate(weekDates[index]) ? "text-gray-400" : ""
+                        }
+                      >
+                        {day}
+                      </div>
+                      <div
+                        className={`text-xs ${
+                          isPastDate(weekDates[index]) ? "text-gray-400" : ""
+                        }`}
+                      >
+                        {formatDate(weekDates[index])}
+                      </div>
                     </th>
                   ))}
                 </tr>
               </thead>
               <tbody>
-                {days.map((day, index) => (
-                  <tr
-                    key={day}
-                    className={index % 2 === 0 ? "bg-white" : "bg-gray-50"}
-                  >
+                {timeSlots.map((timeSlot) => (
+                  <tr key={timeSlot} className="bg-white">
                     <td className="py-4 px-4 border-b border-gray-200 text-sm font-medium text-gray-900">
-                      <div>{day}</div>
-                      <div className="text-xs text-gray-500">
-                        {formatDate(weekDates[index])}
-                      </div>
+                      {timeSlot}
                     </td>
-                    {timeSlots.map((time) => (
+                    {days.map((day, dayIndex) => (
                       <td
-                        key={`${day}-${time}`}
+                        key={`${day}-${timeSlot}`}
                         className="py-4 px-4 border-b border-gray-200 text-center"
                       >
                         <button
                           type="button"
-                          onClick={() => handleToggleTimeSlot(day, time)}
+                          onClick={() =>
+                            handleToggleTimeSlot(day, timeSlot, dayIndex)
+                          }
+                          disabled={isTimeSlotDisabled(dayIndex, timeSlot)}
                           className={`w-8 h-8 rounded-md transition duration-150 ease-in-out flex items-center justify-center ${
-                            schedule[day][time]
+                            isTimeSlotDisabled(dayIndex, timeSlot)
+                              ? "bg-gray-100 text-gray-400 cursor-not-allowed opacity-50"
+                              : schedule[day][timeSlot]
                               ? "bg-blue-600 text-white hover:bg-blue-700"
                               : "bg-gray-200 text-gray-700 hover:bg-gray-300"
                           }`}
-                          aria-label={`Select ${time} on ${day}`}
+                          aria-label={`Select ${timeSlot} on ${day}`}
                         >
-                          {schedule[day][time] && (
+                          {schedule[day][timeSlot] && (
                             <i className="fas fa-check"></i>
                           )}
                         </button>
