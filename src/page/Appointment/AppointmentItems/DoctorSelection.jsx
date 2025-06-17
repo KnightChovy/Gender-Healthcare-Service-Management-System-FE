@@ -11,6 +11,7 @@ import {
   faInfoCircle,
   faSpinner
 } from '@fortawesome/free-solid-svg-icons';
+import axiosClient from "../../../services/axiosClient";
 import classNames from 'classnames/bind';
 import styles from '../Appointment.module.scss';
 
@@ -30,13 +31,9 @@ function DoctorSelection({ formData, errors, onChange }) {
         setIsLoading(true);
         setApiError(null);
         
-        const response = await fetch('http://44.204.71.234:3000/v1/doctors');
+        const response = await axiosClient.get('/v1/doctors');
         
-        if (!response.ok) {
-          throw new Error(`HTTP error! status: ${response.status}`);
-        }
-        
-        const apiData = await response.json();
+        const apiData = response.data;
         
         // Check if response has success flag and data
         if (!apiData.success || !apiData.listAllDoctors) {
@@ -71,7 +68,25 @@ function DoctorSelection({ formData, errors, onChange }) {
         
       } catch (error) {
         console.error('❌ Error fetching doctors:', error);
-        setApiError(error.message);
+        
+        // Xử lý lỗi chi tiết hơn với axios
+        let errorMessage = 'Không thể tải danh sách bác sĩ';
+        
+        if (error.response) {
+          // Lỗi từ server
+          errorMessage = `Server error: ${error.response.status}`;
+          if (error.response.data?.message) {
+            errorMessage += ` - ${error.response.data.message}`;
+          }
+        } else if (error.request) {
+          // Lỗi network
+          errorMessage = 'Lỗi kết nối mạng';
+        } else {
+          // Lỗi khác
+          errorMessage = error.message;
+        }
+        
+        setApiError(errorMessage);
         setAllDoctors([]);
       } finally {
         setIsLoading(false);

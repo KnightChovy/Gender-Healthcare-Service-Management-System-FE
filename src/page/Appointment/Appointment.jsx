@@ -53,7 +53,7 @@ function Appointment() {
             const isLoggedIn = localStorage.getItem('isLoggedIn') === 'true';
             const userInfo = localStorage.getItem('userInfo');
 
-            if (isLoggedIn && userInfo) {
+            if (isLoggedIn) {
                 const profile = JSON.parse(userInfo);
                 setIsLoggedIn(true);
                 setUserProfile(profile);
