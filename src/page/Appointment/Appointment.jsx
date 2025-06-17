@@ -259,6 +259,7 @@ function Appointment() {
             // Tạo appointment data
             const appointmentData = {
                 // Thông tin bệnh nhân
+                user_id: userProfile?.user_id || null,
                 fullName: formData.fullName,
                 phone: formData.phone,
                 email: formData.email,
@@ -283,24 +284,25 @@ function Appointment() {
                 fee: formData.fee,
 
                 // Metadata
-                id: `APT${Date.now()}`,
                 createdAt: new Date().toISOString(),
-                status: 'pending_confirmation', // Trạng thái chờ xác nhận
+                status: '0', // Trạng thái chờ xác nhận
                 isUserLoggedIn: isLoggedIn,
-                userId: userProfile?.id || null
             };
 
             // Lưu vào localStorage để theo dõi
             localStorage.setItem('pendingAppointment', JSON.stringify(appointmentData));
 
             // Gửi API request để tạo appointment
-            // const response = await fetch('http://localhost:8017/v1/appointments', {
-            //     method: 'POST',
-            //     headers: {
-            //         'Content-Type': 'application/json',
-            //     },
-            //     body: JSON.stringify(appointmentData)
-            // });
+            const res = await fetch('http://52.4.72.106:3000/v1/appointments', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(appointmentData)
+            });
+            if (!res.ok) {
+                throw new Error(`HTTP error! status: ${res.status}`);
+            }
 
             console.log('✅ Appointment submitted successfully:', appointmentData);
 
