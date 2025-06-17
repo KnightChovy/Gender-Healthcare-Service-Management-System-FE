@@ -14,8 +14,7 @@ import Logout from "@mui/icons-material/Logout";
 import { useDispatch, useSelector } from "react-redux";
 import { useNavigate } from "react-router-dom";
 import { logout } from "../../store/feature/auth/authenSlice";
-// import axios from "axios";
-import axiosClient from "../../services/axiosClient";
+import { toast } from "react-toastify"; // Thêm import toast
 
 export default function AccountMenu() {
   const { accessToken, user } = useSelector((state) => state.auth);
@@ -24,51 +23,38 @@ export default function AccountMenu() {
 
   const handleLogout = async () => {
     try {
-      await axiosClient.post(
-        "/v1/auth/logout",
-        {},
-        {
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${accessToken}`,
-          },
-        }
-      );
+      handleClose();
 
-      console.log(accessToken);
+      toast.info("Đang đăng xuất...", { autoClose: 800 });
 
-      dispatch(
-        logout({
-          access_token: accessToken,
-        })
-      );
-      navigate("/login");
+      setTimeout(() => {
+        dispatch(logout());
+        toast.success("Đăng xuất thành công", { autoClose: 1500 });
+        navigate("/login");
+      }, 500);
     } catch (error) {
-      console.error(
-        "Logout failed:",
-        error.response?.data?.message || error.message
-      );
-      if (error.response) {
-        console.log("Error status:", error.response.status);
-        console.log("Error data:", error.response.data);
-      }
-      dispatch(logout());
-      navigate("/login");
+      console.error("Lỗi khi đăng xuất:", error);
+      toast.error("Đăng xuất thất bại. Vui lòng thử lại.");
     }
   };
 
   const [anchorEl, setAnchorEl] = React.useState(null);
   const open = Boolean(anchorEl);
+
   const handleClick = (event) => {
     setAnchorEl(event.currentTarget);
   };
+
   const handleClose = () => {
     setAnchorEl(null);
   };
+
+  const userRole = user?.role || "user";
+
   return (
     <React.Fragment>
       <Box sx={{ display: "flex", alignItems: "center", textAlign: "center" }}>
-        <Tooltip title="Account settings">
+        <Tooltip title="Cài đặt tài khoản">
           <IconButton
             onClick={handleClick}
             size="small"
@@ -77,7 +63,16 @@ export default function AccountMenu() {
             aria-haspopup="true"
             aria-expanded={open ? "true" : undefined}
           >
-            <Avatar sx={{ width: 32, height: 32 }}>M</Avatar>
+            <Avatar
+              sx={{
+                width: 32,
+                height: 32,
+                bgcolor: "#3b82f6",
+                fontWeight: "bold",
+              }}
+            >
+              {user?.first_name?.charAt(0)}
+            </Avatar>
           </IconButton>
         </Tooltip>
       </Box>
@@ -119,33 +114,54 @@ export default function AccountMenu() {
         anchorOrigin={{ horizontal: "right", vertical: "bottom" }}
       >
         <MenuItem onClick={handleClose}>
-          <Avatar /> Profile
+          <Avatar /> Hồ sơ
         </MenuItem>
+
         {(() => {
-          switch (user.role) {
+          switch (userRole) {
             case "admin":
               return (
-                <MenuItem onClick={() => navigate("/admin")}>
-                  <Avatar /> My Admin
+                <MenuItem
+                  onClick={() => {
+                    handleClose();
+                    navigate("/admin");
+                  }}
+                >
+                  <Avatar /> Trang quản trị
                 </MenuItem>
               );
             case "doctor":
               return (
-                <MenuItem onClick={() => navigate("/doctor")}>
-                  <Avatar /> Doctor Dashboard
+                <MenuItem
+                  onClick={() => {
+                    handleClose();
+                    navigate("/doctor");
+                  }}
+                >
+                  <Avatar /> Bảng điều khiển Bác sĩ
                 </MenuItem>
               );
             case "manager":
               return (
-                <MenuItem onClick={() => navigate("/manager")}>
-                  <Avatar /> Manager Dashboard
+                <MenuItem
+                  onClick={() => {
+                    handleClose();
+                    navigate("/manager");
+                  }}
+                >
+                  <Avatar /> Bảng điều khiển Quản lý
                 </MenuItem>
               );
             case "user":
             default:
               return (
-                <MenuItem onClick={() => navigate("/")}>
-                  <Avatar /> My Account
+                <MenuItem
+                  onClick={() => {
+                    handleClose();
+                    navigate("/");
+                  }}
+                >
+                  <Avatar /> Tài khoản của tôi
                 </MenuItem>
               );
           }
@@ -156,19 +172,19 @@ export default function AccountMenu() {
           <ListItemIcon>
             <PersonAdd fontSize="small" />
           </ListItemIcon>
-          Add another account
+          Thêm tài khoản khác
         </MenuItem>
         <MenuItem onClick={handleClose}>
           <ListItemIcon>
             <Settings fontSize="small" />
           </ListItemIcon>
-          Settings
+          Cài đặt
         </MenuItem>
-        <MenuItem onClick={() => handleLogout()}>
+        <MenuItem onClick={handleLogout}>
           <ListItemIcon>
             <Logout fontSize="small" />
           </ListItemIcon>
-          Logout
+          Đăng xuất
         </MenuItem>
       </Menu>
     </React.Fragment>
