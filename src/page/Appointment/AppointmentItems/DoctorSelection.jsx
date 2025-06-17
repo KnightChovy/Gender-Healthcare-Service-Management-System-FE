@@ -47,10 +47,9 @@ function DoctorSelection({ formData, errors, onChange }) {
           
           return {
             id: doctor.doctor_id,
-            name: `${doctor.first_name} ${doctor.last_name}`.trim(),
+            name: `${doctor.last_name} ${doctor.first_name}`.trim(),
             specialty: specializations.length > 0 ? specializations : ['Tư vấn tổng quát'],
             experience: `${doctor.experience_year} năm kinh nghiệm`,
-            rating: 4.5, // Default rating since not in API
             reviews: Math.floor(Math.random() * 100) + 20, // Random reviews for demo
             education: doctor.certificates?.[0]?.certificate || 'Bằng cấp y khoa',
             bio: doctor.bio || 'Bác sĩ chuyên nghiệp với nhiều năm kinh nghiệm',

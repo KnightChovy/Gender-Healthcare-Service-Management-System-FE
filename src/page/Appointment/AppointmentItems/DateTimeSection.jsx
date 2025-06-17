@@ -20,7 +20,7 @@ function DateTimeSection({ formData, errors, onChange }) {
                 const timeString = `${hour.toString().padStart(2, '0')}:${minute.toString().padStart(2, '0')}`;
                 
                 // Skip lunch break from 11:30 to 12:30
-                if (timeString === '11:30' || timeString === '12:00' || timeString === '12:30') {
+                if (timeString === '11:30' || timeString === '12:00' || timeString === '12:30' || timeString === '13:00') {
                     continue;
                 }
                 

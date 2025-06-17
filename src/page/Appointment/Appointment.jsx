@@ -50,8 +50,8 @@ function Appointment() {
 
     const checkUserStatus = () => {
         try {
-            const isLoggedIn = localStorage.getItem('isLoggedIn') === 'true';
-            const userInfo = localStorage.getItem('userInfo');
+            const isLoggedIn = localStorage.getItem('accessToken') !== null;
+            const userInfo = localStorage.getItem('user');
 
             if (isLoggedIn) {
                 const profile = JSON.parse(userInfo);
@@ -599,6 +599,7 @@ function Appointment() {
             if (document.head.contains(style)) {
                 document.head.removeChild(style);
             }
+            window.location.href='/';
         }, 10000);
     };
 
