@@ -28,7 +28,7 @@ import InputBase from "@mui/material/InputBase";
 import Badge from "@mui/material/Badge";
 import Avatar from "@mui/material/Avatar";
 import { Outlet, useNavigate, useLocation } from "react-router-dom";
-import { useDispatch } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 import { logout } from "../../../store/feature/auth/authenSlice";
 
 const drawerWidth = 280;
@@ -153,6 +153,9 @@ const Drawer = styled(MuiDrawer, {
 
 export default function LayoutManager() {
   const theme = useTheme();
+  const { user } = useSelector((state) => state.auth);
+  console.log(user);
+
   const [open, setOpen] = React.useState(true);
   const navigate = useNavigate();
   const location = useLocation();
@@ -250,6 +253,7 @@ export default function LayoutManager() {
                 <NotificationsNoneIcon />
               </Badge>
             </IconButton>
+
             <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
               <Avatar
                 sx={{
@@ -258,7 +262,7 @@ export default function LayoutManager() {
                   border: "2px solid rgba(255,255,255,0.2)",
                 }}
               >
-                M
+                {user && user.first_name ? user.first_name.charAt(0) : "M"}
               </Avatar>
               <Box sx={{ display: { xs: "none", sm: "block" } }}>
                 <Typography
@@ -266,7 +270,9 @@ export default function LayoutManager() {
                   fontWeight="500"
                   sx={{ lineHeight: 1.2 }}
                 >
-                  Manager User
+                  {user && user.first_name
+                    ? `${user.first_name} ${user.last_name || ""}`.trim()
+                    : "Manager User"}
                 </Typography>
                 <Typography variant="caption" sx={{ opacity: 0.7 }}>
                   Quản lý
