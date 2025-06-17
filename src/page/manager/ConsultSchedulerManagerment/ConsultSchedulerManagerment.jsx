@@ -115,11 +115,11 @@ export const ConsultSchedulerManagerment = () => {
                     <td className="px-4 py-3">{appointment.appointmentTime}</td>
                     <td className="px-4 py-3">
                       <span className="px-3 py-1 text-sm rounded-full bg-blue-100 text-blue-800">
-                        {appointment.consultationType}
+                        {appointment.consultant_type}
                       </span>
                     </td>
                     <td className="px-4 py-3">
-                      {appointment.status === "pending_confirmation" ? (
+                      {appointment.status === "0" ? (
                         <span className="px-3 py-1 text-sm rounded-full bg-yellow-100 text-yellow-800">
                           Chờ xác nhận
                         </span>
@@ -138,7 +138,7 @@ export const ConsultSchedulerManagerment = () => {
                       )}
                     </td>
                     <td className="px-4 py-3">
-                      {appointment.status === "pending_confirmation" && (
+                      {appointment.status === "0" && (
                         <div className="flex space-x-2">
                           <button
                             className="px-3 py-1 text-sm bg-green-500 hover:bg-green-600 text-white rounded-full transition-colors flex items-center"

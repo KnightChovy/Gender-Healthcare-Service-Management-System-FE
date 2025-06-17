@@ -32,7 +32,7 @@ export const Navbar = () => {
     <div className="container mx-auto px-4">
       <div className="flex items-center justify-between">
         <div className="flex-shrink-0">
-          <Link to="/" className="flex items-center gap-2">
+          <a href="/" className="flex items-center gap-2">
             <div className="w-12 h-12">
               <img
                 className="w-full h-full object-contain"
@@ -43,7 +43,7 @@ export const Navbar = () => {
             <h2 className="text-xl font-bold text-blue-700 tracking-tight">
               Gen<span className="text-teal-600">Care</span>
             </h2>
-          </Link>
+          </a>
         </div>
 
         <nav className="hidden lg:flex flex-1 justify-center">

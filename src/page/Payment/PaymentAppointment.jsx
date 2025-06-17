@@ -74,7 +74,7 @@ function PaymentAppointment() {
 
     // Calculate fees
     const serviceFee = 0; // Không phí dịch vụ
-    const totalAmount = appointmentData ? appointmentData.fee : 0;
+    const totalAmount = appointmentData ? appointmentData.price_apm : 0;
 
     // Format currency
     const formatCurrency = (amount) => {
@@ -115,15 +115,20 @@ function PaymentAppointment() {
                 setPaymentStatus('success');
 
                 // Save to appointments list
-                const existingAppointments = JSON.parse(localStorage.getItem('userAppointments') || '[]');
-                const newAppointment = {
-                    ...appointmentData,
+                const checkSuccessPayment = JSON.parse(localStorage.getItem('paymentSuccess') || '[]');
+                const newPayment = {
+                    appointmentId: appointmentData.id,
+                    amount: appointmentData.price_apm,
                     status: 'confirmed',
                     paidAt: new Date().toISOString(),
-                    transactionId: `TXN${Date.now()}`
+                    paymentId: `PAY${Date.now()}`,
+                    paymentMethod: paymentMethod,
+                    timestamp: Date.now(),
+                    consultant_type: appointmentData.consultant_type,
+                    
                 };
-                existingAppointments.push(newAppointment);
-                localStorage.setItem('userAppointments', JSON.stringify(existingAppointments));
+                checkSuccessPayment.push(newPayment);
+                localStorage.setItem('paymentSuccess', JSON.stringify(checkSuccessPayment));
 
                 // Clear pending appointment
                 localStorage.removeItem('pendingAppointment');
@@ -131,7 +136,7 @@ function PaymentAppointment() {
                 // Redirect after success
                 setTimeout(() => {
                     alert('Thanh toán thành công! Cuộc hẹn đã được xác nhận.');
-                    navigate('/appointment');
+                    window.location.href = '/';
                 }, 2000);
             } else {
                 setPaymentStatus('failed');
@@ -167,7 +172,7 @@ function PaymentAppointment() {
                     <h2 className={cx('success-title')}>Thanh toán thành công!</h2>
                     <p>Cuộc hẹn của bạn đã được xác nhận.</p>
                     <div className={cx('success-details')}>
-                        <p><strong>Mã giao dịch:</strong> TXN{Date.now()}</p>
+                        <p><strong>Mã giao dịch:</strong> PAY{Date.now()}</p>
                         <p><strong>Số tiền:</strong> {formatCurrency(totalAmount)}</p>
                         <p><strong>Bác sĩ:</strong> {appointmentData.doctorName}</p>
                         <p><strong>Thời gian:</strong> {appointmentData.appointmentTime} - {formatDate(appointmentData.appointmentDate)}</p>
@@ -231,7 +236,7 @@ function PaymentAppointment() {
                             <FontAwesomeIcon icon={faUserMd} className={cx('detail-icon')} />
                             <div className={cx('detail-text')}>
                                 <strong className={cx('detail-label')}>{appointmentData.doctorName || 'Bác sĩ tư vấn'}</strong>
-                                <span className={cx('detail-value')}>{getConsultationTypeDisplay(appointmentData.consultationType)}</span>
+                                <span className={cx('detail-value')}>{getConsultationTypeDisplay(appointmentData.consultant_type)}</span>
                             </div>
                         </div>
 
@@ -263,7 +268,7 @@ function PaymentAppointment() {
                         <div className={cx('price-breakdown')}>
                             <div className={cx('price-item')}>
                                 <span>Phí tư vấn</span>
-                                <span>{formatCurrency(appointmentData.fee || 500000)}</span>
+                                <span>{formatCurrency(appointmentData.price_apm || 500000)}</span>
                             </div>
                             <div className={cx('price-item')}>
                                 <span>Phí dịch vụ</span>
