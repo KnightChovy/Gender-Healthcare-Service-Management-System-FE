@@ -19,7 +19,7 @@ function DateTimeSection({ formData, errors, onChange }) {
             for (let minute = 0; minute < 60; minute += interval) {
                 const timeString = `${hour.toString().padStart(2, '0')}:${minute.toString().padStart(2, '0')}`;
                 
-                // Skip lunch break from 11:30 to 12:30
+                // Skip lunch break from 11:30 to 13:00
                 if (timeString === '11:30' || timeString === '12:00' || timeString === '12:30' || timeString === '13:00') {
                     continue;
                 }
@@ -34,10 +34,11 @@ function DateTimeSection({ formData, errors, onChange }) {
         return slots;
     };
 
-    // Get today's date in YYYY-MM-DD format
-    const getTodayDate = () => {
-        const today = new Date();
-        return today.toISOString().split('T')[0];
+    // Get tomorrow's date in YYYY-MM-DD format (không cho phép đặt hôm nay)
+    const getMinDate = () => {
+        const tomorrow = new Date();
+        tomorrow.setDate(tomorrow.getDate() + 1);
+        return tomorrow.toISOString().split('T')[0];
     };
 
     // Get max date (6 months from now)
@@ -47,16 +48,50 @@ function DateTimeSection({ formData, errors, onChange }) {
         return maxDate.toISOString().split('T')[0];
     };
 
-    // Check if selected date is weekend
-    const isWeekend = (dateString) => {
-        const date = new Date(dateString);
-        const day = date.getDay();
-        return day === 0 || day === 6; // Sunday = 0, Saturday = 6
+    // Check if selected date is Sunday (Chủ nhật = 0)
+    const isSunday = (dateString) => {
+        const date = new Date(dateString + 'T00:00:00');
+        return date.getDay() === 0;
+    };
+
+    // Check if selected date is Saturday
+    const isSaturday = (dateString) => {
+        const date = new Date(dateString + 'T00:00:00');
+        return date.getDay() === 6;
+    };
+
+    // Check if date is in the past
+    const isPastDate = (dateString) => {
+        const selectedDate = new Date(dateString + 'T00:00:00');
+        const today = new Date();
+        today.setHours(0, 0, 0, 0);
+        return selectedDate <= today;
+    };
+
+    // Validate date selection
+    const validateDate = (dateString) => {
+        if (!dateString) return true;
+
+        if (isPastDate(dateString)) {
+            return 'Không thể đặt lịch trong quá khứ hoặc hôm nay. Vui lòng chọn từ ngày mai.';
+        }
+
+        if (isSunday(dateString)) {
+            return 'Chúng tôi không làm việc vào Chủ nhật. Vui lòng chọn ngày khác.';
+        }
+
+        return null;
     };
 
     // Load available times when date changes
     useEffect(() => {
         if (formData.appointmentDate) {
+            const dateError = validateDate(formData.appointmentDate);
+            if (dateError) {
+                setAvailableTimes([]);
+                return;
+            }
+
             setIsLoadingTimes(true);
             
             // Simulate API call to get available times
@@ -84,6 +119,23 @@ function DateTimeSection({ formData, errors, onChange }) {
 
     const handleDateChange = (e) => {
         const { name, value } = e.target;
+        
+        // Validate date trước khi set
+        if (name === 'appointmentDate' && value) {
+            const dateError = validateDate(value);
+            if (dateError) {
+                // Trigger validation error
+                const errorEvent = {
+                    target: {
+                        name: 'appointmentDate',
+                        value: value
+                    }
+                };
+                onChange(errorEvent);
+                return;
+            }
+        }
+
         onChange(e);
         
         // Reset selected time when date changes
@@ -108,6 +160,12 @@ function DateTimeSection({ formData, errors, onChange }) {
         return groups;
     }, {});
 
+    // Check if selected date has any validation issues
+    const hasDateIssues = formData.appointmentDate && (
+        isPastDate(formData.appointmentDate) || 
+        isSunday(formData.appointmentDate)
+    );
+
     return (
         <div className={cx('form-section', 'datetime-section')}>
             <div className={cx('section-header')}>
@@ -115,7 +173,7 @@ function DateTimeSection({ formData, errors, onChange }) {
                     📅 Chọn ngày và giờ tư vấn
                 </h3>
                 <p className={cx('section-subtitle')}>
-                    Vui lòng chọn ngày và giờ phù hợp cho buổi tư vấn
+                    Vui lòng chọn ngày và giờ phù hợp cho buổi tư vấn (từ ngày mai, trừ Chủ nhật)
                 </p>
             </div>
 
@@ -131,25 +189,39 @@ function DateTimeSection({ formData, errors, onChange }) {
                             name="appointmentDate"
                             value={formData.appointmentDate}
                             onChange={handleDateChange}
-                            min={getTodayDate()}
+                            min={getMinDate()}
                             max={getMaxDate()}
                             className={cx('form-input', 'date-input', {
-                                'error': errors.appointmentDate
+                                'error': errors.appointmentDate || hasDateIssues
                             })}
                             required
                         />
-                        {errors.appointmentDate && (
+                        
+                        {/* Date validation errors */}
+                        {formData.appointmentDate && isPastDate(formData.appointmentDate) && (
+                            <span className={cx('error-message')}>
+                                ❌ Không thể đặt lịch trong quá khứ hoặc hôm nay. Vui lòng chọn từ ngày mai.
+                            </span>
+                        )}
+                        
+                        {formData.appointmentDate && isSunday(formData.appointmentDate) && (
+                            <span className={cx('error-message')}>
+                                ❌ Chúng tôi không làm việc vào Chủ nhật. Vui lòng chọn ngày khác.
+                            </span>
+                        )}
+
+                        {errors.appointmentDate && !hasDateIssues && (
                             <span className={cx('error-message')}>
                                 {errors.appointmentDate}
                             </span>
                         )}
                         
                         {/* Date info */}
-                        {formData.appointmentDate && (
+                        {formData.appointmentDate && !hasDateIssues && (
                             <div className={cx('date-info')}>
-                                {isWeekend(formData.appointmentDate) && (
+                                {isSaturday(formData.appointmentDate) && (
                                     <div className={cx('weekend-notice')}>
-                                        ⚠️ Lưu ý: Ngày bạn chọn là cuối tuần. Một số dịch vụ có thể bị hạn chế.
+                                        ⚠️ Lưu ý: Ngày bạn chọn là thứ Bảy. Một số dịch vụ có thể bị hạn chế.
                                     </div>
                                 )}
                                 <div className={cx('date-display')}>
@@ -180,6 +252,13 @@ function DateTimeSection({ formData, errors, onChange }) {
                                 <div className={cx('placeholder-content')}>
                                     <span className={cx('placeholder-icon')}>📅</span>
                                     <p>Vui lòng chọn ngày trước để xem các khung giờ có sẵn</p>
+                                </div>
+                            </div>
+                        ) : hasDateIssues ? (
+                            <div className={cx('time-placeholder')}>
+                                <div className={cx('placeholder-content')}>
+                                    <span className={cx('placeholder-icon')}>❌</span>
+                                    <p>Vui lòng chọn ngày hợp lệ để xem khung giờ</p>
                                 </div>
                             </div>
                         ) : isLoadingTimes ? (
@@ -249,11 +328,11 @@ function DateTimeSection({ formData, errors, onChange }) {
                 </div>
 
                 {/* Selected Summary */}
-                {formData.appointmentDate && formData.appointmentTime && (
+                {formData.appointmentDate && formData.appointmentTime && !hasDateIssues && (
                     <div className={cx('selection-summary')}>
                         <div className={cx('summary-card')}>
                             <h4 className={cx('summary-title')}>
-                                Thông tin đã chọn
+                                ✅ Thông tin đã chọn
                             </h4>
                             <div className={cx('summary-details')}>
                                 <div className={cx('summary-item')}>
@@ -285,12 +364,16 @@ function DateTimeSection({ formData, errors, onChange }) {
                 {/* Time Selection Notes */}
                 <div className={cx('time-notes')}>
                     <div className={cx('note-item')}>
-                        <span className={cx('note-icon')}>💡</span>
-                        <p><strong>Lưu ý:</strong> Thời gian tư vấn có thể thay đổi tùy theo tình hình thực tế</p>
+                        <span className={cx('note-icon')}>📅</span>
+                        <p><strong>Quy định:</strong> Chỉ có thể đặt lịch từ ngày mai trở đi (không bao gồm Chủ nhật)</p>
                     </div>
                     <div className={cx('note-item')}>
                         <span className={cx('note-icon')}>⏰</span>
                         <p><strong>Thời gian:</strong> Mỗi buổi tư vấn kéo dài khoảng 30-45 phút</p>
+                    </div>
+                    <div className={cx('note-item')}>
+                        <span className={cx('note-icon')}>🏥</span>
+                        <p><strong>Giờ làm việc:</strong> 8:00 - 17:00 (nghỉ trưa 11:30 - 13:00)</p>
                     </div>
                     <div className={cx('note-item')}>
                         <span className={cx('note-icon')}>📞</span>

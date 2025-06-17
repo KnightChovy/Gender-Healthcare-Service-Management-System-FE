@@ -33,13 +33,38 @@ function NotificationBell() {
                 notifications = JSON.parse(saved) || [];
             }
 
-            // Check pending appointment
+            // Check pending appointment - CHỈ tạo thông báo xác nhận
             const pendingAppointment = localStorage.getItem('pendingAppointment');
             if (pendingAppointment) {
                 const appointmentData = JSON.parse(pendingAppointment);
                 
-                if (appointmentData.id && appointmentData.fee && appointmentData.status === 'pending_confirmation') {
-                    // Tạo payment notification nếu chưa có
+                if (appointmentData.id && appointmentData.status === 'pending_confirmation') {
+                    // CHỈ tạo confirmation notification
+                    const confirmNotifId = `confirm_${appointmentData.id}`;
+                    const hasConfirmNotif = notifications.some(n => n.id === confirmNotifId);
+                    
+                    if (!hasConfirmNotif) {
+                        const confirmNotification = {
+                            id: confirmNotifId,
+                            type: 'appointment_pending',
+                            title: 'Lịch hẹn đã được gửi',
+                            message: `Lịch hẹn ${appointmentData.consultationType} đã được gửi. Vui lòng đợi xác nhận từ phía quản lý.`,
+                            timestamp: Date.now(),
+                            isRead: false,
+                            appointmentId: appointmentData.id
+                        };
+                        notifications.unshift(confirmNotification);
+                    }
+                }
+            }
+
+            // Check for manager-confirmed appointments - CHỈ khi manager xác nhận mới tạo payment notification
+            const confirmedAppointment = localStorage.getItem('confirmedAppointment');
+            if (confirmedAppointment) {
+                const appointmentData = JSON.parse(confirmedAppointment);
+                
+                if (appointmentData.id && appointmentData.fee && appointmentData.status === 'confirmed') {
+                    // Tạo payment notification khi manager đã xác nhận
                     const paymentNotifId = `payment_${appointmentData.id}`;
                     const hasPaymentNotif = notifications.some(n => n.id === paymentNotifId);
                     
@@ -47,31 +72,14 @@ function NotificationBell() {
                         const paymentNotification = {
                             id: paymentNotifId,
                             type: 'payment_required',
-                            title: 'Yêu cầu thanh toán',
-                            message: `Vui lòng thanh toán ${formatCurrency(appointmentData.fee)} cho lịch hẹn ${appointmentData.consultationType}`,
+                            title: 'Lịch hẹn đã được xác nhận - Yêu cầu thanh toán',
+                            message: `Lịch hẹn ${appointmentData.consultationType} đã được xác nhận. Vui lòng thanh toán ${formatCurrency(appointmentData.fee)} để hoàn tất.`,
                             timestamp: Date.now(),
                             isRead: false,
                             amount: appointmentData.fee,
                             appointmentId: appointmentData.id
                         };
                         notifications.unshift(paymentNotification);
-                    }
-
-                    // Tạo confirmation notification nếu chưa có
-                    const confirmNotifId = `confirm_${appointmentData.id}`;
-                    const hasConfirmNotif = notifications.some(n => n.id === confirmNotifId);
-                    
-                    if (!hasConfirmNotif) {
-                        const confirmNotification = {
-                            id: confirmNotifId,
-                            type: 'appointment_confirmed',
-                            title: 'Lịch hẹn đã được gửi',
-                            message: `Lịch hẹn ${appointmentData.consultationType} đã được gửi. Chúng tôi sẽ xác nhận trong 1-2 giờ.`,
-                            timestamp: Date.now(),
-                            isRead: false,
-                            appointmentId: appointmentData.id
-                        };
-                        notifications.unshift(confirmNotification);
                     }
                 }
             }
@@ -147,9 +155,11 @@ function NotificationBell() {
             markAsRead(notification.id);
         }
 
+        // CHỈ cho phép thanh toán khi có thông báo payment_required
         if (notification.type === 'payment_required') {
             navigate('/paymentappointment');
         }
+        // Không làm gì với thông báo pending - chỉ hiển thị thông tin
         
         setIsOpen(false);
     };
@@ -174,11 +184,19 @@ function NotificationBell() {
     };
 
     const getIcon = (type) => {
-        return type === 'payment_required' ? faMoneyBillWave : faCalendarCheck;
+        switch(type) {
+            case 'payment_required': return faMoneyBillWave;
+            case 'appointment_pending': return faCalendarCheck;
+            default: return faCalendarCheck;
+        }
     };
 
     const getColor = (type) => {
-        return type === 'payment_required' ? 'warning' : 'success';
+        switch(type) {
+            case 'payment_required': return 'warning';
+            case 'appointment_pending': return 'info';
+            default: return 'success';
+        }
     };
 
     return (

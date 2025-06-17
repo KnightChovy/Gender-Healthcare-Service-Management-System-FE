@@ -264,7 +264,6 @@ function Appointment() {
                 email: formData.email,
                 birthDate: formData.birthDate,
                 gender: formData.gender,
-                age: calculateAge(formData.birthDate),
                 address: formData.address,
 
                 // Thông tin cuộc hẹn
