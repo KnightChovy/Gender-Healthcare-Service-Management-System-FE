@@ -268,11 +268,12 @@ function Appointment() {
                 address: formData.address,
 
                 // Thông tin cuộc hẹn
-                consultationType: formData.consultationType,
-                selectedDoctor: formData.selectedDoctor || null, // null if not selected
+                consultant_type: formData.consultationType,
+                selectedDoctor: formData.selectedDoctor || null,
                 doctorName: formData.doctorName || 'Hệ thống sẽ phân công',
                 appointmentDate: formData.appointmentDate,
                 appointmentTime: formData.appointmentTime,
+                timeslot_id: 'TS001',
 
                 // Thông tin y tế
                 symptoms: formData.symptoms,
@@ -281,12 +282,14 @@ function Appointment() {
                 priority: formData.priority,
 
                 // Thông tin thanh toán
-                fee: formData.fee,
+                price_apm: formData.fee,
 
                 // Metadata
-                createdAt: new Date().toISOString(),
+                created_at: new Date().toISOString(),
+                updated_at: new Date().toISOString(),
                 status: '0', // Trạng thái chờ xác nhận
                 isUserLoggedIn: isLoggedIn,
+                id: `APT${Date.now()}`,
             };
 
             // Lưu vào localStorage để theo dõi
