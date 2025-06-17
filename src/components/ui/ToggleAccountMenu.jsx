@@ -14,14 +14,32 @@ import Logout from "@mui/icons-material/Logout";
 import { useDispatch, useSelector } from "react-redux";
 import { useNavigate } from "react-router-dom";
 import { logout } from "../../store/feature/auth/authenSlice";
+// import axios from "axios";
+import axiosClient from "../../services/axiosClient";
 
 export default function AccountMenu() {
   const { accessToken, user } = useSelector((state) => state.auth);
   const navigate = useNavigate();
   const dispatch = useDispatch();
 
-  const handleLogout = () => {
-    dispatch(logout());
+  const handleLogout = async () => {
+    try {
+      await axiosClient.post("/v1/auth/logout");
+
+      dispatch(logout());
+      navigate("/login");
+    } catch (error) {
+      console.error(
+        "Logout failed:",
+        error.response?.data?.message || error.message
+      );
+      if (error.response) {
+        console.log("Error status:", error.response.status);
+        console.log("Error data:", error.response.data);
+      }
+      dispatch(logout());
+      navigate("/login");
+    }
   };
 
   const [anchorEl, setAnchorEl] = React.useState(null);
@@ -112,7 +130,7 @@ export default function AccountMenu() {
             default:
               return (
                 <MenuItem onClick={() => navigate("/")}>
-                     <Avatar /> My Account
+                  <Avatar /> My Account
                 </MenuItem>
               );
           }
