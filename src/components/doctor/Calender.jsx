@@ -45,9 +45,9 @@ const Calendar = ({ appointments }) => {
         </button>
         <h3 className="text-lg font-medium text-gray-800">
           {viewMode === "day"
-            ? "14 tháng 6, 2025"
+            ? "18 tháng 6, 2025"
             : viewMode === "week"
-            ? "14 - 20 tháng 6, 2025"
+            ? "16 - 22 tháng 6, 2025"
             : "Tháng 6, 2025"}
         </h3>
         <button className="w-8 h-8 flex items-center justify-center rounded-full bg-gray-100 text-gray-600 hover:bg-gray-200">
@@ -57,14 +57,14 @@ const Calendar = ({ appointments }) => {
 
       {viewMode === "week" && (
         <div className="grid grid-cols-7 gap-1 h-[400px]">
-          {["CN", "T2", "T3", "T4", "T5", "T6", "T7"].map((day, index) => (
+          {["T2", "T3", "T4", "T5", "T6", "T7", "CN"].map((day, index) => (
             <div
               key={index}
               className="border border-gray-200 rounded flex flex-col"
             >
               <div className="text-center py-2 bg-gray-50 border-b border-gray-200">
                 <div className="text-xs text-gray-500">{day}</div>
-                <div className="text-sm font-medium">{14 + index}</div>
+                <div className="text-sm font-medium">{16 + index}</div>
               </div>
               <div className="flex-1 overflow-y-auto p-1">
                 {index === 0 && (
