@@ -99,35 +99,30 @@ function NotificationBell() {
       }
 
       // Confirmed Appointments
-      const confirmedAppointment = localStorage.getItem("appointmentsList");
-      if (confirmedAppointment) {
-        const appointmentData = JSON.parse(confirmedAppointment);
-        if (Array.isArray(appointmentData) && appointmentData.length > 0) {
-          const lastestConfirmed = appointmentData[appointmentData.length - 1];
-          const paymentNotifId = `payment_${lastestConfirmed.id}`;
-          const hasPaymentNotif = notifications.some(
-            (n) => n.id === paymentNotifId
-          );
-          if (!hasPaymentNotif) {
-            const paymentNotification = {
-              ...lastestConfirmed,
-              id: paymentNotifId,
-              type: "payment_required",
-              title: "Lịch hẹn đã được xác nhận - Yêu cầu thanh toán",
-              message: `Lịch hẹn ${
-                lastestConfirmed.consultant_type
-              } đã được xác nhận. Vui lòng thanh toán ${formatCurrency(
-                lastestConfirmed.price_apm
-              )} để hoàn tất.`,
-              timestamp: Date.now(),
-              isRead: false,
-              amount: lastestConfirmed.price_apm,
-              appointmentId: lastestConfirmed.id,
-            };
-            notifications.unshift(paymentNotification);
-          }
-        }
-      }
+                 const confirmedAppointment = localStorage.getItem('appointmentsList');
+            if (confirmedAppointment) {
+                const appointmentData = JSON.parse(confirmedAppointment);
+                if (Array.isArray(appointmentData) && appointmentData.length > 0) {
+                    const lastestConfirmed = appointmentData[appointmentData.length - 1];
+                    if (lastestConfirmed.status !== "approved") return;
+                    const paymentNotifId = `payment_${lastestConfirmed.id}`;
+                    const hasPaymentNotif = notifications.some(n => n.id === paymentNotifId);
+                    if (!hasPaymentNotif) {
+                        const paymentNotification = {
+                            ...lastestConfirmed,
+                            id: paymentNotifId,
+                            type: 'payment_required',
+                            title: 'Lịch hẹn đã được xác nhận - Yêu cầu thanh toán',
+                            message: `Lịch hẹn ${lastestConfirmed.consultant_type} đã được xác nhận. Vui lòng thanh toán ${formatCurrency(lastestConfirmed.price_apm)} để hoàn tất.`,
+                            timestamp: Date.now(),
+                            isRead: false,
+                            amount: lastestConfirmed.price_apm,
+                            appointmentId: lastestConfirmed.id
+                        };
+                        notifications.unshift(paymentNotification);
+                    }
+                }
+            }
 
       const paymentSuccess = localStorage.getItem("paymentSuccess");
       if (paymentSuccess) {
@@ -162,9 +157,75 @@ function NotificationBell() {
               (n) => n.id !== `payment_${latestPayment.appointmentId}`
             );
 
-            localStorage.removeItem("confirmedAppointment");
-            localStorage.removeItem("paymentSuccess");
-          }
+            // Confirmed Appointments
+            const confirmedAppointment = localStorage.getItem('appointmentsList');
+            if (confirmedAppointment) {
+                const appointmentData = JSON.parse(confirmedAppointment);
+                if (Array.isArray(appointmentData) && appointmentData.length > 0) {
+                    const lastestConfirmed = appointmentData[appointmentData.length - 1];
+                    if (lastestConfirmed.status !== "approved") return;
+                    const paymentNotifId = `payment_${lastestConfirmed.id}`;
+                    const hasPaymentNotif = notifications.some(n => n.id === paymentNotifId);
+                    if (!hasPaymentNotif) {
+                        const paymentNotification = {
+                            ...lastestConfirmed,
+                            id: paymentNotifId,
+                            type: 'payment_required',
+                            title: 'Lịch hẹn đã được xác nhận - Yêu cầu thanh toán',
+                            message: `Lịch hẹn ${lastestConfirmed.consultant_type} đã được xác nhận. Vui lòng thanh toán ${formatCurrency(lastestConfirmed.price_apm)} để hoàn tất.`,
+                            timestamp: Date.now(),
+                            isRead: false,
+                            amount: lastestConfirmed.price_apm,
+                            appointmentId: lastestConfirmed.id
+                        };
+                        notifications.unshift(paymentNotification);
+                    }
+                }
+            }
+
+            const paymentSuccess = localStorage.getItem('paymentSuccess');
+            if (paymentSuccess) {
+                const paymentArray = JSON.parse(paymentSuccess);
+                // Payment Success
+                if (Array.isArray(paymentArray) && paymentArray.length > 0) {
+                    const latestPayment = paymentArray[paymentArray.length - 1]; // lấy phần tử mới nhất
+
+                    const successNotifId = `success_${latestPayment.appointmentId}_${latestPayment.paymentId}`;
+                    const hasSuccessNotif = notifications.some(n => n.id === successNotifId);
+
+                    if (!hasSuccessNotif) {
+                        const successNotification = {
+                            id: successNotifId,
+                            type: 'appointment_success',
+                            title: '🎉 Đặt lịch hẹn thành công!',
+                            message: `Thanh toán thành công ${formatCurrency(latestPayment.amount)}. Lịch hẹn ${latestPayment.consultant_type} đã được xác nhận.`,
+                            timestamp: Date.now(),
+                            isRead: false,
+                            appointmentId: latestPayment.appointmentId,
+                            paymentId: latestPayment.paymentId,
+                            amount: latestPayment.amount
+                        };
+                        notifications.unshift(successNotification);
+
+                        // Xóa thông báo thanh toán cũ liên quan
+                        notifications = notifications.filter(n =>
+                            n.id !== `payment_${latestPayment.appointmentId}`
+                        );
+
+                        localStorage.removeItem('confirmedAppointment');
+                        localStorage.removeItem('paymentSuccess');
+                    }
+                }
+            }
+
+            // Sort
+            notifications.sort((a, b) => b.timestamp - a.timestamp);
+
+            setNotifications(notifications);
+            setUnreadCount(notifications.filter(n => !n.isRead).length);
+            localStorage.setItem('notificationHistory', JSON.stringify(notifications));
+        } catch (error) {
+            console.error('Error loading notifications:', error);
         }
       }
 
