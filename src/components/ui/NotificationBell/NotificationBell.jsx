@@ -95,6 +95,7 @@ function NotificationBell() {
                 const appointmentData = JSON.parse(confirmedAppointment);
                 if (Array.isArray(appointmentData) && appointmentData.length > 0) {
                     const lastestConfirmed = appointmentData[appointmentData.length - 1];
+                    if (lastestConfirmed.status !== "approved") return;
                     const paymentNotifId = `payment_${lastestConfirmed.id}`;
                     const hasPaymentNotif = notifications.some(n => n.id === paymentNotifId);
                     if (!hasPaymentNotif) {
