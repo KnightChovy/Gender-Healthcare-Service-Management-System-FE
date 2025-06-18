@@ -130,7 +130,7 @@ function Login() {
             navigate("/admin");
             break;
           case "doctor":
-            navigate("/doctor");
+            navigate("/doctor/dashboard");
             break;
           case "manager":
             navigate("/manager");
