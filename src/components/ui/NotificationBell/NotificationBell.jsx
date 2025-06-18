@@ -106,7 +106,7 @@ function NotificationBell() {
         if (Array.isArray(appointmentData) && appointmentData.length > 0) {
           const lastestConfirmed = appointmentData[appointmentData.length - 1];
 
-          if (lastestConfirmed.status !== "approved") {
+          if (lastestConfirmed.status === "rejected") {
             appointmentData = appointmentData.filter(
               (item) => item.id !== lastestConfirmed.id
             );
@@ -135,28 +135,29 @@ function NotificationBell() {
 
             return;
           }
-
-          const paymentNotifId = `payment_${lastestConfirmed.id}`;
-          const hasPaymentNotif = notifications.some(
-            (n) => n.id === paymentNotifId
-          );
-          if (!hasPaymentNotif) {
-            const paymentNotification = {
-              ...lastestConfirmed,
-              id: paymentNotifId,
-              type: "payment_required",
-              title: "Lịch hẹn đã được xác nhận - Yêu cầu thanh toán",
-              message: `Lịch hẹn ${
-                lastestConfirmed.consultant_type
-              } đã được xác nhận. Vui lòng thanh toán ${formatCurrency(
-                lastestConfirmed.price_apm
-              )} để hoàn tất.`,
-              timestamp: Date.now(),
-              isRead: false,
-              amount: lastestConfirmed.price_apm,
-              appointmentId: lastestConfirmed.id,
-            };
-            notifications.unshift(paymentNotification);
+          if (lastestConfirmed.status === "approved") {
+            const paymentNotifId = `payment_${lastestConfirmed.id}`;
+            const hasPaymentNotif = notifications.some(
+              (n) => n.id === paymentNotifId
+            );
+            if (!hasPaymentNotif) {
+              const paymentNotification = {
+                ...lastestConfirmed,
+                id: paymentNotifId,
+                type: "payment_required",
+                title: "Lịch hẹn đã được xác nhận - Yêu cầu thanh toán",
+                message: `Lịch hẹn ${
+                  lastestConfirmed.consultant_type
+                } đã được xác nhận. Vui lòng thanh toán ${formatCurrency(
+                  lastestConfirmed.price_apm
+                )} để hoàn tất.`,
+                timestamp: Date.now(),
+                isRead: false,
+                amount: lastestConfirmed.price_apm,
+                appointmentId: lastestConfirmed.id,
+              };
+              notifications.unshift(paymentNotification);
+            }
           }
         }
       }

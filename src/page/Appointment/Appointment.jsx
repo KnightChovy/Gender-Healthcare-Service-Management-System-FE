@@ -276,7 +276,7 @@ function Appointment() {
         doctorName: formData.doctorName || "Hệ thống sẽ phân công",
         appointmentDate: formData.appointmentDate,
         appointmentTime: formData.appointmentTime,
-        timeslot_id: getNextTimeslotId(),
+        timeslot_id: "TS000007",
 
         // Thông tin y tế
         symptoms: formData.symptoms,
@@ -330,15 +330,19 @@ function Appointment() {
     }
   };
 
-  const getNextTimeslotId = () => {
-    const current = parseInt(
-      localStorage.getItem("lastTimeslotNumber") || "1",
-      10
-    );
-    const nextId = "TS" + current.toString().padStart(6, "0");
-    localStorage.setItem("lastTimeslotNumber", (current + 1).toString());
-    return nextId;
-  };
+  //   const getNextTimeslotId = () => {
+  //     let current = parseInt(localStorage.getItem("lastTimeslotNumber"), 10);
+
+  //     if (isNaN(current) || current < 1) {
+  //       current = 1;
+  //     }
+
+  //     const nextId = "TS" + current.toString().padStart(6, "0");
+  //     localStorage.setItem("lastTimeslotNumber", (current + 1).toString());
+
+  //     return nextId;
+  //   };
+
   // Hiển thị thông báo thành công
   const showSuccessNotification = () => {
     // Tạo element thông báo
