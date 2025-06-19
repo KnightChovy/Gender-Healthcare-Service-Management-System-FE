@@ -13,14 +13,14 @@ export const EmployeesManagerment = () => {
   const navigate = useNavigate();
 
   const handleAddEmployees = () => {
-    navigate("/add");
+    navigate("/admin/employees/addEmployees");
   };
   return (
     <div>
       <TableContainer>
         <div className="flex justify-end gap-3 pb-4">
-          <Button variant="contained" oncClick={handleAddEmployees}>
-            Thêm Employees
+          <Button variant="contained" onClick={handleAddEmployees}>
+            Thêm nhân viên
           </Button>
         </div>
         <Divider />

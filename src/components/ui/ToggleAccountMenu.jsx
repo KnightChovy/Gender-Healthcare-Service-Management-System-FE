@@ -15,26 +15,41 @@ import { useDispatch, useSelector } from "react-redux";
 import { useNavigate } from "react-router-dom";
 import { logout } from "../../store/feature/auth/authenSlice";
 import { toast } from "react-toastify"; // Thêm import toast
+import axiosClient from "../../services/axiosClient";
 
 export default function AccountMenu() {
-  const { accessToken, user } = useSelector((state) => state.auth);
+  const { user } = useSelector((state) => state.auth);
   const navigate = useNavigate();
   const dispatch = useDispatch();
 
   const handleLogout = async () => {
     try {
       handleClose();
-
       toast.info("Đang đăng xuất...", { autoClose: 800 });
 
-      setTimeout(() => {
-        dispatch(logout());
-        toast.success("Đăng xuất thành công", { autoClose: 1500 });
-        navigate("/login");
-      }, 500);
+      const response = await axiosClient.post("/v1/auth/logout");
+
+      if (response.data?.success) {
+        setTimeout(() => {
+          dispatch(logout());
+          toast.success("Đăng xuất thành công", { autoClose: 1500 });
+          navigate("/login");
+        }, 500);
+      } else {
+        toast.error("Logout thất bại: " + (response.data?.message || ""));
+      }
     } catch (error) {
-      console.error("Lỗi khi đăng xuất:", error);
-      toast.error("Đăng xuất thất bại. Vui lòng thử lại.");
+      console.error("Lỗi khi logout:", error);
+
+      if (error.response) {
+        console.error("Chi tiết lỗi từ server:", error.response.data);
+        toast.error(
+          "Logout thất bại: " +
+            (error.response.data?.message || "403 Forbidden")
+        );
+      } else {
+        toast.error("Lỗi mạng hoặc server không phản hồi.");
+      }
     }
   };
 
