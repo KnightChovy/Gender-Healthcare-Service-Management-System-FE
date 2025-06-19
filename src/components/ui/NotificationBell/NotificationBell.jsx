@@ -48,6 +48,8 @@ function NotificationBell() {
         return faMoneyBillWave;
       case "appointment_pending":
         return faCalendarCheck;
+      case "appointment_cancelled":
+        return faTimes; // Using faTimes for cancelled appointments
       default:
         return faCalendarCheck;
     }
@@ -59,6 +61,8 @@ function NotificationBell() {
         return "warning";
       case "appointment_pending":
         return "info";
+      case "appointment_cancelled":
+        return "danger";
       case "appointment_success":
         return "success";
       default:
@@ -104,61 +108,55 @@ function NotificationBell() {
         let appointmentData = JSON.parse(confirmedAppointment);
 
         if (Array.isArray(appointmentData) && appointmentData.length > 0) {
-          const lastestConfirmed = appointmentData[appointmentData.length - 1];
+          appointmentData = appointmentData.filter(
+            (item) => item.status === "approved" || item.status === "rejected"
+          );
 
-          if (lastestConfirmed.status === "rejected") {
-            appointmentData = appointmentData.filter(
-              (item) => item.id !== lastestConfirmed.id
-            );
-
-            localStorage.setItem(
-              "appointmentsList",
-              JSON.stringify(appointmentData)
-            );
-
-            const cancelNotification = {
-              id: `cancelled_${lastestConfirmed.id}`,
-              type: "cancelled",
-              title: "Lịch hẹn bị huỷ",
-              message: `Lịch hẹn của bạn đã bị huỷ vì chưa được duyệt.`,
-              timestamp: Date.now(),
-              isRead: false,
-              appointmentId: lastestConfirmed.id,
-            };
-
-            const alreadyExists = notifications.some(
-              (n) => n.id === cancelNotification.id
-            );
-            if (!alreadyExists) {
-              notifications.unshift(cancelNotification);
-            }
-
-            return;
-          }
-          if (lastestConfirmed.status === "approved") {
-            const paymentNotifId = `payment_${lastestConfirmed.id}`;
-            const hasPaymentNotif = notifications.some(
-              (n) => n.id === paymentNotifId
-            );
-            if (!hasPaymentNotif) {
-              const paymentNotification = {
-                ...lastestConfirmed,
-                id: paymentNotifId,
-                type: "payment_required",
-                title: "Lịch hẹn đã được xác nhận - Yêu cầu thanh toán",
+          appointmentData.map((latestAppointment) => {
+            if (latestAppointment.status === "rejected") {
+              const cancelNotification = {
+                id: `cancelled_${latestAppointment.id}`,
+                type: "appointment_cancelled",
+                title: "Lịch hẹn đã bị từ chối",
                 message: `Lịch hẹn ${
-                  lastestConfirmed.consultant_type
-                } đã được xác nhận. Vui lòng thanh toán ${formatCurrency(
-                  lastestConfirmed.price_apm
-                )} để hoàn tất.`,
+                  latestAppointment.consultant_type || ""
+                } đã bị quản lý từ chối. Vui lòng liên hệ hỗ trợ để biết thêm chi tiết.`,
                 timestamp: Date.now(),
                 isRead: false,
-                amount: lastestConfirmed.price_apm,
-                appointmentId: lastestConfirmed.id,
+                appointmentId: latestAppointment.id,
               };
-              notifications.unshift(paymentNotification);
+
+              const alreadyExists = notifications.some(
+                (n) => n.id === cancelNotification.id
+              );
+              if (!alreadyExists) {
+                notifications.unshift(cancelNotification);
+              }
+            } else if (latestAppointment.status === "approved") {
+              const paymentNotifId = `payment_${latestAppointment.id}`;
+              const hasPaymentNotif = notifications.some(
+                (n) => n.id === paymentNotifId
+              );
+              if (!hasPaymentNotif) {
+                const paymentNotification = {
+                  ...latestAppointment,
+                  id: paymentNotifId,
+                  type: "payment_required",
+                  title: "Lịch hẹn đã được xác nhận - Yêu cầu thanh toán",
+                  message: `Lịch hẹn ${
+                    latestAppointment.consultant_type
+                  } đã được xác nhận. Vui lòng thanh toán ${formatCurrency(
+                    latestAppointment.price_apm
+                  )} để hoàn tất.`,
+                  timestamp: Date.now(),
+                  isRead: false,
+                  amount: latestAppointment.price_apm,
+                  appointmentId: latestAppointment.id,
+                };
+                notifications.unshift(paymentNotification);
+              }
             }
-          }
+          });
         }
       }
 
