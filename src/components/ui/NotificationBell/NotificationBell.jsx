@@ -132,8 +132,6 @@ function NotificationBell() {
             if (!alreadyExists) {
               notifications.unshift(cancelNotification);
             }
-
-            return;
           }
           if (lastestConfirmed.status === "approved") {
             const paymentNotifId = `payment_${lastestConfirmed.id}`;
