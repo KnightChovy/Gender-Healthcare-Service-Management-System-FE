@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-
+import axiosClient from "../../services/axiosClient";
 const Schedule = () => {
   const days = [
     "Thứ 2",
@@ -10,10 +10,7 @@ const Schedule = () => {
     "Thứ 7",
     "Chủ nhật",
   ];
-  const timeSlots = [
-    "08:00 - 11:00",
-    "13:30 - 17:00",
-  ];
+  const timeSlots = ["08:00 - 11:00", "13:30 - 17:00"];
 
   // State cho lịch làm việc
   const [schedule, setSchedule] = useState(
@@ -130,32 +127,75 @@ const Schedule = () => {
   };
 
   // Xử lý khi submit form
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     setIsLoading(true);
 
-    // Lọc ra các slot đã được chọn
-    const selectedSlots = Object.entries(schedule).reduce(
-      (selected, [day, slots]) => {
-        const daySlots = Object.entries(slots)
-          .filter(([_, isSelected]) => isSelected)
-          .map(([time]) => time);
+    try {
+      // Tạo đối tượng để nhóm các timeSlots theo ngày
+      const schedules = {};
 
-        if (daySlots.length > 0) {
-          selected[day] = daySlots;
-        }
+      // Xử lý từng ngày trong lịch
+      Object.entries(schedule).forEach(([day, slots]) => {
+        const dayIndex = days.indexOf(day);
+        if (dayIndex === -1) return;
 
-        return selected;
-      },
-      {}
-    );
+        const date = weekDates[dayIndex];
+        const formattedDate = `${date.getFullYear()}-${String(
+          date.getMonth() + 1
+        ).padStart(2, "0")}-${String(date.getDate()).padStart(2, "0")}`;
 
-    // Simulating API call
-    setTimeout(() => {
-      console.log("Lịch làm việc đã đăng ký:", selectedSlots);
-      alert("Đăng ký lịch làm việc thành công!");
+        // Duyệt qua các khung giờ
+        Object.entries(slots).forEach(([timeSlot, isSelected]) => {
+          if (isSelected) {
+            // Phân tích giờ từ chuỗi "08:00 - 11:00"
+            const [start, end] = timeSlot.split(" - ");
+
+            const slot = {
+              time_start: start + ":00",
+              time_end: end + ":00",
+            };
+            console.log("Khung giờ:", formattedDate, slot);
+            if (!schedules[formattedDate]) {
+              schedules[formattedDate] = {
+                date: formattedDate,
+                timeSlots: [slot],
+              };
+            }
+          }
+        });
+      });
+
+      console.log("Lịch làm việc:", schedules);
+
+      // Chuyển đối tượng thành mảng
+      const schedulesToSend = Object.values(schedules);
+
+      console.log("Dữ liệu gửi đi:", schedulesToSend);
+
+      const accessToken = localStorage.getItem("accessToken");
+
+      const res = await fetch("http://52.4.72.106:3000/v1/doctors/schedule", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${accessToken}`,
+          "x-access-token": accessToken,
+        },
+        body: JSON.stringify(schedulesToSend),
+      });
+
+      if (res.ok) {
+        alert("Đăng ký lịch làm việc thành công!");
+      } else {
+        const errorData = await res.json();
+        throw new Error(errorData.message || "Đăng ký thất bại");
+      }
+    } catch (error) {
+      alert("Lỗi: " + error.message);
+    } finally {
       setIsLoading(false);
-    }, 1000);
+    }
   };
 
   return (
