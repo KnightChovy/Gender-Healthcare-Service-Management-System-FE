@@ -6,6 +6,7 @@ import Login from "../page/login";
 import Register from "../page/Register";
 import Appointment from "../page/Appointment";
 import PaymentAppointment from "../page/Payment/PaymentAppointment";
+import { ProfilePage } from "../page/profile";
 
 const LayoutAccount = React.lazy(() => {
   import("../components/Layouts/LayoutAccount/LayoutAccount");
@@ -59,6 +60,22 @@ export function AccountRoutes() {
         element={
           <LayoutAccount>
             <PaymentAppointment />
+          </LayoutAccount>
+        }
+      />
+      {/* <Route
+        path="/my-appointments"
+        element={
+          <LayoutAccount>
+            <MyAppointments />
+          </LayoutAccount>
+        }
+      /> */}
+      <Route
+        path="/profile"
+        element={
+          <LayoutAccount>
+            <ProfilePage />
           </LayoutAccount>
         }
       />

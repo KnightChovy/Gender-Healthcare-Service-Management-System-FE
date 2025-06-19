@@ -29,6 +29,7 @@ import Patients from "./page/Doctor/Patients";
 import Profile from "./page/Doctor/Profile";
 import { ConsultSchedulerManagerment } from "./page/manager/ConsultSchedulerManagerment/ConsultSchedulerManagerment";
 import AddEmployees from "./page/admin/EmployeesManagerment/AddEmployees";
+import ProfilePage from "./page/profile";
 function App() {
   return (
     <>
@@ -105,6 +106,14 @@ function App() {
           element={
             <LayoutAccount>
               <ForgetPassword />
+            </LayoutAccount>
+          }
+        ></Route>
+        <Route
+          path="/profile"
+          element={
+            <LayoutAccount>
+              <ProfilePage />
             </LayoutAccount>
           }
         ></Route>
