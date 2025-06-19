@@ -321,6 +321,7 @@ function Appointment() {
       // Chuyển về trang chủ sau 3 giây
       setTimeout(() => {
         navigate("/");
+        localStorage.removeItem('doctorAvailableTimeslots');
       }, 10000);
     } catch (error) {
       console.error("❌ Error submitting appointment:", error);
@@ -329,19 +330,6 @@ function Appointment() {
       setIsSubmitting(false);
     }
   };
-
-  //   const getNextTimeslotId = () => {
-  //     let current = parseInt(localStorage.getItem("lastTimeslotNumber"), 10);
-
-  //     if (isNaN(current) || current < 1) {
-  //       current = 1;
-  //     }
-
-  //     const nextId = "TS" + current.toString().padStart(6, "0");
-  //     localStorage.setItem("lastTimeslotNumber", (current + 1).toString());
-
-  //     return nextId;
-  //   };
 
   // Hiển thị thông báo thành công
   const showSuccessNotification = () => {
