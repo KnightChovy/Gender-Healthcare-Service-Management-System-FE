@@ -27,7 +27,7 @@ import InputBase from "@mui/material/InputBase";
 import Badge from "@mui/material/Badge";
 import Avatar from "@mui/material/Avatar";
 import { Outlet, useNavigate, useLocation } from "react-router-dom";
-import { useDispatch } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 import { logout } from "../../../store/feature/auth/authenSlice";
 
 const drawerWidth = 280;
@@ -157,6 +157,9 @@ export default function LayoutAdmin() {
   const location = useLocation();
   const dispatch = useDispatch();
 
+  // Get user information from Redux store
+  const { user } = useSelector((state) => state.auth);
+
   const handleDrawerOpen = () => setOpen(true);
   const handleDrawerClose = () => setOpen(false);
 
@@ -187,6 +190,14 @@ export default function LayoutAdmin() {
       icon: <ManageAccountsIcon />,
     },
   ];
+
+  // Function to get initials from name
+  const getInitials = (name) => {
+    if (!name) return "A"; // Default fallback
+
+    // Get first letter of name
+    return name.charAt(0).toUpperCase();
+  };
 
   return (
     <Box sx={{ display: "flex", height: "100vh" }}>
@@ -252,7 +263,7 @@ export default function LayoutAdmin() {
                   border: "2px solid rgba(255,255,255,0.2)",
                 }}
               >
-                A
+                {user && user.first_name ? getInitials(user.first_name) : "A"}
               </Avatar>
               <Box sx={{ display: { xs: "none", sm: "block" } }}>
                 <Typography
@@ -260,10 +271,10 @@ export default function LayoutAdmin() {
                   fontWeight="500"
                   sx={{ lineHeight: 1.2 }}
                 >
-                  Admin User
+                  {user ? `${user.last_name} ${user.first_name}` : "Admin User"}
                 </Typography>
                 <Typography variant="caption" sx={{ opacity: 0.7 }}>
-                  Administrator
+                  {user?.role || "Administrator"}
                 </Typography>
               </Box>
             </Box>

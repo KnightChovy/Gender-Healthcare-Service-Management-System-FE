@@ -18,7 +18,7 @@ axiosClient.interceptors.request.use((config) => {
   if (accessToken) {
     config.headers = {
       ...config.headers,
-      Authorization: `Bearer ${accessToken}`,
+      "x-access-token": accessToken,
     };
   }
   //nếu có config.pathParams thì thay thế URL

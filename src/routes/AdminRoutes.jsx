@@ -1,5 +1,6 @@
 import React from "react";
 import { Route } from "react-router-dom";
+import { EmployeesManagerment } from "../page/admin/EmployeesManagerment/EmployeesManagerment";
 
 const LayoutAdmin = React.lazy(() =>
   import("../components/Layouts/LayoutAdmin/LayoutAdmin")
