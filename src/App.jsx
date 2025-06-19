@@ -28,6 +28,7 @@ import Schedule from "./page/Doctor/Schedule";
 import Patients from "./page/Doctor/Patients";
 import Profile from "./page/Doctor/Profile";
 import { ConsultSchedulerManagerment } from "./page/manager/ConsultSchedulerManagerment/ConsultSchedulerManagerment";
+import AddEmployees from "./page/admin/EmployeesManagerment/AddEmployees";
 function App() {
   return (
     <>
@@ -117,7 +118,8 @@ function App() {
           }
         >
           <Route index element={<DashboardAdmin />} />
-          <Route path="employees" element={<EmployeesManagerment />}></Route>
+          <Route path="employees" element={<EmployeesManagerment />} />
+          <Route path="employees/addEmployees" element={<AddEmployees />} />
         </Route>
 
         {/* Doctor */}

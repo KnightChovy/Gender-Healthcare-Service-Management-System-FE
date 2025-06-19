@@ -1,8 +1,19 @@
-import React from "react";
-import { Outlet, NavLink, Link } from "react-router-dom";
+import React, { useState, useRef, useEffect } from "react";
+import { Outlet, NavLink, Link, useNavigate } from "react-router-dom";
+import Avatar from "@mui/material/Avatar";
+import DoctorNotificationBell from "../../ui/NotificationBell/DoctorNotificationBell";
 
 // Sidebar Component
 const Sidebar = () => {
+  const navigate = useNavigate();
+  
+  // Xử lý đăng xuất
+  const handleLogout = () => {
+    localStorage.removeItem("user");
+    localStorage.removeItem("accessToken");
+    navigate("/login");
+  };
+  
   return (
     <div className="bg-blue-800 text-blue-100 w-64 space-y-6 py-7 px-2 absolute inset-y-0 left-0 transform -translate-x-full md:relative md:translate-x-0 transition duration-200 ease-in-out">
       <div className="flex items-center space-x-2 px-4">
@@ -38,7 +49,6 @@ const Sidebar = () => {
           <span>Lịch hẹn</span>
         </NavLink>
 
-        {/* Nút đăng ký lịch làm việc mới */}
         <NavLink
           to="/doctor/schedule"
           className={({ isActive }) =>
@@ -83,7 +93,10 @@ const Sidebar = () => {
 
         <div className="border-t border-blue-700 my-4"></div>
 
-        <button className="flex items-center space-x-2 py-2.5 px-4 rounded transition duration-200 hover:bg-blue-700 w-full text-left">
+        <button 
+          onClick={handleLogout}
+          className="flex items-center space-x-2 py-2.5 px-4 rounded transition duration-200 hover:bg-blue-700 w-full text-left"
+        >
           <span className="text-xl">
             <i className="fas fa-sign-out-alt"></i>
           </span>
@@ -94,13 +107,37 @@ const Sidebar = () => {
   );
 };
 
-// Header Component - thêm nút Back Home
+// Header Component - thay đổi để thêm dropdown và thông báo
 const Header = () => {
+  const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+  const dropdownRef = useRef(null);
+  const navigate = useNavigate();
+
+  // Xử lý đăng xuất
+  const handleLogout = () => {
+    localStorage.removeItem("user");
+    localStorage.removeItem("accessToken");
+    navigate("/login");
+  };
+
+  // Đóng dropdown khi click ra ngoài
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
+        setIsDropdownOpen(false);
+      }
+    };
+
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, []);
+
   return (
     <header className="bg-white shadow-md py-4 px-4">
       <div className="flex items-center justify-between">
         <div className="flex items-center">
-          {/* Thêm nút Back Home */}
           <Link
             to="/"
             className="mr-4 flex items-center text-blue-600 hover:text-blue-800 transition-colors"
@@ -151,54 +188,49 @@ const Header = () => {
         </div>
 
         <div className="flex items-center">
-          <div className="flex items-center">
-            <button className="flex mx-4 text-gray-600 focus:outline-none">
-              <svg
-                className="h-6 w-6"
-                viewBox="0 0 24 24"
-                fill="none"
-                xmlns="http://www.w3.org/2000/svg"
+          {/* Component thông báo */}
+          <DoctorNotificationBell />
+
+          {/* Avatar dropdown */}
+          <div className="relative" ref={dropdownRef}>
+            <div 
+              onClick={() => setIsDropdownOpen(!isDropdownOpen)}
+              className="cursor-pointer ml-4"
+            >
+              <Avatar
+                sx={{
+                  width: 32,
+                  height: 32,
+                  bgcolor: "#3b82f6",
+                  fontWeight: "bold",
+                }}
               >
-                <path
-                  d="M15 17H20L18.5951 15.5951C18.2141 15.2141 18 14.6973 18 14.1585V11C18 8.38757 16.3304 6.16509 14 5.34142V5C14 3.89543 13.1046 3 12 3C10.8954 3 10 3.89543 10 5V5.34142C7.66962 6.16509 6 8.38757 6 11V14.1585C6 14.6973 5.78595 15.2141 5.40493 15.5951L4 17H9M15 17V18C15 19.6569 13.6569 21 12 21C10.3431 21 9 19.6569 9 18V17M15 17H9"
-                  stroke="currentColor"
-                  strokeWidth="2"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                ></path>
-              </svg>
-            </button>
+                {localStorage.getItem("user")
+                  ? JSON.parse(localStorage.getItem("user")).first_name.charAt(0)
+                  : null}
+              </Avatar>
+            </div>
 
-            <div className="relative">
-              <button className="relative z-10 block h-8 w-8 rounded-full overflow-hidden border-2 border-gray-600 focus:outline-none focus:border-blue-500">
-                <img
-                  className="h-full w-full object-cover"
-                  src="https://via.placeholder.com/150"
-                  alt="Avatar"
-                />
+            {/* Dropdown menu */}
+            <div className={`absolute right-0 mt-2 py-2 w-48 bg-white rounded-md shadow-xl z-20 ${isDropdownOpen ? 'block' : 'hidden'}`}>
+              <Link
+                to="/doctor/profile"
+                className="block px-4 py-2 text-sm text-gray-700 hover:bg-blue-600 hover:text-white"
+              >
+                <i className="fas fa-user-md mr-2"></i>Hồ sơ
+              </Link>
+              <Link
+                to="/doctor/settings"
+                className="block px-4 py-2 text-sm text-gray-700 hover:bg-blue-600 hover:text-white"
+              >
+                <i className="fas fa-cog mr-2"></i>Cài đặt
+              </Link>
+              <button
+                onClick={handleLogout}
+                className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-blue-600 hover:text-white"
+              >
+                <i className="fas fa-sign-out-alt mr-2"></i>Đăng xuất
               </button>
-
-              <div className="absolute right-0 mt-2 py-2 w-48 bg-white rounded-md shadow-xl z-20 hidden">
-                {/* Nhớ đổi thẻ a thành Link của React router dom tao không rảnh đổi giúp đâu*/}
-                <Link
-                  to="/"
-                  className="block px-4 py-2 text-sm text-gray-700 hover:bg-blue-600 hover:text-white"
-                >
-                  Hồ sơ
-                </Link>
-                <Link
-                  to="/"
-                  className="block px-4 py-2 text-sm text-gray-700 hover:bg-blue-600 hover:text-white"
-                >
-                  Cài đặt
-                </Link>
-                <Link
-                  to="/"
-                  className="block px-4 py-2 text-sm text-gray-700 hover:bg-blue-600 hover:text-white"
-                >
-                  Đăng xuất
-                </Link>
-              </div>
             </div>
           </div>
         </div>

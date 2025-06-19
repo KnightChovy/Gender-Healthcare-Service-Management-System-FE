@@ -10,7 +10,7 @@ const Schedule = () => {
     "Thứ 7",
     "Chủ nhật",
   ];
-  const timeSlots = ["08:00 - 11:00", "13:30 - 17:00"];
+  const timeSlots = ["07:30 - 11:30", "13:00 - 17:00"];
 
   // State cho lịch làm việc
   const [schedule, setSchedule] = useState(
@@ -25,6 +25,7 @@ const Schedule = () => {
 
   const [selectedDate, setSelectedDate] = useState(new Date());
   const [isLoading, setIsLoading] = useState(false);
+  const [Slots, setTimeSlots] = useState([]);
 
   // Lấy ngày hiện tại đầu ngày (00:00:00) để so sánh chính xác
   const today = new Date();
@@ -133,7 +134,7 @@ const Schedule = () => {
 
     try {
       // Tạo đối tượng để nhóm các timeSlots theo ngày
-      const schedules = {};
+      let schedules = {};
 
       // Xử lý từng ngày trong lịch
       Object.entries(schedule).forEach(([day, slots]) => {
@@ -146,6 +147,8 @@ const Schedule = () => {
         ).padStart(2, "0")}-${String(date.getDate()).padStart(2, "0")}`;
 
         // Duyệt qua các khung giờ
+        console.log("slots:", slots);
+
         Object.entries(slots).forEach(([timeSlot, isSelected]) => {
           if (isSelected) {
             // Phân tích giờ từ chuỗi "08:00 - 11:00"
@@ -155,32 +158,34 @@ const Schedule = () => {
               time_start: start + ":00",
               time_end: end + ":00",
             };
-            console.log("Khung giờ:", formattedDate, slot);
-            if (!schedules[formattedDate]) {
-              schedules[formattedDate] = {
-                date: formattedDate,
-                timeSlots: [slot],
-              };
-            }
+            console.log("slot:", slot);
+
+            setTimeSlots((prev) => [...prev, slot]);
           }
         });
+        if (!schedules[formattedDate]) {
+          schedules = {
+            date: formattedDate,
+            timeSlots: [...Slots],
+          };
+        }
       });
-
+      
       console.log("Lịch làm việc:", schedules);
 
       // Chuyển đối tượng thành mảng
-      const schedulesToSend = Object.values(schedules);
+      const schedulesToSend = schedules;
 
       console.log("Dữ liệu gửi đi:", schedulesToSend);
 
-      const accessToken = localStorage.getItem("accessToken");
+      const accessToken = localStorage.getItem("accessToken"); // Lấy token từ localStorage
 
       const res = await fetch("http://52.4.72.106:3000/v1/doctors/schedule", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          "Authorization": `Bearer ${accessToken}`,
-          "x-access-token": accessToken,
+          Authorization: `Bearer ${accessToken}`, // Thêm token vào header
+          "x-access-token": accessToken, // Thêm thêm một trường token nếu API yêu cầu
         },
         body: JSON.stringify(schedulesToSend),
       });
