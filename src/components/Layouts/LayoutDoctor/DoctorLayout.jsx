@@ -1,6 +1,6 @@
 import React from "react";
 import { Outlet, NavLink, Link } from "react-router-dom";
-
+import Avatar from "@mui/material/Avatar";
 // Sidebar Component
 const Sidebar = () => {
   return (
@@ -170,13 +170,20 @@ const Header = () => {
             </button>
 
             <div className="relative">
-              <button className="relative z-10 block h-8 w-8 rounded-full overflow-hidden border-2 border-gray-600 focus:outline-none focus:border-blue-500">
-                <img
-                  className="h-full w-full object-cover"
-                  src="https://via.placeholder.com/150"
-                  alt="Avatar"
-                />
-              </button>
+              <Avatar
+                sx={{
+                  width: 32,
+                  height: 32,
+                  bgcolor: "#3b82f6",
+                  fontWeight: "bold",
+                }}
+              >
+                {localStorage.getItem("user")
+                  ? JSON.parse(localStorage.getItem("user")).first_name.charAt(
+                      0
+                    )
+                  : null}
+              </Avatar>
 
               <div className="absolute right-0 mt-2 py-2 w-48 bg-white rounded-md shadow-xl z-20 hidden">
                 {/* Nhớ đổi thẻ a thành Link của React router dom tao không rảnh đổi giúp đâu*/}

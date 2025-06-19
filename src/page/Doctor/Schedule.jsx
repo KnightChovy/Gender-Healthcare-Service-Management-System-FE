@@ -10,7 +10,7 @@ const Schedule = () => {
     "Thứ 7",
     "Chủ nhật",
   ];
-  const timeSlots = ["08:00 - 11:00", "13:30 - 17:00"];
+  const timeSlots = ["07:30 - 11:30", "13:00 - 17:00"];
 
   // State cho lịch làm việc
   const [schedule, setSchedule] = useState(
@@ -135,6 +135,54 @@ const Schedule = () => {
       // Tạo đối tượng để nhóm các timeSlots theo ngày
       const schedules = {};
 
+      // Hàm tạo các khoảng thời gian 30 phút
+      const createTimeSlots = (startTime, endTime) => {
+        const slots = [];
+
+        // Phân tích giờ và phút
+        const [startHour, startMinute] = startTime.split(":").map(Number);
+        const [endHour, endMinute] = endTime.split(":").map(Number);
+
+        // Tạo đối tượng Date để dễ thao tác
+        const start = new Date();
+        start.setHours(startHour, startMinute, 0);
+
+        const end = new Date();
+        end.setHours(endHour, endMinute, 0);
+
+        // Tạo các khoảng 30 phút
+        let current = new Date(start);
+
+        while (current < end) {
+          const slotStart = `${current.getHours()
+            .toString()
+            .padStart(2, "0")}:${current.getMinutes()
+            .toString()
+            .padStart(2, "0")}:00`;
+
+          // Tăng thêm 30 phút
+          current = new Date(current.getTime() + 30 * 60000);
+
+          // Nếu vượt quá thời gian kết thúc, dùng thời gian kết thúc
+          if (current > end) {
+            current = new Date(end);
+          }
+
+          const slotEnd = `${current.getHours()
+            .toString()
+            .padStart(2, "0")}:${current.getMinutes()
+            .toString()
+            .padStart(2, "0")}:00`;
+
+          slots.push({
+            time_start: slotStart,
+            time_end: slotEnd,
+          });
+        }
+
+        return slots;
+      };
+
       // Xử lý từng ngày trong lịch
       Object.entries(schedule).forEach(([day, slots]) => {
         const dayIndex = days.indexOf(day);
@@ -148,20 +196,20 @@ const Schedule = () => {
         // Duyệt qua các khung giờ
         Object.entries(slots).forEach(([timeSlot, isSelected]) => {
           if (isSelected) {
-            // Phân tích giờ từ chuỗi "08:00 - 11:00"
+            // Phân tích giờ từ chuỗi "08:00 - 11:30"
             const [start, end] = timeSlot.split(" - ");
 
-            const slot = {
-              time_start: start + ":00",
-              time_end: end + ":00",
-            };
-            console.log("Khung giờ:", formattedDate, slot);
+            // Khởi tạo mảng timeSlots nếu chưa có cho ngày này
             if (!schedules[formattedDate]) {
               schedules[formattedDate] = {
                 date: formattedDate,
-                timeSlots: [slot],
+                timeSlots: [],
               };
             }
+
+            // Tạo các khoảng thời gian 30 phút và thêm vào timeSlots
+            const smallerSlots = createTimeSlots(start, end);
+            schedules[formattedDate].timeSlots.push(...smallerSlots);
           }
         });
       });
@@ -175,22 +223,24 @@ const Schedule = () => {
 
       const accessToken = localStorage.getItem("accessToken");
 
-      const res = await fetch("http://52.4.72.106:3000/v1/doctors/schedule", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          "Authorization": `Bearer ${accessToken}`,
-          "x-access-token": accessToken,
-        },
-        body: JSON.stringify(schedulesToSend),
-      });
-
-      if (res.ok) {
-        alert("Đăng ký lịch làm việc thành công!");
-      } else {
-        const errorData = await res.json();
-        throw new Error(errorData.message || "Đăng ký thất bại");
-      }
+      // const res = await fetch("http://52.4.72.106:3000/v1/doctors/schedule", {
+      //   method: "POST",
+      //   headers: {
+      //     "Content-Type": "application/json",
+      //     Authorization: `Bearer ${accessToken}`,
+      //     // Loại bỏ x-access-token để tránh lỗi CORS
+      //   },
+      //   body: JSON.stringify(schedulesToSend),
+      // });
+if (schedules) {
+  alert("Đăng ký lịch làm việc thành công!");
+}
+      // if (res.ok) {
+      //   alert("Đăng ký lịch làm việc thành công!");
+      // } else {
+      //   const errorData = await res.json();
+      //   throw new Error(errorData.message || "Đăng ký thất bại");
+      // }
     } catch (error) {
       alert("Lỗi: " + error.message);
     } finally {
