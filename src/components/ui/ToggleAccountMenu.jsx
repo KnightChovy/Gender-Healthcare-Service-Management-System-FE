@@ -12,7 +12,7 @@ import PersonAdd from "@mui/icons-material/PersonAdd";
 import Settings from "@mui/icons-material/Settings";
 import Logout from "@mui/icons-material/Logout";
 import { useDispatch, useSelector } from "react-redux";
-import { useNavigate } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { logout } from "../../store/feature/auth/authenSlice";
 import { toast } from "react-toastify"; // Thêm import toast
 import axiosClient from "../../services/axiosClient";
@@ -129,7 +129,8 @@ export default function AccountMenu() {
         anchorOrigin={{ horizontal: "right", vertical: "bottom" }}
       >
         <MenuItem onClick={handleClose}>
-          <Avatar /> Hồ sơ
+          <Avatar />
+          <Link to="/profile">Hồ sơ</Link>
         </MenuItem>
 
         {(() => {
@@ -173,7 +174,7 @@ export default function AccountMenu() {
                 <MenuItem
                   onClick={() => {
                     handleClose();
-                    navigate("/changepassword");
+                    navigate("/profile");
                   }}
                 >
                   <Avatar /> Đổi mật khẩu

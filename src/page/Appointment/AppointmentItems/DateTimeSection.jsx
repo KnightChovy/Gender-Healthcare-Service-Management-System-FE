@@ -8,6 +8,8 @@ function DateTimeSection({ formData, errors, onChange }) {
     const [availableTimes, setAvailableTimes] = useState([]);
     const [isLoadingTimes, setIsLoadingTimes] = useState(false);
 
+    const availableTimeslots = JSON.parse(localStorage.getItem('doctorAvailableTimeslots')) || [];
+
     // Generate available time slots
     const generateTimeSlots = () => {
         const slots = [];

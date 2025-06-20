@@ -25,6 +25,7 @@ const Schedule = () => {
 
   const [selectedDate, setSelectedDate] = useState(new Date());
   const [isLoading, setIsLoading] = useState(false);
+  const [Slots, setTimeSlots] = useState([]);
 
   // Lấy ngày hiện tại đầu ngày (00:00:00) để so sánh chính xác
   const today = new Date();
@@ -133,55 +134,7 @@ const Schedule = () => {
 
     try {
       // Tạo đối tượng để nhóm các timeSlots theo ngày
-      const schedules = {};
-
-      // Hàm tạo các khoảng thời gian 30 phút
-      const createTimeSlots = (startTime, endTime) => {
-        const slots = [];
-
-        // Phân tích giờ và phút
-        const [startHour, startMinute] = startTime.split(":").map(Number);
-        const [endHour, endMinute] = endTime.split(":").map(Number);
-
-        // Tạo đối tượng Date để dễ thao tác
-        const start = new Date();
-        start.setHours(startHour, startMinute, 0);
-
-        const end = new Date();
-        end.setHours(endHour, endMinute, 0);
-
-        // Tạo các khoảng 30 phút
-        let current = new Date(start);
-
-        while (current < end) {
-          const slotStart = `${current.getHours()
-            .toString()
-            .padStart(2, "0")}:${current.getMinutes()
-            .toString()
-            .padStart(2, "0")}:00`;
-
-          // Tăng thêm 30 phút
-          current = new Date(current.getTime() + 30 * 60000);
-
-          // Nếu vượt quá thời gian kết thúc, dùng thời gian kết thúc
-          if (current > end) {
-            current = new Date(end);
-          }
-
-          const slotEnd = `${current.getHours()
-            .toString()
-            .padStart(2, "0")}:${current.getMinutes()
-            .toString()
-            .padStart(2, "0")}:00`;
-
-          slots.push({
-            time_start: slotStart,
-            time_end: slotEnd,
-          });
-        }
-
-        return slots;
-      };
+      let schedules = {};
 
       // Xử lý từng ngày trong lịch
       Object.entries(schedule).forEach(([day, slots]) => {
@@ -194,53 +147,55 @@ const Schedule = () => {
         ).padStart(2, "0")}-${String(date.getDate()).padStart(2, "0")}`;
 
         // Duyệt qua các khung giờ
+        console.log("slots:", slots);
+
         Object.entries(slots).forEach(([timeSlot, isSelected]) => {
           if (isSelected) {
-            // Phân tích giờ từ chuỗi "08:00 - 11:30"
+            // Phân tích giờ từ chuỗi "08:00 - 11:00"
             const [start, end] = timeSlot.split(" - ");
 
-            // Khởi tạo mảng timeSlots nếu chưa có cho ngày này
-            if (!schedules[formattedDate]) {
-              schedules[formattedDate] = {
-                date: formattedDate,
-                timeSlots: [],
-              };
-            }
+            const slot = {
+              time_start: start + ":00",
+              time_end: end + ":00",
+            };
+            console.log("slot:", slot);
 
-            // Tạo các khoảng thời gian 30 phút và thêm vào timeSlots
-            const smallerSlots = createTimeSlots(start, end);
-            schedules[formattedDate].timeSlots.push(...smallerSlots);
+            setTimeSlots((prev) => [...prev, slot]);
           }
         });
+        if (!schedules[formattedDate]) {
+          schedules = {
+            date: formattedDate,
+            timeSlots: [...Slots],
+          };
+        }
       });
-
+      
       console.log("Lịch làm việc:", schedules);
 
       // Chuyển đối tượng thành mảng
-      const schedulesToSend = Object.values(schedules);
+      const schedulesToSend = schedules;
 
       console.log("Dữ liệu gửi đi:", schedulesToSend);
 
-      const accessToken = localStorage.getItem("accessToken");
+      const accessToken = localStorage.getItem("accessToken"); // Lấy token từ localStorage
 
-      // const res = await fetch("http://52.4.72.106:3000/v1/doctors/schedule", {
-      //   method: "POST",
-      //   headers: {
-      //     "Content-Type": "application/json",
-      //     Authorization: `Bearer ${accessToken}`,
-      //     // Loại bỏ x-access-token để tránh lỗi CORS
-      //   },
-      //   body: JSON.stringify(schedulesToSend),
-      // });
-if (schedules) {
-  alert("Đăng ký lịch làm việc thành công!");
-}
-      // if (res.ok) {
-      //   alert("Đăng ký lịch làm việc thành công!");
-      // } else {
-      //   const errorData = await res.json();
-      //   throw new Error(errorData.message || "Đăng ký thất bại");
-      // }
+      const res = await fetch("http://52.4.72.106:3000/v1/doctors/schedule", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${accessToken}`, // Thêm token vào header
+          "x-access-token": accessToken, // Thêm thêm một trường token nếu API yêu cầu
+        },
+        body: JSON.stringify(schedulesToSend),
+      });
+
+      if (res.ok) {
+        alert("Đăng ký lịch làm việc thành công!");
+      } else {
+        const errorData = await res.json();
+        throw new Error(errorData.message || "Đăng ký thất bại");
+      }
     } catch (error) {
       alert("Lỗi: " + error.message);
     } finally {

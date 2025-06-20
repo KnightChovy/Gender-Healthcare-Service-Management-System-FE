@@ -23,6 +23,7 @@ function DoctorSelection({ formData, errors, onChange }) {
   const [isRandomizing, setIsRandomizing] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [apiError, setApiError] = useState(null);
+  const [isLoadingTimeslots, setIsLoadingTimeslots] = useState(false);
 
   // Fetch doctors from API
   useEffect(() => {
@@ -116,20 +117,88 @@ function DoctorSelection({ formData, errors, onChange }) {
     }
   }, [formData.consultationType, allDoctors]);
 
-  const handleDoctorSelect = (doctor) => {
+  // Fetch available time slots for selected doctor
+  const fetchDoctorTimeSlots = async (doctorId) => {
+    setIsLoadingTimeslots(true);
+    
+    try {
+      console.log(`🕒 Fetching available time slots for doctor ID: ${doctorId}`);
+      
+      // Get access token from localStorage
+      const accessToken = localStorage.getItem('accessToken');
+      
+      // Make API request with token in headers
+      const response = await axiosClient.get(`/v1/doctors/${doctorId}/available-timeslots`, {
+        headers: {
+          "x-access-token": accessToken,
+        }
+      });
+      
+      // Check for the exact response format provided
+      if (response.data && response.data.success && response.data.data && response.data.data.schedules) {
+        const schedules = response.data.data.schedules;
+        console.log('✅ Available schedules:', schedules);
+
+        // Sort schedules by date
+        schedules.sort((a, b) => {
+          return new Date(a.date) - new Date(b.date);
+        });
+        
+        // Save to localStorage for DateTimeSection to use
+        localStorage.setItem('doctorAvailableTimeslots', JSON.stringify(schedules));
+        
+        // Pass the entire schedules array to parent component
+        onChange({ 
+          target: { 
+            name: 'availableTimeSlots', 
+            value: schedules 
+          } 
+        });
+        
+        return schedules;
+      } else {
+        throw new Error('Invalid response format for time slots');
+      }
+    } catch (error) {
+      console.error('❌ Error fetching doctor time slots:', error);
+      
+      // Reset timeSlots to empty array on error
+      onChange({ 
+        target: { 
+          name: 'availableTimeSlots', 
+          value: [] 
+        } 
+      });
+
+      localStorage.removeItem('doctorAvailableTimeslots');
+      
+      return [];
+    } finally {
+      setIsLoadingTimeslots(false);
+    }
+  };
+
+  const handleDoctorSelect = async (doctor) => {
     onChange({ target: { name: 'selectedDoctor', value: doctor.id } });
     onChange({ target: { name: 'doctorName', value: doctor.name } });
     onChange({ target: { name: 'preferredTime', value: '' } });
+    
+    // Fetch available time slots when doctor is selected
+    await fetchDoctorTimeSlots(doctor.id);
   };
 
   // Clear doctor selection
   const handleClearSelection = () => {
     onChange({ target: { name: 'selectedDoctor', value: '' } });
     onChange({ target: { name: 'doctorName', value: '' } });
+    onChange({ target: { name: 'availableTimeSlots', value: [] } });
+    onChange({ target: { name: 'preferredTime', value: '' } });
+
+    localStorage.removeItem('doctorAvailableTimeslots');
   };
 
   // Random doctor selection function
-  const handleRandomSelection = () => {
+  const handleRandomSelection = async () => {
     if (filteredDoctors.length === 0) return;
     
     setIsRandomizing(true);
@@ -151,11 +220,18 @@ function DoctorSelection({ formData, errors, onChange }) {
         clearInterval(cycleInterval);
         
         // Final selection after a short delay
-        setTimeout(() => {
+        setTimeout(async () => {
           const finalRandomIndex = Math.floor(Math.random() * filteredDoctors.length);
           const finalRandomDoctor = filteredDoctors[finalRandomIndex];
           
-          handleDoctorSelect(finalRandomDoctor);
+          // Update selection with final doctor
+          onChange({ target: { name: 'selectedDoctor', value: finalRandomDoctor.id } });
+          onChange({ target: { name: 'doctorName', value: finalRandomDoctor.name } });
+          onChange({ target: { name: 'preferredTime', value: '' } });
+          
+          // Fetch available time slots
+          await fetchDoctorTimeSlots(finalRandomDoctor.id);
+          
           setIsRandomizing(false);
           
           // Show success notification
