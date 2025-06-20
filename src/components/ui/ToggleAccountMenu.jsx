@@ -173,10 +173,10 @@ export default function AccountMenu() {
                 <MenuItem
                   onClick={() => {
                     handleClose();
-                    navigate("/");
+                    navigate("/changepassword");
                   }}
                 >
-                  <Avatar /> Tài khoản của tôi
+                  <Avatar /> Đổi mật khẩu
                 </MenuItem>
               );
           }
