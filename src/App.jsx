@@ -30,6 +30,7 @@ import Profile from "./page/Doctor/Profile";
 import { ConsultSchedulerManagerment } from "./page/manager/ConsultSchedulerManagerment/ConsultSchedulerManagerment";
 import AddEmployees from "./page/admin/EmployeesManagerment/AddEmployees";
 import ProfilePage from "./page/profile";
+import { ChangePassword } from "./page/changePassword/ChangePassword";
 function App() {
   return (
     <>
@@ -117,6 +118,15 @@ function App() {
             </LayoutAccount>
           }
         ></Route>
+
+        <Route
+          path="/changepassword"
+          element={
+            <LayoutAccount>
+              <ChangePassword />
+            </LayoutAccount>
+          }
+        />
         {/* Admin */}
         <Route
           path="/admin"

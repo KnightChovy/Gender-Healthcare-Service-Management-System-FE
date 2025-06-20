@@ -177,7 +177,7 @@ export default function AccountMenu() {
                     navigate("/profile");
                   }}
                 >
-                  <Avatar /> Đổi mật khẩu
+                  <Avatar /> Hồ sơ của tôi
                 </MenuItem>
               );
           }
@@ -190,11 +190,16 @@ export default function AccountMenu() {
           </ListItemIcon>
           Thêm tài khoản khác
         </MenuItem>
-        <MenuItem onClick={handleClose}>
+        <MenuItem
+          onClick={() => {
+            handleClose();
+            navigate("/changepassword");
+          }}
+        >
           <ListItemIcon>
             <Settings fontSize="small" />
           </ListItemIcon>
-          Cài đặt
+          Đổi mật khẩu
         </MenuItem>
         <MenuItem onClick={handleLogout}>
           <ListItemIcon>
