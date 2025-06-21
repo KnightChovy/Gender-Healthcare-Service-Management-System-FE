@@ -361,71 +361,77 @@ function NotificationBell() {
           </div>
 
           <div className={cx("list")}>
-            {isLoading ? (
-              <div className={cx("loading")}>
-                <FontAwesomeIcon icon={faSpinner} spin />
-                <p>Đang tải thông báo...</p>
-              </div>
-            ) : notifications.length > 0 ? (
-              notifications.map((notification) => (
-                <div
-                  key={notification.id}
-                  className={cx("item", {
-                    unread: !notification.isRead,
-                    [getColor(notification.type)]: true,
-                    clickable: true,
-                  })}
-                  onClick={() => handleNotificationClick(notification)}
-                >
-                  {!notification.isRead && (
-                    <div className={cx("dot")}>
-                      <FontAwesomeIcon icon={faCircle} />
-                    </div>
-                  )}
-
-                  <div className={cx("icon")}>
-                    <FontAwesomeIcon icon={getIcon(notification.type)} />
+            {(() => {
+              if (isLoading) {
+                return (
+                  <div className={cx("loading")}>
+                    <FontAwesomeIcon icon={faSpinner} spin />
+                    <p>Đang tải thông báo...</p>
                   </div>
-
-                  <div className={cx("content")}>
-                    <h4>{notification.title}</h4>
-                    <p>{notification.message}</p>
-                    {notification.amount &&
-                      notification.type === "payment_required" && (
-                        <div className={cx("amount")}>
-                          <strong>{formatCurrency(notification.amount)}</strong>
-                          <span>💳 Nhấn để thanh toán</span>
-                        </div>
-                      )}
-                    {notification.amount &&
-                      notification.type === "appointment_success" && (
-                        <div className={cx("amount", "success-amount")}>
-                          <strong>
-                            ✅ Đã thanh toán:{" "}
-                            {formatCurrency(notification.amount)}
-                          </strong>
-                        </div>
-                      )}
-                    <span className={cx("time")}>
-                      {formatTime(notification.timestamp)}
-                    </span>
-                  </div>
-
-                  <button
-                    className={cx("delete")}
-                    onClick={(e) => deleteNotification(notification.id, e)}
-                    title="Xóa"
+                );
+              } else if (notifications.length > 0) {
+                return notifications.map((notification) => (
+                  <div
+                    key={notification.id}
+                    className={cx("item", {
+                      unread: !notification.isRead,
+                      [getColor(notification.type)]: true,
+                      clickable: true,
+                    })}
+                    onClick={() => handleNotificationClick(notification)}
                   >
-                    <FontAwesomeIcon icon={faTrash} />
-                  </button>
-                </div>
-              ))
-            ) : (
-              <div className={cx("empty")}>
-                <FontAwesomeIcon icon={faBell} />
-                <p>Không có thông báo nào</p>
-              </div>
-            )}
+                    {!notification.isRead && (
+                      <div className={cx("dot")}>
+                        <FontAwesomeIcon icon={faCircle} />
+                      </div>
+                    )}
+
+                    <div className={cx("icon")}>
+                      <FontAwesomeIcon icon={getIcon(notification.type)} />
+                    </div>
+
+                    <div className={cx("content")}>
+                      <h4>{notification.title}</h4>
+                      <p>{notification.message}</p>
+                      {notification.amount &&
+                        notification.type === "payment_required" && (
+                          <div className={cx("amount")}>
+                            <strong>{formatCurrency(notification.amount)}</strong>
+                            <span>💳 Nhấn để thanh toán</span>
+                          </div>
+                        )}
+                      {notification.amount &&
+                        notification.type === "appointment_success" && (
+                          <div className={cx("amount", "success-amount")}>
+                            <strong>
+                              ✅ Đã thanh toán:{" "}
+                              {formatCurrency(notification.amount)}
+                            </strong>
+                          </div>
+                        )}
+                      <span className={cx("time")}>
+                        {formatTime(notification.timestamp)}
+                      </span>
+                    </div>
+
+                    <button
+                      className={cx("delete")}
+                      onClick={(e) => deleteNotification(notification.id, e)}
+                      title="Xóa"
+                    >
+                      <FontAwesomeIcon icon={faTrash} />
+                    </button>
+                  </div>
+                ));
+              } else {
+                return (
+                  <div className={cx("empty")}>
+                    <FontAwesomeIcon icon={faBell} />
+                    <p>Không có thông báo nào</p>
+                  </div>
+                );
+              }
+            })()}
           </div>
 
           {notifications.length > 0 && (
