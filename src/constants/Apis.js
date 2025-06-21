@@ -13,3 +13,4 @@ export const API_MANAGER_APPOINTMENT = "/v1/managers/appointments";
 //Appointment
 
 //Service Test
+export const API_SERVICES = "/v1/services";
