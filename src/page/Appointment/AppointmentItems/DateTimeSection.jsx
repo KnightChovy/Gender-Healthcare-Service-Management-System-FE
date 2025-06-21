@@ -71,7 +71,7 @@ function DateTimeSection({ formData, errors, onChange }) {
                         }
                         
                         morningSlots.push({
-                            value: timeslotId ? `${timeslotId}_${timeString}` : `unavailable_${timeString}`,
+                            value: timeString,
                             label: displayTime,
                             time_start: timeString,
                             timeslot_id: timeslotId,
@@ -130,7 +130,7 @@ function DateTimeSection({ formData, errors, onChange }) {
                         }
                         
                         afternoonSlots.push({
-                            value: timeslotId ? `${timeslotId}_${timeString}` : `unavailable_${timeString}`,
+                            value: timeString,
                             label: displayTime,
                             time_start: timeString,
                             timeslot_id: timeslotId,

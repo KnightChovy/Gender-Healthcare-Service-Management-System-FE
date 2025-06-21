@@ -333,8 +333,8 @@ function Appointment() {
         selectedDoctor: formData.selectedDoctor, // Bắt buộc phải có
         doctorName: formData.doctorName, // Tên bác sĩ đã chọn
         appointmentDate: formData.appointmentDate,
-        appointmentTime: formData.appointmentTime,
-        timeslot_id: timeslotId || `TS${Date.now()}`, // Lấy từ localStorage hoặc tạo mới
+        appointment_time: formData.appointmentTime,
+        timeslot_id: timeslotId || '', // Lấy từ localStorage hoặc tạo mới
 
         // Thông tin y tế
         symptoms: formData.symptoms,
@@ -348,7 +348,7 @@ function Appointment() {
         // Metadata
         created_at: new Date().toISOString(),
         updated_at: new Date().toISOString(),
-        status: "0", // Trạng thái chờ xác nhận
+        status: "0", 
         isUserLoggedIn: isLoggedIn,
         id: `APT${Date.now()}`,
       };
@@ -372,6 +372,7 @@ function Appointment() {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
+          "x-access-token": localStorage.getItem("accessToken") || "",
         },
         body: JSON.stringify(appointmentData),
       });
