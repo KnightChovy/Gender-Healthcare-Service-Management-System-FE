@@ -28,9 +28,9 @@ import InputBase from "@mui/material/InputBase";
 import Badge from "@mui/material/Badge";
 import Avatar from "@mui/material/Avatar";
 import { Outlet, useNavigate, useLocation } from "react-router-dom";
-import { useDispatch, useSelector } from "react-redux";
-import { logout } from "../../../store/feature/auth/authenSlice";
+import { useSelector } from "react-redux";
 
+import ManagerMenu from "../../../page/manager/ToogleManagerMenu";
 const drawerWidth = 280;
 
 // Gradient background for AppBar - Using teal/emerald colors for Manager
@@ -159,14 +159,12 @@ export default function LayoutManager() {
   const [open, setOpen] = React.useState(true);
   const navigate = useNavigate();
   const location = useLocation();
-  const dispatch = useDispatch();
 
   const handleDrawerOpen = () => setOpen(true);
   const handleDrawerClose = () => setOpen(false);
 
-  const handleLogout = () => {
-    dispatch(logout());
-    navigate("/login");
+  const handleBackHome = () => {
+    navigate("/");
   };
 
   const menuItems = [
@@ -246,7 +244,6 @@ export default function LayoutManager() {
             />
           </Search>
 
-          {/* Right section with user profile */}
           <Box sx={{ display: "flex", alignItems: "center", gap: 2 }}>
             <IconButton color="inherit" size="large">
               <Badge badgeContent={3} color="error">
@@ -254,31 +251,7 @@ export default function LayoutManager() {
               </Badge>
             </IconButton>
 
-            <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
-              <Avatar
-                sx={{
-                  width: 38,
-                  height: 38,
-                  border: "2px solid rgba(255,255,255,0.2)",
-                }}
-              >
-                {user && user.first_name ? user.first_name.charAt(0) : "M"}
-              </Avatar>
-              <Box sx={{ display: { xs: "none", sm: "block" } }}>
-                <Typography
-                  variant="body2"
-                  fontWeight="500"
-                  sx={{ lineHeight: 1.2 }}
-                >
-                  {user && user.first_name
-                    ? `${user.first_name} ${user.last_name || ""}`.trim()
-                    : "Manager User"}
-                </Typography>
-                <Typography variant="caption" sx={{ opacity: 0.7 }}>
-                  Quản lý
-                </Typography>
-              </Box>
-            </Box>
+            <ManagerMenu />
           </Box>
         </Toolbar>
       </AppBar>
@@ -420,7 +393,7 @@ export default function LayoutManager() {
         <List sx={{ px: 1, mb: 2 }}>
           <ListItem disablePadding sx={{ display: "block" }}>
             <ListItemButton
-              onClick={handleLogout}
+              onClick={handleBackHome}
               sx={{
                 minHeight: 48,
                 px: 2.5,
@@ -444,7 +417,7 @@ export default function LayoutManager() {
                 <LogoutIcon />
               </ListItemIcon>
               <ListItemText
-                primary="Đăng xuất"
+                primary="Về Trang Chủ"
                 sx={{
                   opacity: open ? 1 : 0,
                   "& .MuiTypography-root": {
@@ -459,7 +432,6 @@ export default function LayoutManager() {
         </List>
       </Drawer>
 
-      {/* Main content area with improved styling */}
       <Box
         component="main"
         sx={{

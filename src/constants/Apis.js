@@ -1,6 +1,6 @@
 export const API_LOGIN = "/v1/auth/login";
 export const API_REGISTER = "/v1/users";
-
+export const API_LOGOUT = "/v1/auth/logout";
 // User
 
 // Doctor
