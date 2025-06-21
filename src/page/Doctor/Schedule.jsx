@@ -1,5 +1,6 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import axiosClient from "../../services/axiosClient";
+import doctorService from "../../services/doctor.service";
 const Schedule = () => {
   const days = [
     "Thứ 2",
@@ -11,6 +12,22 @@ const Schedule = () => {
     "Chủ nhật",
   ];
   const timeSlots = ["07:30 - 11:30", "13:00 - 17:00"];
+
+  // Khởi tạo lịch làm việc với tất cả ô chưa được chọn
+  // và tất cả ngày đều có các khung giờ
+  useEffect(() => {
+    const fetchAvailableTimeSlots = async () => {
+      try {
+        const doctorAvailableTimeslots =
+          await doctorService.fetchDoctorAvailableTimeslots();
+        console.log("Available time slots:", doctorAvailableTimeslots);
+      } catch (error) {
+        console.error("Error fetching available time slots:", error);
+      }
+    };
+
+    fetchAvailableTimeSlots();
+  }, []);
 
   // State cho lịch làm việc
   const [schedule, setSchedule] = useState(
@@ -110,8 +127,8 @@ const Schedule = () => {
     // Không cho phép chọn tuần trong quá khứ
     const mondayOfPrevWeek = new Date(prevWeek);
     const day = mondayOfPrevWeek.getDay();
-    const diff = mondayOfPrevWeek.getDate() - day + (day === 0 ? -6 : 1);
-    mondayOfPrevWeek.setDate(diff);
+    // const diff = mondayOfPrevWeek.getDate() - day + (day === 0 ? -6 : 1);
+    // mondayOfPrevWeek.setDate(diff);
     mondayOfPrevWeek.setHours(0, 0, 0, 0);
 
     if (mondayOfPrevWeek < today) {
@@ -170,7 +187,7 @@ const Schedule = () => {
           };
         }
       });
-      
+
       console.log("Lịch làm việc:", schedules);
 
       // Chuyển đối tượng thành mảng
