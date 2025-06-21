@@ -8,33 +8,149 @@ function DateTimeSection({ formData, errors, onChange }) {
     const [availableTimes, setAvailableTimes] = useState([]);
     const [isLoadingTimes, setIsLoadingTimes] = useState(false);
 
+    // Lấy timeslots từ localStorage
     const availableTimeslots = JSON.parse(localStorage.getItem('doctorAvailableTimeslots')) || [];
 
-    // Generate available time slots
-    const generateTimeSlots = () => {
-        const slots = [];
-        const startHour = 8; // 8:00 AM
-        const endHour = 17; // 5:00 PM
-        const interval = 30; // 30 minutes
+    // Tìm schedule theo ngày đã chọn
+    const getScheduleForDate = (date) => {
+        return availableTimeslots.find(sch => sch.date === date);
+    };
 
-        for (let hour = startHour; hour < endHour; hour++) {
-            for (let minute = 0; minute < 60; minute += interval) {
-                const timeString = `${hour.toString().padStart(2, '0')}:${minute.toString().padStart(2, '0')}`;
+    // Khi ngày thay đổi, cập nhật availableTimes dựa trên timeslots của doctor
+    useEffect(() => {
+        if (!formData.appointmentDate) {
+            setAvailableTimes([]);
+            return;
+        }
+
+        setIsLoadingTimes(true);
+
+        setTimeout(() => {
+            // Lấy lại timeslots từ localStorage mỗi lần chọn ngày
+            const availableTimeslots = JSON.parse(localStorage.getItem('doctorAvailableTimeslots')) || [];
+            const schedule = availableTimeslots.find(sch => sch.date === formData.appointmentDate);
+            
+            // Tạo tất cả các slot trong khung giờ làm việc
+            const createAllTimeSlots = () => {
+                const morningSlots = [];
+                const afternoonSlots = [];
                 
-                // Skip lunch break from 11:30 to 13:00
-                if (timeString === '11:30' || timeString === '12:00' || timeString === '12:30' || timeString === '13:00') {
-                    continue;
+                // Tạo slots buổi sáng (8:00 - 11:00) - bao gồm 11:00
+                for (let hour = 8; hour <= 11; hour++) {
+                    for (let minute = 0; minute < 60; minute += 30) {
+                        // Chỉ tạo slot 11:00, không tạo 11:30
+                        if (hour === 11 && minute > 0) break;
+                        
+                        const timeString = `${hour.toString().padStart(2, '0')}:${minute.toString().padStart(2, '0')}:00`;
+                        const displayTime = `${hour.toString().padStart(2, '0')}:${minute.toString().padStart(2, '0')}`;
+                        
+                        // Kiểm tra xem slot này có trong schedule không và có được đặt chưa
+                        let isAvailable = false;
+                        let timeslotId = null;
+                        let reason = 'Không có lịch';
+                        
+                        if (schedule && schedule.timeslots) {
+                            const matchingSlot = schedule.timeslots.find(slot => {
+                                const slotStart = new Date(`2000-01-01T${slot.time_start}`);
+                                const slotEnd = new Date(`2000-01-01T${slot.time_end}`);
+                                const currentSlotTime = new Date(`2000-01-01T${timeString}`);
+                                
+                                return currentSlotTime >= slotStart && currentSlotTime < slotEnd;
+                            });
+                            
+                            if (matchingSlot) {
+                                timeslotId = matchingSlot.timeslot_id;
+                                if (matchingSlot.appointment_times.includes(timeString)) {
+                                    isAvailable = false;
+                                    reason = 'Đã đặt';
+                                } else {
+                                    isAvailable = true;
+                                    reason = '';
+                                }
+                            }
+                        }
+                        
+                        morningSlots.push({
+                            value: timeslotId ? `${timeslotId}_${timeString}` : `unavailable_${timeString}`,
+                            label: displayTime,
+                            time_start: timeString,
+                            timeslot_id: timeslotId,
+                            isAvailable: isAvailable,
+                            reason: reason
+                        });
+                    }
                 }
                 
-                slots.push({
-                    value: timeString,
-                    label: timeString,
-                    period: hour < 11 || (hour === 11 && minute < 30) ? 'Sáng' : 'Chiều'
-                });
-            }
-        }
-        return slots;
-    };
+                // Tạo slots buổi chiều (13:30 - 16:30) - bao gồm 16:30
+                for (let hour = 13; hour <= 16; hour++) {
+                    let startMinute, endMinute;
+                    
+                    if (hour === 13) {
+                        startMinute = 30; // Bắt đầu từ 13:30
+                        endMinute = 60;
+                    } else if (hour === 16) {
+                        startMinute = 0;
+                        endMinute = 30; // Chỉ tạo đến 16:30
+                    } else {
+                        startMinute = 0;
+                        endMinute = 60;
+                    }
+                    
+                    for (let minute = startMinute; minute <= endMinute; minute += 30) {
+                        // Đối với giờ 16, chỉ tạo slot 16:00 và 16:30
+                        if (hour === 16 && minute > 30) break;
+                        
+                        const timeString = `${hour.toString().padStart(2, '0')}:${minute.toString().padStart(2, '0')}:00`;
+                        const displayTime = `${hour.toString().padStart(2, '0')}:${minute.toString().padStart(2, '0')}`;
+                        
+                        // Kiểm tra xem slot này có trong schedule không và có được đặt chưa
+                        let isAvailable = false;
+                        let timeslotId = null;
+                        let reason = 'Không có lịch';
+                        
+                        if (schedule && schedule.timeslots) {
+                            const matchingSlot = schedule.timeslots.find(slot => {
+                                const slotStart = new Date(`2000-01-01T${slot.time_start}`);
+                                const slotEnd = new Date(`2000-01-01T${slot.time_end}`);
+                                const currentSlotTime = new Date(`2000-01-01T${timeString}`);
+                                
+                                return currentSlotTime >= slotStart && currentSlotTime < slotEnd;
+                            });
+                            
+                            if (matchingSlot) {
+                                timeslotId = matchingSlot.timeslot_id;
+                                if (matchingSlot.appointment_times.includes(timeString)) {
+                                    isAvailable = false;
+                                    reason = 'Đã đặt';
+                                } else {
+                                    isAvailable = true;
+                                    reason = '';
+                                }
+                            }
+                        }
+                        
+                        afternoonSlots.push({
+                            value: timeslotId ? `${timeslotId}_${timeString}` : `unavailable_${timeString}`,
+                            label: displayTime,
+                            time_start: timeString,
+                            timeslot_id: timeslotId,
+                            isAvailable: isAvailable,
+                            reason: reason
+                        });
+                    }
+                }
+                
+                return {
+                    morning: morningSlots,
+                    afternoon: afternoonSlots
+                };
+            };
+            
+            const timeSlots = createAllTimeSlots();
+            setAvailableTimes(timeSlots);
+            setIsLoadingTimes(false);
+        }, 300);
+    }, [formData.appointmentDate]);
 
     // Get tomorrow's date in YYYY-MM-DD format (không cho phép đặt hôm nay)
     const getMinDate = () => {
@@ -85,40 +201,6 @@ function DateTimeSection({ formData, errors, onChange }) {
         return null;
     };
 
-    // Load available times when date changes
-    useEffect(() => {
-        if (formData.appointmentDate) {
-            const dateError = validateDate(formData.appointmentDate);
-            if (dateError) {
-                setAvailableTimes([]);
-                return;
-            }
-
-            setIsLoadingTimes(true);
-            
-            // Simulate API call to get available times
-            setTimeout(() => {
-                const allSlots = generateTimeSlots();
-                
-                // Random unavailable slots (2-4 slots ngẫu nhiên)
-                const numUnavailable = Math.floor(Math.random() * 3) + 2; // 2-4 slots
-                const shuffledSlots = [...allSlots].sort(() => 0.5 - Math.random());
-                const unavailableSlots = shuffledSlots.slice(0, numUnavailable).map(slot => slot.value);
-                
-                // Mark slots as available/unavailable
-                const slotsWithStatus = allSlots.map(slot => ({
-                    ...slot,
-                    isAvailable: !unavailableSlots.includes(slot.value)
-                }));
-                
-                setAvailableTimes(slotsWithStatus);
-                setIsLoadingTimes(false);
-            }, 500);
-        } else {
-            setAvailableTimes([]);
-        }
-    }, [formData.appointmentDate]);
-
     const handleDateChange = (e) => {
         const { name, value } = e.target;
         
@@ -151,16 +233,6 @@ function DateTimeSection({ formData, errors, onChange }) {
             onChange(timeResetEvent);
         }
     };
-
-    // Group time slots by period
-    const groupedTimes = availableTimes.reduce((groups, slot) => {
-        const period = slot.period;
-        if (!groups[period]) {
-            groups[period] = [];
-        }
-        groups[period].push(slot);
-        return groups;
-    }, {});
 
     // Check if selected date has any validation issues
     const hasDateIssues = formData.appointmentDate && (
@@ -256,41 +328,35 @@ function DateTimeSection({ formData, errors, onChange }) {
                                     <p>Vui lòng chọn ngày trước để xem các khung giờ có sẵn</p>
                                 </div>
                             </div>
-                        ) : hasDateIssues ? (
-                            <div className={cx('time-placeholder')}>
-                                <div className={cx('placeholder-content')}>
-                                    <span className={cx('placeholder-icon')}>❌</span>
-                                    <p>Vui lòng chọn ngày hợp lệ để xem khung giờ</p>
-                                </div>
-                            </div>
                         ) : isLoadingTimes ? (
                             <div className={cx('time-loading')}>
                                 <div className={cx('loading-spinner')}></div>
                                 <p>Đang tải khung giờ có sẵn...</p>
                             </div>
-                        ) : availableTimes.length === 0 ? (
+                        ) : (availableTimes.morning?.length === 0 && availableTimes.afternoon?.length === 0) ? (
                             <div className={cx('no-times')}>
                                 <span className={cx('no-times-icon')}>❌</span>
                                 <p>Không có khung giờ nào có sẵn cho ngày này</p>
                                 <small>Vui lòng chọn ngày khác</small>
                             </div>
                         ) : (
-                            <div className={cx('time-slots')}>
-                                {Object.entries(groupedTimes).map(([period, slots]) => (
-                                    <div key={period} className={cx('time-period')}>
+                            <div className={cx('time-periods')}>
+                                {/* Morning Slots */}
+                                {availableTimes.morning?.length > 0 && (
+                                    <div className={cx('time-period')}>
                                         <h4 className={cx('period-title')}>
-                                            {period === 'Sáng' && '🌅'} 
-                                            {period === 'Chiều' && '☀️'}
-                                            {period}
+                                            🌅 Buổi sáng
                                         </h4>
-                                        <div className={cx('time-grid')}>
-                                            {slots.map((slot) => (
+                                        <div className={cx('time-slots')}>
+                                            {availableTimes.morning?.map(slot => (
                                                 <label
                                                     key={slot.value}
                                                     className={cx('time-slot', {
                                                         'selected': formData.appointmentTime === slot.value,
                                                         'available': slot.isAvailable,
-                                                        'unavailable': !slot.isAvailable
+                                                        'unavailable': !slot.isAvailable,
+                                                        'no-schedule': slot.reason === 'Không có lịch',
+                                                        'booked': slot.reason === 'Đã đặt'
                                                     })}
                                                     style={{
                                                         cursor: slot.isAvailable ? 'pointer' : 'not-allowed'
@@ -308,8 +374,11 @@ function DateTimeSection({ formData, errors, onChange }) {
                                                     <span className={cx('time-label')}>
                                                         {slot.label}
                                                         {!slot.isAvailable && (
-                                                            <span className={cx('unavailable-badge')}>
-                                                                Đã đặt
+                                                            <span className={cx('unavailable-badge', {
+                                                                'no-schedule-badge': slot.reason === 'Không có lịch',
+                                                                'booked-badge': slot.reason === 'Đã đặt'
+                                                            })}>
+                                                                {slot.reason}
                                                             </span>
                                                         )}
                                                     </span>
@@ -317,7 +386,63 @@ function DateTimeSection({ formData, errors, onChange }) {
                                             ))}
                                         </div>
                                     </div>
-                                ))}
+                                )}
+
+                                {/* Afternoon Slots */}
+                                {availableTimes.afternoon?.length > 0 && (
+                                    <div className={cx('time-period')}>
+                                        <h4 className={cx('period-title')}>
+                                            🌇 Buổi chiều
+                                        </h4>
+                                        <div className={cx('time-slots')}>
+                                            {availableTimes.afternoon?.map(slot => (
+                                                <label
+                                                    key={slot.value}
+                                                    className={cx('time-slot', {
+                                                        'selected': formData.appointmentTime === slot.value,
+                                                        'available': slot.isAvailable,
+                                                        'unavailable': !slot.isAvailable,
+                                                        'no-schedule': slot.reason === 'Không có lịch',
+                                                        'booked': slot.reason === 'Đã đặt'
+                                                    })}
+                                                    style={{
+                                                        cursor: slot.isAvailable ? 'pointer' : 'not-allowed'
+                                                    }}
+                                                >
+                                                    <input
+                                                        type="radio"
+                                                        name="appointmentTime"
+                                                        value={slot.value}
+                                                        checked={formData.appointmentTime === slot.value}
+                                                        onChange={slot.isAvailable ? onChange : undefined}
+                                                        disabled={!slot.isAvailable}
+                                                        className={cx('time-radio')}
+                                                    />
+                                                    <span className={cx('time-label')}>
+                                                        {slot.label}
+                                                        {!slot.isAvailable && (
+                                                            <span className={cx('unavailable-badge', {
+                                                                'no-schedule-badge': slot.reason === 'Không có lịch',
+                                                                'booked-badge': slot.reason === 'Đã đặt'
+                                                            })}>
+                                                                {slot.reason}
+                                                            </span>
+                                                        )}
+                                                    </span>
+                                                </label>
+                                            ))}
+                                        </div>
+                                    </div>
+                                )}
+
+                                {/* No slots available message for specific periods */}
+                                {availableTimes.morning?.length === 0 && availableTimes.afternoon?.length === 0 && (
+                                    <div className={cx('no-times')}>
+                                        <span className={cx('no-times-icon')}>❌</span>
+                                        <p>Không có khung giờ nào có sẵn cho ngày này</p>
+                                        <small>Vui lòng chọn ngày khác</small>
+                                    </div>
+                                )}
                             </div>
                         )}
                         
@@ -334,7 +459,7 @@ function DateTimeSection({ formData, errors, onChange }) {
                     <div className={cx('selection-summary')}>
                         <div className={cx('summary-card')}>
                             <h4 className={cx('summary-title')}>
-                                ✅ Thông tin đã chọn
+                                Thông tin đã chọn
                             </h4>
                             <div className={cx('summary-details')}>
                                 <div className={cx('summary-item')}>

@@ -162,6 +162,58 @@ function Appointment() {
     }
   };
 
+  // Thêm helper function để lấy timeslot_id từ localStorage
+  const getTimeslotIdFromStorage = (selectedDate, selectedTime) => {
+    try {
+      const availableTimeslots = localStorage.getItem('doctorAvailableTimeslots');
+      if (!availableTimeslots) {
+        console.warn('⚠️ No timeslots found in localStorage');
+        return null;
+      }
+
+      const timeslots = JSON.parse(availableTimeslots);
+      console.log('🔍 Searching for timeslot:', { selectedDate, selectedTime });
+
+      // Tìm timeslot theo ngày và giờ đã chọn
+      for (const dateSchedule of timeslots) {
+        if (dateSchedule.date === selectedDate) {
+          console.log('📆 Found matching date:', dateSchedule);
+          
+          // Tìm trong từng period (morning, afternoon, evening)
+          for (const period of dateSchedule.periods || []) {
+            // Tìm trong từng timeslot
+            for (const timeslot of period.timeslots || []) {
+              // Tạo format thời gian để so sánh
+              const timeslotTime = `${timeslot.start_time} - ${timeslot.end_time}`;
+              
+              // So sánh với nhiều format khác nhau
+              if (timeslotTime === selectedTime || 
+                  timeslot.start_time === selectedTime.split(' - ')[0] ||
+                  selectedTime.includes(timeslot.start_time) ||
+                  timeslot.start_time === selectedTime) {
+                
+                console.log('✅ Found matching timeslot:', {
+                  timeslot_id: timeslot.timeslot_id,
+                  start_time: timeslot.start_time,
+                  end_time: timeslot.end_time,
+                  status: timeslot.status
+                });
+                
+                return timeslot.timeslot_id;
+              }
+            }
+          }
+        }
+      }
+      
+      console.warn('⚠️ No matching timeslot found for:', { selectedDate, selectedTime });
+      return null;
+    } catch (error) {
+      console.error('❌ Error parsing timeslots from localStorage:', error);
+      return null;
+    }
+  };
+
   const validateForm = () => {
     const newErrors = {};
 
@@ -217,7 +269,10 @@ function Appointment() {
       newErrors.consultationType = "Vui lòng chọn loại tư vấn";
     }
 
-    // Doctor selection is optional - system will auto-assign if not selected
+    // Validate doctor selection - BẮT BUỘC
+    if (!formData.selectedDoctor) {
+      newErrors.selectedDoctor = "Vui lòng chọn bác sĩ tư vấn";
+    }
 
     if (!formData.appointmentDate) {
       newErrors.appointmentDate = "Vui lòng chọn ngày tư vấn";
@@ -259,6 +314,9 @@ function Appointment() {
     setIsSubmitting(true);
 
     try {
+      // Lấy timeslot_id từ localStorage
+      const timeslotId = getTimeslotIdFromStorage(formData.appointmentDate, formData.appointmentTime);
+
       // Tạo appointment data
       const appointmentData = {
         // Thông tin bệnh nhân
@@ -272,11 +330,11 @@ function Appointment() {
 
         // Thông tin cuộc hẹn
         consultant_type: formData.consultationType,
-        selectedDoctor: formData.selectedDoctor || null,
-        doctorName: formData.doctorName || "Hệ thống sẽ phân công",
+        selectedDoctor: formData.selectedDoctor, // Bắt buộc phải có
+        doctorName: formData.doctorName, // Tên bác sĩ đã chọn
         appointmentDate: formData.appointmentDate,
         appointmentTime: formData.appointmentTime,
-        timeslot_id: "TS000007",
+        timeslot_id: timeslotId || `TS${Date.now()}`, // Lấy từ localStorage hoặc tạo mới
 
         // Thông tin y tế
         symptoms: formData.symptoms,
@@ -295,6 +353,14 @@ function Appointment() {
         id: `APT${Date.now()}`,
       };
 
+      console.log('📋 Appointment data with selected doctor:', {
+        selectedDoctor: appointmentData.selectedDoctor,
+        doctorName: appointmentData.doctorName,
+        timeslot_id: appointmentData.timeslot_id,
+        appointmentDate: appointmentData.appointmentDate,
+        appointmentTime: appointmentData.appointmentTime
+      });
+
       // Lưu vào localStorage để theo dõi
       localStorage.setItem(
         "pendingAppointment",
@@ -309,6 +375,7 @@ function Appointment() {
         },
         body: JSON.stringify(appointmentData),
       });
+      
       if (!res.ok) {
         throw new Error(`HTTP error! status: ${res.status}`);
       }
@@ -318,7 +385,7 @@ function Appointment() {
       // Hiển thị thông báo thành công
       showSuccessNotification();
 
-      // Chuyển về trang chủ sau 3 giây
+      // Chuyển về trang chủ sau 10 giây
       setTimeout(() => {
         navigate("/");
         localStorage.removeItem('doctorAvailableTimeslots');
@@ -643,6 +710,7 @@ function Appointment() {
       formData.phone &&
       formData.email &&
       formData.consultationType &&
+      formData.selectedDoctor && // BẮT BUỘC phải chọn bác sĩ
       formData.appointmentDate &&
       formData.appointmentTime
     );
@@ -768,7 +836,7 @@ function Appointment() {
 
           {/* Validation Summary */}
           <div className={cx("validation-summary")}>
-            <h4>📋 Kiểm tra thông tin</h4>
+            <h4>Kiểm tra thông tin</h4>
             <div className={cx("validation-grid")}>
               <div
                 className={cx("validation-item", {
@@ -830,18 +898,21 @@ function Appointment() {
                 <span>Loại tư vấn</span>
               </div>
 
+              {/* Cập nhật validation cho bác sĩ - BẮT BUỘC */}
               <div
                 className={cx("validation-item", {
-                  valid: formData.selectedDoctor || !formData.selectedDoctor,
+                  valid: formData.selectedDoctor && !errors.selectedDoctor,
+                  invalid: !formData.selectedDoctor || errors.selectedDoctor,
                 })}
               >
                 <span className={cx("validation-icon")}>
-                  {formData.selectedDoctor ? "✅" : "🤖"}
+                  {formData.selectedDoctor && !errors.selectedDoctor ? "✅" : "❌"}
                 </span>
                 <span>
-                  {formData.selectedDoctor
-                    ? "Đã chọn bác sĩ"
-                    : "Tự động phân công"}
+                  {formData.selectedDoctor 
+                    ? `Bác sĩ: ${formData.doctorName}` 
+                    : "Chưa chọn bác sĩ"
+                  }
                 </span>
               </div>
 
@@ -890,11 +961,11 @@ function Appointment() {
               </p>
             </div>
 
+            {/* Loại bỏ notice về tự động phân công */}
             <div className={cx("notice-item")}>
-              <span className={cx("notice-icon")}>🤖</span>
+              <span className={cx("notice-icon")}>👩‍⚕️</span>
               <p>
-                Nếu không chọn bác sĩ cụ thể, hệ thống sẽ tự động phân công bác
-                sĩ phù hợp nhất
+                <strong>Chọn bác sĩ:</strong> Bạn cần chọn bác sĩ tư vấn trước khi đặt lịch hẹn
               </p>
             </div>
 

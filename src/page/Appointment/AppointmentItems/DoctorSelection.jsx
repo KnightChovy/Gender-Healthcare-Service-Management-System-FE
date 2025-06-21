@@ -8,7 +8,7 @@ import {
   faCheckCircle,
   faDice,
   faShuffle,
-  faInfoCircle,
+  faExclamationTriangle,
   faSpinner
 } from '@fortawesome/free-solid-svg-icons';
 import axiosClient from "../../../services/axiosClient";
@@ -51,6 +51,7 @@ function DoctorSelection({ formData, errors, onChange }) {
             name: `${doctor.last_name} ${doctor.first_name}`.trim(),
             specialty: specializations.length > 0 ? specializations : ['Tư vấn tổng quát'],
             experience: `${doctor.experience_year} năm kinh nghiệm`,
+            rating: (Math.random() * 2 + 3).toFixed(1), // Random rating 3.0-5.0
             reviews: Math.floor(Math.random() * 100) + 20, // Random reviews for demo
             education: doctor.certificates?.[0]?.certificate || 'Bằng cấp y khoa',
             bio: doctor.bio || 'Bác sĩ chuyên nghiệp với nhiều năm kinh nghiệm',
@@ -249,7 +250,7 @@ function DoctorSelection({ formData, errors, onChange }) {
           <h3 className={cx('section-title')}>
             <FontAwesomeIcon icon={faUserMd} />
             Chọn bác sĩ tư vấn
-            <span className={cx('optional-badge')}>Tùy chọn</span>
+            <span className={cx('required-badge')}>Bắt buộc</span>
           </h3>
         </div>
         
@@ -269,13 +270,14 @@ function DoctorSelection({ formData, errors, onChange }) {
           <h3 className={cx('section-title')}>
             <FontAwesomeIcon icon={faUserMd} />
             Chọn bác sĩ tư vấn
-            <span className={cx('optional-badge')}>Tùy chọn</span>
+            <span className={cx('required-badge')}>Bắt buộc</span>
           </h3>
         </div>
         
         <div className={cx('error-state')}>
+          <FontAwesomeIcon icon={faExclamationTriangle} className={cx('error-icon')} />
           <p>❌ Không thể tải danh sách bác sĩ: {apiError}</p>
-          <p>Hệ thống sẽ tự động phân công bác sĩ phù hợp khi xử lý đơn đặt lịch.</p>
+          <p>Vui lòng thử lại để có thể chọn bác sĩ và tiếp tục đặt lịch.</p>
           <button 
             type="button" 
             onClick={() => window.location.reload()}
@@ -294,14 +296,14 @@ function DoctorSelection({ formData, errors, onChange }) {
         <h3 className={cx('section-title')}>
           <FontAwesomeIcon icon={faUserMd} />
           Chọn bác sĩ tư vấn
-          <span className={cx('optional-badge')}>Tùy chọn</span>
+          <span className={cx('required-badge')}>Bắt buộc</span>
         </h3>
         
-        {/* Info notice */}
-        <div className={cx('optional-info')}>
-          <FontAwesomeIcon icon={faInfoCircle} className={cx('info-icon')} />
+        {/* Required notice */}
+        <div className={cx('required-info')}>
+          <FontAwesomeIcon icon={faExclamationTriangle} className={cx('warning-icon')} />
           <span>
-            Bạn có thể chọn bác sĩ mong muốn hoặc để hệ thống tự động phân công bác sĩ phù hợp khi đặt lịch
+            Bạn cần chọn một bác sĩ để có thể tiếp tục đặt lịch tư vấn
           </span>
         </div>
 
@@ -332,25 +334,33 @@ function DoctorSelection({ formData, errors, onChange }) {
               type="button"
               className={cx('clear-selection-btn')}
               onClick={handleClearSelection}
-              title="Bỏ chọn bác sĩ"
+              title="Chọn lại bác sĩ khác"
             >
               <FontAwesomeIcon icon={faCheckCircle} />
-              Bỏ chọn
+              Chọn lại
             </button>
           )}
         </div>
       </div>
 
-      {/* Auto assignment notice */}
-      {!formData.selectedDoctor && !isRandomizing && (
-        <div className={cx('auto-assignment-notice')}>
-          <div className={cx('notice-content')}>
-            <FontAwesomeIcon icon={faUserMd} className={cx('notice-icon')} />
-            <div className={cx('notice-text')}>
-              <p><strong>🤖 Tự động phân công bác sĩ</strong></p>
+      {/* Validation error message */}
+      {errors.selectedDoctor && (
+        <div className={cx('doctor-error-message')}>
+          <FontAwesomeIcon icon={faExclamationTriangle} />
+          <span>{errors.selectedDoctor}</span>
+        </div>
+      )}
+
+      {/* No selection warning */}
+      {!formData.selectedDoctor && !isRandomizing && filteredDoctors.length > 0 && (
+        <div className={cx('selection-warning')}>
+          <div className={cx('warning-content')}>
+            <FontAwesomeIcon icon={faExclamationTriangle} className={cx('warning-icon')} />
+            <div className={cx('warning-text')}>
+              <p><strong>⚠️ Chưa chọn bác sĩ</strong></p>
               <p>
-                Nếu bạn không chọn bác sĩ cụ thể, hệ thống sẽ tự động phân công 
-                bác sĩ có kinh nghiệm phù hợp với loại tư vấn của bạn khi xử lý đơn đặt lịch.
+                Vui lòng chọn một bác sĩ từ danh sách bên dưới hoặc sử dụng chức năng "Chọn ngẫu nhiên" 
+                để hệ thống tự động chọn bác sĩ phù hợp cho bạn.
               </p>
             </div>
           </div>
@@ -413,9 +423,16 @@ function DoctorSelection({ formData, errors, onChange }) {
           ))
         ) : (
           <div className={cx('no-doctors-message')}>
-            <FontAwesomeIcon icon={faUserMd} />
-            <p>Không có bác sĩ nào có sẵn hiện tại.</p>
-            <p>Hệ thống sẽ tự động phân công bác sĩ phù hợp khi xử lý đơn đặt lịch.</p>
+            <FontAwesomeIcon icon={faExclamationTriangle} className={cx('no-doctors-icon')} />
+            <p><strong>Không có bác sĩ nào có sẵn hiện tại</strong></p>
+            <p>Vui lòng thử lại sau hoặc liên hệ với chúng tôi để được hỗ trợ.</p>
+            <button 
+              type="button" 
+              onClick={() => window.location.reload()}
+              className={cx('retry-btn')}
+            >
+              🔄 Tải lại danh sách bác sĩ
+            </button>
           </div>
         )}
       </div>
@@ -424,11 +441,11 @@ function DoctorSelection({ formData, errors, onChange }) {
       {formData.selectedDoctor && !isRandomizing && (
         <div className={cx('doctor-selected-note')}>
           <div className={cx('success-content')}>
-            <FontAwesomeIcon icon={faCheckCircle} className={cx('success-icon')} />
             <div className={cx('success-text')}>
-              <p><strong>✅ Đã chọn bác sĩ cụ thể!</strong></p>
+              <p><strong>Đã chọn bác sĩ!</strong></p>
               <p>
-                Bác sĩ <strong>{formData.doctorName}</strong> sẽ được ưu tiên phân công cho lịch tư vấn của bạn.
+                Bác sĩ <strong>{formData.doctorName}</strong> sẽ thực hiện buổi tư vấn cho bạn.
+                {isLoadingTimeslots && <span> Đang tải lịch trống...</span>}
               </p>
             </div>
           </div>
@@ -462,11 +479,11 @@ function DoctorSelection({ formData, errors, onChange }) {
         <div className={cx('selection-options')}>
           <div className={cx('option-item')}>
             <span className={cx('option-label')}>🎯 Chọn bác sĩ cụ thể:</span>
-            <span className={cx('option-desc')}>Được ưu tiên phân công</span>
+            <span className={cx('option-desc')}>Bạn sẽ được tư vấn bởi bác sĩ đã chọn</span>
           </div>
           <div className={cx('option-item')}>
-            <span className={cx('option-label')}>🤖 Để hệ thống chọn:</span>
-            <span className={cx('option-desc')}>Tự động phân công bác sĩ phù hợp</span>
+            <span className={cx('option-label')}>🎲 Chọn ngẫu nhiên:</span>
+            <span className={cx('option-desc')}>Hệ thống tự động chọn bác sĩ phù hợp</span>
           </div>
         </div>
       </div>
