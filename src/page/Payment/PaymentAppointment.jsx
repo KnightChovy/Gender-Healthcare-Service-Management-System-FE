@@ -175,7 +175,7 @@ function PaymentAppointment() {
                         <p><strong>Mã giao dịch:</strong> PAY{Date.now()}</p>
                         <p><strong>Số tiền:</strong> {formatCurrency(totalAmount)}</p>
                         <p><strong>Bác sĩ:</strong> {appointmentData.doctorName}</p>
-                        <p><strong>Thời gian:</strong> {appointmentData.appointmentTime} - {formatDate(appointmentData.appointmentDate)}</p>
+                        <p><strong>Thời gian:</strong> {appointmentData.appointment_time} - {formatDate(appointmentData.appointmentDate)}</p>
                     </div>
                 </div>
             </div>
@@ -252,7 +252,7 @@ function PaymentAppointment() {
                             <FontAwesomeIcon icon={faClock} className={cx('detail-icon')} />
                             <div className={cx('detail-text')}>
                                 <strong className={cx('detail-label')}>Giờ khám</strong>
-                                <span className={cx('detail-value')}>{appointmentData.appointmentTime}</span>
+                                <span className={cx('detail-value')}>{appointmentData.appointment_time}</span>
                             </div>
                         </div>
 

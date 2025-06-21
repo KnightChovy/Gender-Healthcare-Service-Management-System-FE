@@ -96,14 +96,51 @@ function DateTimeSection({ formData, errors, onChange }) {
                         endMinute = 60;
                     }
                     
-                    for (let minute = startMinute; minute <= endMinute; minute += 30) {
-                        // Đối với giờ 16, chỉ tạo slot 16:00 và 16:30
-                        if (hour === 16 && minute > 30) break;
+                    for (let minute = startMinute; minute < endMinute; minute += 30) { 
+                        if (hour === 16 && minute >= 30) {
+                            const timeString = `16:30:00`;
+                            const displayTime = `16:30`;
+                            
+                            // Kiểm tra availability logic...
+                            let isAvailable = false;
+                            let timeslotId = null;
+                            let reason = 'Không có lịch';
+                            
+                            if (schedule && schedule.timeslots) {
+                                const matchingSlot = schedule.timeslots.find(slot => {
+                                    const slotStart = new Date(`2000-01-01T${slot.time_start}`);
+                                    const slotEnd = new Date(`2000-01-01T${slot.time_end}`);
+                                    const currentSlotTime = new Date(`2000-01-01T${timeString}`);
+                                    
+                                    return currentSlotTime >= slotStart && currentSlotTime < slotEnd;
+                                });
+                                
+                                if (matchingSlot) {
+                                    timeslotId = matchingSlot.timeslot_id;
+                                    if (matchingSlot.appointment_times.includes(timeString)) {
+                                        isAvailable = false;
+                                        reason = 'Đã đặt';
+                                    } else {
+                                        isAvailable = true;
+                                        reason = '';
+                                    }
+                                }
+                            }
+                            
+                            afternoonSlots.push({
+                                value: timeString,
+                                label: displayTime,
+                                time_start: timeString,
+                                timeslot_id: timeslotId,
+                                isAvailable: isAvailable,
+                                reason: reason
+                            });
+                            break; // Thoát khỏi loop
+                        }
                         
                         const timeString = `${hour.toString().padStart(2, '0')}:${minute.toString().padStart(2, '0')}:00`;
                         const displayTime = `${hour.toString().padStart(2, '0')}:${minute.toString().padStart(2, '0')}`;
                         
-                        // Kiểm tra xem slot này có trong schedule không và có được đặt chưa
                         let isAvailable = false;
                         let timeslotId = null;
                         let reason = 'Không có lịch';
