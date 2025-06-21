@@ -5,6 +5,7 @@ import { ServicePage } from "../page/testservice/TestServicePage";
 import Login from "../page/login";
 import Register from "../page/Register";
 import Appointment from "../page/Appointment";
+import MyAppointments from "../page/account/MyAppointments";
 import PaymentAppointment from "../page/Payment/PaymentAppointment";
 import { ProfilePage } from "../page/profile";
 
@@ -63,14 +64,14 @@ export function AccountRoutes() {
           </LayoutAccount>
         }
       />
-      {/* <Route
+      <Route
         path="/my-appointments"
         element={
           <LayoutAccount>
             <MyAppointments />
           </LayoutAccount>
         }
-      /> */}
+      />
       <Route
         path="/profile"
         element={

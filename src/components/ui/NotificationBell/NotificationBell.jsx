@@ -81,7 +81,7 @@ function NotificationBell() {
       const pendingAppointment = localStorage.getItem("pendingAppointment");
       if (pendingAppointment) {
         const appointmentData = JSON.parse(pendingAppointment);
-        if (appointmentData.id && appointmentData.status === "0") {
+        if (appointmentData.id && appointmentData.status === "pending") {
           const confirmNotifId = `confirm_${appointmentData.id}`;
           const hasConfirmNotif = notifications.some(
             (n) => n.id === confirmNotifId

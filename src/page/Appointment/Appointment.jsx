@@ -348,7 +348,7 @@ function Appointment() {
         // Metadata
         created_at: new Date().toISOString(),
         updated_at: new Date().toISOString(),
-        status: "0", 
+        status: "pending", 
         isUserLoggedIn: isLoggedIn,
         id: `APT${Date.now()}`,
       };

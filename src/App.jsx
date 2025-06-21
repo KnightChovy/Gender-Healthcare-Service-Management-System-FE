@@ -31,6 +31,7 @@ import { ConsultSchedulerManagerment } from "./page/manager/ConsultSchedulerMana
 import AddEmployees from "./page/admin/EmployeesManagerment/AddEmployees";
 import ProfilePage from "./page/profile";
 import { ChangePassword } from "./page/changePassword/ChangePassword";
+import MyAppointments from "./page/account/MyAppointments";
 function App() {
   return (
     <>
@@ -103,6 +104,14 @@ function App() {
           }
         ></Route>
         <Route
+          path="/my-appointments"
+          element={
+            <LayoutAccount>
+              <MyAppointments />
+            </LayoutAccount>
+          }
+        ></Route>
+        <Route
           path="/forgetpassword"
           element={
             <LayoutAccount>
@@ -118,7 +127,6 @@ function App() {
             </LayoutAccount>
           }
         ></Route>
-
         <Route
           path="/changepassword"
           element={
