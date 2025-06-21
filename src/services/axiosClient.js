@@ -48,7 +48,7 @@ axiosClient.interceptors.response.use(
         store.dispatch(doLogin({ user, access_token: accessToken }));
         originalRequest.headers = {
           ...originalRequest.headers,
-          Authorization: `Bearer ${accessToken}`,
+          "x-access-token": accessToken,
         };
         return axiosClient(originalRequest);
       } catch (refreshError) {
@@ -56,6 +56,7 @@ axiosClient.interceptors.response.use(
         return Promise.reject(refreshError);
       }
     }
+    return Promise.reject(error);
   }
 );
 export default axiosClient;

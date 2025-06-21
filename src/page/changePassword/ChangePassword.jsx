@@ -4,9 +4,11 @@ import * as Yup from "yup";
 import axiosClient from "../../services/axiosClient";
 import { useSelector } from "react-redux";
 import { toast } from "react-toastify";
+import { useNavigate } from "react-router-dom";
 
 export const ChangePassword = () => {
   const { accessToken, user } = useSelector((state) => state.auth);
+  const navigate = useNavigate();
   console.log(accessToken);
   console.log(user);
 
@@ -14,14 +16,11 @@ export const ChangePassword = () => {
     currentPassword: Yup.string().required("Vui lòng nhập mật khẩu hiện tại"),
     newPassword: Yup.string()
       .required("Vui lòng nhập mật khẩu mới")
-      .min(
-        8,
-        "Mật khẩu phải có ít nhất 8 ký tự, bao gồm ít nhất một chữ hoa, một chữ thường, một số và một ký tự đặc biệt"
-      )
-      .minLowercase(1, "Mật khẩu phải chứa ít nhất 1 chữ cái thường")
-      .minUppercase(1, "Mật khẩu phải chứa ít nhất 1 chữ cái in hoa")
-      .minNumbers(1, "Mật khẩu phải chứa ít nhất 1 chữ số")
-      .minSymbols(1, "Mật khẩu phải chứa ít nhất 1 ký tự đặc biệt"),
+      .min(8, "Mật khẩu phải có ít nhất 8 ký tự")
+      .matches(/[a-z]/, "Mật khẩu phải chứa ít nhất 1 chữ cái thường")
+      .matches(/[A-Z]/, "Mật khẩu phải chứa ít nhất 1 chữ cái in hoa")
+      .matches(/[0-9]/, "Mật khẩu phải chứa ít nhất 1 chữ số")
+      .matches(/[^a-zA-Z0-9]/, "Mật khẩu phải chứa ít nhất 1 ký tự đặc biệt"),
     confirm_Password: Yup.string()
       .oneOf([Yup.ref("newPassword")], "Mật khẩu xác nhận không khớp")
       .required("Vui lòng xác nhận mật khẩu mới"),
@@ -36,24 +35,20 @@ export const ChangePassword = () => {
         setStatus({ error: "Token không hợp lệ. Vui lòng đăng nhập lại." });
         return;
       }
-      const response = await axiosClient.patch(
-        `v1/users/${user.user_id}`,
-        {
-          currentPassword: values.currentPassword,
-          newPassword: values.newPassword,
-        },
-        {
-          headers: {
-            "x-access-token": accessToken,
-          },
-        }
-      );
+      const response = await axiosClient.patch(`v1/users/${user.user_id}`, {
+        currentPassword: values.currentPassword,
+        newPassword: values.newPassword,
+        confirm_Password: values.confirm_Password,
+      });
+      console.log(response);
+
       setStatus({ success: "Đổi mật khẩu thành công!" });
       toast.success("Đổi mật khẩu thành công", {
         autoClose: 1000,
         position: "top-right",
       });
       resetForm();
+      navigate("/");
     } catch (error) {
       // Improve error handling
       const errMsg =
