@@ -10,9 +10,14 @@ import {
   faCalendarCheck,
   faTrash,
   faTimes,
+  faHourglassHalf,
+  faCheckCircle,
+  faTimesCircle,
+  faSpinner,
 } from "@fortawesome/free-solid-svg-icons";
 import classNames from "classnames/bind";
 import styles from "./NotificationBell.module.scss";
+import axiosClient from "../../../services/axiosClient";
 
 const cx = classNames.bind(styles);
 
@@ -21,7 +26,12 @@ function NotificationBell() {
   const [isOpen, setIsOpen] = useState(false);
   const [notifications, setNotifications] = useState([]);
   const [unreadCount, setUnreadCount] = useState(0);
+  const [isLoading, setIsLoading] = useState(false);
   const dropdownRef = useRef(null);
+
+  // Get user info
+  const user = JSON.parse(localStorage.getItem('user') || '{}');
+  const accessToken = localStorage.getItem('accessToken');
 
   const formatCurrency = (amount) => {
     return new Intl.NumberFormat("vi-VN", {
@@ -31,7 +41,7 @@ function NotificationBell() {
   };
 
   const formatTime = (timestamp) => {
-    const diff = Date.now() - timestamp;
+    const diff = Date.now() - new Date(timestamp).getTime();
     const minutes = Math.floor(diff / 60000);
     const hours = Math.floor(diff / 3600000);
     const days = Math.floor(diff / 86400000);
@@ -47,9 +57,13 @@ function NotificationBell() {
       case "payment_required":
         return faMoneyBillWave;
       case "appointment_pending":
-        return faCalendarCheck;
+        return faHourglassHalf;
+      case "appointment_confirmed":
+        return faCheckCircle;
       case "appointment_cancelled":
-        return faTimes; // Using faTimes for cancelled appointments
+        return faTimesCircle;
+      case "appointment_success":
+        return faCalendarCheck;
       default:
         return faCalendarCheck;
     }
@@ -61,176 +75,170 @@ function NotificationBell() {
         return "warning";
       case "appointment_pending":
         return "info";
+      case "appointment_confirmed":
+        return "success";
       case "appointment_cancelled":
         return "danger";
       case "appointment_success":
         return "success";
       default:
-        return "success";
+        return "info";
     }
   };
 
-  const loadNotifications = useCallback(() => {
-    try {
-      let notifications = [];
+  // Create notification from appointment data
+  const createNotificationFromAppointment = (appointment) => {
+    const notifications = [];
+    const appointmentDate = new Date(appointment.created_at);
+    
+    switch (appointment.status) {
+      case 'pending': // Pending
+        notifications.push({
+          id: `pending_${appointment.appointment_id}`,
+          type: "appointment_pending",
+          title: "Lịch hẹn đang chờ xác nhận",
+          message: `Lịch hẹn ${appointment.consultant_type} vào ${new Date(appointment.appointmentDate).toLocaleDateString('vi-VN')} đang chờ xác nhận từ quản lý.`,
+          timestamp: appointmentDate.toISOString(),
+          isRead: false,
+          appointmentId: appointment.appointment_id,
+          appointmentData: appointment
+        });
+        break;
 
-      const saved = localStorage.getItem("notificationHistory");
-      if (saved) notifications = JSON.parse(saved) || [];
+      case 'confirmed': // Confirmed - Need payment
+        notifications.push({
+          id: `confirmed_${appointment.appointment_id}`,
+          type: "appointment_confirmed",
+          title: "Lịch hẹn đã được xác nhận",
+          message: `Lịch hẹn ${appointment.consultant_type} đã được xác nhận. Bác sĩ: ${appointment.doctor_name || 'Chưa phân công'}.`,
+          timestamp: appointmentDate.toISOString(),
+          isRead: false,
+          appointmentId: appointment.appointment_id,
+          appointmentData: appointment
+        });
 
-      // Pending Appointment
-      const pendingAppointment = localStorage.getItem("pendingAppointment");
-      if (pendingAppointment) {
-        const appointmentData = JSON.parse(pendingAppointment);
-        if (appointmentData.id && appointmentData.status === "pending") {
-          const confirmNotifId = `confirm_${appointmentData.id}`;
-          const hasConfirmNotif = notifications.some(
-            (n) => n.id === confirmNotifId
-          );
-
-          if (!hasConfirmNotif) {
-            const confirmNotification = {
-              id: confirmNotifId,
-              type: "appointment_pending",
-              title: "Lịch hẹn đã được gửi",
-              message: `Lịch hẹn ${appointmentData.consultant_type} đã được gửi. Vui lòng đợi xác nhận từ phía quản lý.`,
-              timestamp: Date.now(),
-              isRead: false,
-              appointmentId: appointmentData.id,
-            };
-            notifications.unshift(confirmNotification);
-          }
-        }
-      }
-
-      // Confirmed Appointments
-      const confirmedAppointment = localStorage.getItem("appointmentsList");
-      if (confirmedAppointment) {
-        let appointmentData = JSON.parse(confirmedAppointment);
-
-        if (Array.isArray(appointmentData) && appointmentData.length > 0) {
-          appointmentData = appointmentData.filter(
-            (item) => item.status === "approved" || item.status === "rejected"
-          );
-
-          appointmentData.map((latestAppointment) => {
-            if (latestAppointment.status === "rejected") {
-              const cancelNotification = {
-                id: `cancelled_${latestAppointment.id}`,
-                type: "appointment_cancelled",
-                title: "Lịch hẹn đã bị từ chối",
-                message: `Lịch hẹn ${
-                  latestAppointment.consultant_type || ""
-                } đã bị quản lý từ chối. Vui lòng liên hệ hỗ trợ để biết thêm chi tiết.`,
-                timestamp: Date.now(),
-                isRead: false,
-                appointmentId: latestAppointment.id,
-              };
-
-              const alreadyExists = notifications.some(
-                (n) => n.id === cancelNotification.id
-              );
-              if (!alreadyExists) {
-                notifications.unshift(cancelNotification);
-              }
-            } else if (latestAppointment.status === "approved") {
-              const paymentNotifId = `payment_${latestAppointment.id}`;
-              const hasPaymentNotif = notifications.some(
-                (n) => n.id === paymentNotifId
-              );
-              if (!hasPaymentNotif) {
-                const paymentNotification = {
-                  ...latestAppointment,
-                  id: paymentNotifId,
-                  type: "payment_required",
-                  title: "Lịch hẹn đã được xác nhận - Yêu cầu thanh toán",
-                  message: `Lịch hẹn ${
-                    latestAppointment.consultant_type
-                  } đã được xác nhận. Vui lòng thanh toán ${formatCurrency(
-                    latestAppointment.price_apm
-                  )} để hoàn tất.`,
-                  timestamp: Date.now(),
-                  isRead: false,
-                  amount: latestAppointment.price_apm,
-                  appointmentId: latestAppointment.id,
-                };
-                notifications.unshift(paymentNotification);
-              }
-            }
+        // Add payment notification if there's a fee
+        if (appointment.price_apm && appointment.price_apm > 0) {
+          notifications.push({
+            id: `payment_${appointment.appointment_id}`,
+            type: "payment_required",
+            title: "Yêu cầu thanh toán",
+            message: `Vui lòng thanh toán phí tư vấn để hoàn tất lịch hẹn ${appointment.consultant_type}.`,
+            timestamp: appointmentDate.toISOString(),
+            isRead: false,
+            amount: appointment.price_apm,
+            appointmentId: appointment.appointment_id,
+            appointmentData: appointment
           });
         }
-      }
+        break;
 
-      const paymentSuccess = localStorage.getItem("paymentSuccess");
-      if (paymentSuccess) {
-        const paymentArray = JSON.parse(paymentSuccess);
-        // Payment Success
-        if (Array.isArray(paymentArray) && paymentArray.length > 0) {
-          const latestPayment = paymentArray[paymentArray.length - 1]; // lấy phần tử mới nhất
+      case 'success': // Success/Completed
+        notifications.push({
+          id: `success_${appointment.appointment_id}`,
+          type: "appointment_success",
+          title: "🎉 Lịch hẹn hoàn thành!",
+          message: `Lịch hẹn ${appointment.consultant_type} đã hoàn thành thành công. Cảm ơn bạn đã sử dụng dịch vụ!`,
+          timestamp: appointmentDate.toISOString(),
+          isRead: false,
+          appointmentId: appointment.appointment_id,
+          appointmentData: appointment,
+          amount: appointment.price_apm
+        });
+        break;
 
-          const successNotifId = `success_${latestPayment.appointmentId}_${latestPayment.paymentId}`;
-          const hasSuccessNotif = notifications.some(
-            (n) => n.id === successNotifId
-          );
+      case 'rejected': // Cancelled/Rejected
+        notifications.push({
+          id: `cancelled_${appointment.appointment_id}`,
+          type: "appointment_cancelled",
+          title: "Lịch hẹn đã bị từ chối",
+          message: `Lịch hẹn ${appointment.consultant_type} đã bị quản lý từ chối. Vui lòng liên hệ hỗ trợ để biết thêm chi tiết.`,
+          timestamp: appointmentDate.toISOString(),
+          isRead: false,
+          appointmentId: appointment.appointment_id,
+          appointmentData: appointment
+        });
+        break;
 
-          if (!hasSuccessNotif) {
-            const successNotification = {
-              id: successNotifId,
-              type: "appointment_success",
-              title: "🎉 Đặt lịch hẹn thành công!",
-              message: `Thanh toán thành công ${formatCurrency(
-                latestPayment.amount
-              )}. Lịch hẹn ${latestPayment.consultant_type} đã được xác nhận.`,
-              timestamp: Date.now(),
-              isRead: false,
-              appointmentId: latestPayment.appointmentId,
-              paymentId: latestPayment.paymentId,
-              amount: latestPayment.amount,
-            };
-            notifications.unshift(successNotification);
-
-            // Xóa thông báo thanh toán cũ liên quan
-            notifications = notifications.filter(
-              (n) => n.id !== `payment_${latestPayment.appointmentId}`
-            );
-
-            localStorage.removeItem("confirmedAppointment");
-            localStorage.removeItem("paymentSuccess");
-          }
-        }
-      }
-
-      // Sort
-      notifications.sort((a, b) => b.timestamp - a.timestamp);
-
-      setNotifications(notifications);
-      setUnreadCount(notifications.filter((n) => !n.isRead).length);
-      localStorage.setItem(
-        "notificationHistory",
-        JSON.stringify(notifications)
-      );
-    } catch (error) {
-      console.error("Error loading notifications:", error);
+      default:
+        break;
     }
-  }, []);
+
+    return notifications;
+  };
+
+  // Load notifications from API
+  const loadNotifications = useCallback(async () => {
+    if (!user.user_id || !accessToken) return;
+
+    try {
+      setIsLoading(true);
+
+      console.log('🔔 Loading notifications for user:', user.user_id);
+
+      const response = await axiosClient.get(`/v1/appointments/user/${user.user_id}`, {
+        headers: {
+          'x-access-token': accessToken
+        }
+      });
+
+      if (response.data?.success) {
+        const appointments = response.data.data || [];
+        console.log('📋 Fetched appointments for notifications:', appointments.length);
+
+        // Get existing read status from localStorage
+        const savedNotifications = JSON.parse(localStorage.getItem('notificationReadStatus') || '{}');
+
+        // Create notifications from appointments
+        let allNotifications = [];
+        appointments.forEach(appointment => {
+          const appointmentNotifications = createNotificationFromAppointment(appointment);
+          allNotifications = [...allNotifications, ...appointmentNotifications];
+        });
+
+        // Apply read status from localStorage
+        allNotifications = allNotifications.map(notif => ({
+          ...notif,
+          isRead: savedNotifications[notif.id] || false
+        }));
+
+        // Sort by timestamp (newest first)
+        allNotifications.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
+
+        // Only keep notifications from last 30 days
+        const thirtyDaysAgo = new Date();
+        thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+        
+        const recentNotifications = allNotifications.filter(notif => 
+          new Date(notif.timestamp) >= thirtyDaysAgo
+        );
+
+        setNotifications(recentNotifications);
+        setUnreadCount(recentNotifications.filter((n) => !n.isRead).length);
+
+        console.log('✅ Loaded notifications:', recentNotifications.length);
+      } else {
+        console.warn('⚠️ Invalid API response:', response.data);
+      }
+    } catch (error) {
+      console.error('❌ Error loading notifications:', error);
+      // Don't show error to user, just log it
+    } finally {
+      setIsLoading(false);
+    }
+  }, [user.user_id, accessToken]);
+
+  // Load notifications on mount and periodically
   useEffect(() => {
     loadNotifications();
+
+    // Refresh notifications every 30 seconds
+    const interval = setInterval(loadNotifications, 30000);
+
+    return () => clearInterval(interval);
   }, [loadNotifications]);
 
-  useEffect(() => {
-    const handleStorageChange = () => loadNotifications();
-    window.addEventListener("storage", handleStorageChange);
-
-    const paymentCheckInterval = setInterval(() => {
-      const paymentSuccess = localStorage.getItem("paymentSuccess");
-      if (paymentSuccess) loadNotifications();
-    }, 2000);
-
-    return () => {
-      window.removeEventListener("storage", handleStorageChange);
-      clearInterval(paymentCheckInterval);
-    };
-  }, [loadNotifications]);
-
+  // Handle click outside to close dropdown
   useEffect(() => {
     const handleClickOutside = (event) => {
       if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
@@ -252,14 +260,24 @@ function NotificationBell() {
     );
     setNotifications(updated);
     setUnreadCount(updated.filter((n) => !n.isRead).length);
-    localStorage.setItem("notificationHistory", JSON.stringify(updated));
+
+    // Save read status to localStorage
+    const readStatus = JSON.parse(localStorage.getItem('notificationReadStatus') || '{}');
+    readStatus[notificationId] = true;
+    localStorage.setItem('notificationReadStatus', JSON.stringify(readStatus));
   };
 
   const markAllAsRead = () => {
     const updated = notifications.map((n) => ({ ...n, isRead: true }));
     setNotifications(updated);
     setUnreadCount(0);
-    localStorage.setItem("notificationHistory", JSON.stringify(updated));
+
+    // Save all as read to localStorage
+    const readStatus = {};
+    notifications.forEach(n => {
+      readStatus[n.id] = true;
+    });
+    localStorage.setItem('notificationReadStatus', JSON.stringify(readStatus));
   };
 
   const deleteNotification = (notificationId, event) => {
@@ -267,7 +285,11 @@ function NotificationBell() {
     const updated = notifications.filter((n) => n.id !== notificationId);
     setNotifications(updated);
     setUnreadCount(updated.filter((n) => !n.isRead).length);
-    localStorage.setItem("notificationHistory", JSON.stringify(updated));
+
+    // Remove from read status as well
+    const readStatus = JSON.parse(localStorage.getItem('notificationReadStatus') || '{}');
+    delete readStatus[notificationId];
+    localStorage.setItem('notificationReadStatus', JSON.stringify(readStatus));
   };
 
   const handleNotificationClick = (notification) => {
@@ -275,24 +297,39 @@ function NotificationBell() {
       markAsRead(notification.id);
     }
 
-    if (notification.type === "payment_required") {
-      localStorage.setItem("pendingAppointment", JSON.stringify(notification));
-      navigate("/paymentappointment");
-    } else if (notification.type === "appointment_success") {
-      navigate("/my-appointments");
+    // Handle different notification types
+    switch (notification.type) {
+      case "payment_required":
+        // Navigate to payment page with appointment data
+        navigate("/paymentappointment", { 
+          state: { appointmentData: notification.appointmentData } 
+        });
+        break;
+      case "appointment_success":
+      case "appointment_confirmed":
+      case "appointment_pending":
+      case "appointment_cancelled":
+        // Navigate to appointments list
+        navigate("/my-appointments");
+        break;
+      default:
+        break;
     }
 
     setIsOpen(false);
   };
 
+  // Show loading state in bell icon
+  const bellIcon = isLoading ? faSpinner : faBell;
+
   return (
     <div className={cx("notification-bell")} ref={dropdownRef}>
       <button
-        className={cx("bell-button")}
+        className={cx("bell-button", { loading: isLoading })}
         onClick={toggleDropdown}
         title="Thông báo"
       >
-        <FontAwesomeIcon icon={faBell} />
+        <FontAwesomeIcon icon={bellIcon} spin={isLoading} />
         {unreadCount > 0 && (
           <span className={cx("badge")}>
             {unreadCount > 99 ? "99+" : unreadCount}
@@ -310,6 +347,13 @@ function NotificationBell() {
                   <FontAwesomeIcon icon={faCheck} />
                 </button>
               )}
+              <button 
+                onClick={loadNotifications} 
+                title="Làm mới"
+                disabled={isLoading}
+              >
+                <FontAwesomeIcon icon={faSpinner} spin={isLoading} />
+              </button>
               <button onClick={() => setIsOpen(false)} title="Đóng">
                 <FontAwesomeIcon icon={faTimes} />
               </button>
@@ -317,70 +361,92 @@ function NotificationBell() {
           </div>
 
           <div className={cx("list")}>
-            {notifications.length > 0 ? (
-              notifications.map((notification) => (
-                <div
-                  key={notification.id}
-                  className={cx("item", {
-                    unread: !notification.isRead,
-                    [getColor(notification.type)]: true,
-                    clickable: [
-                      "payment_required",
-                      "appointment_success",
-                    ].includes(notification.type),
-                  })}
-                  onClick={() => handleNotificationClick(notification)}
-                >
-                  {!notification.isRead && (
-                    <div className={cx("dot")}>
-                      <FontAwesomeIcon icon={faCircle} />
-                    </div>
-                  )}
-
-                  <div className={cx("icon")}>
-                    <FontAwesomeIcon icon={getIcon(notification.type)} />
+            {(() => {
+              if (isLoading) {
+                return (
+                  <div className={cx("loading")}>
+                    <FontAwesomeIcon icon={faSpinner} spin />
+                    <p>Đang tải thông báo...</p>
                   </div>
-
-                  <div className={cx("content")}>
-                    <h4>{notification.title}</h4>
-                    <p>{notification.message}</p>
-                    {notification.amount &&
-                      notification.type === "payment_required" && (
-                        <div className={cx("amount")}>
-                          <strong>{formatCurrency(notification.amount)}</strong>
-                          <span>💳 Nhấn để thanh toán</span>
-                        </div>
-                      )}
-                    {notification.amount &&
-                      notification.type === "appointment_success" && (
-                        <div className={cx("amount", "success-amount")}>
-                          <strong>
-                            ✅ Đã thanh toán:{" "}
-                            {formatCurrency(notification.amount)}
-                          </strong>
-                        </div>
-                      )}
-                    <span className={cx("time")}>
-                      {formatTime(notification.timestamp)}
-                    </span>
-                  </div>
-
-                  <button
-                    className={cx("delete")}
-                    onClick={(e) => deleteNotification(notification.id, e)}
-                    title="Xóa"
+                );
+              } else if (notifications.length > 0) {
+                return notifications.map((notification) => (
+                  <div
+                    key={notification.id}
+                    className={cx("item", {
+                      unread: !notification.isRead,
+                      [getColor(notification.type)]: true,
+                      clickable: true,
+                    })}
+                    onClick={() => handleNotificationClick(notification)}
                   >
-                    <FontAwesomeIcon icon={faTrash} />
-                  </button>
-                </div>
-              ))
-            ) : (
-              <div className={cx("empty")}>
-                <FontAwesomeIcon icon={faBell} />
-                <p>Không có thông báo nào</p>
-              </div>
-            )}
+                    {!notification.isRead && (
+                      <div className={cx("dot")}>
+                        <FontAwesomeIcon icon={faCircle} />
+                      </div>
+                    )}
+
+                    <div className={cx("icon")}>
+                      <FontAwesomeIcon icon={getIcon(notification.type)} />
+                    </div>
+
+                    <div className={cx("content")}>
+                      <h4>{notification.title}</h4>
+                      <p>{notification.message}</p>
+                      {notification.amount &&
+                        notification.type === "payment_required" && (
+                          <div className={cx("amount")}>
+                            <strong>{formatCurrency(notification.amount)}</strong>
+                            <span>💳 Nhấn để thanh toán</span>
+                          </div>
+                        )}
+                      {notification.amount &&
+                        notification.type === "appointment_success" && (
+                          <div className={cx("amount", "success-amount")}>
+                            <strong>
+                              ✅ Đã thanh toán:{" "}
+                              {formatCurrency(notification.amount)}
+                            </strong>
+                          </div>
+                        )}
+                      <span className={cx("time")}>
+                        {formatTime(notification.timestamp)}
+                      </span>
+                    </div>
+
+                    <button
+                      className={cx("delete")}
+                      onClick={(e) => deleteNotification(notification.id, e)}
+                      title="Xóa"
+                    >
+                      <FontAwesomeIcon icon={faTrash} />
+                    </button>
+                  </div>
+                ));
+              } else {
+                return (
+                  <div className={cx("empty")}>
+                    <FontAwesomeIcon icon={faBell} />
+                    <p>Không có thông báo nào</p>
+                  </div>
+                );
+              }
+            })()}
           </div>
+
+          {notifications.length > 0 && (
+            <div className={cx("footer")}>
+              <button 
+                className={cx("view-all-btn")}
+                onClick={() => {
+                  navigate("/my-appointments");
+                  setIsOpen(false);
+                }}
+              >
+                Xem tất cả lịch hẹn
+              </button>
+            </div>
+          )}
         </div>
       )}
     </div>

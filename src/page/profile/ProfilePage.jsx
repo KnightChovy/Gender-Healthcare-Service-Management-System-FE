@@ -170,7 +170,6 @@ const ProfilePage = () => {
     switch (gender.toLowerCase()) {
       case 'male': return 'Nam';
       case 'female': return 'Nữ';
-      case 'other': return 'Khác';
       default: return gender;
     }
   };
@@ -232,13 +231,6 @@ const ProfilePage = () => {
             >
               <FontAwesomeIcon icon={faShieldAlt} />
               Bảo mật tài khoản
-            </button>
-            <button 
-              className={cx('tab-button', { active: activeTab === 'appointments' })}
-              onClick={() => setActiveTab('appointments')}
-            >
-              <FontAwesomeIcon icon={faCalendarCheck} />
-              Lịch sử lịch hẹn
             </button>
           </nav>
 
@@ -379,7 +371,6 @@ const ProfilePage = () => {
                           <option value="">Chọn giới tính</option>
                           <option value="male">Nam</option>
                           <option value="female">Nữ</option>
-                          <option value="other">Khác</option>
                         </select>
                       ) : (
                         <div className={cx('form-value')}>{getGenderText(profile?.gender)}</div>
@@ -439,11 +430,6 @@ const ProfilePage = () => {
               <h2>Bảo mật tài khoản</h2>
               
               <div className={cx('security-content')}>
-                <p className={cx('security-message')}>
-                  <FontAwesomeIcon icon={faShieldAlt} className={cx('security-icon')} />
-                  Tính năng thay đổi mật khẩu sẽ được cập nhật trong thời gian tới.
-                </p>
-
                 <div className={cx('account-info')}>
                   <div className={cx('info-item')}>
                     <span className={cx('info-label')}>Trạng thái tài khoản:</span>
@@ -469,23 +455,6 @@ const ProfilePage = () => {
                     </span>
                   </div>
                 </div>
-              </div>
-            </div>
-          )}
-
-          {activeTab === 'appointments' && (
-            <div className={cx('profile-section', 'appointments-info')}>
-              <h2>Lịch sử lịch hẹn</h2>
-              
-              <div className={cx('appointments-content')}>
-                <p>
-                  <FontAwesomeIcon icon={faCalendarCheck} className={cx('appointment-icon')} />
-                  Xem tất cả lịch hẹn và lịch sử thăm khám của bạn tại đây.
-                </p>
-                
-                <Link to="/my-appointments" className={cx('appointments-btn')}>
-                  Xem lịch hẹn của tôi
-                </Link>
               </div>
             </div>
           )}

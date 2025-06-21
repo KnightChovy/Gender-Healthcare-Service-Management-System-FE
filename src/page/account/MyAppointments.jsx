@@ -35,7 +35,7 @@ function MyAppointments() {
   const [error, setError] = useState(null);
   const [selectedAppointment, setSelectedAppointment] = useState(null);
   const [showModal, setShowModal] = useState(false);
-  
+
   // Filter states
   const [filters, setFilters] = useState({
     status: 'all',
@@ -54,30 +54,30 @@ function MyAppointments() {
   // Status mapping
   const getStatusInfo = (status) => {
     const statusMap = {
-      'pending': { 
-        label: 'Chờ xác nhận', 
-        color: 'warning', 
+      'pending': {
+        label: 'Chờ xác nhận',
+        color: 'warning',
         icon: faHourglassHalf,
         bgColor: '#fff8e1',
         textColor: '#e65100'
       },
-      'approved': { 
-        label: 'Đã xác nhận', 
-        color: 'success', 
+      'confirmed': {
+        label: 'Đã xác nhận',
+        color: 'success',
         icon: faCheckCircle,
         bgColor: '#e8f5e8',
         textColor: '#2e7d32'
       },
-      'success': { 
-        label: 'Hoàn thành', 
-        color: 'info', 
+      'success': {
+        label: 'Hoàn thành',
+        color: 'info',
         icon: faCalendarCheck,
         bgColor: '#e3f2fd',
         textColor: '#1976d2'
       },
-      'refused': { 
-        label: 'Đã hủy', 
-        color: 'danger', 
+      'rejected': {
+        label: 'Đã hủy',
+        color: 'danger',
         icon: faTimesCircle,
         bgColor: '#ffebee',
         textColor: '#d32f2f'
@@ -94,7 +94,7 @@ function MyAppointments() {
 
       const response = await axiosClient.get(`/v1/appointments/user/${user.user_id}`, {
         headers: {
-            'Authorization': `Bearer ${accessToken}`,
+          'Authorization': `Bearer ${accessToken}`,
           'x-access-token': accessToken
         }
       });
@@ -103,9 +103,9 @@ function MyAppointments() {
         const userAppointments = response.data.data.filter(
           appointment => appointment.user_id === user.user_id
         );
-        
+
         // Sort by created date (newest first)
-        const sortedAppointments = userAppointments.sort((a, b) => 
+        const sortedAppointments = userAppointments.sort((a, b) =>
           new Date(b.created_at) - new Date(a.created_at)
         );
 
@@ -152,7 +152,7 @@ function MyAppointments() {
       }
 
       if (filters.dateRange !== 'all') {
-        filtered = filtered.filter(apt => 
+        filtered = filtered.filter(apt =>
           new Date(apt.created_at) >= filterDate
         );
       }
@@ -206,7 +206,7 @@ function MyAppointments() {
   const indexOfLastAppointment = currentPage * appointmentsPerPage;
   const indexOfFirstAppointment = indexOfLastAppointment - appointmentsPerPage;
   const currentAppointments = filteredAppointments.slice(
-    indexOfFirstAppointment, 
+    indexOfFirstAppointment,
     indexOfLastAppointment
   );
   const totalPages = Math.ceil(filteredAppointments.length / appointmentsPerPage);
@@ -242,8 +242,8 @@ function MyAppointments() {
           <FontAwesomeIcon icon={faExclamationTriangle} className={cx('error-icon')} />
           <h3>Có lỗi xảy ra</h3>
           <p>{error}</p>
-          <button 
-            className={cx('retry-btn')} 
+          <button
+            className={cx('retry-btn')}
             onClick={fetchAppointments}
           >
             <FontAwesomeIcon icon={faRefresh} />
@@ -267,7 +267,7 @@ function MyAppointments() {
             Quản lý và theo dõi tất cả các cuộc hẹn tư vấn của bạn
           </p>
         </div>
-        
+
         <div className={cx('header-stats')}>
           <div className={cx('stat-item')}>
             <span className={cx('stat-number')}>{appointments.length}</span>
@@ -275,15 +275,27 @@ function MyAppointments() {
           </div>
           <div className={cx('stat-item')}>
             <span className={cx('stat-number')}>
-              {appointments.filter(apt => apt.status === '1').length}
+              {appointments.filter(apt => apt.status === 'confirmed').length}
             </span>
             <span className={cx('stat-label')}>Đã xác nhận</span>
           </div>
           <div className={cx('stat-item')}>
             <span className={cx('stat-number')}>
-              {appointments.filter(apt => apt.status === '0').length}
+              {appointments.filter(apt => apt.status === 'pending').length}
             </span>
             <span className={cx('stat-label')}>Chờ xác nhận</span>
+          </div>
+          <div className={cx('stat-item')}>
+            <span className={cx('stat-number')}>
+              {appointments.filter(apt => apt.status === 'success').length}
+            </span>
+            <span className={cx('stat-label')}>Hoàn thành</span>
+          </div>
+          <div className={cx('stat-item')}>
+            <span className={cx('stat-number')}>
+              {appointments.filter(apt => apt.status === 'rejected').length}
+            </span>
+            <span className={cx('stat-label')}>Đã hủy</span>
           </div>
         </div>
       </div>
@@ -315,10 +327,10 @@ function MyAppointments() {
               className={cx('filter-select')}
             >
               <option value="all">Tất cả</option>
-              <option value="0">Chờ xác nhận</option>
-              <option value="1">Đã xác nhận</option>
-              <option value="2">Hoàn thành</option>
-              <option value="3">Đã hủy</option>
+              <option value="pending">Chờ xác nhận</option>
+              <option value="confirmed">Đã xác nhận</option>
+              <option value="success">Hoàn thành</option>
+              <option value="rejected">Đã hủy</option>
             </select>
           </div>
 
@@ -353,17 +365,14 @@ function MyAppointments() {
           <div className={cx('appointments-grid')}>
             {currentAppointments.map((appointment) => {
               const statusInfo = getStatusInfo(appointment.status);
-              
+
               return (
                 <div key={appointment.id} className={cx('appointment-card')}>
                   {/* Card Header */}
                   <div className={cx('card-header')}>
-                    <div className={cx('appointment-id')}>
-                      #{appointment.id}
-                    </div>
-                    <div 
+                    <div
                       className={cx('status-badge')}
-                      style={{ 
+                      style={{
                         backgroundColor: statusInfo.bgColor,
                         color: statusInfo.textColor
                       }}
@@ -378,16 +387,16 @@ function MyAppointments() {
                     {/* Patient Info */}
                     <div className={cx('info-section')}>
                       <h3 className={cx('patient-name')}>
-                        {appointment.fullName}
+                        {user.last_name} {user.first_name}
                       </h3>
                       <div className={cx('contact-info')}>
                         <span className={cx('info-item')}>
                           <FontAwesomeIcon icon={faPhone} />
-                          {appointment.phone}
+                          {user.phone}
                         </span>
                         <span className={cx('info-item')}>
                           <FontAwesomeIcon icon={faEnvelope} />
-                          {appointment.email}
+                          {user.email}
                         </span>
                       </div>
                     </div>
@@ -403,13 +412,13 @@ function MyAppointments() {
                       <div className={cx('detail-item')}>
                         <FontAwesomeIcon icon={faClock} />
                         <span>
-                          <strong>Giờ:</strong> {formatTime(appointment.appointmentTime)}
+                          <strong>Giờ:</strong> {formatTime(appointment.appointment_time)}
                         </span>
                       </div>
                       <div className={cx('detail-item')}>
                         <FontAwesomeIcon icon={faUserMd} />
                         <span>
-                          <strong>Bác sĩ:</strong> {appointment.doctorName || 'Chưa phân công'}
+                          <strong>Bác sĩ:</strong> {appointment.doctor_id || 'Chưa phân công'}
                         </span>
                       </div>
                       <div className={cx('detail-item')}>
@@ -451,15 +460,8 @@ function MyAppointments() {
                       <FontAwesomeIcon icon={faEye} />
                       Xem chi tiết
                     </button>
-                    
-                    {appointment.status === '0' && (
-                      <button className={cx('action-btn', 'edit-btn')}>
-                        <FontAwesomeIcon icon={faEdit} />
-                        Chỉnh sửa
-                      </button>
-                    )}
-                    
-                    {['0', '1'].includes(appointment.status) && (
+
+                    {['pending', 'confirmed'].includes(appointment.status) && (
                       <button className={cx('action-btn', 'cancel-btn')}>
                         <FontAwesomeIcon icon={faTrash} />
                         Hủy hẹn
@@ -487,7 +489,7 @@ function MyAppointments() {
                 : 'Bạn chưa có cuộc hẹn nào. Hãy đặt lịch tư vấn ngay!'
               }
             </p>
-            <button 
+            <button
               className={cx('primary-btn')}
               onClick={() => window.location.href = '/appointment'}
             >
@@ -507,7 +509,7 @@ function MyAppointments() {
           >
             Trước
           </button>
-          
+
           {[...Array(totalPages)].map((_, index) => (
             <button
               key={index + 1}
@@ -517,7 +519,7 @@ function MyAppointments() {
               {index + 1}
             </button>
           ))}
-          
+
           <button
             className={cx('page-btn', { disabled: currentPage === totalPages })}
             onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))}
@@ -534,21 +536,17 @@ function MyAppointments() {
           <div className={cx('modal-content')} onClick={(e) => e.stopPropagation()}>
             <div className={cx('modal-header')}>
               <h2>Chi tiết cuộc hẹn</h2>
-              <button 
+              <button
                 className={cx('close-btn')}
                 onClick={() => setShowModal(false)}
               >
                 ×
               </button>
             </div>
-            
+
             <div className={cx('modal-body')}>
               {/* Detailed appointment information */}
               <div className={cx('detail-grid')}>
-                <div className={cx('detail-row')}>
-                  <strong>Mã cuộc hẹn:</strong>
-                  <span>#{selectedAppointment.id}</span>
-                </div>
                 <div className={cx('detail-row')}>
                   <strong>Trạng thái:</strong>
                   <span className={cx('status-text', getStatusInfo(selectedAppointment.status).color)}>
@@ -557,23 +555,23 @@ function MyAppointments() {
                 </div>
                 <div className={cx('detail-row')}>
                   <strong>Họ tên:</strong>
-                  <span>{selectedAppointment.fullName}</span>
+                  <span>{user.last_name} {user.first_name}</span>
                 </div>
                 <div className={cx('detail-row')}>
                   <strong>Ngày sinh:</strong>
-                  <span>{formatDate(selectedAppointment.birthDate)}</span>
+                  <span>{formatDate(user.birthDate)}</span>
                 </div>
                 <div className={cx('detail-row')}>
                   <strong>Số điện thoại:</strong>
-                  <span>{selectedAppointment.phone}</span>
+                  <span>{user.phone}</span>
                 </div>
                 <div className={cx('detail-row')}>
                   <strong>Email:</strong>
-                  <span>{selectedAppointment.email}</span>
+                  <span>{user.email}</span>
                 </div>
                 <div className={cx('detail-row')}>
                   <strong>Địa chỉ:</strong>
-                  <span>{selectedAppointment.address || 'Không có'}</span>
+                  <span>{user.address || 'Không có'}</span>
                 </div>
                 <div className={cx('detail-row')}>
                   <strong>Loại tư vấn:</strong>
@@ -581,7 +579,7 @@ function MyAppointments() {
                 </div>
                 <div className={cx('detail-row')}>
                   <strong>Bác sĩ:</strong>
-                  <span>{selectedAppointment.doctorName || 'Chưa phân công'}</span>
+                  <span>{selectedAppointment.doctor_id || 'Chưa phân công'}</span>
                 </div>
                 <div className={cx('detail-row')}>
                   <strong>Ngày tư vấn:</strong>
@@ -589,7 +587,7 @@ function MyAppointments() {
                 </div>
                 <div className={cx('detail-row')}>
                   <strong>Giờ tư vấn:</strong>
-                  <span>{formatTime(selectedAppointment.appointmentTime)}</span>
+                  <span>{formatTime(selectedAppointment.appointment_time)}</span>
                 </div>
                 {selectedAppointment.price_apm && (
                   <div className={cx('detail-row')}>
@@ -607,21 +605,21 @@ function MyAppointments() {
               {(selectedAppointment.symptoms || selectedAppointment.medicalHistory || selectedAppointment.notes) && (
                 <div className={cx('medical-info')}>
                   <h3>Thông tin y tế</h3>
-                  
+
                   {selectedAppointment.symptoms && (
                     <div className={cx('medical-item')}>
                       <strong>Triệu chứng:</strong>
                       <p>{selectedAppointment.symptoms}</p>
                     </div>
                   )}
-                  
+
                   {selectedAppointment.medicalHistory && (
                     <div className={cx('medical-item')}>
                       <strong>Tiền sử bệnh:</strong>
                       <p>{selectedAppointment.medicalHistory}</p>
                     </div>
                   )}
-                  
+
                   {selectedAppointment.notes && (
                     <div className={cx('medical-item')}>
                       <strong>Ghi chú:</strong>
