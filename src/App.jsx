@@ -10,7 +10,8 @@ import Blog from "./page/blog/Blog";
 import Appointment from "./page/Appointment";
 import PaymentAppointment from "./page/Payment/PaymentAppointment";
 import { AdminRoute } from "./routes/AdminRouter";
-import { TestServicePage } from "./page/testservice/TestServicePage";
+import TestServicePage from "./page/testservice";
+import ServicePage from "./page/Services/ServicePage";
 import ScrollToTop from "./components/ui/ScrollToTop";
 import MeetWidget from "./components/ui/MeetWidget";
 import About from "./page/AboutUs/About";
@@ -44,12 +45,12 @@ function App() {
               <HomePage />
             </LayoutAccount>
           }
-        ></Route>
+        ></Route>{" "}
         <Route
-          path="/service"
+          path="/services"
           element={
             <LayoutAccount>
-              <TestServicePage />
+              <ServicePage />
             </LayoutAccount>
           }
         ></Route>
@@ -69,7 +70,6 @@ function App() {
             </LayoutAccount>
           }
         ></Route>
-
         <Route
           path="/blog"
           element={
@@ -86,7 +86,6 @@ function App() {
             </LayoutAccount>
           }
         ></Route>
-
         <Route
           path="/paymentappointment"
           element={
@@ -147,8 +146,7 @@ function App() {
           <Route index element={<DashboardAdmin />} />
           <Route path="employees" element={<EmployeesManagerment />} />
           <Route path="employees/addEmployees" element={<AddEmployees />} />
-        </Route>
-
+        </Route>{" "}
         {/* Doctor */}
         <Route path="/doctor" element={<DoctorLayout />}>
           <Route path="dashboard" element={<DoctorDashboard />} />
@@ -158,7 +156,14 @@ function App() {
           <Route path="profile" element={<Profile />} />
         </Route>
         {/* Test Service */}
-
+        <Route
+          path="/service"
+          element={
+            <LayoutAccount>
+              <TestServicePage />
+            </LayoutAccount>
+          }
+        ></Route>
         {/* Manager */}
         <Route
           path="/manager"
