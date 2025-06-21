@@ -8,6 +8,7 @@ import { useNavigate, Link } from "react-router-dom";
 import axiosClient from "../../services/axiosClient";
 import classNames from "classnames/bind";
 import styles from "./Register.module.scss";
+import { API_REGISTER } from "../../constants/Apis";
 
 const cx = classNames.bind(styles);
 
@@ -155,16 +156,12 @@ function Register() {
 
       console.log("Sending data to API:", userData);
 
-      // Gọi API bằng axiosClient
-      const response = await axiosClient.post("/v1/users", userData);
+      const response = await axiosClient.post(API_REGISTER, userData);
 
-      // Xử lý phản hồi
       console.log("Registration successful:", response.data);
 
-      // Hiển thị thông báo thành công
       alert("Đăng ký thành công! Vui lòng đăng nhập để tiếp tục.");
       navigate("/login");
-
     } catch (error) {
       console.error("Error during registration:", error);
 
@@ -184,7 +181,8 @@ function Register() {
         }
       } else {
         // Lỗi network hoặc lỗi khác
-        errorMessage += "Đã xảy ra lỗi trong quá trình đăng ký. Vui lòng thử lại sau.";
+        errorMessage +=
+          "Đã xảy ra lỗi trong quá trình đăng ký. Vui lòng thử lại sau.";
       }
 
       alert(errorMessage);

@@ -3,14 +3,25 @@ import React from "react";
 import * as Yup from "yup";
 import axiosClient from "../../services/axiosClient";
 import { useSelector } from "react-redux";
+import { toast } from "react-toastify";
 
 export const ChangePassword = () => {
   const { accessToken, user } = useSelector((state) => state.auth);
+  console.log(accessToken);
+  console.log(user);
+
   const validationSchema = Yup.object({
     currentPassword: Yup.string().required("Vui lòng nhập mật khẩu hiện tại"),
     newPassword: Yup.string()
-      .min(8, "Mật khẩu ít nhất có 8 ký tự")
-      .required("Vui lòng nhập mật khẩu mới"),
+      .required("Vui lòng nhập mật khẩu mới")
+      .min(
+        8,
+        "Mật khẩu phải có ít nhất 8 ký tự, bao gồm ít nhất một chữ hoa, một chữ thường, một số và một ký tự đặc biệt"
+      )
+      .minLowercase(1, "Mật khẩu phải chứa ít nhất 1 chữ cái thường")
+      .minUppercase(1, "Mật khẩu phải chứa ít nhất 1 chữ cái in hoa")
+      .minNumbers(1, "Mật khẩu phải chứa ít nhất 1 chữ số")
+      .minSymbols(1, "Mật khẩu phải chứa ít nhất 1 ký tự đặc biệt"),
     confirm_Password: Yup.string()
       .oneOf([Yup.ref("newPassword")], "Mật khẩu xác nhận không khớp")
       .required("Vui lòng xác nhận mật khẩu mới"),
@@ -21,15 +32,39 @@ export const ChangePassword = () => {
     { setSubmitting, resetForm, setStatus }
   ) => {
     try {
-      const res = await axiosClient.patch(`v1/users/${user.user_id}`, {
-        currentPassword: values.currentPassword,
-        newPassword: values.newPassword,
-      });
+      if (!accessToken) {
+        setStatus({ error: "Token không hợp lệ. Vui lòng đăng nhập lại." });
+        return;
+      }
+      const response = await axiosClient.patch(
+        `v1/users/${user.user_id}`,
+        {
+          currentPassword: values.currentPassword,
+          newPassword: values.newPassword,
+        },
+        {
+          headers: {
+            "x-access-token": accessToken,
+          },
+        }
+      );
       setStatus({ success: "Đổi mật khẩu thành công!" });
+      toast.success("Đổi mật khẩu thành công", {
+        autoClose: 1000,
+        position: "top-right",
+      });
       resetForm();
     } catch (error) {
-      const errMsg = error.res?.data?.message || "Lỗi đổi mật khẩu";
+      // Improve error handling
+      const errMsg =
+        error.response?.data?.message ||
+        "Lỗi đổi mật khẩu. Vui lòng kiểm tra thông tin và thử lại.";
       setStatus({ error: errMsg });
+      console.error("Password change error:", error);
+      toast.error("Đổi mật khẩu thất bại", {
+        autoClose: 1000,
+        position: "top-right",
+      });
     } finally {
       setSubmitting(false);
     }

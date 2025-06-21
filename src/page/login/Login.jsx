@@ -17,6 +17,7 @@ import styles from "./Login.module.scss";
 import { useDispatch } from "react-redux";
 import { doLogin } from "../../store/feature/auth/authenSlice";
 import { toast } from "react-toastify";
+import { API_LOGIN } from "../../constants/Apis";
 
 const cx = classNames.bind(styles);
 
@@ -93,7 +94,7 @@ function Login() {
       setErrorMessage("");
 
       try {
-        const res = await axiosClient.post("/v1/auth/login", {
+        const res = await axiosClient.post(API_LOGIN, {
           username: formData.username,
           password: formData.password,
         });
