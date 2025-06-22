@@ -1,5 +1,6 @@
-import React, { useState } from "react";
-
+import React, { useEffect, useState } from "react";
+import doctorService from "../../services/doctor.service";
+import Avatar from "@mui/material/Avatar";
 // Mock doctor data
 const mockDoctorData = {
   id: "DR0123",
@@ -64,20 +65,45 @@ const Profile = () => {
     alert("Thông tin đã được cập nhật thành công!");
   };
 
+  useEffect(() => {
+    const fetchProfileDoctor = async () => {
+      try {
+        const doctorProfile = await doctorService.fetchProfileDoctor();
+
+        console.log("Profile:", doctorProfile.userProfile);
+        setDoctor(doctorProfile.userProfile);
+      } catch (error) {
+        console.error("Error fetching doctor profile:", error);
+      }
+    };
+    fetchProfileDoctor();
+  }, []);
+
   return (
     <div className="bg-white rounded-lg shadow-md">
       {/* Profile Header */}
       <div className="bg-gradient-to-r from-blue-800 to-blue-600 text-white p-6 rounded-t-lg">
         <div className="flex flex-col md:flex-row items-center space-y-4 md:space-y-0">
-          <div className="h-24 w-24 rounded-full bg-white p-1 flex-shrink-0">
-            <img
-              src={doctor.avatar}
-              alt={doctor.name}
-              className="h-full w-full rounded-full object-cover"
-            />
+          <div className="h-24 w-24 rounded-full bg-white flex-shrink-0">
+            <Avatar
+              sx={{
+                width: 96,
+                height: 96,
+                bgcolor: "#3b82f6",
+                fontWeight: "bold",
+                fontSize: "3rem",
+                paddingBottom: "0.5rem",
+              }}
+            >
+              {localStorage.getItem("user")
+                ? JSON.parse(localStorage.getItem("user")).first_name.charAt(0)
+                : null}
+            </Avatar>
           </div>
           <div className="md:ml-6 flex-1">
-            <h1 className="text-2xl font-semibold">BS. {doctor.name}</h1>
+            <h1 className="text-2xl font-semibold">
+              BS. {doctor.last_name} {doctor.first_name}
+            </h1>
             <p>{doctor.specialty}</p>
             <p className="text-sm text-blue-100">ID: {doctor.id}</p>
           </div>
@@ -348,15 +374,17 @@ const Profile = () => {
                       <p>{doctor.phone}</p>
                     </div>
                     <div>
-                      <span className="text-sm text-gray-500">Ngày sinh:</span>
-                      <p>{new Date(doctor.dob).toLocaleDateString("vi-VN")}</p>
+                      <span className="text-sm text-gray-500">Ngày sinh: </span>
+                      <p>
+                        {new Date(doctor.birthday).toLocaleDateString("vi-VN")}
+                      </p>
                     </div>
                     <div>
-                      <span className="text-sm text-gray-500">Giới tính:</span>
-                      <p>{doctor.gender}</p>
+                      <span className="text-sm text-gray-500">Giới tính: </span>
+                      {doctor.gender == "male" ? "Nam" : "Nữ"}
                     </div>
                     <div className="md:col-span-2">
-                      <span className="text-sm text-gray-500">Địa chỉ:</span>
+                      <span className="text-sm text-gray-500">Địa chỉ: </span>
                       <p>{doctor.address}</p>
                     </div>
                   </div>
@@ -389,18 +417,6 @@ const Profile = () => {
                       <p className="mt-1">{doctor.bio}</p>
                     </div>
                   </div>
-                </div>
-
-                {/* Certificates */}
-                <div>
-                  <h2 className="text-lg font-medium text-gray-900 border-b border-gray-200 pb-2 mb-4">
-                    Chứng chỉ
-                  </h2>
-                  <ul className="list-disc pl-5 space-y-1">
-                    {doctor.certifications.map((cert, index) => (
-                      <li key={index}>{cert}</li>
-                    ))}
-                  </ul>
                 </div>
               </div>
             )}

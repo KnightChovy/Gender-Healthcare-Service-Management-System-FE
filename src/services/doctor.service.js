@@ -44,11 +44,22 @@ const fetchDoctorAppointmentsDoctorId = async (doctorId) => {
   }
 };
 
+const fetchProfileDoctor = async () => {
+  try {
+    const result = await axiosClient.get(`/v1/users/profile/me`);
+    return result.data;
+  } catch (error) {
+    console.error("Error fetching doctor's profile:", error);
+    throw error;
+  }
+};
+
 const doctorService = {
   fetchDoctorAvailableTimeslots,
   fetchAllDoctors,
   fetchDoctorScheduleByDoctorId,
   fetchDoctorAppointmentsDoctorId,
+  fetchProfileDoctor,
 };
 
 export default doctorService;
