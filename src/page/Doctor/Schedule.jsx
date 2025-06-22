@@ -19,7 +19,8 @@ const Schedule = () => {
     const fetchAvailableTimeSlots = async () => {
       try {
         const doctorAvailableTimeslots =
-          await doctorService.fetchDoctorAvailableTimeslots();
+          await doctorService.fetchDoctorScheduleByDoctorId("dr000002");
+
         console.log("Available time slots:", doctorAvailableTimeslots);
       } catch (error) {
         console.error("Error fetching available time slots:", error);
