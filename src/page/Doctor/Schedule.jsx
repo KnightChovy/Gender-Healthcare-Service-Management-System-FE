@@ -1,6 +1,8 @@
 import React, { useEffect, useState } from "react";
 import axiosClient from "../../services/axiosClient";
 import doctorService from "../../services/doctor.service";
+import dayjs from "dayjs";
+
 const Schedule = () => {
   const days = [
     "Thứ 2",
@@ -15,20 +17,22 @@ const Schedule = () => {
 
   // Khởi tạo lịch làm việc với tất cả ô chưa được chọn
   // và tất cả ngày đều có các khung giờ
-  useEffect(() => {
-    const fetchAvailableTimeSlots = async () => {
-      try {
-        const doctorAvailableTimeslots =
-          await doctorService.fetchDoctorScheduleByDoctorId("dr000002");
 
-        console.log("Available time slots:", doctorAvailableTimeslots);
-      } catch (error) {
-        console.error("Error fetching available time slots:", error);
-      }
-    };
+  
+  // useEffect(() => {
+  //   const fetchAvailableTimeSlots = async () => {
+  //     try {
+  //       const doctorAvailableTimeslots =
+  //         await doctorService.fetchDoctorScheduleByDoctorId("dr000002");
 
-    fetchAvailableTimeSlots();
-  }, []);
+  //       console.log("Available time slots:", doctorAvailableTimeslots);
+  //     } catch (error) {
+  //       console.error("Error fetching available time slots:", error);
+  //     }
+  //   };
+
+  //   fetchAvailableTimeSlots();
+  // }, []);
 
   // State cho lịch làm việc
   const [schedule, setSchedule] = useState(
@@ -43,7 +47,6 @@ const Schedule = () => {
 
   const [selectedDate, setSelectedDate] = useState(new Date());
   const [isLoading, setIsLoading] = useState(false);
-  const [Slots, setTimeSlots] = useState([]);
 
   // Lấy ngày hiện tại đầu ngày (00:00:00) để so sánh chính xác
   const today = new Date();
@@ -153,43 +156,58 @@ const Schedule = () => {
     try {
       // Tạo đối tượng để nhóm các timeSlots theo ngày
       let schedules = {};
+      console.log("schedule:", schedule);
 
-      // Xử lý từng ngày trong lịch
-      Object.entries(schedule).forEach(([day, slots]) => {
-        const dayIndex = days.indexOf(day);
-        if (dayIndex === -1) return;
+      //TODO: chuyển đổi Object schedule thành 1 mảng đẻ tìm kiếm ngày có ca làm việc được chọn
+      const schedulesArray = Object.entries(schedule);
+      console.log("schedulesArray:", schedulesArray);
 
-        const date = weekDates[dayIndex];
-        const formattedDate = `${date.getFullYear()}-${String(
-          date.getMonth() + 1
-        ).padStart(2, "0")}-${String(date.getDate()).padStart(2, "0")}`;
-
-        // Duyệt qua các khung giờ
-        console.log("slots:", slots);
-
-        Object.entries(slots).forEach(([timeSlot, isSelected]) => {
-          if (isSelected) {
-            // Phân tích giờ từ chuỗi "08:00 - 11:00"
-            const [start, end] = timeSlot.split(" - ");
-
-            const slot = {
-              time_start: start + ":00",
-              time_end: end + ":00",
-            };
-            console.log("slot:", slot);
-
-            setTimeSlots((prev) => [...prev, slot]);
-          }
-        });
-        if (!schedules[formattedDate]) {
-          schedules = {
-            date: formattedDate,
-            timeSlots: [...Slots],
-          };
-        }
+      const scheduleHasSelectedSlots = schedulesArray.filter((schedule) => {
+        return Object.values(schedule[1]).some((isSelected) => isSelected);
       });
 
-      console.log("Lịch làm việc:", schedules);
+      console.log("scheduleHasSelectedSlots:", scheduleHasSelectedSlots);
+
+      const scheduleHasSelectedSlotsFormat = scheduleHasSelectedSlots.map(
+        (schedule) => {
+          const dayIndex = days.indexOf(schedule[0]);
+          const dayOfWeek = weekDates[dayIndex];
+          // Chuyển đổi ngày thành định dạng YYYY-MM-DD
+          const formattedDate = dayjs(dayOfWeek).format("YYYY-MM-DD");
+          const slotS = Object.entries(schedule[1]).filter(
+            (slot) => slot[1] === true
+          );
+          const timeSLots = slotS.map((slot) => {
+            console.log("slot:", slot);
+
+            const timeLot = slot[0].split(" - ");
+            return {
+              time_start: timeLot[0] + ":00",
+              time_end: timeLot[1] + ":00",
+            };
+          });
+          const result = {
+            date: formattedDate,
+            timeSlots: timeSLots,
+          };
+
+          return result;
+        }
+      );
+      console.log(scheduleHasSelectedSlotsFormat);
+
+      // for (const schedule of scheduleHasSelectedSlotsFormat) {
+      //   console.log("schedule:", schedule);
+      //   await axiosClient.post(`/v1/doctors/schedule`, schedule, {
+      //     headers: {
+      //       "Content-Type": "application/json",
+      //       Authorization: `Bearer ${localStorage.getItem("accessToken")}`,
+      //     },
+      //   });
+      // }
+
+      return;
+
 
       // Chuyển đối tượng thành mảng
       const schedulesToSend = schedules;
