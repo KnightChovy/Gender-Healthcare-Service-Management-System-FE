@@ -66,7 +66,7 @@ export function AccountRoutes() {
         }
       />
       <Route
-        path="/paymentappointment"
+        path="/paymentappointment/:appointmentId"
         element={
           <LayoutAccount>
             <PaymentAppointment />

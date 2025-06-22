@@ -97,7 +97,7 @@ function NotificationBell() {
           id: `pending_${appointment.appointment_id}`,
           type: "appointment_pending",
           title: "Lịch hẹn đang chờ xác nhận",
-          message: `Lịch hẹn ${appointment.consultant_type} vào ${new Date(appointment.appointmentDate).toLocaleDateString('vi-VN')} đang chờ xác nhận từ quản lý.`,
+          message: `Lịch hẹn ${appointment.consultant_type} vào ${new Date(appointment.appointment_date).toLocaleDateString('vi-VN')} đang chờ xác nhận từ quản lý.`,
           timestamp: appointmentDate.toISOString(),
           isRead: false,
           appointmentId: appointment.appointment_id,
@@ -167,7 +167,39 @@ function NotificationBell() {
     return notifications;
   };
 
-  // Load notifications from API
+  // Thêm function để quản lý deleted notifications
+  const getDeletedNotifications = () => {
+    return JSON.parse(localStorage.getItem('deletedNotifications') || '{}');
+  };
+
+  const saveDeletedNotification = (notificationId) => {
+    const deletedNotifications = getDeletedNotifications();
+    deletedNotifications[notificationId] = {
+      deletedAt: new Date().toISOString(),
+      status: 'deleted'
+    };
+    localStorage.setItem('deletedNotifications', JSON.stringify(deletedNotifications));
+  };
+
+  // Cleanup old deleted notifications (older than 30 days)
+  const cleanupDeletedNotifications = () => {
+    const deletedNotifications = getDeletedNotifications();
+    const thirtyDaysAgo = new Date();
+    thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+    
+    const cleanedDeleted = {};
+    Object.keys(deletedNotifications).forEach(id => {
+      const deletedAt = new Date(deletedNotifications[id].deletedAt);
+      if (deletedAt >= thirtyDaysAgo) {
+        cleanedDeleted[id] = deletedNotifications[id];
+      }
+    });
+    
+    localStorage.setItem('deletedNotifications', JSON.stringify(cleanedDeleted));
+    return cleanedDeleted;
+  };
+
+  // Cập nhật loadNotifications function
   const loadNotifications = useCallback(async () => {
     if (!user.user_id || !accessToken) return;
 
@@ -186,14 +218,25 @@ function NotificationBell() {
         const appointments = response.data.data || [];
         console.log('📋 Fetched appointments for notifications:', appointments.length);
 
-        // Get existing read status from localStorage
+        // Get existing read status and deleted notifications from localStorage
         const savedNotifications = JSON.parse(localStorage.getItem('notificationReadStatus') || '{}');
+        const deletedNotifications = cleanupDeletedNotifications(); // Cleanup old deleted notifications
 
         // Create notifications from appointments
         let allNotifications = [];
         appointments.forEach(appointment => {
           const appointmentNotifications = createNotificationFromAppointment(appointment);
           allNotifications = [...allNotifications, ...appointmentNotifications];
+        });
+
+        // Filter out deleted notifications
+        allNotifications = allNotifications.filter(notif => {
+          const isDeleted = deletedNotifications[notif.id];
+          if (isDeleted) {
+            console.log(`🗑️ Skipping deleted notification: ${notif.id}`);
+            return false;
+          }
+          return true;
         });
 
         // Apply read status from localStorage
@@ -217,6 +260,7 @@ function NotificationBell() {
         setUnreadCount(recentNotifications.filter((n) => !n.isRead).length);
 
         console.log('✅ Loaded notifications:', recentNotifications.length);
+        console.log('🗑️ Deleted notifications count:', Object.keys(deletedNotifications).length);
       } else {
         console.warn('⚠️ Invalid API response:', response.data);
       }
@@ -282,11 +326,17 @@ function NotificationBell() {
 
   const deleteNotification = (notificationId, event) => {
     event.stopPropagation();
+    
+    // Remove from current notifications list
     const updated = notifications.filter((n) => n.id !== notificationId);
     setNotifications(updated);
     setUnreadCount(updated.filter((n) => !n.isRead).length);
 
-    // Remove from read status as well
+    // Save as deleted to localStorage
+    saveDeletedNotification(notificationId);
+    console.log(`🗑️ Marked notification as deleted: ${notificationId}`);
+
+    // Remove from read status as well (cleanup)
     const readStatus = JSON.parse(localStorage.getItem('notificationReadStatus') || '{}');
     delete readStatus[notificationId];
     localStorage.setItem('notificationReadStatus', JSON.stringify(readStatus));
@@ -301,8 +351,8 @@ function NotificationBell() {
     switch (notification.type) {
       case "payment_required":
         // Navigate to payment page with appointment data
-        navigate("/paymentappointment", { 
-          state: { appointmentData: notification.appointmentData } 
+        navigate(`/paymentappointment/${notification.appointmentId}`, {
+          state: { appointmentData: notification.appointmentData }
         });
         break;
       case "appointment_success":

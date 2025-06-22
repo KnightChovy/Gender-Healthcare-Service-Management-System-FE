@@ -87,7 +87,7 @@ function App() {
           }
         ></Route>
         <Route
-          path="/paymentappointment"
+          path="/paymentappointment/:appointmentId"
           element={
             <LayoutAccount>
               <PaymentAppointment />
