@@ -1,8 +1,9 @@
 import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useParams, useLocation } from 'react-router-dom';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faMobileAlt, faShieldAlt, faCheckCircle, faTimesCircle, faSpinner, faArrowLeft, faCalendarAlt, faUserMd, faClock, faMapMarkerAlt } from '@fortawesome/free-solid-svg-icons';
+import { faMobileAlt, faShieldAlt, faCheckCircle, faTimesCircle, faSpinner, faArrowLeft, faCalendarAlt, faUserMd, faClock, faMapMarkerAlt, faExclamationTriangle } from '@fortawesome/free-solid-svg-icons';
 import { specialtyMapping } from '../../components/Data/Doctor';
+import axiosClient from '../../services/axiosClient';
 
 import classNames from 'classnames/bind';
 import styles from './Payment.module.scss';
@@ -11,12 +12,20 @@ const cx = classNames.bind(styles);
 
 function PaymentAppointment() {
     const navigate = useNavigate();
+    const location = useLocation();
+    const { appointmentId } = useParams();
 
     // State
     const [appointmentData, setAppointmentData] = useState(null);
     const [paymentMethod, setPaymentMethod] = useState('');
     const [isProcessing, setIsProcessing] = useState(false);
     const [paymentStatus, setPaymentStatus] = useState('');
+    const [isLoading, setIsLoading] = useState(true);
+    const [error, setError] = useState(null);
+
+    // Get user info
+    const user = JSON.parse(localStorage.getItem('user') || '{}');
+    const accessToken = localStorage.getItem('accessToken');
 
     const getConsultationTypeDisplay = (consultationType) => {
         const specialtyKey = Object.keys(specialtyMapping).find(
@@ -34,21 +43,109 @@ function PaymentAppointment() {
         return consultationType;
     };
 
-    // Load dữ liệu từ localStorage
+    // Load appointment data from API
     useEffect(() => {
-        const loadData = () => {
-            const pendingAppointment = localStorage.getItem('pendingAppointment');
-            if (pendingAppointment) {
-                const data = JSON.parse(pendingAppointment);
-                setAppointmentData(data);
-            } else {
-                // Fallback: redirect về appointment page
-                navigate('/appointment');
+        const loadAppointmentData = async () => {
+            // Check if user is logged in
+            if (!user.user_id || !accessToken) {
+                setError('Vui lòng đăng nhập để tiếp tục');
+                setIsLoading(false);
+                return;
+            }
+
+            // Check if appointmentId is provided
+            if (!appointmentId) {
+                // Try to get from location state (from notification)
+                if (location.state?.appointmentData) {
+                    setAppointmentData(location.state.appointmentData);
+                    setIsLoading(false);
+                    return;
+                } else {
+                    setError('Không tìm thấy thông tin cuộc hẹn');
+                    setIsLoading(false);
+                    return;
+                }
+            }
+
+            try {
+                setIsLoading(true);
+                setError(null);
+
+                const response = await axiosClient.get(`/v1/appointments/user/${user.user_id}`, {
+                    headers: {
+                        'Authorization': `Bearer ${accessToken}`,
+                        'x-access-token': accessToken
+                    }
+                });
+
+                if (response.data?.success) {
+                    const appointments = response.data.data || [];
+
+                    // Find appointment by ID - try multiple fields and data types
+                    const appointment = appointments.find(apt => {
+                        const aptId = apt.id || apt.appointment_id;
+                        const searchId = parseInt(appointmentId);
+
+                        // Try both string and number comparison
+                        return aptId === searchId ||
+                            String(aptId) === String(appointmentId) ||
+                            apt.id === searchId ||
+                            apt.appointment_id === searchId;
+                    });
+
+                    if (appointment) {
+                        if (appointment.status !== 'confirmed') {
+                            setError(`Cuộc hẹn này không thể thanh toán. Trạng thái hiện tại: ${appointment.status}`);
+                            setIsLoading(false);
+                            return;
+                        }
+
+                        if (!appointment.price_apm || appointment.price_apm <= 0) {
+                            setError('Cuộc hẹn này không có phí thanh toán');
+                            setIsLoading(false);
+                            return;
+                        }
+
+                        setAppointmentData(appointment);
+                    } else {
+                        setError('Không tìm thấy cuộc hẹn hoặc bạn không có quyền truy cập');
+                    }
+                } else {
+                    throw new Error('Invalid API response');
+                }
+            } catch (error) {
+                console.error('❌ Error loading appointment data:', error);
+
+                let errorMessage = 'Không thể tải thông tin cuộc hẹn';
+
+                if (error.response) {
+                    const status = error.response.status;
+                    switch (status) {
+                        case 401:
+                            errorMessage = 'Phiên đăng nhập đã hết hạn. Vui lòng đăng nhập lại';
+                            break;
+                        case 403:
+                            errorMessage = 'Bạn không có quyền truy cập cuộc hẹn này';
+                            break;
+                        case 404:
+                            errorMessage = 'Không tìm thấy cuộc hẹn';
+                            break;
+                        case 500:
+                            errorMessage = 'Lỗi server. Vui lòng thử lại sau';
+                            break;
+                        default:
+                            errorMessage = error.response.data?.message || 'Có lỗi xảy ra khi tải dữ liệu';
+                    }
+                }
+
+                setError(errorMessage);
+            } finally {
+                setIsLoading(false);
             }
         };
 
-        loadData();
-    }, [navigate]);
+        loadAppointmentData();
+    }, [appointmentId, user.user_id, accessToken, location.state]);
 
     // Payment methods
     const paymentMethods = [
@@ -87,7 +184,16 @@ function PaymentAppointment() {
     // Format date
     const formatDate = (dateString) => {
         if (!dateString) return 'Chưa chọn';
-        return new Date(dateString + 'T00:00:00').toLocaleDateString('vi-VN', {
+
+        // Handle different date formats
+        let date;
+        if (dateString.includes('T')) {
+            date = new Date(dateString);
+        } else {
+            date = new Date(dateString + 'T00:00:00');
+        }
+
+        return date.toLocaleDateString('vi-VN', {
             weekday: 'long',
             year: 'numeric',
             month: 'long',
@@ -102,22 +208,28 @@ function PaymentAppointment() {
             return;
         }
 
+        if (!appointmentData) {
+            alert('Không tìm thấy thông tin cuộc hẹn');
+            return;
+        }
+
         setIsProcessing(true);
 
         try {
+            console.log('💳 Processing payment for appointment:', appointmentData.id);
+
             // Simulate payment processing
             await new Promise(resolve => setTimeout(resolve, 3000));
 
-            // 90% success rate
+            // 90% success rate for demo
             const isSuccess = Math.random() > 0.1;
 
             if (isSuccess) {
                 setPaymentStatus('success');
 
-                // Save to appointments list
-                const checkSuccessPayment = JSON.parse(localStorage.getItem('paymentSuccess') || '[]');
-                const newPayment = {
-                    appointmentId: appointmentData.id,
+                // Create payment record
+                const paymentRecord = {
+                    appointmentId: appointmentData.id || appointmentData.appointment_id,
                     amount: appointmentData.price_apm,
                     status: 'confirmed',
                     paidAt: new Date().toISOString(),
@@ -125,24 +237,41 @@ function PaymentAppointment() {
                     paymentMethod: paymentMethod,
                     timestamp: Date.now(),
                     consultant_type: appointmentData.consultant_type,
-                    
+                    userId: user.user_id,
+                    doctorName: appointmentData.doctor_name || appointmentData.doctorName,
+                    appointmentDate: appointmentData.appointment_date || appointmentData.appointmentDate,
+                    appointmentTime: appointmentData.appointment_time
                 };
-                checkSuccessPayment.push(newPayment);
-                localStorage.setItem('paymentSuccess', JSON.stringify(checkSuccessPayment));
 
-                // Clear pending appointment
-                localStorage.removeItem('pendingAppointment');
+                // Save payment success
+                const existingPayments = JSON.parse(localStorage.getItem('paymentSuccess') || '[]');
+                existingPayments.push(paymentRecord);
+                localStorage.setItem('paymentSuccess', JSON.stringify(existingPayments));
+
+                console.log('✅ Payment successful:', paymentRecord);
+
+                // TODO: Call API to update appointment status to paid
+                // await axiosClient.put(`/v1/appointments/${appointmentData.id}/payment`, {
+                //     paymentId: paymentRecord.paymentId,
+                //     paymentMethod: paymentMethod,
+                //     amount: appointmentData.price_apm
+                // });
 
                 // Redirect after success
                 setTimeout(() => {
-                    alert('Thanh toán thành công! Cuộc hẹn đã được xác nhận.');
-                    window.location.href = '/';
+                    navigate('/my-appointments', {
+                        state: {
+                            message: 'Thanh toán thành công! Cuộc hẹn đã được xác nhận.',
+                            type: 'success'
+                        }
+                    });
                 }, 2000);
             } else {
                 setPaymentStatus('failed');
+                console.log('❌ Payment failed (simulated)');
             }
         } catch (error) {
-            console.error('Payment error:', error);
+            console.error('❌ Payment error:', error);
             setPaymentStatus('failed');
         } finally {
             setIsProcessing(false);
@@ -150,12 +279,41 @@ function PaymentAppointment() {
     };
 
     // Loading state
-    if (!appointmentData) {
+    if (isLoading) {
         return (
             <div className={cx('container')}>
                 <div className={cx('success-container')}>
-                    <FontAwesomeIcon icon={faSpinner} className={cx('spinner')} style={{ fontSize: '48px', color: '#0ea5e9' }} />
-                    <p>Đang tải thông tin...</p>
+                    <FontAwesomeIcon icon={faSpinner} spin className={cx('spinner')} style={{ fontSize: '48px', color: '#0ea5e9' }} />
+                    <p>Đang tải thông tin cuộc hẹn...</p>
+                </div>
+            </div>
+        );
+    }
+
+    // Error state
+    if (error) {
+        return (
+            <div className={cx('container')}>
+                <div className={cx('success-container')}>
+                    <div className={cx('failed-icon')}>
+                        <FontAwesomeIcon icon={faExclamationTriangle} />
+                    </div>
+                    <h2 className={cx('failed-title')}>Có lỗi xảy ra</h2>
+                    <p>{error}</p>
+                    <div className={cx('error-actions')}>
+                        <button
+                            className={cx('retry-btn')}
+                            onClick={() => window.location.reload()}
+                        >
+                            Thử lại
+                        </button>
+                        <button
+                            className={cx('back-btn')}
+                            onClick={() => navigate('/my-appointments')}
+                        >
+                            Về danh sách cuộc hẹn
+                        </button>
+                    </div>
                 </div>
             </div>
         );
@@ -174,8 +332,8 @@ function PaymentAppointment() {
                     <div className={cx('success-details')}>
                         <p><strong>Mã giao dịch:</strong> PAY{Date.now()}</p>
                         <p><strong>Số tiền:</strong> {formatCurrency(totalAmount)}</p>
-                        <p><strong>Bác sĩ:</strong> {appointmentData.doctorName}</p>
-                        <p><strong>Thời gian:</strong> {appointmentData.appointment_time} - {formatDate(appointmentData.appointmentDate)}</p>
+                        <p><strong>Bác sĩ:</strong> {appointmentData.doctor_name || appointmentData.doctorName || 'Bác sĩ tư vấn'}</p>
+                        <p><strong>Thời gian:</strong> {appointmentData.appointment_time} - {formatDate(appointmentData.appointment_date || appointmentData.appointmentDate)}</p>
                     </div>
                 </div>
             </div>
@@ -191,7 +349,7 @@ function PaymentAppointment() {
                         <FontAwesomeIcon icon={faTimesCircle} />
                     </div>
                     <h2 className={cx('failed-title')}>Thanh toán thất bại!</h2>
-                    <p>Vui lòng thử lại.</p>
+                    <p>Vui lòng thử lại sau hoặc chọn phương thức thanh toán khác.</p>
                     <button
                         className={cx('retry-btn')}
                         onClick={() => setPaymentStatus('')}
@@ -207,12 +365,11 @@ function PaymentAppointment() {
     return (
         <div className={cx('wrap')}>
             <div className={cx('container')}>
-
                 {/* Header */}
                 <div className={cx('header')}>
                     <button
                         className={cx('back-btn')}
-                        onClick={() => navigate(-1)}
+                        onClick={() => navigate('/my-appointments')}
                     >
                         <FontAwesomeIcon icon={faArrowLeft} />
                         Quay lại
@@ -235,7 +392,7 @@ function PaymentAppointment() {
                         <div className={cx('detail-item')}>
                             <FontAwesomeIcon icon={faUserMd} className={cx('detail-icon')} />
                             <div className={cx('detail-text')}>
-                                <strong className={cx('detail-label')}>{appointmentData.doctorName || 'Bác sĩ tư vấn'}</strong>
+                                <strong className={cx('detail-label')}>{appointmentData.doctor_name || appointmentData.doctorName || 'Bác sĩ tư vấn'}</strong>
                                 <span className={cx('detail-value')}>{getConsultationTypeDisplay(appointmentData.consultant_type)}</span>
                             </div>
                         </div>
@@ -244,7 +401,7 @@ function PaymentAppointment() {
                             <FontAwesomeIcon icon={faCalendarAlt} className={cx('detail-icon')} />
                             <div className={cx('detail-text')}>
                                 <strong className={cx('detail-label')}>Ngày khám</strong>
-                                <span className={cx('detail-value')}>{formatDate(appointmentData.appointmentDate)}</span>
+                                <span className={cx('detail-value')}>{formatDate(appointmentData.appointment_date || appointmentData.appointmentDate || appointmentData.date)}</span>
                             </div>
                         </div>
 
@@ -268,7 +425,7 @@ function PaymentAppointment() {
                         <div className={cx('price-breakdown')}>
                             <div className={cx('price-item')}>
                                 <span>Phí tư vấn</span>
-                                <span>{formatCurrency(appointmentData.price_apm || 500000)}</span>
+                                <span>{formatCurrency(appointmentData.price_apm)}</span>
                             </div>
                             <div className={cx('price-item')}>
                                 <span>Phí dịch vụ</span>
@@ -322,7 +479,7 @@ function PaymentAppointment() {
                             >
                                 {isProcessing ? (
                                     <>
-                                        <FontAwesomeIcon icon={faSpinner} className={cx('spinner')} />
+                                        <FontAwesomeIcon icon={faSpinner} spin className={cx('spinner')} />
                                         Đang xử lý thanh toán...
                                     </>
                                 ) : (

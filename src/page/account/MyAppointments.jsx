@@ -406,7 +406,7 @@ function MyAppointments() {
                       <div className={cx('detail-item')}>
                         <FontAwesomeIcon icon={faCalendarAlt} />
                         <span>
-                          <strong>Ngày:</strong> {formatDate(appointment.appointmentDate)}
+                          <strong>Ngày:</strong> {formatDate(appointment.appointment_date)}
                         </span>
                       </div>
                       <div className={cx('detail-item')}>
@@ -418,7 +418,7 @@ function MyAppointments() {
                       <div className={cx('detail-item')}>
                         <FontAwesomeIcon icon={faUserMd} />
                         <span>
-                          <strong>Bác sĩ:</strong> {appointment.doctor_id || 'Chưa phân công'}
+                          <strong>Bác sĩ:</strong> {appointment.doctor_name || 'Chưa phân công'}
                         </span>
                       </div>
                       <div className={cx('detail-item')}>
