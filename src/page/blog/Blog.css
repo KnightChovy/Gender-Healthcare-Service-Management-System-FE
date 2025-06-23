@@ -23,3 +23,14 @@
     .featured-post-item {
         min-width: 100%;
     } }
+
+        .featured-posts-container {
+            overflow: hidden;
+            position: relative;
+        }
+    
+        .featured-posts-slider {
+            display: flex;
+            transition: transform 0.5s ease-in-out;
+            width: 100%;
+        }

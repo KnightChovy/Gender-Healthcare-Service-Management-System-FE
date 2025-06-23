@@ -274,7 +274,7 @@ const ServicePage = () => {
 
   return (
     <div className="font-sans">
-      <div className="bg-gradient-to-r from-blue-900 to-blue-700 bg-opacity-80 text-white text-center py-20 px-4 mb-10 rounded-lg">
+      <div className="bg-gradient-to-r from-blue-900 to-blue-700 bg-opacity-80 text-white text-center py-20 px-4 mb-10">
         <div className="max-w-3xl mx-auto">
           <h1 className="text-4xl font-bold mb-4">
             Dịch vụ y tế chuyên nghiệp

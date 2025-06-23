@@ -216,6 +216,10 @@ function Blog() {
     selectedCategory === "all"
       ? blogPosts
       : blogPosts.filter((post) => post.category === selectedCategory);
+  const groupedFeaturedPosts = [];
+  for (let i = 0; i < featuredPosts.length; i += 2) {
+    groupedFeaturedPosts.push(featuredPosts.slice(i, i + 2));
+  }
 
   return (
     <>
@@ -281,38 +285,48 @@ function Blog() {
                     className="featured-posts-slider"
                     style={{ transform: `translateX(-${currentSlide * 100}%)` }}
                   >
-                    {featuredPosts.map((post) => (
-                      <div key={post.id} className="featured-post-item">
-                        <div className="bg-white rounded-lg shadow-md overflow-hidden h-full">
-                          <img
-                            src={post.image}
-                            alt={post.title}
-                            className="w-full h-48 object-cover"
-                          />
-                          <div className="p-6">
-                            <span className="inline-block bg-blue-100 text-blue-800 text-xs font-semibold px-2 py-1 rounded mb-2">
-                              {post.category}
-                            </span>
-                            <h3 className="text-xl font-bold mb-2">
-                              {post.title}
-                            </h3>
-                            <p className="text-gray-600 mb-4">{post.excerpt}</p>
-                            <div className="flex justify-between items-center">
-                              <span className="text-sm text-gray-500">
-                                {post.author} ·{" "}
-                                {new Date(post.date).toLocaleDateString(
-                                  "vi-VN"
-                                )}
+                    {groupedFeaturedPosts.map((group, index) => (
+                      <div
+                        key={index}
+                        className="min-w-full flex gap-6 px-2 box-border"
+                      >
+                        {group.map((post) => (
+                          <div
+                            key={post.id}
+                            className="w-1/2 bg-white rounded-lg shadow-md overflow-hidden"
+                          >
+                            <img
+                              src={post.image}
+                              alt={post.title}
+                              className="w-full h-48 object-cover"
+                            />
+                            <div className="p-6">
+                              <span className="inline-block bg-blue-100 text-blue-800 text-xs font-semibold px-2 py-1 rounded mb-2">
+                                {post.category}
                               </span>
-                              <Link
-                                to={`/blog/${post.id}`}
-                                className="text-blue-600 hover:text-blue-800 font-medium"
-                              >
-                                Đọc thêm →
-                              </Link>
+                              <h3 className="text-xl font-bold mb-2">
+                                {post.title}
+                              </h3>
+                              <p className="text-gray-600 mb-4">
+                                {post.excerpt}
+                              </p>
+                              <div className="flex justify-between items-center">
+                                <span className="text-sm text-gray-500">
+                                  {post.author} ·{" "}
+                                  {new Date(post.date).toLocaleDateString(
+                                    "vi-VN"
+                                  )}
+                                </span>
+                                <Link
+                                  to={`/blog/${post.id}`}
+                                  className="text-blue-600 hover:text-blue-800 font-medium"
+                                >
+                                  Đọc thêm →
+                                </Link>
+                              </div>
                             </div>
                           </div>
-                        </div>
+                        ))}
                       </div>
                     ))}
                   </div>
