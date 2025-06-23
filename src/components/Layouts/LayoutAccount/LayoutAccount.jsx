@@ -1,6 +1,7 @@
 import React from "react";
 import { Navbar } from "../../ui/Navbar";
 import { Footer } from "../LayoutHomePage/Footer";
+import GeminiChatbot from "../../ui/GeminiChatbot";
 
 export const LayoutAccount = ({ children }) => {
   return (
@@ -12,6 +13,7 @@ export const LayoutAccount = ({ children }) => {
       <footer className="bg-gray-100 text-gray-700 text-sm">
         <Footer />
       </footer>
+      <GeminiChatbot />
     </div>
   );
 };
