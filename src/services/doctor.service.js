@@ -1,10 +1,15 @@
 import axiosClient from "./axiosClient";
 
-
 //xong roi
 const fetchProfileDoctor = async () => {
   try {
-    const result = await axiosClient.get(`/v1/users/profile/me`);
+    const accessToken = localStorage.getItem("accessToken");
+    const result = await axiosClient.get(`/v1/doctors/profile`, {
+      headers: {
+        "x-access-token": accessToken,
+        "Content-Type": "application/json",
+      },
+    });
     return result.data;
   } catch (error) {
     console.error("Error fetching doctor's profile:", error);
@@ -15,14 +20,20 @@ const fetchProfileDoctor = async () => {
 //Dăng ký lịch làm việc của bác sĩ, Tạo lịch làm việc mới cho bác sĩ.
 const fetchRegisterDoctorSchedule = async (data) => {
   try {
-    const result = await axiosClient.post(`/v1/doctors/schedule`, data);
+    const accessToken = localStorage.getItem("accessToken");
+    const result = await axiosClient.post(`/v1/doctors/schedule`, data, {
+      headers: {
+        "Content-Type": "application/json",
+        "x-access-token": accessToken,
+        Authorization: `Bearer ${accessToken}`,
+      },
+    });
     return result.data;
   } catch (error) {
     console.error("Error registering doctor's schedule:", error);
     throw error;
   }
 };
-
 
 //lấy lịch hẹn của chính bác sĩ đang đăng nhập, cho bác sĩ muốn xem lịch cá nhân của mình.
 const fetchMyDoctorAppointments = async () => {
@@ -49,7 +60,6 @@ const fetchDoctorAppointmentsById = async (doctorId) => {
   }
 };
 
-
 //Lấy danh sách tất cả bác sĩ.
 const fetchAllDoctors = async () => {
   try {
@@ -74,12 +84,9 @@ const fetchAvailableTimeslotsByDoctorId = async (doctorId) => {
   }
 };
 
-
-
-
 const doctorService = {
   fetchProfileDoctor,
-  fetchRegisterDoctorSchedule,  
+  fetchRegisterDoctorSchedule,
   fetchMyDoctorAppointments,
   fetchDoctorAppointmentsById,
   fetchAllDoctors,

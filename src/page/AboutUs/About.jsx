@@ -393,7 +393,7 @@ const About = () => {
                           </h4>
                         </div>
                         <div className="p-4">
-                          <p className="font-semibold">TS. Nguyễn Minh Anh</p>
+                          <p className="font-semibold">TS. Nguyễn Bỉnh Khiêm</p>
                           <p className="text-gray-600 mt-2">
                             Quản lý chung và định hướng phát triển cho toàn bộ
                             trung tâm
@@ -407,7 +407,7 @@ const About = () => {
                           </h4>
                         </div>
                         <div className="p-4">
-                          <p className="font-semibold">PGS.TS Trần Thị Hương</p>
+                          <p className="font-semibold">PGS.TS Ngô Minh Tân</p>
                           <p className="text-gray-600 mt-2">
                             Phụ trách các hoạt động y tế, chuyên môn và đảm bảo
                             chất lượng dịch vụ
@@ -421,7 +421,7 @@ const About = () => {
                           </h4>
                         </div>
                         <div className="p-4">
-                          <p className="font-semibold">ThS. Lê Đức Thành</p>
+                          <p className="font-semibold">ThS. Phan Tấn Phát</p>
                           <p className="text-gray-600 mt-2">
                             Phụ trách các chương trình đào tạo, giáo dục và
                             truyền thông
@@ -449,7 +449,7 @@ const About = () => {
                             sinh sản, giới tính
                           </p>
                           <p className="font-semibold mt-2">
-                            Trưởng phòng: BS.CKI. Phạm Văn Bình
+                            Trưởng phòng: BS.CKI. Nguyễn Kim Thiên Ngân
                           </p>
                         </div>
                       </div>
@@ -465,7 +465,7 @@ const About = () => {
                             sản và tình dục
                           </p>
                           <p className="font-semibold mt-2">
-                            Trưởng phòng: TS. Vũ Minh Đức
+                            Trưởng phòng: TS. Nguyễn Hoàng Phúc
                           </p>
                         </div>
                       </div>
@@ -481,7 +481,7 @@ const About = () => {
                             khỏe giới tính
                           </p>
                           <p className="font-semibold mt-2">
-                            Trưởng phòng: ThS. Nguyễn Thu Trang
+                            Trưởng phòng: ThS. Nguyễn Thị Quỳnh Anh
                           </p>
                         </div>
                       </div>
@@ -497,7 +497,7 @@ const About = () => {
                             hành trung tâm
                           </p>
                           <p className="font-semibold mt-2">
-                            Trưởng phòng: Cử nhân Trần Minh Tuấn
+                            Trưởng phòng: Cử nhân Lê Công Đức Huy
                           </p>
                         </div>
                       </div>

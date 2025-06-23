@@ -15,30 +15,11 @@ const Schedule = () => {
   ];
   const timeSlots = ["07:30 - 11:30", "13:00 - 17:00"];
 
-  // Khởi tạo lịch làm việc với tất cả ô chưa được chọn
-  // và tất cả ngày đều có các khung giờ
-
-  
-  // useEffect(() => {
-  //   const fetchAvailableTimeSlots = async () => {
-  //     try {
-  //       const doctorAvailableTimeslots =
-  //         await doctorService.fetchDoctorScheduleByDoctorId("dr000002");
-
-  //       console.log("Available time slots:", doctorAvailableTimeslots);
-  //     } catch (error) {
-  //       console.error("Error fetching available time slots:", error);
-  //     }
-  //   };
-
-  //   fetchAvailableTimeSlots();
-  // }, []);
-
   // State cho lịch làm việc
   const [schedule, setSchedule] = useState(
     days.reduce((acc, day) => {
-      acc[day] = timeSlots.reduce((slots, time) => {
-        slots[time] = false;
+      acc[day] = timeSlots.reduce((slots, timeSlot) => {
+        slots[timeSlot] = false;
         return slots;
       }, {});
       return acc;
@@ -59,7 +40,7 @@ const Schedule = () => {
     const diff = current.getDate() - day + (day === 0 ? -6 : 1);
 
     const monday = new Date(current.setDate(diff));
-    monday.setHours(0, 0, 0, 0); // Đặt về đầu ngày để so sánh chính xác
+    monday.setHours(0, 0, 0, 0);
 
     const weekDates = [];
 
@@ -83,24 +64,17 @@ const Schedule = () => {
   const isTimeSlotDisabled = (dayIndex, timeSlot) => {
     const date = weekDates[dayIndex];
 
-    // Nếu ngày đã là quá khứ
     if (isPastDate(date)) {
       return true;
     }
 
-    // Nếu ngày là hôm nay, kiểm tra thời gian
     if (
       date.getDate() === today.getDate() &&
       date.getMonth() === today.getMonth() &&
       date.getFullYear() === today.getFullYear()
     ) {
-      // Lấy giờ hiện tại
       const currentHour = new Date().getHours();
-
-      // Lấy giờ bắt đầu của timeSlot
       const startHour = parseInt(timeSlot.split(":")[0]);
-
-      // Nếu giờ hiện tại đã qua giờ bắt đầu của slot
       return currentHour >= startHour;
     }
 
@@ -109,7 +83,6 @@ const Schedule = () => {
 
   // Xử lý khi click vào ô lịch
   const handleToggleTimeSlot = (day, timeSlot, dayIndex) => {
-    // Nếu ô đã vô hiệu hóa, không cho phép click
     if (isTimeSlotDisabled(dayIndex, timeSlot)) {
       return;
     }
@@ -128,11 +101,10 @@ const Schedule = () => {
     const prevWeek = new Date(selectedDate);
     prevWeek.setDate(prevWeek.getDate() - 7);
 
-    // Không cho phép chọn tuần trong quá khứ
     const mondayOfPrevWeek = new Date(prevWeek);
     const day = mondayOfPrevWeek.getDay();
-    // const diff = mondayOfPrevWeek.getDate() - day + (day === 0 ? -6 : 1);
-    // mondayOfPrevWeek.setDate(diff);
+    const diff = mondayOfPrevWeek.getDate() - day + (day === 0 ? -6 : 1);
+    mondayOfPrevWeek.setDate(diff);
     mondayOfPrevWeek.setHours(0, 0, 0, 0);
 
     if (mondayOfPrevWeek < today) {
@@ -148,92 +120,102 @@ const Schedule = () => {
     return date.getDate() + "/" + (date.getMonth() + 1);
   };
 
-  // Xử lý khi submit form
+  // Xử lý khi submit form - SỬ DỤNG SERVICE
   const handleSubmit = async (e) => {
     e.preventDefault();
     setIsLoading(true);
 
     try {
-      // Tạo đối tượng để nhóm các timeSlots theo ngày
-      let schedules = {};
-      console.log("schedule:", schedule);
-
-      //TODO: chuyển đổi Object schedule thành 1 mảng đẻ tìm kiếm ngày có ca làm việc được chọn
-      const schedulesArray = Object.entries(schedule);
-      console.log("schedulesArray:", schedulesArray);
-
-      const scheduleHasSelectedSlots = schedulesArray.filter((schedule) => {
-        return Object.values(schedule[1]).some((isSelected) => isSelected);
-      });
-
-      console.log("scheduleHasSelectedSlots:", scheduleHasSelectedSlots);
-
-      const scheduleHasSelectedSlotsFormat = scheduleHasSelectedSlots.map(
-        (schedule) => {
-          const dayIndex = days.indexOf(schedule[0]);
-          const dayOfWeek = weekDates[dayIndex];
-          // Chuyển đổi ngày thành định dạng YYYY-MM-DD
-          const formattedDate = dayjs(dayOfWeek).format("YYYY-MM-DD");
-          const slotS = Object.entries(schedule[1]).filter(
-            (slot) => slot[1] === true
-          );
-          const timeSLots = slotS.map((slot) => {
-            console.log("slot:", slot);
-
-            const timeLot = slot[0].split(" - ");
-            return {
-              time_start: timeLot[0] + ":00",
-              time_end: timeLot[1] + ":00",
-            };
-          });
-          const result = {
-            date: formattedDate,
-            timeSlots: timeSLots,
-          };
-
-          return result;
+      // Chuyển đổi Object schedule thành các ngày có ca làm việc được chọn
+      const scheduleDaysWithSelectedSlots = Object.entries(schedule).filter(
+        (daySchedule) => {
+          // Kiểm tra xem ngày này có ít nhất 1 khung giờ được chọn không
+          return Object.values(daySchedule[1]).some((isSelected) => isSelected);
         }
       );
-      console.log(scheduleHasSelectedSlotsFormat);
 
-      // for (const schedule of scheduleHasSelectedSlotsFormat) {
-      //   console.log("schedule:", schedule);
-      //   await axiosClient.post(`/v1/doctors/schedule`, schedule, {
-      //     headers: {
-      //       "Content-Type": "application/json",
-      //       Authorization: `Bearer ${localStorage.getItem("accessToken")}`,
-      //     },
-      //   });
-      // }
+      console.log(
+        "Ngày có ca làm việc được chọn:",
+        scheduleDaysWithSelectedSlots
+      );
 
-      return;
-
-
-      // Chuyển đối tượng thành mảng
-      const schedulesToSend = schedules;
-
-      console.log("Dữ liệu gửi đi:", schedulesToSend);
-
-      const accessToken = localStorage.getItem("accessToken"); // Lấy token từ localStorage
-
-      const res = await fetch("http://52.4.72.106:3000/v1/doctors/schedule", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${accessToken}`, // Thêm token vào header
-          "x-access-token": accessToken, // Thêm thêm một trường token nếu API yêu cầu
-        },
-        body: JSON.stringify(schedulesToSend),
-      });
-
-      if (res.ok) {
-        alert("Đăng ký lịch làm việc thành công!");
-      } else {
-        const errorData = await res.json();
-        throw new Error(errorData.message || "Đăng ký thất bại");
+      if (scheduleDaysWithSelectedSlots.length === 0) {
+        alert("Vui lòng chọn ít nhất một khung giờ làm việc!");
+        setIsLoading(false);
+        return;
       }
+
+      // Định dạng dữ liệu theo yêu cầu của API
+      const formattedSchedules = scheduleDaysWithSelectedSlots.map(
+        (daySchedule) => {
+          const day = daySchedule[0]; // "Thứ 2", "Thứ 3", etc.
+          const daySlots = daySchedule[1]; // Object chứa các time slots và trạng thái của chúng
+
+          // Lấy index của ngày trong mảng days
+          const dayIndex = days.indexOf(day);
+          // Lấy date object từ weekDates
+          const dateObject = weekDates[dayIndex];
+          // Format ngày thành YYYY-MM-DD
+          const formattedDate = dayjs(dateObject).format("YYYY-MM-DD");
+
+          // Lọc ra các slot được chọn (có giá trị true)
+          const selectedTimeSlots = Object.entries(daySlots)
+            .filter(([_, isSelected]) => isSelected)
+            .map(([timeSlot]) => {
+              const [startTime, endTime] = timeSlot.split(" - ");
+              return {
+                time_start: `${startTime}:00`,
+                time_end: `${endTime}:00`,
+              };
+            });
+
+          // Trả về object với định dạng theo API
+          return {
+            date: formattedDate,
+            timeSlots: selectedTimeSlots,
+          };
+        }
+      );
+
+      console.log("Dữ liệu gửi đi:", formattedSchedules);
+
+      // Gọi API để đăng ký lịch
+      const result = await doctorService.fetchRegisterDoctorSchedule(
+        formattedSchedules
+      );
+      console.log("Kết quả từ API:", result);
+
+      alert("Đăng ký lịch làm việc thành công!");
+
+      // Reset form sau khi thành công
+      const allFalse = days.reduce((acc, day) => {
+        acc[day] = timeSlots.reduce((slots, time) => {
+          slots[time] = false;
+          return slots;
+        }, {});
+        return acc;
+      }, {});
+      setSchedule(allFalse);
     } catch (error) {
-      alert("Lỗi: " + error.message);
+      console.error("Error:", error);
+
+      // Xử lý các loại lỗi khác nhau
+      if (error.response) {
+        // Lỗi từ server (4xx, 5xx)
+        const errorMessage =
+          error.response.data?.message ||
+          error.response.data?.error ||
+          `Lỗi ${error.response.status}: ${error.response.statusText}`;
+        alert("Lỗi: " + errorMessage);
+      } else if (error.request) {
+        // Lỗi network
+        alert(
+          "Lỗi kết nối: Không thể kết nối đến server. Vui lòng kiểm tra kết nối mạng."
+        );
+      } else {
+        // Lỗi khác
+        alert("Lỗi: " + error.message);
+      }
     } finally {
       setIsLoading(false);
     }
