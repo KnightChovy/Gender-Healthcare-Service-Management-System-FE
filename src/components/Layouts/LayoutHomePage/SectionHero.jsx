@@ -5,6 +5,7 @@ import { Link } from "react-router-dom";
 
 export const SectionHero = () => {
   // const user = useSelector((state) => state.auth.user);
+  const accessToken = localStorage.getItem("accessToken");
   return (
     <section className="relative">
       <img
@@ -47,7 +48,7 @@ export const SectionHero = () => {
 
               <div className="flex flex-wrap gap-3">
                 <Link
-                  to="/booking"
+                  to={accessToken ? "/booking" : "/login"}
                   className="flex items-center bg-white rounded-lg py-2 px-5 hover:shadow-md transition-shadow"
                 >
                   <div className="bg-blue-100 p-2 rounded-full mr-3">
@@ -72,7 +73,7 @@ export const SectionHero = () => {
                 </Link>
 
                 <Link
-                  to="/packages"
+                  to={accessToken ? "/packages" : "/login"}
                   className="flex items-center bg-white rounded-lg py-2 px-5 hover:shadow-md transition-shadow max-w-[235px]"
                 >
                   <div className="bg-green-100 p-2 rounded-full mr-3">
@@ -97,7 +98,7 @@ export const SectionHero = () => {
                 </Link>
 
                 <Link
-                  to="/appointment"
+                  to={accessToken ? "/appointment" : "/login"}
                   className="flex items-center bg-white rounded-lg py-2 px-5 hover:shadow-md transition-shadow"
                 >
                   <div className="bg-red-100 p-2 rounded-full mr-3">
