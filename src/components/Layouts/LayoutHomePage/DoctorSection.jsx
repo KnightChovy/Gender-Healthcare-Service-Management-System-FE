@@ -73,8 +73,8 @@ export const DoctorSection = () => {
                   </h3>
                   <p className="text-blue-600 mb-3">{doctor.bio}</p>
                   <p className="text-gray-600 text-sm">
-                    Hơn {doctor.experience_year} năm kinh nghiệm trong lĩnh vực
-                    nam khoa và sức khỏe sinh sản nam giới.
+                    Bác sĩ có hơn {doctor.experience_year} năm kinh nghiệm trong
+                    chăm sóc sức khỏe giới tính.
                   </p>
                 </div>
               </div>
