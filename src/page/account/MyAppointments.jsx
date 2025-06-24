@@ -5,7 +5,7 @@ import {
   faCalendarAlt, faClock, faUserMd, faPhone, faEnvelope, faStethoscope,
   faNotesMedical, faMoneyBillWave, faEye, faEdit, faTrash, faFilter, faSearch,
   faSpinner, faExclamationTriangle, faCheckCircle, faTimesCircle, faHourglassHalf,
-  faCalendarCheck, faRefresh, faCreditCard
+  faCalendarCheck, faRefresh, faCreditCard, faVideo // Thêm icon video
 } from '@fortawesome/free-solid-svg-icons';
 import axiosClient from '../../services/axiosClient';
 import classNames from 'classnames/bind';
@@ -135,6 +135,18 @@ function MyAppointments() {
   const viewAppointmentDetails = (appointment) => {
     setSelectedAppointment(appointment);
     setShowModal(true);
+  };
+
+  // Thêm handler cho Google Meet
+  const handleJoinMeeting = (appointment) => {
+    // Google Meet URL cố định
+    const meetUrl = 'https://meet.google.com/ymf-dwbi-uhy';
+    
+    // Mở trong tab mới
+    window.open(meetUrl, '_blank', 'noopener,noreferrer');
+    
+    // Optional: Log meeting join
+    console.log(`User joined meeting for appointment ${appointment.id}`);
   };
 
   // Utility functions
@@ -403,10 +415,13 @@ function MyAppointments() {
                       </button>
                     )}
 
-                    {/* Review button - chỉ cho confirmed với booking = 1 */}
+                    {/* Join Meeting button - thay thế Review button cho confirmed với booking = 1 */}
                     {appointment.status === 'confirmed' && appointment.booking === 1 && (
-                      <button className={cx('action-btn', 'review-btn')}>
-                        <FontAwesomeIcon icon={faCheckCircle} /> Đánh giá
+                      <button 
+                        className={cx('action-btn', 'meeting-btn')}
+                        onClick={() => handleJoinMeeting(appointment)}
+                      >
+                        <FontAwesomeIcon icon={faVideo} /> Tham gia tư vấn
                       </button>
                     )}
 

@@ -105,8 +105,9 @@ function NotificationBell() {
         });
         break;
 
-      case 'confirmed': // Confirmed - Need payment
-      if (appointment.booking === 1) {
+      case 'confirmed': // Confirmed
+        // Nếu đã thanh toán (booking = 1) - Chỉ hiển thị thông báo hoàn thành
+        if (appointment.booking === 1) {
           notifications.push({
             id: `success_${appointment.appointment_id}`,
             type: "appointment_success",
@@ -116,35 +117,40 @@ function NotificationBell() {
             isRead: false,
             appointmentId: appointment.appointment_id,
             appointmentData: appointment,
-            amount: appointment.price_apm
+            amount: appointment.price_apm,
+            isPaid: true // Đánh dấu đã thanh toán
           });
-        }
-
-        // Add payment notification if there's a fee
-        if (appointment.price_apm && appointment.price_apm > 0) {
+        } 
+        // Nếu chưa thanh toán (booking = 0) - Hiển thị thông báo cần thanh toán
+        else if (appointment.booking === 0) {
+          // Thông báo xác nhận
           notifications.push({
-            id: `payment_${appointment.appointment_id}`,
-            type: "payment_required",
-            title: "Yêu cầu thanh toán",
-            message: `Vui lòng thanh toán phí tư vấn để hoàn tất lịch hẹn ${appointment.consultant_type}.`,
+            id: `confirmed_${appointment.appointment_id}`,
+            type: "appointment_confirmed",
+            title: "Lịch hẹn đã được xác nhận",
+            message: `Lịch hẹn ${appointment.consultant_type} đã được xác nhận. Bác sĩ: ${appointment.doctor_name || 'Chưa phân công'}.`,
             timestamp: appointmentDate.toISOString(),
             isRead: false,
-            amount: appointment.price_apm,
             appointmentId: appointment.appointment_id,
             appointmentData: appointment
           });
-        }
 
-        notifications.push({
-          id: `confirmed_${appointment.appointment_id}`,
-          type: "appointment_confirmed",
-          title: "Lịch hẹn đã được xác nhận",
-          message: `Lịch hẹn ${appointment.consultant_type} đã được xác nhận. Bác sĩ: ${appointment.doctor_name || 'Chưa phân công'}.`,
-          timestamp: appointmentDate.toISOString(),
-          isRead: false,
-          appointmentId: appointment.appointment_id,
-          appointmentData: appointment
-        });
+          // Thông báo cần thanh toán (chỉ khi có phí và chưa thanh toán)
+          if (appointment.price_apm && appointment.price_apm > 0) {
+            notifications.push({
+              id: `payment_${appointment.appointment_id}`,
+              type: "payment_required",
+              title: "Yêu cầu thanh toán",
+              message: `Vui lòng thanh toán phí tư vấn để hoàn tất lịch hẹn ${appointment.consultant_type}.`,
+              timestamp: appointmentDate.toISOString(),
+              isRead: false,
+              amount: appointment.price_apm,
+              appointmentId: appointment.appointment_id,
+              appointmentData: appointment,
+              isPaid: false // Đánh dấu chưa thanh toán
+            });
+          }
+        }
         break;
 
       case 'rejected': // Cancelled/Rejected
@@ -342,6 +348,7 @@ function NotificationBell() {
     localStorage.setItem('notificationReadStatus', JSON.stringify(readStatus));
   };
 
+  // Cập nhật handleNotificationClick function
   const handleNotificationClick = (notification) => {
     if (!notification.isRead) {
       markAsRead(notification.id);
@@ -350,12 +357,22 @@ function NotificationBell() {
     // Handle different notification types
     switch (notification.type) {
       case "payment_required":
-        // Navigate to payment page with appointment data
-        navigate(`/paymentappointment/${notification.appointmentId}`, {
-          state: { appointmentData: notification.appointmentData }
-        });
+        // Kiểm tra xem đã thanh toán chưa trước khi cho phép navigate
+        if (notification.isPaid) {
+          // Đã thanh toán - chỉ navigate đến appointments list
+          console.log('⚠️ Payment already completed for this appointment');
+          navigate("/my-appointments");
+        } else {
+          // Chưa thanh toán - cho phép navigate đến payment page
+          navigate(`/paymentappointment/${notification.appointmentId}`, {
+            state: { appointmentData: notification.appointmentData }
+          });
+        }
         break;
       case "appointment_success":
+        // Đã hoàn thành - chỉ navigate đến appointments list
+        navigate("/my-appointments");
+        break;
       case "appointment_confirmed":
       case "appointment_pending":
       case "appointment_cancelled":
@@ -427,6 +444,7 @@ function NotificationBell() {
                       unread: !notification.isRead,
                       [getColor(notification.type)]: true,
                       clickable: true,
+                      paid: notification.isPaid, // Thêm class cho đã thanh toán
                     })}
                     onClick={() => handleNotificationClick(notification)}
                   >
@@ -443,22 +461,28 @@ function NotificationBell() {
                     <div className={cx("content")}>
                       <h4>{notification.title}</h4>
                       <p>{notification.message}</p>
-                      {notification.amount &&
-                        notification.type === "payment_required" && (
-                          <div className={cx("amount")}>
-                            <strong>{formatCurrency(notification.amount)}</strong>
-                            <span>💳 Nhấn để thanh toán</span>
-                          </div>
-                        )}
-                      {notification.amount &&
-                        notification.type === "appointment_success" && (
-                          <div className={cx("amount", "success-amount")}>
-                            <strong>
-                              ✅ Đã thanh toán:{" "}
-                              {formatCurrency(notification.amount)}
-                            </strong>
-                          </div>
-                        )}
+                      
+                      {/* Hiển thị khác nhau cho payment_required dựa trên trạng thái thanh toán */}
+                      {notification.amount && notification.type === "payment_required" && (
+                        <div className={cx("amount", { "paid-amount": notification.isPaid })}>
+                          <strong>{formatCurrency(notification.amount)}</strong>
+                          {notification.isPaid ? (
+                            <span className={cx("paid-status")}>✅ Đã thanh toán</span>
+                          ) : (
+                            <span className={cx("payment-action")}>💳 Nhấn để thanh toán</span>
+                          )}
+                        </div>
+                      )}
+                      
+                      {/* Hiển thị cho appointment_success */}
+                      {notification.amount && notification.type === "appointment_success" && (
+                        <div className={cx("amount", "success-amount")}>
+                          <strong>
+                            ✅ Đã thanh toán: {formatCurrency(notification.amount)}
+                          </strong>
+                        </div>
+                      )}
+                      
                       <span className={cx("time")}>
                         {formatTime(notification.timestamp)}
                       </span>

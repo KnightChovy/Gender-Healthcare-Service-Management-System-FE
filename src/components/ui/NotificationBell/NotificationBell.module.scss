@@ -126,72 +126,120 @@
     background: linear-gradient(135deg, #fff8e1, #fffbf0);
     border-left: 3px solid #ff9800;
   }
-}
 
-.dot {
-  color: #2c9b95;
-  font-size: 0.5rem;
-  margin-top: 0.25rem;
-  flex-shrink: 0;
-}
+  // Styling khác cho notification đã thanh toán
+  &.paid {
+    opacity: 0.8;
+    cursor: default;
 
-.icon {
-  flex-shrink: 0;
-  width: 32px;
-  height: 32px;
-  border-radius: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 0.875rem;
-  
-  .item.success & {
-    background: #d4edda;
-    color: #155724;
+    &:hover {
+      transform: none;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    }
+
+    .content {
+      .amount {
+        &.paid-amount {
+          background: linear-gradient(135deg, #f0fdf4 0%, #dcfce7 100%);
+          border-left-color: #22c55e;
+
+          .paid-status {
+            color: #166534;
+            font-weight: 600;
+            font-size: 0.8rem;
+          }
+        }
+      }
+    }
   }
-  
-  .item.warning & {
-    background: #fff3cd;
-    color: #856404;
-  }
-}
 
-.content {
-  flex: 1;
-  
-  h4 {
-    margin: 0 0 0.25rem 0;
+  .dot {
+    color: #2c9b95;
+    font-size: 0.5rem;
+    margin-top: 0.25rem;
+    flex-shrink: 0;
+  }
+
+  .icon {
+    flex-shrink: 0;
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
     font-size: 0.875rem;
-    font-weight: 600;
-    color: #333;
-  }
-  
-  p {
-    margin: 0 0 0.5rem 0;
-    font-size: 0.8rem;
-    color: #666;
-    line-height: 1.4;
-  }
-}
-
-.amount {
-  margin: 0.25rem 0;
-  
-  strong {
-    color: #e74c3c;
-    font-size: 0.875rem;
-    display: block;
-  }
-  
-  span {
-    font-size: 0.7rem;
-    color: #ff9800;
-    font-weight: 500;
-    opacity: 0;
-    transition: opacity 0.3s;
     
-    .item:hover & {
-      opacity: 1;
+    .item.success & {
+      background: #d4edda;
+      color: #155724;
+    }
+    
+    .item.warning & {
+      background: #fff3cd;
+      color: #856404;
+    }
+  }
+
+  .content {
+    flex: 1;
+    
+    h4 {
+      margin: 0 0 0.25rem 0;
+      font-size: 0.875rem;
+      font-weight: 600;
+      color: #333;
+    }
+    
+    p {
+      margin: 0 0 0.5rem 0;
+      font-size: 0.8rem;
+      color: #666;
+      line-height: 1.4;
+    }
+
+    .amount {
+      margin: 0.25rem 0;
+      
+      strong {
+        color: #e74c3c;
+        font-size: 0.875rem;
+        display: block;
+      }
+      
+      span {
+        font-size: 0.7rem;
+        color: #ff9800;
+        font-weight: 500;
+        opacity: 0;
+        transition: opacity 0.3s;
+        
+        .item:hover & {
+          opacity: 1;
+        }
+      }
+
+      .payment-action {
+        color: #d97706;
+        font-weight: 500;
+        font-size: 0.8rem;
+      }
+
+      .paid-status {
+        color: #166534;
+        font-weight: 600;
+        font-size: 0.8rem;
+      }
+
+      // Styling cho amount đã thanh toán
+      &.paid-amount {
+        background: linear-gradient(135deg, #f0fdf4 0%, #dcfce7 100%);
+        border-left: 3px solid #22c55e;
+        
+        strong {
+          color: #166534;
+        }
+      }
     }
   }
 }

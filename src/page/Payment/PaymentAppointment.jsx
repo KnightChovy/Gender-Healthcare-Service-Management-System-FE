@@ -134,7 +134,7 @@ function PaymentAppointment() {
             const paymentData = {
                 user_id: parseInt(user.user_id),
                 price: Math.floor(parseFloat(appointmentData.price_apm)), // Chuyển thành số nguyên
-                appointment_id: parseInt(appointmentData.id || appointmentData.appointment_id),
+                appointment_id: appointmentData.appointment_id,
             };
 
             console.log('💰 Payment data with formatted price:', paymentData);
