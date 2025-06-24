@@ -126,17 +126,8 @@ const Schedule = () => {
     setIsLoading(true);
 
     try {
-      // Chuyển đổi Object schedule thành các ngày có ca làm việc được chọn
       const scheduleDaysWithSelectedSlots = Object.entries(schedule).filter(
-        (daySchedule) => {
-          // Kiểm tra xem ngày này có ít nhất 1 khung giờ được chọn không
-          return Object.values(daySchedule[1]).some((isSelected) => isSelected);
-        }
-      );
-
-      console.log(
-        "Ngày có ca làm việc được chọn:",
-        scheduleDaysWithSelectedSlots
+        ([_, slots]) => Object.values(slots).some((isSelected) => isSelected)
       );
 
       if (scheduleDaysWithSelectedSlots.length === 0) {
@@ -145,49 +136,37 @@ const Schedule = () => {
         return;
       }
 
-      // Định dạng dữ liệu theo yêu cầu của API
-      const formattedSchedules = scheduleDaysWithSelectedSlots.map(
-        (daySchedule) => {
-          const day = daySchedule[0]; // "Thứ 2", "Thứ 3", etc.
-          const daySlots = daySchedule[1]; // Object chứa các time slots và trạng thái của chúng
+      const [firstDay, timeSlotsObj] = scheduleDaysWithSelectedSlots[0];
+      const dayIndex = days.indexOf(firstDay);
+      const dateObject = weekDates[dayIndex];
+      const formattedDate = dayjs(dateObject).format("YYYY-MM-DD");
 
-          // Lấy index của ngày trong mảng days
-          const dayIndex = days.indexOf(day);
-          // Lấy date object từ weekDates
-          const dateObject = weekDates[dayIndex];
-          // Format ngày thành YYYY-MM-DD
-          const formattedDate = dayjs(dateObject).format("YYYY-MM-DD");
-
-          // Lọc ra các slot được chọn (có giá trị true)
-          const selectedTimeSlots = Object.entries(daySlots)
-            .filter(([_, isSelected]) => isSelected)
-            .map(([timeSlot]) => {
-              const [startTime, endTime] = timeSlot.split(" - ");
-              return {
-                time_start: `${startTime}:00`,
-                time_end: `${endTime}:00`,
-              };
-            });
-
-          // Trả về object với định dạng theo API
+      const selectedTimeSlots = Object.entries(timeSlotsObj)
+        .filter(([_, isSelected]) => isSelected)
+        .map(([timeSlot]) => {
+          const [startTime, endTime] = timeSlot.split(" - ");
           return {
-            date: formattedDate,
-            timeSlots: selectedTimeSlots,
+            time_start: `${startTime}:00`,
+            time_end: `${endTime}:00`,
           };
-        }
-      );
+        });
 
-      console.log("Dữ liệu gửi đi:", formattedSchedules);
+      const formattedSchedule = {
+        date: formattedDate,
+        timeSlots: selectedTimeSlots,
+      };
 
-      // Gọi API để đăng ký lịch
+      console.log("Dữ liệu gửi đi:", formattedSchedule);
+
+      // Gọi API
       const result = await doctorService.fetchRegisterDoctorSchedule(
-        formattedSchedules
+        formattedSchedule
       );
       console.log("Kết quả từ API:", result);
 
       alert("Đăng ký lịch làm việc thành công!");
 
-      // Reset form sau khi thành công
+      // Reset lịch
       const allFalse = days.reduce((acc, day) => {
         acc[day] = timeSlots.reduce((slots, time) => {
           slots[time] = false;
@@ -198,29 +177,22 @@ const Schedule = () => {
       setSchedule(allFalse);
     } catch (error) {
       console.error("Error:", error);
-
-      // Xử lý các loại lỗi khác nhau
       if (error.response) {
-        // Lỗi từ server (4xx, 5xx)
         const errorMessage =
           error.response.data?.message ||
           error.response.data?.error ||
           `Lỗi ${error.response.status}: ${error.response.statusText}`;
         alert("Lỗi: " + errorMessage);
       } else if (error.request) {
-        // Lỗi network
-        alert(
-          "Lỗi kết nối: Không thể kết nối đến server. Vui lòng kiểm tra kết nối mạng."
-        );
+        alert("Lỗi kết nối: Không thể kết nối đến server.");
       } else {
-        // Lỗi khác
         alert("Lỗi: " + error.message);
       }
     } finally {
       setIsLoading(false);
     }
   };
-
+  
   return (
     <div className="max-w-4xl mx-auto bg-white rounded-lg shadow-md p-6">
       <h1 className="text-2xl font-semibold text-gray-800 mb-6">

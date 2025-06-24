@@ -521,8 +521,8 @@ const Profile = () => {
                     <div>
                       <span className="text-sm text-gray-500">Ngày sinh: </span>
                       <p>
-                        {doctor?.user.dob
-                          ? new Date(doctor.user.dob).toLocaleDateString(
+                        {doctor?.user.birthday
+                          ? new Date(doctor.user.birthday).toLocaleDateString(
                               "vi-VN"
                             )
                           : "Chưa cập nhật"}
