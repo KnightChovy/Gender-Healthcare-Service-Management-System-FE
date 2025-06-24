@@ -33,7 +33,25 @@ import AddEmployees from "./page/admin/EmployeesManagerment/AddEmployees";
 import ProfilePage from "./page/profile";
 import { ChangePassword } from "./page/changePassword/ChangePassword";
 import MyAppointments from "./page/account/MyAppointments";
+import GeminiChatbot from "./components/ui/GeminiChatbot";
+import { useEffect, useState } from "react";
 function App() {
+  const [isAuthen, setIsAuthen] = useState(false);
+  useEffect(() => {
+    const checkAuthStatus = () => {
+      const token = localStorage.getItem("accessToken");
+      setIsAuthen(!!token);
+    };
+    checkAuthStatus();
+
+    window.addEventListener("storage", checkAuthStatus);
+
+    const authCheckInterval = setInterval(checkAuthStatus, 5000);
+    return () => {
+      window.removeEventListener("storage", checkAuthStatus);
+      clearInterval(authCheckInterval);
+    };
+  }, []);
   return (
     <>
       <ToastContainer />
@@ -45,7 +63,7 @@ function App() {
               <HomePage />
             </LayoutAccount>
           }
-        ></Route>{" "}
+        ></Route>
         <Route
           path="/services"
           element={
@@ -182,7 +200,7 @@ function App() {
       </Routes>
 
       {/* <MeetWidget /> */}
-
+      {isAuthen && <GeminiChatbot />}
       <ScrollToTop />
     </>
   );

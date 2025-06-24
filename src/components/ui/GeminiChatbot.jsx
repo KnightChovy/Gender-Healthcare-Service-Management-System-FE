@@ -1,5 +1,6 @@
 import React, { useState, useRef, useEffect } from "react";
 import { geminiService } from "../../gemini/index";
+import { Link } from "react-router-dom";
 
 const GeminiChatbot = () => {
   const [messages, setMessages] = useState([]);
@@ -11,6 +12,10 @@ const GeminiChatbot = () => {
   const [currentTypingIndex, setCurrentTypingIndex] = useState(-1);
   const [displayText, setDisplayText] = useState("");
   const [responseLength, setResponseLength] = useState("short");
+  const [showFeedbackRequest, setShowFeedbackRequest] = useState(false);
+  const [lastResponseIndex, setLastResponseIndex] = useState(-1);
+  const [showRegisterPrompt, setShowRegisterPrompt] = useState(false);
+
   const messagesEndRef = useRef(null);
   const chatContainerRef = useRef(null);
   const textToTypeRef = useRef("");
@@ -19,7 +24,7 @@ const GeminiChatbot = () => {
 
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
-  }, [messages, displayText]);
+  }, [messages, displayText, showFeedbackRequest, showRegisterPrompt]);
 
   useEffect(() => {
     const handleClickOutside = (event) => {
@@ -45,28 +50,40 @@ const GeminiChatbot = () => {
 
         charIndexRef.current = 0;
         setDisplayText("");
+        if (currentTypingIndex >= 0 && currentTypingIndex < messages.length) {
+          typeIntervalRef.current = setInterval(() => {
+            if (charIndexRef.current < textToTypeRef.current.length) {
+              setDisplayText(
+                (text) => text + textToTypeRef.current[charIndexRef.current]
+              );
+              charIndexRef.current++;
+            } else {
+              clearInterval(typeIntervalRef.current);
+              setIsTyping(false);
 
-        typeIntervalRef.current = setInterval(() => {
-          if (charIndexRef.current < textToTypeRef.current.length) {
-            setDisplayText(
-              (text) => text + textToTypeRef.current[charIndexRef.current]
-            );
-            charIndexRef.current++;
-          } else {
-            clearInterval(typeIntervalRef.current);
-            setIsTyping(false);
+              setMessages((prevMessages) => {
+                const updatedMessages = [...prevMessages];
+                if (
+                  updatedMessages[currentTypingIndex] &&
+                  !updatedMessages[currentTypingIndex].isUser
+                ) {
+                  updatedMessages[currentTypingIndex] = {
+                    ...updatedMessages[currentTypingIndex],
+                    text: textToTypeRef.current,
+                    isTyping: false,
+                  };
+                }
+                return updatedMessages;
+              });
 
-            setMessages((prevMessages) => {
-              const updatedMessages = [...prevMessages];
-              updatedMessages[currentTypingIndex] = {
-                ...updatedMessages[currentTypingIndex],
-                text: textToTypeRef.current,
-                isTyping: false,
-              };
-              return updatedMessages;
-            });
-          }
-        }, 15);
+              setLastResponseIndex(currentTypingIndex);
+              setShowFeedbackRequest(true);
+            }
+          }, 15);
+        } else {
+          console.log("CurrentTypingIndex khong hop le: ", currentTypingIndex);
+          setIsTyping(false);
+        }
       };
 
       startTypingEffect();
@@ -75,24 +92,35 @@ const GeminiChatbot = () => {
         if (typeIntervalRef.current) clearInterval(typeIntervalRef.current);
       };
     }
-  }, [isTyping, currentTypingIndex]);
+  }, [isTyping, currentTypingIndex, messages.length]);
 
   const handleSend = async () => {
-    if (!input.trim()) return;
+    if (!input.trim() || loading || isTyping) return;
 
-    const userMessage = input;
-    setMessages((prev) => [...prev, { text: userMessage, isUser: true }]);
+    const userMessage = input.trim();
     setInput("");
+    setShowFeedbackRequest(false);
+    setShowRegisterPrompt(false);
     setLoading(true);
+    const timestamp = new Date();
+    const userMessageObj = {
+      id: Date.now(),
+      text: userMessage,
+      isUser: true,
+      timestamp,
+    };
+    setMessages((prevMessages) => [...prevMessages, userMessageObj]);
 
     try {
-      const botMessageIndex = messages.length;
-      setMessages((prev) => [
-        ...prev,
+      const botMessageId = Date.now() + 1;
+      setMessages((prevMessages) => [
+        ...prevMessages,
         {
+          id: botMessageId,
           text: "",
           isUser: false,
           isTyping: true,
+          timestamp: new Date(),
         },
       ]);
 
@@ -104,21 +132,59 @@ const GeminiChatbot = () => {
 
       setChatHistory(result.history);
 
-      textToTypeRef.current = result.message;
-      setCurrentTypingIndex(botMessageIndex);
-      setIsTyping(true);
+      setMessages((prevMessages) => {
+        const botIndex = prevMessages.findIndex(
+          (msg) => msg.id === botMessageId
+        );
+        if (botIndex !== -1) {
+          setCurrentTypingIndex(botIndex);
+          textToTypeRef.current = result.message;
+          setTimeout(() => {
+            setIsTyping(true);
+          }, 100);
+          return prevMessages;
+        }
+        return prevMessages;
+      });
     } catch (error) {
       console.error("Error in chat:", error);
-      setMessages((prev) => [
-        ...prev.slice(0, -1),
+
+      setMessages((prevMessages) => [
+        ...prevMessages,
         {
+          id: Date.now() + 2,
           text: "Xin lỗi, đã xảy ra lỗi. Vui lòng thử lại sau.",
           isUser: false,
           isError: true,
+          timestamp: new Date(),
         },
       ]);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleFeedback = (isSatisfied) => {
+    setShowFeedbackRequest(false);
+
+    if (isSatisfied) {
+      console.log("Messages trước khi thêm phản hồi:", messages);
+
+      setMessages((prev) => {
+        const newMessages = [
+          ...prev,
+          {
+            text: "Cảm ơn bạn đã đánh giá! Bạn có thể tiếp tục đặt câu hỏi.",
+            isUser: false,
+            isFeedback: true,
+            timestamp: new Date(),
+          },
+        ];
+        console.log("Messages sau khi thêm phản hồi:", newMessages);
+        return newMessages;
+      });
+    } else {
+      setShowRegisterPrompt(true);
     }
   };
 
@@ -134,10 +200,10 @@ const GeminiChatbot = () => {
   };
 
   return (
-    <div className="fixed bottom-25 right-6 z-50">
+    <div className="fixed bottom-25 right-7 z-50">
       <button
         onClick={toggleChat}
-        className="chatbot-toggle bg-gradient-to-r from-blue-500 to-blue-900 hover:from-blue-500 hover:to-blue-800 text-white rounded-full w-16 h-16 flex items-center justify-center shadow-lg transition-all duration-300 transform hover:scale-105"
+        className="chatbot-toggle bg-gradient-to-r from-blue-500 to-blue-900 hover:from-blue-600 hover:to-blue-900 text-white rounded-full w-16 h-16 flex items-center justify-center shadow-lg transition-all duration-300 transform hover:scale-105"
         aria-label="Open chat"
       >
         {isOpen ? (
@@ -176,13 +242,13 @@ const GeminiChatbot = () => {
       {isOpen && (
         <div
           ref={chatContainerRef}
-          className="absolute bottom-1 right-18 w-[90vw] sm:w-[350px] md:w-[400px] h-[550px] rounded-2xl shadow-2xl transition-all duration-500 ease-in-out flex flex-col bg-white overflow-hidden border border-gray-200"
+          className="absolute bottom-10 right-15 w-[90vw] sm:w-[350px] md:w-[400px] h-[550px] rounded-2xl shadow-2xl transition-all duration-500 ease-in-out flex flex-col bg-white overflow-hidden border border-gray-200"
           style={{
             boxShadow:
               "0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04)",
           }}
         >
-          <div className="bg-gradient-to-r from-blue-500 to-blue-900 text-white p-4 flex items-center justify-between">
+          <div className="bg-gradient-to-r from-blue-500 to-purple-600 text-white p-4 flex items-center justify-between">
             <div className="flex items-center">
               <div className="w-10 h-10 rounded-full bg-white flex items-center justify-center mr-3">
                 <svg
@@ -227,7 +293,6 @@ const GeminiChatbot = () => {
             </button>
           </div>
 
-          {/* Messages Container */}
           <div className="flex-1 p-4 overflow-y-auto bg-gray-50">
             {messages.length === 0 ? (
               <div className="flex flex-col items-center justify-center h-full text-center text-gray-500 px-6">
@@ -263,91 +328,206 @@ const GeminiChatbot = () => {
                 </button>
               </div>
             ) : (
-              <div className="space-y-4">
+              <div className="space-y-6">
                 {messages.map((message, index) => (
-                  <div
-                    key={index}
-                    className={`flex ${
-                      message.isUser ? "justify-end" : "justify-start"
-                    }`}
-                  >
-                    {!message.isUser && (
-                      <div className="w-8 h-8 rounded-full bg-blue-600 flex-shrink-0 mr-2 flex items-center justify-center text-white">
-                        <svg
-                          xmlns="http://www.w3.org/2000/svg"
-                          className="h-5 w-5"
-                          fill="none"
-                          viewBox="0 0 24 24"
-                          stroke="currentColor"
-                        >
-                          <path
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                            strokeWidth={2}
-                            d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
-                          />
-                        </svg>
-                      </div>
-                    )}
+                  <div key={index} className="w-full">
+                    <div
+                      className={`mb-1 ${
+                        message.isUser ? "text-right" : "text-left"
+                      }`}
+                    >
+                      <span
+                        className={`text-xs font-medium ${
+                          message.isUser ? "text-blue-900" : "text-blue-600"
+                        }`}
+                      >
+                        {message.isUser ? "Bạn" : "AI Tư Vấn"}
+                      </span>
+                    </div>
 
                     <div
-                      className={`rounded-2xl px-4 py-3 max-w-[75%] shadow-sm ${
-                        message.isUser
-                          ? "bg-gradient-to-r from-blue-500 to-blue-900 text-white rounded-br-none"
-                          : message.isError
-                          ? "bg-red-100 text-red-800 rounded-bl-none"
-                          : "bg-white text-gray-800 rounded-bl-none border border-gray-100"
-                      } ${message.isTyping ? "animate-pulse" : ""}`}
+                      className={`flex ${
+                        message.isUser === true
+                          ? "justify-end"
+                          : "justify-start"
+                      }`}
                     >
-                      {index === currentTypingIndex && isTyping ? (
-                        <div
-                          dangerouslySetInnerHTML={{
-                            __html: formatMessage(displayText),
-                          }}
-                        />
-                      ) : (
-                        <div
-                          dangerouslySetInnerHTML={{
-                            __html: formatMessage(message.text),
-                          }}
-                        />
+                      {!message.isUser && (
+                        <div className="w-8 h-8 rounded-full bg-gradient-to-br from-blue-500 to-indigo-600 flex-shrink-0 mr-2 flex items-center justify-center text-white shadow-sm">
+                          <svg
+                            xmlns="http://www.w3.org/2000/svg"
+                            className="h-5 w-5"
+                            fill="none"
+                            viewBox="0 0 24 24"
+                            stroke="currentColor"
+                          >
+                            <path
+                              strokeLinecap="round"
+                              strokeLinejoin="round"
+                              strokeWidth={2}
+                              d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
+                            />
+                          </svg>
+                        </div>
                       )}
 
-                      {message.isTyping && index !== currentTypingIndex && (
-                        <div className="flex space-x-2">
-                          <div className="w-2 h-2 rounded-full bg-gray-400 animate-bounce"></div>
+                      <div
+                        className={`rounded-2xl px-4 py-3 max-w-[75%] ${
+                          message.isUser
+                            ? "bg-gradient-to-r from-blue-500 to-blue-700 text-white rounded-tr-none shadow-md"
+                            : message.isError
+                            ? "bg-red-100 text-red-800 rounded-tl-none shadow-sm"
+                            : message.isFeedback
+                            ? "bg-green-100 text-green-800 rounded-tl-none shadow-sm"
+                            : "bg-white text-gray-800 rounded-tl-none shadow-sm border border-gray-100"
+                        } ${message.isTyping ? "animate-pulse" : ""}`}
+                      >
+                        {index === currentTypingIndex && isTyping ? (
                           <div
-                            className="w-2 h-2 rounded-full bg-gray-400 animate-bounce"
-                            style={{ animationDelay: "0.2s" }}
-                          ></div>
+                            dangerouslySetInnerHTML={{
+                              __html: formatMessage(displayText),
+                            }}
+                          />
+                        ) : (
                           <div
-                            className="w-2 h-2 rounded-full bg-gray-400 animate-bounce"
-                            style={{ animationDelay: "0.4s" }}
-                          ></div>
+                            dangerouslySetInnerHTML={{
+                              __html: formatMessage(message.text),
+                            }}
+                          />
+                        )}
+
+                        {message.isTyping && index !== currentTypingIndex && (
+                          <div className="flex space-x-2">
+                            <div className="w-2 h-2 rounded-full bg-gray-400 animate-bounce"></div>
+                            <div
+                              className="w-2 h-2 rounded-full bg-gray-400 animate-bounce"
+                              style={{ animationDelay: "0.2s" }}
+                            ></div>
+                            <div
+                              className="w-2 h-2 rounded-full bg-gray-400 animate-bounce"
+                              style={{ animationDelay: "0.4s" }}
+                            ></div>
+                          </div>
+                        )}
+                      </div>
+
+                      {message.isUser && (
+                        <div className="w-8 h-8 rounded-full bg-gradient-to-br from-blue-500 to-blue-800 flex-shrink-0 ml-2 flex items-center justify-center text-white shadow-sm">
+                          <svg
+                            xmlns="http://www.w3.org/2000/svg"
+                            className="h-5 w-5"
+                            fill="none"
+                            viewBox="0 0 24 24"
+                            stroke="currentColor"
+                          >
+                            <path
+                              strokeLinecap="round"
+                              strokeLinejoin="round"
+                              strokeWidth={2}
+                              d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"
+                            />
+                          </svg>
                         </div>
                       )}
                     </div>
 
-                    {message.isUser && (
-                      <div className="w-8 h-8 rounded-full bg-blue-600 flex-shrink-0 ml-2 flex items-center justify-center text-white">
-                        <svg
-                          xmlns="http://www.w3.org/2000/svg"
-                          className="h-5 w-5"
-                          fill="none"
-                          viewBox="0 0 24 24"
-                          stroke="currentColor"
-                        >
-                          <path
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                            strokeWidth={2}
-                            d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"
-                          />
-                        </svg>
-                      </div>
-                    )}
+                    <div
+                      className={`mt-1 ${
+                        message.isUser ? "text-right" : "text-left"
+                      }`}
+                    >
+                      <span className="text-xs text-gray-400">
+                        {message.timestamp
+                          ? message.timestamp.toLocaleTimeString([], {
+                              hour: "2-digit",
+                              minute: "2-digit",
+                            })
+                          : new Date().toLocaleTimeString([], {
+                              hour: "2-digit",
+                              minute: "2-digit",
+                            })}
+                      </span>
+                    </div>
                   </div>
                 ))}
+
+                {showFeedbackRequest && !isTyping && lastResponseIndex >= 0 && (
+                  <div className="flex justify-center mt-4">
+                    <div className="bg-white rounded-xl p-4 shadow-md border border-gray-100 text-center">
+                      <p className="text-gray-700 mb-3">
+                        Bạn có hài lòng với câu trả lời này không?
+                      </p>
+                      <div className="flex justify-center space-x-3">
+                        <button
+                          onClick={() => handleFeedback(true)}
+                          className="px-4 py-2 bg-green-500 text-white rounded-full text-sm hover:bg-green-600 transition flex items-center"
+                        >
+                          <svg
+                            xmlns="http://www.w3.org/2000/svg"
+                            className="h-4 w-4 mr-1"
+                            fill="none"
+                            viewBox="0 0 24 24"
+                            stroke="currentColor"
+                          >
+                            <path
+                              strokeLinecap="round"
+                              strokeLinejoin="round"
+                              strokeWidth={2}
+                              d="M5 13l4 4L19 7"
+                            />
+                          </svg>
+                          Hài lòng
+                        </button>
+                        <button
+                          onClick={() => handleFeedback(false)}
+                          className="px-4 py-2 bg-gray-500 text-white rounded-full text-sm hover:bg-gray-600 transition flex items-center"
+                        >
+                          <svg
+                            xmlns="http://www.w3.org/2000/svg"
+                            className="h-4 w-4 mr-1"
+                            fill="none"
+                            viewBox="0 0 24 24"
+                            stroke="currentColor"
+                          >
+                            <path
+                              strokeLinecap="round"
+                              strokeLinejoin="round"
+                              strokeWidth={2}
+                              d="M6 18L18 6M6 6l12 12"
+                            />
+                          </svg>
+                          Không hài lòng
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                )}
+
+                {showRegisterPrompt && (
+                  <div className="flex justify-center mt-4">
+                    <div className="bg-purple-50 rounded-xl p-4 shadow-md border border-purple-100 text-center">
+                      <p className="text-gray-700 mb-2">
+                        Rất tiếc vì chúng tôi chưa đáp ứng được nhu cầu của bạn.
+                      </p>
+                      <p className="text-gray-600 mb-3 text-sm">
+                        Bạn có thể đăng ký tư vấn trực tiếp với các chuyên gia
+                        của chúng tôi.
+                      </p>
+                      <Link
+                        to="/appointment"
+                        className="px-5 py-2 bg-gradient-to-r from-pink-500 to-purple-600 text-white rounded-full text-sm hover:from-pink-600 hover:to-purple-700 transition inline-block"
+                      >
+                        Đăng ký tư vấn trực tiếp
+                      </Link>
+                      <button
+                        onClick={() => setShowRegisterPrompt(false)}
+                        className="block mx-auto mt-2 text-xs text-gray-500 hover:text-gray-700"
+                      >
+                        Tiếp tục trò chuyện với AI
+                      </button>
+                    </div>
+                  </div>
+                )}
               </div>
             )}
             <div ref={messagesEndRef} />
