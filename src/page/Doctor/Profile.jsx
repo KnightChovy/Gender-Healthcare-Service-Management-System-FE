@@ -1,41 +1,58 @@
 import React, { useEffect, useState } from "react";
 import doctorService from "../../services/doctor.service";
 import Avatar from "@mui/material/Avatar";
+import axiosClient from "../../services/axiosClient";
 // Mock doctor data
-const mockDoctorData = {
-  id: "DR0123",
-  name: "Nguyễn Thị Minh",
-  email: "nguyen.minh@healthcare.com",
-  phone: "0901234567",
-  dob: "1985-08-15",
-  gender: "Nữ",
-  specialty: "Khoa Phụ sản",
-  experience: "12 năm",
-  education: "Đại học Y Hà Nội",
-  certifications: [
-    "Chứng chỉ hành nghề bác sĩ chuyên khoa sản",
-    "Chứng nhận tư vấn dinh dưỡng thai kỳ",
-    "Chứng nhận siêu âm 4D",
-  ],
-  avatar: "https://via.placeholder.com/150",
-  bio: "Bác sĩ Nguyễn Thị Minh có hơn 12 năm kinh nghiệm trong lĩnh vực sản khoa và chăm sóc sức khỏe phụ nữ. Chuyên môn sâu về theo dõi thai kỳ, siêu âm 4D và tư vấn dinh dưỡng cho mẹ và bé.",
-  address: "123 Đường Trường Chinh, Quận Đống Đa, Hà Nội",
-};
+// const mockDoctorData = {
+//   id: "DR0123",
+//   name: "Nguyễn Thị Minh",
+//   email: "nguyen.minh@healthcare.com",
+//   phone: "0901234567",
+//   dob: "1985-08-15",
+//   gender: "Nữ",
+//   specialty: "Khoa Phụ sản",
+//   experience: "12 năm",
+//   education: "Đại học Y Hà Nội",
+//   certifications: [
+//     "Chứng chỉ hành nghề bác sĩ chuyên khoa sản",
+//     "Chứng nhận tư vấn dinh dưỡng thai kỳ",
+//     "Chứng nhận siêu âm 4D",
+//   ],
+//   avatar: "https://via.placeholder.com/150",
+//   bio: "Bác sĩ Nguyễn Thị Minh có hơn 12 năm kinh nghiệm trong lĩnh vực sản khoa và chăm sóc sức khỏe phụ nữ. Chuyên môn sâu về theo dõi thai kỳ, siêu âm 4D và tư vấn dinh dưỡng cho mẹ và bé.",
+//   address: "123 Đường Trường Chinh, Quận Đống Đa, Hà Nội",
+// };
 
 const Profile = () => {
-  const [doctor, setDoctor] = useState(mockDoctorData);
+  const [doctor, setDoctor] = useState();
+  const [loading, setLoading] = useState(true);
   const [isEditing, setIsEditing] = useState(false);
-  const [editedDoctor, setEditedDoctor] = useState({ ...mockDoctorData });
+  const [editedDoctor, setEditedDoctor] = useState({});
   const [activeTab, setActiveTab] = useState("info");
   const [newCert, setNewCert] = useState("");
+  const [apiError, setApiError] = useState(null);
 
   // Handle form input changes
   const handleInputChange = (e) => {
     const { name, value } = e.target;
-    setEditedDoctor((prev) => ({
-      ...prev,
-      [name]: value,
-    }));
+
+    // Xử lý cho các trường lồng nhau (nested fields)
+    if (name.includes(".")) {
+      const [parent, child] = name.split(".");
+      setEditedDoctor((prev) => ({
+        ...prev,
+        [parent]: {
+          ...prev[parent],
+          [child]: value,
+        },
+      }));
+    } else {
+      // Xử lý cho các trường thông thường
+      setEditedDoctor((prev) => ({
+        ...prev,
+        [name]: value,
+      }));
+    }
   };
 
   // Add certification
@@ -43,7 +60,7 @@ const Profile = () => {
     if (newCert.trim()) {
       setEditedDoctor((prev) => ({
         ...prev,
-        certifications: [...prev.certifications, newCert.trim()],
+        certificates: [...(prev.certificates || []), newCert.trim()],
       }));
       setNewCert("");
     }
@@ -51,29 +68,115 @@ const Profile = () => {
 
   // Remove certification
   const handleRemoveCertification = (index) => {
-    setEditedDoctor((prev) => ({
-      ...prev,
-      certifications: prev.certifications.filter((_, i) => i !== index),
-    }));
+    setEditedDoctor((prev) => {
+      const updatedCerts = [...(prev.certificates || [])];
+      updatedCerts.splice(index, 1);
+      return {
+        ...prev,
+        certificates: updatedCerts,
+      };
+    });
   };
 
   // Handle form submission
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    setDoctor({ ...editedDoctor });
-    setIsEditing(false);
-    alert("Thông tin đã được cập nhật thành công!");
+
+    try {
+      setLoading(true);
+
+      // Format dữ liệu để gửi lên API
+      const doctorData = {
+        first_name: editedDoctor.first_name,
+        last_name: editedDoctor.last_name,
+        bio: editedDoctor.bio,
+        specialty: editedDoctor.specialty,
+        experience_year: parseInt(editedDoctor.experience_year),
+        education: editedDoctor.education,
+        certificates: editedDoctor.certificates || [],
+        user: {
+          email: editedDoctor.user?.email,
+          phone: editedDoctor.user?.phone,
+          birthday: editedDoctor.user?.birthday,
+          gender: editedDoctor.user?.gender,
+          address: editedDoctor.user?.address,
+        },
+      };
+
+      console.log("Sending data to API:", doctorData);
+      console.log("birthday.doctorData:", doctorData.user.birthday);
+      // Gọi API cập nhật thông tin
+      const response = await axiosClient.put(
+        "/v1/doctors/profile",
+        doctorData,
+        {
+          headers: {
+            "x-access-token": localStorage.getItem("accessToken"),
+          },
+        }
+      );
+
+      if (!response.data.success) {
+        throw new Error(response.data.message || "Failed to update profile");
+      }
+
+      // Cập nhật state doctor với dữ liệu mới
+      setDoctor(response.data.data || doctorData);
+      setIsEditing(false);
+      alert("Thông tin đã được cập nhật thành công!");
+    } catch (error) {
+      console.error("Error updating doctor profile:", error);
+      alert(
+        "Lỗi khi cập nhật thông tin: " + (error.message || "Đã xảy ra lỗi")
+      );
+    } finally {
+      setLoading(false);
+    }
   };
 
   useEffect(() => {
     const fetchProfileDoctor = async () => {
       try {
-        const doctorProfile = await doctorService.fetchProfileDoctor();
+        setLoading(true);
+        setApiError(null);
+        const response = await axiosClient.get(`/v1/doctors/profile`, {
+          headers: {
+            "x-access-token": localStorage.getItem("accessToken"),
+          },
+        });
+        console.log("Doctor profile response:", response);
+        const data = response.data;
+        if (!data.success) {
+          throw new Error(data.message || "Failed to fetch doctor profile");
+        }
 
-        console.log("Profile:", doctorProfile.userProfile);
-        setDoctor(doctorProfile.userProfile);
+        setDoctor(data.data);
+
+        // Khởi tạo editedDoctor với cấu trúc phù hợp để chỉnh sửa
+        setEditedDoctor({
+          first_name: data.data.first_name || "",
+          last_name: data.data.last_name || "",
+          bio: data.data.bio || "",
+          specialty: data.data.specialty || "",
+          experience_year: data.data.experience_year || "",
+          education: data.data.education || "",
+          certificates: data.data.certificates || [],
+          user: {
+            email: data.data.user?.email || "",
+            phone: data.data.user?.phone || "",
+            birthday: data.data.user?.birthday || "",
+            gender: data.data.user?.gender || "male",
+            address: data.data.user?.address || "",
+          },
+        });
+
+        setLoading(false);
       } catch (error) {
         console.error("Error fetching doctor profile:", error);
+        setApiError(error.message || "Failed to fetch doctor profile");
+        setLoading(false);
+      } finally {
+        setLoading(false);
       }
     };
     fetchProfileDoctor();
@@ -102,10 +205,10 @@ const Profile = () => {
           </div>
           <div className="md:ml-6 flex-1">
             <h1 className="text-2xl font-semibold">
-              BS. {doctor.last_name} {doctor.first_name}
+              BS. {doctor?.first_name} {doctor?.last_name}
             </h1>
-            <p>{doctor.specialty}</p>
-            <p className="text-sm text-blue-100">ID: {doctor.id}</p>
+            <p>{doctor?.bio}</p>
+            <p className="text-sm text-blue-100">ID: {doctor?.doctor_id}</p>
           </div>
           <div className="space-x-2">
             <button
@@ -163,74 +266,94 @@ const Profile = () => {
             {isEditing ? (
               <form onSubmit={handleSubmit}>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  {/* Họ */}
                   <div>
                     <label className="block text-sm font-medium text-gray-700">
-                      Họ và tên
+                      Họ
                     </label>
                     <input
                       type="text"
-                      name="name"
-                      value={editedDoctor.name}
+                      name="first_name"
+                      value={editedDoctor.first_name || ""}
                       onChange={handleInputChange}
                       className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
                     />
                   </div>
 
+                  {/* Tên */}
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700">
+                      Tên
+                    </label>
+                    <input
+                      type="text"
+                      name="last_name"
+                      value={editedDoctor.last_name || ""}
+                      onChange={handleInputChange}
+                      className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+                    />
+                  </div>
+
+                  {/* Email */}
                   <div>
                     <label className="block text-sm font-medium text-gray-700">
                       Email
                     </label>
                     <input
                       type="email"
-                      name="email"
-                      value={editedDoctor.email}
+                      name="user.email"
+                      value={editedDoctor.user?.email || ""}
                       onChange={handleInputChange}
                       className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
                     />
                   </div>
 
+                  {/* Số điện thoại */}
                   <div>
                     <label className="block text-sm font-medium text-gray-700">
                       Số điện thoại
                     </label>
                     <input
                       type="tel"
-                      name="phone"
-                      value={editedDoctor.phone}
+                      name="user.phone"
+                      value={editedDoctor.user?.phone || ""}
                       onChange={handleInputChange}
                       className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
                     />
                   </div>
 
+                  {/* Ngày sinh */}
                   <div>
                     <label className="block text-sm font-medium text-gray-700">
                       Ngày sinh
                     </label>
                     <input
                       type="date"
-                      name="dob"
-                      value={editedDoctor.dob}
+                      name="user.birthday"
+                      value={editedDoctor.user?.birthday}
                       onChange={handleInputChange}
                       className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
                     />
                   </div>
 
+                  {/* Giới tính */}
                   <div>
                     <label className="block text-sm font-medium text-gray-700">
                       Giới tính
                     </label>
                     <select
-                      name="gender"
-                      value={editedDoctor.gender}
+                      name="user.gender"
+                      value={editedDoctor.user?.gender || "male"}
                       onChange={handleInputChange}
                       className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
                     >
-                      <option value="Nam">Nam</option>
-                      <option value="Nữ">Nữ</option>
-                      <option value="Khác">Khác</option>
+                      <option value="male">Nam</option>
+                      <option value="female">Nữ</option>
+                      <option value="other">Khác</option>
                     </select>
                   </div>
 
+                  {/* Chuyên khoa */}
                   <div>
                     <label className="block text-sm font-medium text-gray-700">
                       Chuyên khoa
@@ -238,25 +361,27 @@ const Profile = () => {
                     <input
                       type="text"
                       name="specialty"
-                      value={editedDoctor.specialty}
+                      value={editedDoctor.specialty || ""}
                       onChange={handleInputChange}
                       className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
                     />
                   </div>
 
+                  {/* Kinh nghiệm */}
                   <div>
                     <label className="block text-sm font-medium text-gray-700">
-                      Kinh nghiệm
+                      Số năm kinh nghiệm
                     </label>
                     <input
-                      type="text"
-                      name="experience"
-                      value={editedDoctor.experience}
+                      type="number"
+                      name="experience_year"
+                      value={editedDoctor.experience_year || ""}
                       onChange={handleInputChange}
                       className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
                     />
                   </div>
 
+                  {/* Học vấn */}
                   <div>
                     <label className="block text-sm font-medium text-gray-700">
                       Học vấn
@@ -264,25 +389,27 @@ const Profile = () => {
                     <input
                       type="text"
                       name="education"
-                      value={editedDoctor.education}
+                      value={editedDoctor.education || ""}
                       onChange={handleInputChange}
                       className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
                     />
                   </div>
 
+                  {/* Địa chỉ */}
                   <div className="md:col-span-2">
                     <label className="block text-sm font-medium text-gray-700">
                       Địa chỉ
                     </label>
                     <input
                       type="text"
-                      name="address"
-                      value={editedDoctor.address}
+                      name="user.address"
+                      value={editedDoctor.user?.address || ""}
                       onChange={handleInputChange}
                       className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
                     />
                   </div>
 
+                  {/* Giới thiệu */}
                   <div className="md:col-span-2">
                     <label className="block text-sm font-medium text-gray-700">
                       Giới thiệu
@@ -290,18 +417,19 @@ const Profile = () => {
                     <textarea
                       name="bio"
                       rows="3"
-                      value={editedDoctor.bio}
+                      value={editedDoctor.bio || ""}
                       onChange={handleInputChange}
                       className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
                     ></textarea>
                   </div>
 
+                  {/* Chứng chỉ */}
                   <div className="md:col-span-2">
                     <label className="block text-sm font-medium text-gray-700 mb-2">
                       Chứng chỉ
                     </label>
                     <div className="space-y-2">
-                      {editedDoctor.certifications.map((cert, index) => (
+                      {(editedDoctor.certificates || []).map((cert, index) => (
                         <div
                           key={index}
                           className="flex items-center justify-between bg-gray-50 p-2 rounded-md"
@@ -309,7 +437,16 @@ const Profile = () => {
                           <span className="text-sm">{cert}</span>
                           <button
                             type="button"
-                            onClick={() => handleRemoveCertification(index)}
+                            onClick={() => {
+                              const updatedCerts = [
+                                ...editedDoctor.certificates,
+                              ];
+                              updatedCerts.splice(index, 1);
+                              setEditedDoctor({
+                                ...editedDoctor,
+                                certificates: updatedCerts,
+                              });
+                            }}
                             className="text-red-500"
                           >
                             <i className="fas fa-trash"></i>
@@ -327,7 +464,18 @@ const Profile = () => {
                       />
                       <button
                         type="button"
-                        onClick={handleAddCertification}
+                        onClick={() => {
+                          if (newCert.trim()) {
+                            setEditedDoctor({
+                              ...editedDoctor,
+                              certificates: [
+                                ...(editedDoctor.certificates || []),
+                                newCert.trim(),
+                              ],
+                            });
+                            setNewCert("");
+                          }
+                        }}
                         className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-r-md text-white bg-blue-600 hover:bg-blue-700"
                       >
                         <i className="fas fa-plus"></i>
@@ -339,10 +487,7 @@ const Profile = () => {
                 <div className="mt-6 flex justify-end space-x-3">
                   <button
                     type="button"
-                    onClick={() => {
-                      setEditedDoctor({ ...doctor });
-                      setIsEditing(false);
-                    }}
+                    onClick={() => setIsEditing(false)}
                     className="px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50"
                   >
                     Hủy
@@ -365,27 +510,37 @@ const Profile = () => {
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div>
                       <span className="text-sm text-gray-500">Email:</span>
-                      <p>{doctor.email}</p>
+                      <p>{doctor?.user.email}</p>
                     </div>
                     <div>
                       <span className="text-sm text-gray-500">
                         Số điện thoại:
                       </span>
-                      <p>{doctor.phone}</p>
+                      <p>{doctor?.user.phone}</p>
                     </div>
                     <div>
                       <span className="text-sm text-gray-500">Ngày sinh: </span>
                       <p>
-                        {new Date(doctor.birthday).toLocaleDateString("vi-VN")}
+                        {doctor?.user.dob
+                          ? new Date(doctor.user.dob).toLocaleDateString(
+                              "vi-VN"
+                            )
+                          : "Chưa cập nhật"}
                       </p>
                     </div>
                     <div>
                       <span className="text-sm text-gray-500">Giới tính: </span>
-                      {doctor.gender == "male" ? "Nam" : "Nữ"}
+                      <p>
+                        {doctor?.user.gender === "male"
+                          ? "Nam"
+                          : doctor?.user.gender === "female"
+                          ? "Nữ"
+                          : "Khác"}
+                      </p>
                     </div>
                     <div className="md:col-span-2">
                       <span className="text-sm text-gray-500">Địa chỉ: </span>
-                      <p>{doctor.address}</p>
+                      <p>{doctor?.user.address || "Chưa cập nhật"}</p>
                     </div>
                   </div>
                 </div>
@@ -400,22 +555,40 @@ const Profile = () => {
                       <span className="text-sm text-gray-500">
                         Chuyên khoa:
                       </span>
-                      <p>{doctor.specialty}</p>
+                      <p>{doctor?.specialty || "Chưa cập nhật"}</p>
                     </div>
                     <div>
                       <span className="text-sm text-gray-500">
                         Kinh nghiệm:
                       </span>
-                      <p>{doctor.experience}</p>
+                      <p>
+                        {doctor?.experience_year
+                          ? `${doctor.experience_year} năm`
+                          : "Chưa cập nhật"}
+                      </p>
                     </div>
                     <div className="md:col-span-2">
                       <span className="text-sm text-gray-500">Học vấn:</span>
-                      <p>{doctor.education}</p>
+                      <p>{doctor?.education || "Chưa cập nhật"}</p>
                     </div>
                     <div className="md:col-span-2">
                       <span className="text-sm text-gray-500">Giới thiệu:</span>
-                      <p className="mt-1">{doctor.bio}</p>
+                      <p className="mt-1">{doctor?.bio || "Chưa cập nhật"}</p>
                     </div>
+                    {doctor?.certificates && doctor.certificates.length > 0 && (
+                      <div className="md:col-span-2">
+                        <span className="text-sm text-gray-500">
+                          Chứng chỉ:
+                        </span>
+                        <ul className="mt-1 list-disc list-inside">
+                          {doctor.certificates.map((cert, index) => (
+                            <li key={index} className="text-gray-700">
+                              {cert}
+                            </li>
+                          ))}
+                        </ul>
+                      </div>
+                    )}
                   </div>
                 </div>
               </div>

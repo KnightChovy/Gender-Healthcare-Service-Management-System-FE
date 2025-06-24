@@ -7,10 +7,9 @@ const fetchProfileDoctor = async () => {
     const result = await axiosClient.get(`/v1/doctors/profile`, {
       headers: {
         "x-access-token": accessToken,
-        "Content-Type": "application/json",
       },
     });
-    return result.data;
+    return result.data.data;
   } catch (error) {
     console.error("Error fetching doctor's profile:", error);
     throw error;
