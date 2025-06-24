@@ -9,6 +9,8 @@ import LayoutAdmin from "./components/Layouts/LayoutAdmin/LayoutAdmin";
 import Blog from "./page/blog/Blog";
 import Appointment from "./page/Appointment";
 import PaymentAppointment from "./page/Payment/PaymentAppointment";
+import PaymentSuccess from "./page/Payment/PaymentSuccess";
+import PaymentCancel from "./page/Payment/PaymentCancel";
 import { AdminRoute } from "./routes/AdminRouter";
 import TestServicePage from "./page/testservice";
 import ServicePage from "./page/Services/ServicePage";
@@ -152,6 +154,22 @@ function App() {
             </LayoutAccount>
           }
         />
+        <Route
+          path="/success"
+          element={
+            <LayoutAccount>
+              <PaymentSuccess />
+            </LayoutAccount>
+          }
+        ></Route>
+        <Route
+          path="/cancel"
+          element={
+            <LayoutAccount>
+              <PaymentCancel />
+            </LayoutAccount>
+          }
+        ></Route>
         {/* Admin */}
         <Route
           path="/admin"
