@@ -47,7 +47,7 @@ const DoctorDashboard = () => {
   };
 
   return (
-    <div className="p-6 max-w-7xl mx-auto">
+    <div className="p-6 max-w-[85rem] mx-auto">
       <h1 className="text-2xl text-blue-600 font-medium mb-8">
         Xin chào, Bác sĩ Nguyễn Thị Minh
       </h1>
@@ -106,7 +106,7 @@ const DoctorDashboard = () => {
         </div>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+      <div className="grid grid-cols-1  gap-6">
         <div className="lg:col-span-2">
           <div className="bg-white rounded-lg shadow-md p-6">
             <h2 className="text-xl text-gray-700 font-medium mb-4 pb-2 border-b border-gray-200">

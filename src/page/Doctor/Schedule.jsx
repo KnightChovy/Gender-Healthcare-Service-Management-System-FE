@@ -14,17 +14,15 @@ const Schedule = () => {
     "Chủ nhật",
   ];
   const timeSlots = ["07:30 - 11:30", "13:00 - 17:00"];
-
+  const initSchedule = days.reduce((acc, day) => {
+    acc[day] = timeSlots.reduce((slots, timeSlot) => {
+      slots[timeSlot] = false;
+      return slots;
+    }, {});
+    return acc;
+  }, {});
   // State cho lịch làm việc
-  const [schedule, setSchedule] = useState(
-    days.reduce((acc, day) => {
-      acc[day] = timeSlots.reduce((slots, timeSlot) => {
-        slots[timeSlot] = false;
-        return slots;
-      }, {});
-      return acc;
-    }, {})
-  );
+  const [schedule, setSchedule] = useState(initSchedule);
 
   const [selectedDate, setSelectedDate] = useState(new Date());
   const [isLoading, setIsLoading] = useState(false);
@@ -104,7 +102,6 @@ const Schedule = () => {
     const mondayOfPrevWeek = new Date(prevWeek);
     const day = mondayOfPrevWeek.getDay();
     const diff = mondayOfPrevWeek.getDate() - day + (day === 0 ? -6 : 1);
-    mondayOfPrevWeek.setDate(diff);
     mondayOfPrevWeek.setHours(0, 0, 0, 0);
 
     if (mondayOfPrevWeek < today) {
@@ -113,6 +110,7 @@ const Schedule = () => {
     }
 
     setSelectedDate(prevWeek);
+    setSchedule(initSchedule);
   };
 
   // Định dạng ngày hiển thị
@@ -192,7 +190,7 @@ const Schedule = () => {
       setIsLoading(false);
     }
   };
-  
+
   return (
     <div className="max-w-4xl mx-auto bg-white rounded-lg shadow-md p-6">
       <h1 className="text-2xl font-semibold text-gray-800 mb-6">
@@ -218,6 +216,7 @@ const Schedule = () => {
             const nextWeek = new Date(selectedDate);
             nextWeek.setDate(nextWeek.getDate() + 7);
             setSelectedDate(nextWeek);
+            setSchedule(initSchedule);
           }}
           className="flex items-center justify-center px-4 py-2 border border-gray-300 rounded-md text-sm font-medium text-gray-700 bg-white hover:bg-gray-50"
         >
