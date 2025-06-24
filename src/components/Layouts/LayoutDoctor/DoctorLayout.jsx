@@ -93,15 +93,7 @@ const Sidebar = () => {
 
         <div className="border-t border-blue-700 my-4"></div>
 
-        <button 
-          onClick={handleLogout}
-          className="flex items-center space-x-2 py-2.5 px-4 rounded transition duration-200 hover:bg-blue-700 w-full text-left"
-        >
-          <span className="text-xl">
-            <i className="fas fa-sign-out-alt"></i>
-          </span>
-          <span>Đăng xuất</span>
-        </button>
+        
       </nav>
     </div>
   );
