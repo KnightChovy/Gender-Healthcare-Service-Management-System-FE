@@ -151,7 +151,7 @@ export default function AccountMenu() {
                 <MenuItem
                   onClick={() => {
                     handleClose();
-                    navigate("/doctor");
+                    navigate("/doctor/dashboard");
                   }}
                 >
                   <Avatar /> Bảng điều khiển Bác sĩ
