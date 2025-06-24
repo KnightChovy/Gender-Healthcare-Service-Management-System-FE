@@ -126,12 +126,11 @@ function PaymentAppointment() {
         try {
             const paymentData = {
                 user_id: user.user_id,
-                price: appointmentData.price_apm,
-                appointment_id: appointmentData.appointment_id || appointmentData.id
+                price: 2000,
             };
 
             const response = await axiosClient.post('/v2/payment/create-checkout-session', paymentData, {
-                headers: { 'x-access-token': accessToken }
+                headers: { 'Content-Type': 'application/json'},
             });
 
             if (response.data?.success) {
