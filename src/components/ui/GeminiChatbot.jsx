@@ -196,6 +196,8 @@ const GeminiChatbot = () => {
     return text
       .replace(/\*\*(.*?)\*\*/g, "<strong>$1</strong>")
       .replace(/\*(.*?)\*/g, "<em>$1</em>")
+      .replace(/__(.*?)__/g, "<u>$1</u>")
+      .replace(/~~(.*?)~~/g, "<del>$1</del>")
       .replace(/\n/g, "<br />");
   };
 
@@ -242,7 +244,7 @@ const GeminiChatbot = () => {
       {isOpen && (
         <div
           ref={chatContainerRef}
-          className="absolute bottom-10 right-15 w-[90vw] sm:w-[350px] md:w-[400px] h-[550px] rounded-2xl shadow-2xl transition-all duration-500 ease-in-out flex flex-col bg-white overflow-hidden border border-gray-200"
+          className="absolute bottom-3 right-17 w-[90vw] sm:w-[350px] md:w-[400px] h-[550px] rounded-2xl shadow-2xl transition-all duration-500 ease-in-out flex flex-col bg-white overflow-hidden border border-gray-200"
           style={{
             boxShadow:
               "0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04)",
