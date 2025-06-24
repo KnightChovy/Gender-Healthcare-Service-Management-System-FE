@@ -39,7 +39,14 @@ function PaymentAppointment() {
 
     // Utility functions
     const formatCurrency = (amount) => {
-        return new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(amount);
+        // Chuyển đổi thành số nguyên để loại bỏ phần thập phân
+        const numericAmount = parseInt(amount) || parseFloat(amount) || 0;
+        return new Intl.NumberFormat('vi-VN', { 
+            style: 'currency', 
+            currency: 'VND',
+            minimumFractionDigits: 0,
+            maximumFractionDigits: 0
+        }).format(numericAmount);
     };
 
     const formatDate = (dateString) => {
@@ -125,99 +132,48 @@ function PaymentAppointment() {
 
         try {
             const paymentData = {
-                user_id: user.user_id,
-                price: appointmentData.price_apm,
-                appointment_id: appointmentData.appointment_id || appointmentData.id
+                user_id: parseInt(user.user_id),
+                price: Math.floor(parseFloat(appointmentData.price_apm)), // Chuyển thành số nguyên
+                appointment_id: parseInt(appointmentData.id || appointmentData.appointment_id),
             };
 
+            console.log('💰 Payment data with formatted price:', paymentData);
+
+            // Save payment session với price đã format
+            localStorage.setItem('currentPaymentSession', JSON.stringify({
+                sessionId: `session_${Date.now()}`,
+                appointmentId: appointmentData.id || appointmentData.appointment_id,
+                amount: Math.floor(parseFloat(appointmentData.price_apm)), // Format ở đây cũng
+                paymentMethod: paymentMethod,
+                createdAt: new Date().toISOString(),
+                status: 'pending',
+                appointmentData: {
+                    ...appointmentData,
+                    price_apm: Math.floor(parseFloat(appointmentData.price_apm)) // Format trong appointmentData
+                }
+            }));
+
             const response = await axiosClient.post('/v2/payment/create-checkout-session', paymentData, {
-                headers: { 'x-access-token': accessToken }
+                headers: { 
+                    'Content-Type': 'application/json',
+                    'x-access-token': accessToken
+                }
             });
 
-            if (response.data?.success) {
-                const paymentResult = response.data.data;
-                
-                if (paymentResult.checkout_url || paymentResult.payment_url) {
-                    // Save payment session
-                    localStorage.setItem('currentPaymentSession', JSON.stringify({
-                        sessionId: paymentResult.session_id || paymentResult.checkout_session_id,
-                        appointmentId: appointmentData.id || appointmentData.appointment_id,
-                        amount: appointmentData.price_apm,
-                        paymentMethod,
-                        createdAt: new Date().toISOString(),
-                        status: 'pending'
-                    }));
-                    
-                    // Redirect to payment gateway
-                    window.location.href = paymentResult.checkout_url || paymentResult.payment_url;
-                } else {
-                    throw new Error('Không nhận được URL thanh toán');
-                }
-            } else {
-                throw new Error(response.data?.message || 'Không thể tạo phiên thanh toán');
+            if (!response.data) {
+                throw new Error('Không nhận được phản hồi từ máy chủ');
             }
+
+            // Redirect to payment gateway
+            window.location.href = response.data.url;
+
         } catch (error) {
             console.error('❌ Payment error:', error);
-            setPaymentStatus('failed');
             setError(error.response?.data?.message || error.message || 'Có lỗi xảy ra khi xử lý thanh toán');
         } finally {
             setIsProcessing(false);
         }
     };
-
-    // Handle payment success
-    const handlePaymentSuccess = (paymentResult) => {
-        // Save payment record
-        const paymentRecord = {
-            appointmentId: appointmentData.id || appointmentData.appointment_id,
-            amount: appointmentData.price_apm,
-            status: 'completed',
-            paidAt: new Date().toISOString(),
-            paymentId: paymentResult.payment_id || paymentResult.transaction_id,
-            paymentMethod,
-            sessionId: paymentResult.session_id
-        };
-
-        const existingPayments = JSON.parse(localStorage.getItem('paymentSuccess') || '[]');
-        existingPayments.push(paymentRecord);
-        localStorage.setItem('paymentSuccess', JSON.stringify(existingPayments));
-
-        localStorage.removeItem('currentPaymentSession');
-        setPaymentStatus('success');
-
-        // Redirect after success
-        setTimeout(() => {
-            navigate('/my-appointments', {
-                state: { message: 'Thanh toán thành công! Cuộc hẹn đã được xác nhận.', type: 'success' }
-            });
-        }, 3000);
-    };
-
-    // Check payment callback
-    useEffect(() => {
-        const urlParams = new URLSearchParams(window.location.search);
-        const paymentStatus = urlParams.get('payment_status') || urlParams.get('status');
-        const sessionId = urlParams.get('session_id') || urlParams.get('checkout_session_id');
-        
-        if (paymentStatus && sessionId) {
-            const savedSession = JSON.parse(localStorage.getItem('currentPaymentSession') || '{}');
-            
-            if (savedSession.sessionId === sessionId) {
-                if (paymentStatus === 'success' || paymentStatus === 'completed') {
-                    handlePaymentSuccess({
-                        payment_id: urlParams.get('payment_id') || urlParams.get('transaction_id'),
-                        session_id: sessionId,
-                        status: paymentStatus
-                    });
-                } else {
-                    setPaymentStatus('failed');
-                    setError('Thanh toán đã bị hủy hoặc thất bại. Vui lòng thử lại.');
-                }
-            }
-            
-            window.history.replaceState({}, document.title, window.location.pathname);
-        }
-    }, []);
 
     // Render loading state
     if (isLoading) {
