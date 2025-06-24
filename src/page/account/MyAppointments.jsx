@@ -130,6 +130,8 @@ function MyAppointments() {
     });
   };
 
+  const handleRebook = () => navigate('/appointment');
+
   const viewAppointmentDetails = (appointment) => {
     setSelectedAppointment(appointment);
     setShowModal(true);
@@ -142,8 +144,11 @@ function MyAppointments() {
     });
   };
 
+  // Cập nhật formatCurrency để xử lý price_apm
   const formatCurrency = (amount) => {
-    return amount?.toLocaleString('vi-VN') + 'đ' || '0đ';
+    // Parse và làm tròn số để loại bỏ .00
+    const numericAmount = Math.floor(parseFloat(amount) || 0);
+    return numericAmount.toLocaleString('vi-VN') + 'đ';
   };
 
   // Pagination
@@ -188,12 +193,14 @@ function MyAppointments() {
     );
   }
 
+  console.log('Appointments fetched:', appointments);
+
   // Statistics
   const stats = [
     { label: 'Tổng cuộc hẹn', value: appointments.length },
     { label: 'Chờ xác nhận', value: appointments.filter(apt => apt.status === 'pending').length },
-    { label: 'Đã xác nhận', value: appointments.filter(apt => apt.status === 'confirmed').length },
-    { label: 'Hoàn thành', value: appointments.filter(apt => apt.status === 'success').length },
+    { label: 'Đã xác nhận', value: appointments.filter(apt => apt.status === 'confirmed' && apt.booking === 0).length },
+    { label: 'Hoàn thành', value: appointments.filter(apt => apt.status === 'confirmed' && apt.booking === 1).length },
     { label: 'Đã hủy', value: appointments.filter(apt => apt.status === 'rejected').length }
   ];
 
@@ -280,8 +287,12 @@ function MyAppointments() {
           <div className={cx('appointments-grid')}>
             {currentAppointments.map((appointment) => {
               const statusInfo = getStatusInfo(appointment.status);
-              const needsPayment = ['confirmed', '1'].includes(appointment.status) && 
-                                 appointment.price_apm && appointment.price_apm > 0;
+              
+              // Logic mới: Cần thanh toán khi confirmed và booking = 0
+              const needsPayment = appointment.status === 'confirmed' && 
+                                  appointment.booking === 0 && 
+                                  appointment.price_apm && 
+                                  appointment.price_apm > 0;
 
               return (
                 <div key={appointment.id} className={cx('appointment-card')}>
@@ -292,7 +303,10 @@ function MyAppointments() {
                       color: statusInfo.textColor
                     }}>
                       <FontAwesomeIcon icon={statusInfo.icon} />
-                      {statusInfo.label}
+                      {/* Logic hiển thị label dựa trên booking */}
+                      {appointment.status === 'confirmed' && appointment.booking === 0 && 'Chờ thanh toán'}
+                      {appointment.status === 'confirmed' && appointment.booking === 1 && 'Hoàn thành'}
+                      {appointment.status !== 'confirmed' && statusInfo.label}
                     </div>
                     
                     {needsPayment && (
@@ -303,7 +317,7 @@ function MyAppointments() {
                     )}
                   </div>
 
-                  {/* Content */}
+                  {/* Content - Price formatting */}
                   <div className={cx('card-content')}>
                     <div className={cx('info-section')}>
                       <h3 className={cx('patient-name')}>
@@ -355,7 +369,7 @@ function MyAppointments() {
                     )}
                   </div>
 
-                  {/* Actions */}
+                  {/* Actions - Update logic */}
                   <div className={cx('card-actions')}>
                     <button
                       className={cx('action-btn', 'view-btn')}
@@ -364,8 +378,8 @@ function MyAppointments() {
                       <FontAwesomeIcon icon={faEye} /> Xem chi tiết
                     </button>
 
-                    {/* Payment button - không hiển thị cho rejected */}
-                    {needsPayment && appointment.status !== 'rejected' && (
+                    {/* Payment button - chỉ hiển thị khi confirmed và booking = 0 */}
+                    {needsPayment && (
                       <button
                         className={cx('action-btn', 'payment-btn')}
                         onClick={() => handlePayment(appointment)}
@@ -375,21 +389,22 @@ function MyAppointments() {
                     )}
 
                     {/* Edit button - chỉ cho pending */}
-                    {['pending', '0'].includes(appointment.status) && (
+                    {appointment.status === 'pending' && (
                       <button className={cx('action-btn', 'edit-btn')}>
                         <FontAwesomeIcon icon={faEdit} /> Chỉnh sửa
                       </button>
                     )}
 
-                    {/* Cancel button - không cho rejected và success */}
-                    {['pending', 'confirmed', '0', '1'].includes(appointment.status) && (
+                    {/* Cancel button - cho pending và confirmed với booking = 0 */}
+                    {(appointment.status === 'pending' || 
+                      (appointment.status === 'confirmed' && appointment.booking === 0)) && (
                       <button className={cx('action-btn', 'cancel-btn')}>
                         <FontAwesomeIcon icon={faTrash} /> Hủy hẹn
                       </button>
                     )}
 
-                    {/* Review button - chỉ cho success */}
-                    {['success', '2'].includes(appointment.status) && (
+                    {/* Review button - chỉ cho confirmed với booking = 1 */}
+                    {appointment.status === 'confirmed' && appointment.booking === 1 && (
                       <button className={cx('action-btn', 'review-btn')}>
                         <FontAwesomeIcon icon={faCheckCircle} /> Đánh giá
                       </button>

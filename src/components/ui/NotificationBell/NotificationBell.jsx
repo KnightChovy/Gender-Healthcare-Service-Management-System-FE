@@ -90,7 +90,7 @@ function NotificationBell() {
   const createNotificationFromAppointment = (appointment) => {
     const notifications = [];
     const appointmentDate = new Date(appointment.created_at);
-    
+
     switch (appointment.status) {
       case 'pending': // Pending
         notifications.push({
@@ -106,16 +106,19 @@ function NotificationBell() {
         break;
 
       case 'confirmed': // Confirmed - Need payment
-        notifications.push({
-          id: `confirmed_${appointment.appointment_id}`,
-          type: "appointment_confirmed",
-          title: "Lịch hẹn đã được xác nhận",
-          message: `Lịch hẹn ${appointment.consultant_type} đã được xác nhận. Bác sĩ: ${appointment.doctor_name || 'Chưa phân công'}.`,
-          timestamp: appointmentDate.toISOString(),
-          isRead: false,
-          appointmentId: appointment.appointment_id,
-          appointmentData: appointment
-        });
+      if (appointment.booking === 1) {
+          notifications.push({
+            id: `success_${appointment.appointment_id}`,
+            type: "appointment_success",
+            title: "🎉 Lịch hẹn hoàn thành!",
+            message: `Lịch hẹn ${appointment.consultant_type} đã hoàn thành thành công. Cảm ơn bạn đã sử dụng dịch vụ!`,
+            timestamp: appointmentDate.toISOString(),
+            isRead: false,
+            appointmentId: appointment.appointment_id,
+            appointmentData: appointment,
+            amount: appointment.price_apm
+          });
+        }
 
         // Add payment notification if there's a fee
         if (appointment.price_apm && appointment.price_apm > 0) {
@@ -131,19 +134,16 @@ function NotificationBell() {
             appointmentData: appointment
           });
         }
-        break;
 
-      case 'success': // Success/Completed
         notifications.push({
-          id: `success_${appointment.appointment_id}`,
-          type: "appointment_success",
-          title: "🎉 Lịch hẹn hoàn thành!",
-          message: `Lịch hẹn ${appointment.consultant_type} đã hoàn thành thành công. Cảm ơn bạn đã sử dụng dịch vụ!`,
+          id: `confirmed_${appointment.appointment_id}`,
+          type: "appointment_confirmed",
+          title: "Lịch hẹn đã được xác nhận",
+          message: `Lịch hẹn ${appointment.consultant_type} đã được xác nhận. Bác sĩ: ${appointment.doctor_name || 'Chưa phân công'}.`,
           timestamp: appointmentDate.toISOString(),
           isRead: false,
           appointmentId: appointment.appointment_id,
-          appointmentData: appointment,
-          amount: appointment.price_apm
+          appointmentData: appointment
         });
         break;
 
@@ -186,7 +186,7 @@ function NotificationBell() {
     const deletedNotifications = getDeletedNotifications();
     const thirtyDaysAgo = new Date();
     thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
-    
+
     const cleanedDeleted = {};
     Object.keys(deletedNotifications).forEach(id => {
       const deletedAt = new Date(deletedNotifications[id].deletedAt);
@@ -194,7 +194,7 @@ function NotificationBell() {
         cleanedDeleted[id] = deletedNotifications[id];
       }
     });
-    
+
     localStorage.setItem('deletedNotifications', JSON.stringify(cleanedDeleted));
     return cleanedDeleted;
   };
@@ -251,8 +251,8 @@ function NotificationBell() {
         // Only keep notifications from last 30 days
         const thirtyDaysAgo = new Date();
         thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
-        
-        const recentNotifications = allNotifications.filter(notif => 
+
+        const recentNotifications = allNotifications.filter(notif =>
           new Date(notif.timestamp) >= thirtyDaysAgo
         );
 
@@ -326,7 +326,7 @@ function NotificationBell() {
 
   const deleteNotification = (notificationId, event) => {
     event.stopPropagation();
-    
+
     // Remove from current notifications list
     const updated = notifications.filter((n) => n.id !== notificationId);
     setNotifications(updated);
@@ -397,8 +397,8 @@ function NotificationBell() {
                   <FontAwesomeIcon icon={faCheck} />
                 </button>
               )}
-              <button 
-                onClick={loadNotifications} 
+              <button
+                onClick={loadNotifications}
                 title="Làm mới"
                 disabled={isLoading}
               >
@@ -486,7 +486,7 @@ function NotificationBell() {
 
           {notifications.length > 0 && (
             <div className={cx("footer")}>
-              <button 
+              <button
                 className={cx("view-all-btn")}
                 onClick={() => {
                   navigate("/my-appointments");
