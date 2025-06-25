@@ -14,3 +14,7 @@ export const API_MANAGER_APPOINTMENT = "/v1/managers/appointments";
 
 //Service Test
 export const API_SERVICES = "/v1/services";
+
+// Send mail
+
+export const API_PAYMENT_REMINDER = "/v1/emails/payment-reminder";

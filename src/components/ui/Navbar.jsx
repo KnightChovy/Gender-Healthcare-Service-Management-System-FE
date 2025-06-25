@@ -93,19 +93,19 @@ export const Navbar = () => {
                     Đặt lịch xét nghiệm
                   </Link>
                   <Link
-                    to="/services/consultation"
+                    to="/appointment"
                     className="block px-4 py-2 hover:bg-blue-50 transition-colors text-[16px]"
                     onClick={() => setShowService(false)}
                   >
                     Đặt lịch tư vấn
                   </Link>
-                  <Link
+                  {/* <Link
                     to="/services/cycle-tracking"
                     className="block px-4 py-2 hover:bg-blue-50 transition-colors text-[16px]"
                     onClick={() => setShowService(false)}
                   >
                     Theo dõi chu kì sinh sản
-                  </Link>
+                  </Link> */}
                 </div>
               )}
             </li>

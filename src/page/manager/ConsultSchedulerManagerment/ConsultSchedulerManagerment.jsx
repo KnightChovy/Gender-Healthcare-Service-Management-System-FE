@@ -1,6 +1,10 @@
 import React, { useEffect, useState } from "react";
-import { API_MANAGER_APPOINTMENT } from "../../../constants/Apis";
+import {
+  API_MANAGER_APPOINTMENT,
+  API_PAYMENT_REMINDER,
+} from "../../../constants/Apis";
 import axiosClient from "../../../services/axiosClient";
+import { toast } from "react-toastify";
 
 export const ConsultSchedulerManagerment = () => {
   const [appointments, setAppointments] = useState([]);
@@ -39,6 +43,23 @@ export const ConsultSchedulerManagerment = () => {
               : apt
           )
         );
+        try {
+          const resEmail = await axiosClient.post(API_PAYMENT_REMINDER, {
+            appointment_id,
+          });
+          console.log(resEmail);
+
+          if (resEmail.data?.data?.emailSent) {
+            toast.success(
+              `Đã gửi email xác nhận thanh toán đến ${resEmail.data.data.sentTo}`
+            );
+          } else {
+            toast.warning("Cập nhật thành công nhưng không thể gửi email.");
+          }
+        } catch (emailErr) {
+          toast.error("Không thể gửi email xác nhận.");
+          console.error("Lỗi gửi email:", emailErr);
+        }
       }
     } catch (error) {
       setError(`Không thể cập nhật trạng thái: ${error.message}`);
@@ -152,7 +173,9 @@ export const ConsultSchedulerManagerment = () => {
                       {apt.appointment_id}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                      {apt.username}
+                      {apt.appointments_user.last_name +
+                        " " +
+                        apt.appointments_user.first_name}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                       {apt.appointment_time}
@@ -169,7 +192,7 @@ export const ConsultSchedulerManagerment = () => {
                         <div className="flex space-x-2">
                           <button
                             onClick={() => handleApproved(apt.appointment_id)}
-                            disabled={apt.status !== "pending"} // Thay đổi điều kiện disable
+                            disabled={apt.status !== "pending"}
                             className={`px-3 py-1 text-xs font-medium rounded ${
                               apt.status !== "pending"
                                 ? "bg-gray-100 text-gray-400 cursor-not-allowed"
@@ -180,7 +203,7 @@ export const ConsultSchedulerManagerment = () => {
                           </button>
                           <button
                             onClick={() => handleRejected(apt.appointment_id)}
-                            disabled={apt.status !== "pending"} // Thay đổi điều kiện disable
+                            disabled={apt.status !== "pending"}
                             className={`px-3 py-1 text-xs font-medium rounded ${
                               apt.status !== "pending"
                                 ? "bg-gray-100 text-gray-400 cursor-not-allowed"

@@ -2,7 +2,6 @@ import { GoogleGenerativeAI } from "@google/generative-ai";
 
 export class GeminiService {
   constructor() {
-    // Kiểm tra xem API key có được load đúng không
     const apiKey = import.meta.env.VITE_GOOGLE_API_KEY;
     if (!apiKey) {
       console.error("API key không được tìm thấy! Vui lòng kiểm tra file .env");

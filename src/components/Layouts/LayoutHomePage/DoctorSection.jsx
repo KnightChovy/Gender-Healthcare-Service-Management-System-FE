@@ -46,9 +46,9 @@ export const DoctorSection = () => {
             <p className="text-red-500">{error}</p>
           ) : (
             listDoctor &&
-            listDoctor.slice(0, 4).map((doctor) => (
+            listDoctor.slice(0, 4).map((doctor, index) => (
               <div
-                key={doctor.id}
+                key={index}
                 className="bg-white rounded-lg shadow-md overflow-hidden"
               >
                 <div className="w-full h-64 bg-gray-200 flex items-center justify-center">
