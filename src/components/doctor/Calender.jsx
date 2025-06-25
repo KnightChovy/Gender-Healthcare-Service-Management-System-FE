@@ -1,95 +1,8 @@
 import dayjs from "dayjs";
-import React, { useState } from "react";
-const doctorAppointments = [
-  {
-    appointment_id: "AP000009",
-    user_id: "US000004",
-    doctor_id: "DR000003",
-    timeslot_id: "TS000001",
-    rating: null,
-    feedback: null,
-    descriptions: "bị lý sinh yếu",
-    price_apm: "200000.00",
-    consultant_type: "Tư vấn chung",
-    created_at: "2025-06-21T17:34:17.000Z",
-    updated_at: "2025-06-21T17:34:43.000Z",
-    status: "confirmed",
-    appointment_time: "10:00:00",
-    booking: 0,
-    first_name: "phuc",
-    email: "phuc@example.com",
-    phone: "0356942879",
-    time_end: "09:00:00",
-    time_start: "08:00:00",
-    date: "2025-06-23",
-  },
-  {
-    appointment_id: "AP000008",
-    user_id: "US000003",
-    doctor_id: "DR000003",
-    timeslot_id: "TS000001",
-    rating: null,
-    feedback: null,
-    descriptions: null,
-    price_apm: "250000.00",
-    consultant_type: "Tư vấn tránh thai",
-    created_at: "2025-06-21T17:10:11.000Z",
-    updated_at: "2025-06-21T17:25:05.000Z",
-    status: "confirmed",
-    appointment_time: "14:00:00",
-    booking: 1,
-    first_name: "Jesicar",
-    email: "jesicar123@yahoo.com",
-    phone: "0987654321",
-    time_end: "09:00:00",
-    time_start: "08:00:00",
-    date: "2025-06-23",
-  },
-  {
-    appointment_id: "AP000007",
-    user_id: "US000004",
-    doctor_id: "DR000003",
-    timeslot_id: "TS000001",
-    rating: null,
-    feedback: null,
-    descriptions: null,
-    price_apm: "200000.00",
-    consultant_type: "Tư vấn chung",
-    created_at: "2025-06-21T16:57:33.000Z",
-    updated_at: "2025-06-21T17:21:47.000Z",
-    status: "rejected",
-    appointment_time: "14:30:00",
-    booking: 0,
-    first_name: "phuc",
-    email: "phuc@example.com",
-    phone: "0356942879",
-    time_end: "09:00:00",
-    time_start: "08:00:00",
-    date: "2025-06-23",
-  },
-  {
-    appointment_id: "AP000006",
-    user_id: "US000004",
-    doctor_id: "DR000003",
-    timeslot_id: "TS000001",
-    rating: null,
-    feedback: null,
-    descriptions: null,
-    price_apm: "250000.00",
-    consultant_type: "Tư vấn tránh thai",
-    created_at: "2025-06-21T06:44:27.000Z",
-    updated_at: "2025-06-21T06:44:27.000Z",
-    status: "0",
-    appointment_time: "10:00:00",
-    booking: 0,
-    first_name: "phuc",
-    email: "phuc@example.com",
-    phone: "0356942879",
-    time_end: "09:00:00",
-    time_start: "08:00:00",
-    date: "2025-06-23",
-  },
-];
+import React, { useEffect, useState } from "react";
+import doctorService from "../../services/doctor.service";
+import { useSelector } from "react-redux";
+
 const days = ["Thứ 2", "Thứ 3", "Thứ 4", "Thứ 5", "Thứ 6", "Thứ 7", "Chủ nhật"];
 const getWeekDates = (selectedDate) => {
   const today = dayjs(selectedDate);
@@ -102,6 +15,13 @@ const getWeekDates = (selectedDate) => {
 const Calendar = ({ appointments }) => {
   const [viewMode, setViewMode] = useState("week");
   const [selectedDate, setSelectedDate] = useState(new Date());
+  const { user } = useSelector((state) => state.auth);
+  const [doctorAppointments, setDoctorAppointments] = useState([]);
+  useEffect(async () => {
+    // Lấy ngày hiện tại khi component được mount
+    const data = await doctorService.fetchDoctorAppointmentsById(user.user_id);
+    setDoctorAppointments(data.data);
+  }, []);
 
   const weekDates = getWeekDates(selectedDate);
 
@@ -241,7 +161,10 @@ const Calendar = ({ appointments }) => {
                   {dayjs(weekDates[index]).format("DD/MM")}
                 </div>
               </div>
-              <div className="flex-1 overflow-y-auto p-1">
+              <div
+                className="flex-1 overflow-y-auto p-1"
+                style={{ maxHeight: "320px" }}
+              >
                 {index === days.length - 1 && (
                   <div className="h-full flex items-center justify-center text-gray-500 text-sm">
                     Không có lịch hẹn

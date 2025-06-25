@@ -1,6 +1,16 @@
-import React from "react";
+import { useEffect, useState } from "react";
+import doctorService from "../../services/doctor.service";
+import { useSelector } from "react-redux";
 
-const AppointmentList = ({ appointments }) => {
+const AppointmentList = ({}) => {
+  const [appointments, setAppointments] = useState([]);
+  const { user } = useSelector((state) => state.auth);
+
+  useEffect(async () => {
+    // Lấy ngày hiện tại khi component được mount
+    const data = await doctorService.fetchDoctorAppointmentsById(user.user_id);
+    setAppointments(data.data);
+  }, []);
   // Sắp xếp lịch hẹn theo ngày và giờ
   const sortedAppointments = [...appointments].sort(
     (a, b) => new Date(a.startTime) - new Date(b.startTime)

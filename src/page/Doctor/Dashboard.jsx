@@ -112,7 +112,7 @@ const DoctorDashboard = () => {
             <h2 className="text-xl text-gray-700 font-medium mb-4 pb-2 border-b border-gray-200">
               Lịch làm việc của tôi
             </h2>
-            <Calendar appointments={mockAppointments} />
+            <Calendar />
           </div>
         </div>
 
