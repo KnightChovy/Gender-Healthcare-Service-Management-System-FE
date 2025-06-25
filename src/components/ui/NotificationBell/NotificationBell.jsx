@@ -123,18 +123,6 @@ function NotificationBell() {
         } 
         // Nếu chưa thanh toán (booking = 0) - Hiển thị thông báo cần thanh toán
         else if (appointment.booking === 0) {
-          // Thông báo xác nhận
-          notifications.push({
-            id: `confirmed_${appointment.appointment_id}`,
-            type: "appointment_confirmed",
-            title: "Lịch hẹn đã được xác nhận",
-            message: `Lịch hẹn ${appointment.consultant_type} đã được xác nhận. Bác sĩ: ${appointment.doctor_name || 'Chưa phân công'}.`,
-            timestamp: appointmentDate.toISOString(),
-            isRead: false,
-            appointmentId: appointment.appointment_id,
-            appointmentData: appointment
-          });
-
           // Thông báo cần thanh toán (chỉ khi có phí và chưa thanh toán)
           if (appointment.price_apm && appointment.price_apm > 0) {
             notifications.push({
@@ -150,6 +138,18 @@ function NotificationBell() {
               isPaid: false // Đánh dấu chưa thanh toán
             });
           }
+
+          // Thông báo xác nhận
+          notifications.push({
+            id: `confirmed_${appointment.appointment_id}`,
+            type: "appointment_confirmed",
+            title: "Lịch hẹn đã được xác nhận",
+            message: `Lịch hẹn ${appointment.consultant_type} đã được xác nhận. Bác sĩ: ${appointment.doctor_name || 'Chưa phân công'}.`,
+            timestamp: appointmentDate.toISOString(),
+            isRead: false,
+            appointmentId: appointment.appointment_id,
+            appointmentData: appointment
+          });
         }
         break;
 

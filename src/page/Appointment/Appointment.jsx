@@ -163,53 +163,193 @@ function Appointment() {
   };
 
   // Thêm helper function để lấy timeslot_id từ localStorage
+  const debugLocalStorage = () => {
+    console.log('🔍 DEBUG: Checking localStorage...');
+    const timeslots = localStorage.getItem('doctorAvailableTimeslots');
+    if (timeslots) {
+      const data = JSON.parse(timeslots);
+      console.log('📋 Raw data from localStorage:', data);
+      console.log('📊 Data structure:', {
+        isArray: Array.isArray(data),
+        length: data.length,
+        firstItem: data[0]
+      });
+      
+      // Log chi tiết structure
+      data.forEach((item, index) => {
+        console.log(`📅 Item ${index}:`, {
+          date: item.date,
+          dayOfWeek: item.dayOfWeek,
+          timeslots: item.timeslots,
+          timeslots_count: item.timeslots?.length
+        });
+        
+        if (item.timeslots) {
+          item.timeslots.forEach((slot, slotIndex) => {
+            console.log(`   ⏰ Timeslot ${slotIndex}:`, slot);
+          });
+        }
+      });
+    } else {
+      console.log('❌ No doctorAvailableTimeslots found in localStorage');
+    }
+  };
+
+  // Cập nhật getTimeslotIdFromStorage function
   const getTimeslotIdFromStorage = (selectedDate, selectedTime) => {
+    console.log('🔍 START: getTimeslotIdFromStorage', { selectedDate, selectedTime });
+    
     try {
-      const availableTimeslots = localStorage.getItem('doctorAvailableTimeslots');
-      if (!availableTimeslots) {
-        console.warn('⚠️ No timeslots found in localStorage');
+      // Debug localStorage trước
+      debugLocalStorage();
+      
+      const doctorTimeslots = localStorage.getItem('doctorAvailableTimeslots');
+      if (!doctorTimeslots) {
+        console.warn('⚠️ No doctor timeslots found in localStorage');
         return null;
       }
 
-      const timeslots = JSON.parse(availableTimeslots);
-      console.log('🔍 Searching for timeslot:', { selectedDate, selectedTime });
+      const timeslotsData = JSON.parse(doctorTimeslots);
+      console.log('📋 Parsed timeslots data:', timeslotsData);
 
-      // Tìm timeslot theo ngày và giờ đã chọn
-      for (const dateSchedule of timeslots) {
-        if (dateSchedule.date === selectedDate) {
-          console.log('📆 Found matching date:', dateSchedule);
-          
-          // Tìm trong từng period (morning, afternoon, evening)
-          for (const period of dateSchedule.periods || []) {
-            // Tìm trong từng timeslot
-            for (const timeslot of period.timeslots || []) {
-              // Tạo format thời gian để so sánh
-              const timeslotTime = `${timeslot.start_time} - ${timeslot.end_time}`;
-              
-              // So sánh với nhiều format khác nhau
-              if (timeslotTime === selectedTime || 
-                  timeslot.start_time === selectedTime.split(' - ')[0] ||
-                  selectedTime.includes(timeslot.start_time) ||
-                  timeslot.start_time === selectedTime) {
-                
-                console.log('✅ Found matching timeslot:', {
-                  timeslot_id: timeslot.timeslot_id,
-                  start_time: timeslot.start_time,
-                  end_time: timeslot.end_time,
-                  status: timeslot.status
-                });
-                
-                return timeslot.timeslot_id;
-              }
-            }
-          }
-        }
+      // Tìm ngày phù hợp
+      const daySchedule = timeslotsData.find(day => {
+        console.log('🔍 Comparing dates:', { 
+          dayDate: day.date, 
+          selectedDate: selectedDate,
+          match: day.date === selectedDate 
+        });
+        return day.date === selectedDate;
+      });
+
+      if (!daySchedule) {
+        console.warn('⚠️ No schedule found for date:', selectedDate);
+        console.log('📅 Available dates:', timeslotsData.map(d => d.date));
+        return null;
       }
+
+      console.log('✅ Found day schedule:', daySchedule);
+
+      // Kiểm tra structure của timeslots
+      if (!daySchedule.timeslots || !Array.isArray(daySchedule.timeslots)) {
+        console.warn('⚠️ Invalid timeslots structure:', daySchedule.timeslots);
+        return null;
+      }
+
+      console.log('🔍 Available timeslots for this day:', daySchedule.timeslots);
+
+      // Parse selectedTime để tìm target time
+      let targetTime;
       
-      console.warn('⚠️ No matching timeslot found for:', { selectedDate, selectedTime });
-      return null;
+      if (selectedTime.includes(' - ')) {
+        // Format: "08:00 - 09:00" - lấy thời gian bắt đầu
+        const [start] = selectedTime.split(' - ');
+        targetTime = start.trim();
+        
+        // Ensure format HH:MM:SS
+        if (targetTime.split(':').length === 2) {
+          targetTime += ':00'; // "08:00" -> "08:00:00"
+        }
+      } else if (selectedTime.includes(':')) {
+        // Format: "08:00:00" hoặc "08:00"
+        targetTime = selectedTime.trim();
+        if (targetTime.split(':').length === 2) {
+          targetTime += ':00'; // "08:00" -> "08:00:00"
+        }
+      } else {
+        console.warn('⚠️ Invalid time format:', selectedTime);
+        return null;
+      }
+
+      console.log('🕐 Target time:', targetTime);
+
+      // Tìm timeslot mà target time nằm trong khoảng [time_start, time_end)
+      const matchingTimeslot = daySchedule.timeslots.find(slot => {
+        console.log('🔍 Comparing timeslot:', {
+          slot_time_start: slot.time_start,
+          slot_time_end: slot.time_end,
+          target_time: targetTime,
+          timeslot_id: slot.timeslot_id,
+          is_booked: slot.is_booked
+        });
+        
+        // So sánh string time (format HH:MM:SS)
+        // Kiểm tra target time có nằm trong khoảng [time_start, time_end) không
+        const isInRange = targetTime >= slot.time_start && targetTime < slot.time_end;
+        
+        // Hoặc có thể kiểm tra exact match với time_start
+        const isExactStart = targetTime === slot.time_start;
+        
+        console.log('🔍 Time range check:', {
+          condition_range: `${targetTime} >= ${slot.time_start} && ${targetTime} < ${slot.time_end}`,
+          condition_exact: `${targetTime} === ${slot.time_start}`,
+          isInRange: isInRange,
+          isExactStart: isExactStart,
+          finalMatch: isInRange || isExactStart,
+          timeslot_id: slot.timeslot_id
+        });
+        
+        // Return true nếu target time nằm trong range hoặc exact match với start time
+        return isInRange || isExactStart;
+      });
+
+      if (matchingTimeslot) {
+        console.log('✅ FOUND matching timeslot:', {
+          timeslot_id: matchingTimeslot.timeslot_id,
+          time_start: matchingTimeslot.time_start,
+          time_end: matchingTimeslot.time_end,
+          is_booked: matchingTimeslot.is_booked,
+          target_time: targetTime
+        });
+
+        return matchingTimeslot.timeslot_id;
+      } else {
+        console.warn('⚠️ NO matching timeslot found for target time:', targetTime);
+        console.log('📝 All available timeslots:', daySchedule.timeslots.map(slot => ({
+          timeslot_id: slot.timeslot_id,
+          time_start: slot.time_start,
+          time_end: slot.time_end,
+          range: `${slot.time_start} - ${slot.time_end}`
+        })));
+        
+        // Thử flexible search với chỉ so sánh giờ:phút (bỏ giây)
+        console.log('🔄 Trying flexible search (ignoring seconds)...');
+        const targetTimeShort = targetTime.substring(0, 5); // "08:00:00" -> "08:00"
+        
+        const flexibleMatch = daySchedule.timeslots.find(slot => {
+          const slotStartShort = slot.time_start.substring(0, 5);
+          const slotEndShort = slot.time_end.substring(0, 5);
+          
+          const isInRangeFlexible = targetTimeShort >= slotStartShort && targetTimeShort < slotEndShort;
+          const isExactStartFlexible = targetTimeShort === slotStartShort;
+          
+          console.log('🔍 Flexible compare:', {
+            slotStartShort,
+            slotEndShort,
+            targetTimeShort,
+            isInRangeFlexible,
+            isExactStartFlexible,
+            match: isInRangeFlexible || isExactStartFlexible,
+            timeslot_id: slot.timeslot_id
+          });
+          
+          return isInRangeFlexible || isExactStartFlexible;
+        });
+        
+        if (flexibleMatch) {
+          console.log('✅ FOUND with flexible search:', {
+            timeslot_id: flexibleMatch.timeslot_id,
+            time_start: flexibleMatch.time_start,
+            time_end: flexibleMatch.time_end
+          });
+          return flexibleMatch.timeslot_id;
+        }
+        
+        return null;
+      }
+
     } catch (error) {
-      console.error('❌ Error parsing timeslots from localStorage:', error);
+      console.error('❌ Error in getTimeslotIdFromStorage:', error);
       return null;
     }
   };
@@ -305,6 +445,14 @@ function Appointment() {
   const handleSubmit = async (e) => {
     e.preventDefault();
 
+    console.log('🚀 SUBMIT: Starting form submission...');
+    console.log('📋 Form data:', {
+      appointmentDate: formData.appointmentDate,
+      appointmentTime: formData.appointmentTime,
+      selectedDoctor: formData.selectedDoctor,
+      doctorName: formData.doctorName
+    });
+
     if (!validateForm()) {
       console.warn("❌ Form validation failed:", errors);
       alert("Vui lòng kiểm tra lại thông tin đã nhập.");
@@ -314,8 +462,26 @@ function Appointment() {
     setIsSubmitting(true);
 
     try {
+      // Debug localStorage trước khi lấy timeslot_id
+      console.log('🔍 About to get timeslot_id...');
+      debugLocalStorage();
+      
       // Lấy timeslot_id từ localStorage
       const timeslotId = getTimeslotIdFromStorage(formData.appointmentDate, formData.appointmentTime);
+      
+      console.log('🎯 RESULT: timeslot_id =', timeslotId);
+
+      if (!timeslotId) {
+        console.error('❌ Cannot find timeslot_id for:', {
+          date: formData.appointmentDate,
+          time: formData.appointmentTime
+        });
+        
+        // Hiển thị thông tin debug cho user
+        alert(`Không thể xác định khung giờ đã chọn.\n\nThông tin debug:\n- Ngày: ${formData.appointmentDate}\n- Giờ: ${formData.appointmentTime}\n\nVui lòng kiểm tra console và chọn lại thời gian.`);
+        setIsSubmitting(false);
+        return;
+      }
 
       // Tạo appointment data
       const appointmentData = {
@@ -330,11 +496,11 @@ function Appointment() {
 
         // Thông tin cuộc hẹn
         consultant_type: formData.consultationType,
-        selectedDoctor: formData.selectedDoctor, // Bắt buộc phải có
-        doctorName: formData.doctorName, // Tên bác sĩ đã chọn
+        selectedDoctor: formData.selectedDoctor,
+        doctorName: formData.doctorName,
         appointmentDate: formData.appointmentDate,
         appointment_time: formData.appointmentTime,
-        timeslot_id: timeslotId || '', // Lấy từ localStorage hoặc tạo mới
+        timeslot_id: timeslotId, // ✅ Đã có timeslot_id
 
         // Thông tin y tế
         symptoms: formData.symptoms,
@@ -348,26 +514,25 @@ function Appointment() {
         // Metadata
         created_at: new Date().toISOString(),
         updated_at: new Date().toISOString(),
-        status: "pending", 
-        isUserLoggedIn: isLoggedIn,
-        id: `APT${Date.now()}`,
+        status: "pending",
+        booking: 0 // 0 = chưa thanh toán
       };
 
-      console.log('📋 Appointment data with selected doctor:', {
-        selectedDoctor: appointmentData.selectedDoctor,
-        doctorName: appointmentData.doctorName,
-        timeslot_id: appointmentData.timeslot_id,
-        appointmentDate: appointmentData.appointmentDate,
-        appointmentTime: appointmentData.appointmentTime
-      });
+      console.log('📋 Final appointment data:', appointmentData);
 
-      // Lưu vào localStorage để theo dõi
-      localStorage.setItem(
-        "pendingAppointment",
-        JSON.stringify(appointmentData)
-      );
+      // Validation cuối cùng
+      if (!appointmentData.timeslot_id) {
+        throw new Error('Missing timeslot_id in final data');
+      }
 
-      // Gửi API request để tạo appointment
+      if (!appointmentData.selectedDoctor) {
+        throw new Error('Missing selectedDoctor in final data');
+      }
+
+      // Lưu vào localStorage
+      localStorage.setItem("pendingAppointment", JSON.stringify(appointmentData));
+
+      // Gửi API request
       const res = await fetch("http://52.4.72.106:3000/v1/appointments", {
         method: "POST",
         headers: {
@@ -378,22 +543,43 @@ function Appointment() {
       });
       
       if (!res.ok) {
-        throw new Error(`HTTP error! status: ${res.status}`);
+        const errorData = await res.json();
+        console.error('❌ API Error:', errorData);
+        throw new Error(`HTTP error! status: ${res.status} - ${errorData.message || 'Unknown error'}`);
       }
 
-      console.log("✅ Appointment submitted successfully:", appointmentData);
+      const responseData = await res.json();
+      console.log("✅ Appointment created successfully:", responseData);
 
-      // Hiển thị thông báo thành công
+      // Success handling
       showSuccessNotification();
 
-      // Chuyển về trang chủ sau 10 giây
+      // Clear localStorage
       setTimeout(() => {
-        navigate("/");
         localStorage.removeItem('doctorAvailableTimeslots');
+        localStorage.removeItem('selectedDoctorId');
+        localStorage.removeItem('pendingAppointment');
+        navigate("/");
       }, 10000);
+
     } catch (error) {
       console.error("❌ Error submitting appointment:", error);
-      alert("Có lỗi xảy ra khi đặt lịch hẹn. Vui lòng thử lại.");
+      
+      let errorMessage = "Có lỗi xảy ra khi đặt lịch hẹn:\n\n";
+      
+      if (error.message.includes('timeslot_id')) {
+        errorMessage += "• Không thể xác định khung giờ\n";
+      }
+      if (error.message.includes('selectedDoctor')) {
+        errorMessage += "• Thiếu thông tin bác sĩ\n";
+      }
+      if (error.message.includes('HTTP error')) {
+        errorMessage += "• Lỗi kết nối server\n";
+      }
+      
+      errorMessage += "\nVui lòng kiểm tra console để biết thêm chi tiết và thử lại.";
+      
+      alert(errorMessage);
     } finally {
       setIsSubmitting(false);
     }

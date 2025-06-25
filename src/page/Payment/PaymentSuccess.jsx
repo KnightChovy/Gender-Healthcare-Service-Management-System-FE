@@ -122,12 +122,8 @@ function PaymentSuccess() {
                 // Optional: Update appointment payment status via API
                 if (paymentRecord.appointmentId && accessToken) {
                     try {
-                        await axiosClient.post('/v1/appointments/update-payment-status', {
+                        await axiosClient.post('/v1/emails/booking-confirmation', {
                             appointment_id: paymentRecord.appointmentId,
-                            payment_id: paymentRecord.paymentId,
-                            status: 'paid'
-                        }, {
-                            headers: { 'x-access-token': accessToken }
                         });
                     } catch (error) {
                         console.warn('Could not update appointment payment status:', error);
