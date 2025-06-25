@@ -83,14 +83,13 @@ export const MainServiceSection = () => {
               Xét nghiệm STI/STD
             </h3>
             <p className="text-gray-600 mb-4">
-              Các xét nghiệm phát hiện sớm các bệnh lây truyền qua đường tình
-              dục.
+              Đăng ký lịch xét nghiệm và các xét nghiệm phát hiện sớm các bệnh lây truyền qua đường tình dục.
             </p>
             <Link
-              to="/services/testing"
+              to="/test-order"
               className="text-green-600 font-medium hover:text-green-800 flex items-center"
             >
-              Tìm hiểu thêm
+              Đăng ký xét nghiệm
               <svg
                 xmlns="http://www.w3.org/2000/svg"
                 className="h-5 w-5 ml-1"

@@ -1,8 +1,4 @@
-import React from 'react'
-import classNames from 'classnames/bind';
-import styles from '../Appointment.module.scss';
-
-const cx = classNames.bind(styles);
+import React from 'react';
 
 function DateTimeSection({ formData, errors, onChange }) {
     const timeSlots = [
@@ -22,10 +18,10 @@ function DateTimeSection({ formData, errors, onChange }) {
     };
 
     return (
-        <div className={cx('form-section')}>
+        <div className="bg-white rounded-xl shadow-lg p-6 mb-6">
             <h3>📆 Thời gian hẹn</h3>
-            <div className={cx('datetime-row')}>
-                <div className={cx('form-group')} style={{ display: 'block' }}>
+            <div className="datetime-row">
+                <div className="space-y-2" style={{ display: 'block' }}>
                     <label htmlFor="preferredDate">Ngày hẹn *</label>
                     <input
                         type="date"
@@ -37,16 +33,16 @@ function DateTimeSection({ formData, errors, onChange }) {
                         max={getMaxDate()}
                         className={errors.preferredDate ? 'error' : ''}
                     />
-                    {errors.preferredDate && <span className={cx('error-message')}>{errors.preferredDate}</span>}
+                    {errors.preferredDate && <span className="text-red-500 text-sm font-medium">{errors.preferredDate}</span>}
                 </div>
 
-                <div className={cx('form-group')} style={{ display: 'block' }}>
+                <div className="space-y-2" style={{ display: 'block' }}>
                     <label htmlFor='preferredTime'>Giờ hẹn *</label>
-                    <div className={cx('time-grid')}>
+                    <div className="time-grid">
                         {timeSlots.map(time => (
                             <label
                                 key={time}
-                                className={cx('time-slot', { selected: formData.preferredTime === time })}
+                                className="time-slot"
                             >
                                 <input
                                     type="radio"
@@ -59,7 +55,7 @@ function DateTimeSection({ formData, errors, onChange }) {
                             </label>
                         ))}
                     </div>
-                    {errors.preferredTime && <span className={cx('error-message')}>{errors.preferredTime}</span>}
+                    {errors.preferredTime && <span className="text-red-500 text-sm font-medium">{errors.preferredTime}</span>}
                 </div>
             </div>
         </div>

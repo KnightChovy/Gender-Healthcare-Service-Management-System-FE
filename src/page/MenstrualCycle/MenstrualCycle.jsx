@@ -1,13 +1,11 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import Header from './MenstrualCycleItems/Header';
 import CycleInputForm from './MenstrualCycleItems/CycleInputForm';
 import CurrentStatus from './MenstrualCycleItems/CurrentStatus';
 import NotificationSettings from './MenstrualCycleItems/NotificationSettings';
 import HealthTips from './MenstrualCycleItems/HealthTips';
-import classNames from 'classnames/bind';
-import styles from '../../assets/MenstrualCycle.module.scss';  
-
-const cx = classNames.bind(styles);
+import { Navbar } from '../../Layouts/LayoutHomePage/Navbar';
+import { Footer } from '../../Layouts/LayoutHomePage/Footer';
 
 function MenstrualCycle() {
     const [cycleData, setCycleData] = useState({
@@ -35,9 +33,9 @@ function MenstrualCycle() {
         if (cycleData.lastPeriodDate) {
             calculatePredictions();
         }
-    }, [cycleData]);
+    }, [cycleData, calculatePredictions]);
 
-    const calculatePredictions = () => {
+    const calculatePredictions = useCallback(() => {
         const lastPeriod = new Date(cycleData.lastPeriodDate);
         const cycleLength = parseInt(cycleData.cycleLength);
 
@@ -70,7 +68,7 @@ function MenstrualCycle() {
         } else {
             setCurrentPhase('Kì nang trứng');
         }
-    };
+    }, [cycleData.lastPeriodDate, cycleData.cycleLength, cycleData.periodLength]);
 
     const handleCycleDataChange = (newData) => {
         setCycleData(prev => ({
@@ -80,10 +78,12 @@ function MenstrualCycle() {
     }
 
     return (
-        <div className={cx("menstrual-cycle")}>
+        <div className="min-h-screen bg-gradient-to-br from-pink-50 to-purple-50 p-4">
+            <Navbar />
+
             <Header />
 
-            <div className={cx("cycle-grid")}>
+            <div className="max-w-6xl mx-auto grid grid-cols-1 lg:grid-cols-2 gap-6 mt-6">
                 <CycleInputForm
                     cycleData={cycleData}
                     onDataChange={handleCycleDataChange}
@@ -101,6 +101,8 @@ function MenstrualCycle() {
                     onNotificationChange={handleCycleDataChange}
                 />
             </div>
+
+            <Footer />
         </div>
     );
 }

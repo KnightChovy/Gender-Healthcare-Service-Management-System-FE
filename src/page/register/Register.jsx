@@ -3,10 +3,9 @@ import FormInputText from "../../components/ui/FormInputText";
 import GenderChoice from "../../components/ui/GenderChoice";
 import { validateRules } from "../../components/Validation/validateRulesRegister";
 import React, { useState, useRef } from "react";
-import classNames from "classnames/bind";
-import styles from "../../assets/Register.module.scss";
-
-const cx = classNames.bind(styles);
+import { Link } from "react-router-dom";
+import { Navbar } from "../../Layouts/LayoutHomePage/Navbar";
+import { Footer } from "../../Layouts/LayoutHomePage/Footer";
 
 function Register() {
   const [formData, setFormData] = useState({
@@ -114,139 +113,144 @@ function Register() {
   const validate = () => validateRules(formData);
 
   return (
-    <div className={cx("register-container")}>
-      <div className={cx("register-header")}>
-        <h1>GenCare Center</h1>
-      </div>
+    <div>
+      <Navbar />
 
-      <div className={cx("register-content")}>
-        <div className={cx("register-introduction")}>
-          <h2>Tạo một tài khoản mới</h2>
-          <p>Nhanh chóng và dễ dàng</p>
+      <div className="bg-gray-100 min-h-screen flex flex-col justify-center items-center font-sans p-5">
+
+        <div className="text-center mb-5">
+          <h1 className="text-gray-900 text-3xl font-bold m-0">GenCare Center</h1>
         </div>
 
-        <div className={cx("register-form")}>
-          <form>
-            <span style={{ display: "flex" }}>
-              Họ và tên (<span style={{ marginTop: "2px" }}>*</span>)
-            </span>
-            <div className={cx("form-row")}>
-              <FormInputText
-                textHolder="firstName"
-                textName="firstname"
-                value={formData.firstname}
-                onChange={handleInputChange}
-                validation={validate().firstname}
+        <div className="bg-white rounded-lg shadow-lg p-5 w-full max-w-md">
+          <div className="text-center mb-5 pb-5 border-b border-gray-300">
+            <h2 className="text-gray-900 text-xl font-semibold mb-2">Tạo một tài khoản mới</h2>
+            <p className="text-gray-600 text-sm">Nhanh chóng và dễ dàng</p>
+          </div>
+
+          <div className="flex flex-col gap-3">
+            <form>
+              <span className="flex text-gray-600 text-xs font-semibold mb-2">
+                Họ và tên (<span className="mt-0.5 text-red-500">*</span>)
+              </span>
+              <div className="flex gap-2 mb-3">
+                <FormInputText
+                  textHolder="firstName"
+                  textName="firstname"
+                  value={formData.firstname}
+                  onChange={handleInputChange}
+                  validation={validate().firstname}
+                  showErrors={showErrors}
+                />
+                <FormInputText
+                  textHolder="lastName"
+                  textName="lastname"
+                  value={formData.lastname}
+                  onChange={handleInputChange}
+                  validation={validate().lastname}
+                  showErrors={showErrors}
+                />
+              </div>
+
+              <DateOfBirth
+                onChange={(name, value) => handleInputChange(name, value)}
                 showErrors={showErrors}
               />
+              <GenderChoice
+                onChange={(name, value) => handleInputChange(name, value)}
+              />
+              <span className="flex text-gray-600 text-xs font-semibold mb-2">
+                Tên đăng nhập (<span className="mt-0.5 text-red-500">*</span>)
+              </span>
               <FormInputText
-                textHolder="lastName"
-                textName="lastname"
-                value={formData.lastname}
+                textHolder="username"
+                textName="username"
+                value={formData.username}
                 onChange={handleInputChange}
-                validation={validate().lastname}
+                validation={validate().username}
                 showErrors={showErrors}
               />
-            </div>
+              <span className="flex text-gray-600 text-xs font-semibold mb-2">
+                Địa chỉ Email (<span className="mt-0.5 text-red-500">*</span>)
+              </span>
+              <FormInputText
+                textHolder="email"
+                textName="email"
+                value={formData.email}
+                onChange={handleInputChange}
+                validation={validate().email}
+                showErrors={showErrors}
+              />
+              <span className="flex text-gray-600 text-xs font-semibold mb-2">
+                Số điện thoại (<span className="mt-0.5 text-red-500">*</span>)
+              </span>
+              <FormInputText
+                textHolder="phone"
+                textName="phone"
+                value={formData.phone}
+                onChange={handleInputChange}
+                validation={validate().phone}
+                showErrors={showErrors}
+              />
+              <span className="flex text-gray-600 text-xs font-semibold mb-2">
+                Địa chỉ (<span className="mt-0.5 text-red-500">*</span>)
+              </span>
+              <FormInputText
+                textHolder="address"
+                textName="address"
+                value={formData.address}
+                onChange={handleInputChange}
+                validation={validate().address}
+                showErrors={showErrors}
+              />
+              <span className="flex text-gray-600 text-xs font-semibold mb-2">
+                Mật khẩu (<span className="mt-0.5 text-red-500">*</span>)
+              </span>
+              <FormInputText
+                textHolder="password"
+                textName="password"
+                value={formData.password}
+                onChange={handleInputChange}
+                validation={validate().password}
+                showErrors={showErrors}
+              />
+              <span className="block text-gray-600 text-xs font-semibold mb-2">Xác nhận mật khẩu</span>
+              <FormInputText
+                textHolder="confirmPassword"
+                textName="confirmPassword"
+                value={formData.confirmPassword}
+                onChange={handleInputChange}
+                validation={validate().confirmPassword}
+              />
 
-            <DateOfBirth
-              onChange={(name, value) => handleInputChange(name, value)}
-              showErrors={showErrors}
-            />
-            <GenderChoice
-              onChange={(name, value) => handleInputChange(name, value)}
-            />
-            <span style={{ display: "flex" }}>
-              Tên đăng nhập (<span style={{ marginTop: "2px" }}>*</span>)
-            </span>
-            <FormInputText
-              textHolder="username"
-              textName="username"
-              value={formData.username}
-              onChange={handleInputChange}
-              validation={validate().username}
-              showErrors={showErrors}
-            />
-            <span style={{ display: "flex" }}>
-              Địa chỉ Email (<span style={{ marginTop: "2px" }}>*</span>)
-            </span>
-            <FormInputText
-              textHolder="email"
-              textName="email"
-              value={formData.email}
-              onChange={handleInputChange}
-              validation={validate().email}
-              showErrors={showErrors}
-            />
-            <span style={{ display: "flex" }}>
-              Số điện thoại (<span style={{ marginTop: "2px" }}>*</span>)
-            </span>
-            <FormInputText
-              textHolder="phone"
-              textName="phone"
-              value={formData.phone}
-              onChange={handleInputChange}
-              validation={validate().phone}
-              showErrors={showErrors}
-            />
-            <span style={{ display: "flex" }}>
-              Địa chỉ (<span style={{ marginTop: "2px" }}>*</span>)
-            </span>
-            <FormInputText
-              textHolder="address"
-              textName="address"
-              value={formData.address}
-              onChange={handleInputChange}
-              validation={validate().address}
-              showErrors={showErrors}
-            />
-            <span style={{ display: "flex" }}>
-              Mật khẩu (<span style={{ marginTop: "2px" }}>*</span>)
-            </span>
-            <FormInputText
-              textHolder="password"
-              textName="password"
-              value={formData.password}
-              onChange={handleInputChange}
-              validation={validate().password}
-              showErrors={showErrors}
-            />
-            <span>Xác nhận mật khẩu</span>
-            <FormInputText
-              textHolder="confirmPassword"
-              textName="confirmPassword"
-              value={formData.confirmPassword}
-              onChange={handleInputChange}
-              validation={validate().confirmPassword}
-            />
-
-            <p>
-              Bằng cách nhấp vào Đăng ký, bạn đồng ý với{" "}
-              <a href="/terms" className={cx("terms-link")}>
-                {" "}
-                Điều khoản Dịch vụ{" "}
-              </a>{" "}
-              và{" "}
-              <a href="/privacy" className={cx("privacy-link")}>
-                {" "}
-                Chính sách Bảo mật{" "}
-              </a>{" "}
-              của chúng tôi. Bạn có thể nhận được thông báo SMS từ chúng tôi và
-              có thể từ chối bất cứ lúc nào.
-            </p>
-            <button
-              type="submit"
-              className={cx("register-button")}
-              onClick={handleSubmit}
-            >
-              Đăng ký
-            </button>
-            <p className={cx("register-footer")}>
-              Bạn đã có tài khoản? <a href="/login">Đăng nhập</a>
-            </p>
-          </form>
+              <p className="text-gray-500 text-xs leading-4 my-4 text-center">
+                Bằng cách nhấp vào Đăng ký, bạn đồng ý với{" "}
+                <Link to="/terms" className="text-blue-600 no-underline hover:underline">
+                  Điều khoản Dịch vụ
+                </Link>{" "}
+                và{" "}
+                <Link to="/privacy" className="text-blue-600 no-underline hover:underline">
+                  Chính sách Bảo mật
+                </Link>{" "}
+                của chúng tôi. Bạn có thể nhận được thông báo SMS từ chúng tôi và
+                có thể từ chối bất cứ lúc nào.
+              </p>
+              <button
+                type="submit"
+                className="w-full bg-gradient-to-b from-green-400 to-green-600 bg-green-500 border border-green-800 rounded-md text-white cursor-pointer text-lg font-semibold py-3 px-4 shadow-inner mt-3 hover:bg-green-600 transition-colors"
+                onClick={handleSubmit}
+              >
+                Đăng ký
+              </button>
+              <p className="text-center text-sm text-gray-600 mt-4">
+                Bạn đã có tài khoản? <Link to="/login" className="text-blue-600 hover:underline">Đăng nhập</Link>
+              </p>
+            </form>
+          </div>
         </div>
       </div>
+
+      <Footer />
     </div>
   );
 }

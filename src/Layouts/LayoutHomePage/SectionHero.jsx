@@ -1,5 +1,5 @@
 import React from "react";
-import banner_page from "../../../assets/banner_gender.jpg";
+import banner_page from "../../assets/react.svg";
 import { Link } from "react-router-dom";
 export const SectionHero = () => {
   return (

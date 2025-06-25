@@ -1,8 +1,5 @@
 import { useState, useEffect } from "react";
-import classNames from "classnames/bind";
-import styles from "../../assets/Register.module.scss";
-
-const cx = classNames.bind(styles);
+import PropTypes from "prop-types";
 
 function DateOfBirth({ onChange, showErrors }) {
   const [birthDate, setBirthDate] = useState({
@@ -123,15 +120,19 @@ function DateOfBirth({ onChange, showErrors }) {
     error && (touched.day || touched.month || touched.year || showErrors);
 
   return (
-    <div className={cx("date-of-birth")}>
-      <span style={{ display: "flex" }}>
-        Ngày sinh nhật (<span style={{ marginTop: "2px" }}>*</span>)
+    <div className="mb-4">
+      <span className="flex text-gray-600 text-xs font-semibold mb-2">
+        Ngày sinh nhật (<span className="mt-0.5 text-red-500">*</span>)
       </span>
-      <div className={cx("date-inputs")}>
+      <div className="flex gap-2">
         <select
           value={birthDate.day}
           onChange={(e) => handleDateChange("day", e.target.value)}
-          className={cx("day-select", { error: hasError })}
+          className={`flex-1 px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm ${
+            hasError 
+              ? 'border-red-500 bg-red-50 text-red-700' 
+              : 'border-gray-300 bg-white text-gray-900'
+          }`}
         >
           <option value="">Ngày</option>
           {validDays.map((day) => (
@@ -144,7 +145,11 @@ function DateOfBirth({ onChange, showErrors }) {
         <select
           value={birthDate.month}
           onChange={(e) => handleDateChange("month", e.target.value)}
-          className={cx("month-select", { error: hasError })}
+          className={`flex-1 px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm ${
+            hasError 
+              ? 'border-red-500 bg-red-50 text-red-700' 
+              : 'border-gray-300 bg-white text-gray-900'
+          }`}
         >
           <option value="">Tháng</option>
           {months.map((month) => (
@@ -157,7 +162,11 @@ function DateOfBirth({ onChange, showErrors }) {
         <select
           value={birthDate.year}
           onChange={(e) => handleDateChange("year", e.target.value)}
-          className={cx("year-select", { error: hasError })}
+          className={`flex-1 px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm ${
+            hasError 
+              ? 'border-red-500 bg-red-50 text-red-700' 
+              : 'border-gray-300 bg-white text-gray-900'
+          }`}
         >
           <option value="">Năm</option>
           {years.map((year) => (
@@ -167,9 +176,18 @@ function DateOfBirth({ onChange, showErrors }) {
           ))}
         </select>
       </div>
-      {hasError && <span className={cx("error-message")}>{error}</span>}
+      {hasError && <span className="block text-red-500 text-xs mt-1 ml-1">{error}</span>}
     </div>
   );
 }
+
+DateOfBirth.propTypes = {
+  onChange: PropTypes.func.isRequired,
+  showErrors: PropTypes.bool,
+};
+
+DateOfBirth.defaultProps = {
+  showErrors: false,
+};
 
 export default DateOfBirth;

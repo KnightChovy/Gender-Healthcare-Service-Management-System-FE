@@ -1,20 +1,33 @@
 import React, { useState, useRef } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, Link } from "react-router-dom";
 import FormInputText from "../../components/ui/FormInputText";
 import { validateRulesLogin } from "../../components/Validation/validateRulesLogin";
+import { Navbar } from "../../Layouts/LayoutHomePage/Navbar";
+import { Footer } from "../../Layouts/LayoutHomePage/Footer";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faArrowLeft, faArrowRight, faUser, faLock, faBuilding, faUserAlt } from "@fortawesome/free-solid-svg-icons";
-import "./Login.css";
+import { 
+  faEye, 
+  faEyeSlash, 
+  faUser, 
+  faLock, 
+  faHeart,
+  faShieldAlt,
+  faUserMd,
+  faSignInAlt,
+  faArrowRight,
+  faSpinner
+} from "@fortawesome/free-solid-svg-icons";
 
 function Login() {
-  const [showStaffLogin, setShowStaffLogin] = useState(false);
   const [formData, setFormData] = useState({
     username: "",
     password: ""
   });
+  const [showPassword, setShowPassword] = useState(false);
   const [showErrors, setShowErrors] = useState(false);
   const [touchedFields, setTouchedFields] = useState({});
   const [isLoading, setIsLoading] = useState(false);
+  const [loginType, setLoginType] = useState("customer"); // customer | staff
   const navigate = useNavigate();
 
   const inputRefs = useRef({
@@ -54,7 +67,7 @@ function Login() {
     return touchedFields[fieldName] || showErrors;
   };
 
-  const handleLogin = async (e, isStaff = false) => {
+  const handleLogin = async (e) => {
     e.preventDefault();
 
     const errors = validate();
@@ -68,216 +81,244 @@ function Login() {
     setIsLoading(true);
 
     try {
-      await new Promise(resolve => setTimeout(resolve, 1500));
+      // Simulate API call
+      await new Promise(resolve => setTimeout(resolve, 2000));
       
       if (formData.username && formData.password) {
-        if (isStaff) {
+        // Store auth token
+        localStorage.setItem('authToken', 'dummy-token-' + Date.now());
+        localStorage.setItem('userType', loginType);
+        
+        if (loginType === "staff") {
           console.log("Nhân viên/Admin đăng nhập:", formData);
-          navigate('/admin-dashboard');
+          // Navigate to admin dashboard (create this route later)
+          navigate('/');
         } else {
           console.log("Khách hàng đăng nhập:", formData);
-          navigate('/dashboard');
+          navigate('/');
         }
       }
     } catch (error) {
       console.error("Login failed:", error);
+      alert("Đăng nhập thất bại! Vui lòng thử lại.");
     } finally {
       setIsLoading(false);
     }
   };
 
-  const toggleStaffLogin = () => {
-    setShowStaffLogin(!showStaffLogin);
-    // Reset form data when switching between forms
-    setFormData({
-      username: "",
-      password: ""
-    });
+  const togglePasswordVisibility = () => {
+    setShowPassword(!showPassword);
+  };
+
+  const switchLoginType = (type) => {
+    setLoginType(type);
+    setFormData({ username: "", password: "" });
     setTouchedFields({});
     setShowErrors(false);
   };
 
   return (
-    <div className="login-page">
-      <div className={`container ${showStaffLogin ? 'right-panel-active' : ''}`} id="container">
-        {/* Admin/Staff Login Form */}
-        <div className="form-container staff-container">
-          <form onSubmit={(e) => handleLogin(e, true)}>
-            <div className="form-header">
-              <div className="icon-container staff-icon">
-                <FontAwesomeIcon icon={faBuilding} />
-              </div>
-              <h1>Đăng nhập Hệ thống</h1>
-              <p className="subtitle">Dành cho nhân viên và quản trị viên</p>
+    <div className="min-h-screen flex flex-col">
+      {/* Navbar */}
+      <Navbar />
+      
+      {/* Main Content */}
+      <div className="flex-1 bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-100 flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8">
+        <div className="max-w-md w-full space-y-8">
+          {/* Header */}
+          <div className="text-center">
+            <div className="mx-auto h-20 w-20 bg-gradient-to-r from-blue-600 to-purple-600 rounded-full flex items-center justify-center mb-6 shadow-lg">
+              <FontAwesomeIcon 
+                icon={loginType === "staff" ? faUserMd : faHeart} 
+                className="h-8 w-8 text-white" 
+              />
             </div>
-            
-            <div className="form-group">
-              <div className="input-icon">
-                <FontAwesomeIcon icon={faUser} />
+            <h2 className="text-3xl font-bold text-gray-900 mb-2">
+              {loginType === "staff" ? "Đăng nhập Hệ thống" : "Chào mừng trở lại"}
+            </h2>
+            <p className="text-gray-600">
+              {loginType === "staff" 
+                ? "Truy cập hệ thống quản lý GenCare Center" 
+                : "Đăng nhập để sử dụng dịch vụ chăm sóc sức khỏe"
+              }
+            </p>
+          </div>
+
+          {/* Login Type Toggle */}
+          <div className="flex bg-gray-100 rounded-lg p-1">
+            <button
+              type="button"
+              className={`flex-1 py-2 px-4 rounded-md text-sm font-medium transition-all duration-200 ${
+                loginType === "customer"
+                  ? "bg-white text-blue-600 shadow-sm"
+                  : "text-gray-500 hover:text-gray-700"
+              }`}
+              onClick={() => switchLoginType("customer")}
+            >
+              <FontAwesomeIcon icon={faHeart} className="mr-2" />
+              Khách hàng
+            </button>
+            <button
+              type="button"
+              className={`flex-1 py-2 px-4 rounded-md text-sm font-medium transition-all duration-200 ${
+                loginType === "staff"
+                  ? "bg-white text-purple-600 shadow-sm"
+                  : "text-gray-500 hover:text-gray-700"
+              }`}
+              onClick={() => switchLoginType("staff")}
+            >
+              <FontAwesomeIcon icon={faShieldAlt} className="mr-2" />
+              Nhân viên
+            </button>
+          </div>
+
+          {/* Login Form */}
+          <form className="mt-8 space-y-6" onSubmit={handleLogin}>
+            <div className="space-y-4">
+              {/* Username Field */}
+              <div>
+                <label htmlFor="username" className="block text-sm font-medium text-gray-700 mb-1">
+                  Tên đăng nhập
+                </label>
+                <div className="relative">
+                  <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                    <FontAwesomeIcon icon={faUser} className="h-5 w-5 text-gray-400" />
+                  </div>
+                  <FormInputText
+                    textHolder="Nhập tên đăng nhập"
+                    textName="username"
+                    value={formData.username}
+                    onChange={handleInputChange}
+                    onBlur={() => handleBlur("username")}
+                    validation={validate().username}
+                    showErrors={shouldShowError("username")}
+                    ref={(el) => (inputRefs.current.username = el)}
+                    className="pl-10 block w-full px-3 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm"
+                  />
+                  {shouldShowError("username") && validate().username && (
+                    <p className="mt-1 text-sm text-red-600">{validate().username}</p>
+                  )}
+                </div>
               </div>
-              <div className="input-field">
-                <FormInputText
-                  textHolder="Tên đăng nhập"
-                  textName="username"
-                  value={formData.username}
-                  onChange={handleInputChange}
-                  onBlur={() => handleBlur("username")}
-                  validation={validate().username}
-                  showErrors={shouldShowError("username")}
-                  ref={(el) => (inputRefs.current.username = el)}
-                />
-                <small className="error-message">{shouldShowError("username") && validate().username}</small>
+
+              {/* Password Field */}
+              <div>
+                <label htmlFor="password" className="block text-sm font-medium text-gray-700 mb-1">
+                  Mật khẩu
+                </label>
+                <div className="relative">
+                  <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                    <FontAwesomeIcon icon={faLock} className="h-5 w-5 text-gray-400" />
+                  </div>
+                  <FormInputText
+                    textHolder="Nhập mật khẩu"
+                    textName="password"
+                    type={showPassword ? "text" : "password"}
+                    value={formData.password}
+                    onChange={handleInputChange}
+                    onBlur={() => handleBlur("password")}
+                    validation={validate().password}
+                    showErrors={shouldShowError("password")}
+                    ref={(el) => (inputRefs.current.password = el)}
+                    className="pl-10 pr-10 block w-full px-3 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm"
+                  />
+                  <button
+                    type="button"
+                    className="absolute inset-y-0 right-0 pr-3 flex items-center"
+                    onClick={togglePasswordVisibility}
+                  >
+                    <FontAwesomeIcon 
+                      icon={showPassword ? faEyeSlash : faEye} 
+                      className="h-5 w-5 text-gray-400 hover:text-gray-600" 
+                    />
+                  </button>
+                  {shouldShowError("password") && validate().password && (
+                    <p className="mt-1 text-sm text-red-600">{validate().password}</p>
+                  )}
+                </div>
               </div>
             </div>
-            
-            <div className="form-group">
-              <div className="input-icon">
-                <FontAwesomeIcon icon={faLock} />
-              </div>
-              <div className="input-field">
-                <FormInputText
-                  textHolder="Mật khẩu"
-                  textName="password"
-                  type="password"
-                  value={formData.password}
-                  onChange={handleInputChange}
-                  onBlur={() => handleBlur("password")}
-                  validation={validate().password}
-                  showErrors={shouldShowError("password")}
-                  ref={(el) => (inputRefs.current.password = el)}
-                />
-                <small className="error-message">{shouldShowError("password") && validate().password}</small>
-              </div>
+
+            {/* Forgot Password Link */}
+            <div className="text-right">
+              <Link 
+                to="/forget-password" 
+                className="text-sm text-blue-600 hover:text-blue-500 hover:underline"
+              >
+                Quên mật khẩu?
+              </Link>
             </div>
-            
-            <div className="form-options staff-options">
-              <a href="/" className="forgot-password">Quên mật khẩu?</a>
-            </div>
-            
-            <button 
-              type="submit" 
-              className={`login-button staff-button ${isLoading ? 'loading' : ''}`}
+
+            {/* Submit Button */}
+            <button
+              type="submit"
               disabled={isLoading}
+              className={`group relative w-full flex justify-center py-3 px-4 border border-transparent text-sm font-medium rounded-lg text-white transition-all duration-200 ${
+                loginType === "staff"
+                  ? "bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700"
+                  : "bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700"
+              } focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 ${
+                isLoading ? "opacity-75 cursor-not-allowed" : "hover:shadow-lg transform hover:scale-105"
+              }`}
             >
               {isLoading ? (
-                <div className="spinner"></div>
+                <FontAwesomeIcon icon={faSpinner} className="h-5 w-5 animate-spin" />
               ) : (
                 <>
-                  <span>Đăng nhập</span>
-                  <FontAwesomeIcon icon={faArrowRight} className="button-icon" />
+                  <FontAwesomeIcon icon={faSignInAlt} className="h-5 w-5 mr-2" />
+                  Đăng nhập
+                  <FontAwesomeIcon icon={faArrowRight} className="h-4 w-4 ml-2 group-hover:translate-x-1 transition-transform" />
                 </>
               )}
             </button>
+
+            {/* Register Link - Only for customers */}
+            {loginType === "customer" && (
+              <div className="text-center">
+                <p className="text-sm text-gray-600">
+                  Chưa có tài khoản?{" "}
+                  <Link 
+                    to="/register" 
+                    className="font-medium text-blue-600 hover:text-blue-500 hover:underline"
+                  >
+                    Đăng ký ngay
+                  </Link>
+                </p>
+              </div>
+            )}
+
+            {/* Security Notice for Staff */}
+            {loginType === "staff" && (
+              <div className="bg-yellow-50 border border-yellow-200 rounded-md p-3">
+                <div className="flex">
+                  <FontAwesomeIcon icon={faShieldAlt} className="h-5 w-5 text-yellow-400 mr-2 mt-0.5" />
+                  <div className="text-sm">
+                    <p className="text-yellow-800">
+                      <strong>Lưu ý bảo mật:</strong> Chỉ nhân viên được ủy quyền mới có thể truy cập hệ thống.
+                    </p>
+                  </div>
+                </div>
+              </div>
+            )}
           </form>
-        </div>
 
-        {/* Customer Login Form */}
-        <div className="form-container customer-container">
-          <form className="form-lg" onSubmit={(e) => handleLogin(e, false)}>
-            <div className="form-header">
-              <div className="icon-container customer-icon">
-                <FontAwesomeIcon icon={faUserAlt} />
-              </div>
-              <h1>Đăng nhập Khách hàng</h1>
-              <p className="subtitle">Chào mừng bạn đến với GenCare Center</p>
-            </div>
-            
-            <div className="form-group">
-              <div className="input-icon">
-                <FontAwesomeIcon icon={faUser} />
-              </div>
-              <div className="input-field">
-                <FormInputText
-                  textHolder="Tên đăng nhập"
-                  textName="username"
-                  value={formData.username}
-                  onChange={handleInputChange}
-                  onBlur={() => handleBlur("username")}
-                  validation={validate().username}
-                  showErrors={shouldShowError("username")}
-                  ref={(el) => (inputRefs.current.username = el)}
-                />
-                <small className="error-message">{shouldShowError("username") && validate().username}</small>
-              </div>
-            </div>
-            
-            <div className="form-group">
-              <div className="input-icon">
-                <FontAwesomeIcon icon={faLock} />
-              </div>
-              <div className="input-field">
-                <FormInputText
-                  textHolder="Mật khẩu"
-                  textName="password"
-                  type="password"
-                  value={formData.password}
-                  onChange={handleInputChange}
-                  onBlur={() => handleBlur("password")}
-                  validation={validate().password}
-                  showErrors={shouldShowError("password")}
-                  ref={(el) => (inputRefs.current.password = el)}
-                />
-                <small className="error-message">{shouldShowError("password") && validate().password}</small>
-              </div>
-            </div>
-
-            <div className="form-options customer-options">
-              <a href="/" className="forgot-password">Quên mật khẩu?</a>
-            </div>
-            
-            <button 
-              type="submit" 
-              className={`login-button customer-button ${isLoading ? 'loading' : ''}`}
-              disabled={isLoading}
+          {/* Back to Home Link */}
+          <div className="text-center">
+            <Link 
+              to="/" 
+              className="inline-flex items-center text-sm text-gray-600 hover:text-gray-800 hover:underline"
             >
-              {isLoading ? (
-                <div className="spinner"></div>
-              ) : (
-                <>
-                  <span>Đăng nhập</span>
-                  <FontAwesomeIcon icon={faArrowRight} className="button-icon" />
-                </>
-              )}
-            </button>
-            
-            <div className="register-link">
-              <span>Chưa có tài khoản?</span>
-              <a href="/">Đăng ký ngay</a>
-            </div>
-          </form>
-        </div>
-
-        {/* Overlay */}
-        <div className="overlay-container">
-          <div className="overlay">
-            <div className="overlay-panel overlay-left">
-              <h1 className="title">
-                <span className="welcome-text">Dành cho</span>
-                <span className="role-text">Khách hàng</span>
-              </h1>
-              <p>Đăng nhập để quản lý sức khỏe và đặt lịch hẹn của bạn</p>
-              <button className="ghost" id="login" onClick={toggleStaffLogin}>
-                <span>Đăng nhập khách hàng</span>
-                <FontAwesomeIcon icon={faArrowLeft} className="button-icon" />
-              </button>
-            </div>
-
-            <div className="overlay-panel overlay-right">
-              <h1 className="title">
-                <span className="welcome-text">Dành cho</span>
-                <span className="role-text">Nhân viên</span>
-              </h1>
-              <p>
-                Đăng nhập để truy cập hệ thống quản lý dịch vụ y tế
-              </p>
-              <button className="ghost" id="register" onClick={toggleStaffLogin}>
-                <span>Đăng nhập hệ thống</span>
-                <FontAwesomeIcon icon={faArrowRight} className="button-icon" />
-              </button>
-            </div>
+              <svg className="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 19l-7-7m0 0l7-7m-7 7h18" />
+              </svg>
+              Về trang chủ
+            </Link>
           </div>
         </div>
       </div>
+
+      {/* Footer */}
+      <Footer />
     </div>
   );
 }

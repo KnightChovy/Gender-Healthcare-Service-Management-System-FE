@@ -6,10 +6,8 @@ import ConsultationSection from './AppointmentItems/ConsultationSection';
 import DateTimeSection from './AppointmentItems/DateTimeSection';
 import AdditionalInfoSection from './AppointmentItems/AdditionalInfoSection';
 import FormActions from './AppointmentItems/FormActions';
-import classNames from 'classnames/bind';
-import styles from './Appointment.module.scss';
-
-const cx = classNames.bind(styles);
+import { Navbar } from '../../Layouts/LayoutHomePage/Navbar';
+import { Footer } from '../../Layouts/LayoutHomePage/Footer';
 
 function Appointment() {
     const [isLoggedIn, setIsLoggedIn] = useState(false);
@@ -150,7 +148,9 @@ function Appointment() {
     // }
 
     return ( 
-        <div className={cx('appointment-container')}>
+        <div className="min-h-screen bg-gradient-to-br from-blue-50 to-pink-50 py-8">
+            <Navbar />
+
             <Header isLoggedIn={isLoggedIn} />
             
             {/* <UserStatusCard 
@@ -159,7 +159,7 @@ function Appointment() {
                 onLogin={handleLogin}
             /> */}
 
-            <form onSubmit={handleSubmit} className={cx('appointment-form')}>
+            <form onSubmit={handleSubmit} className="max-w-4xl mx-auto px-4">
                 {!isLoggedIn && (
                     <PersonalInfoSection
                         formData={formData}
@@ -189,6 +189,8 @@ function Appointment() {
                     isSubmitting={isSubmitting}
                 />
             </form>
+
+            <Footer />
         </div>
      );
 }

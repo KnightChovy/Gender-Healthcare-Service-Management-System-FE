@@ -1,4 +1,4 @@
-export const validateRulesLogin = (formData) => ({
+export const validateRulesLogin = () => ({
   username: {
     required: true,
     minLength: 3,

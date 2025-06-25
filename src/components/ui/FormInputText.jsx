@@ -1,8 +1,5 @@
 import React, { useState, useEffect, forwardRef } from "react";
-import classNames from "classnames/bind";
-import styles from "../../assets/Register.module.scss";
-
-const cx = classNames.bind(styles);
+import PropTypes from "prop-types";
 
 const FormInputText = forwardRef(
   (
@@ -107,8 +104,8 @@ const FormInputText = forwardRef(
     const hasError = (error && touched) || (showErrors && !value.trim());
 
     return (
-      <div className={cx("form-input-text-container")}>
-        <div className={cx("form-input-text")}>
+      <div className="relative mb-4">
+        <div className="relative">
           <input
             ref={ref}
             type={type}
@@ -117,16 +114,44 @@ const FormInputText = forwardRef(
             value={value}
             onChange={handleChange}
             onBlur={handleBlur}
-            className={hasError ? cx("error") : ""}
+            className={`w-full px-4 py-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm ${
+              hasError 
+                ? 'border-red-500 bg-red-50 text-red-700' 
+                : 'border-gray-300 bg-white text-gray-900 hover:border-gray-400'
+            }`}
           />
-          {error && touched && <span className={cx("error-key")}>!</span>}
+          {error && touched && (
+            <span className="absolute right-3 top-1/2 transform -translate-y-1/2 text-red-500 font-bold">
+              !
+            </span>
+          )}
         </div>
-        {error && touched && <span className={cx("error-message")}>{error}</span>}
+        {error && touched && (
+          <span className="block text-red-500 text-xs mt-1 ml-1">
+            {error}
+          </span>
+        )}
       </div>
     );
   }
 );
 
 FormInputText.displayName = "FormInputText";
+
+FormInputText.propTypes = {
+  textHolder: PropTypes.string.isRequired,
+  textName: PropTypes.string.isRequired,
+  type: PropTypes.string,
+  validation: PropTypes.object,
+  value: PropTypes.string.isRequired,
+  onChange: PropTypes.func.isRequired,
+  showErrors: PropTypes.bool,
+};
+
+FormInputText.defaultProps = {
+  type: "text",
+  validation: {},
+  showErrors: false,
+};
 
 export default FormInputText;

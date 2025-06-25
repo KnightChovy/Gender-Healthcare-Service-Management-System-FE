@@ -1,9 +1,6 @@
 import React from 'react'
 import { useState } from 'react';
-import classNames from 'classnames/bind';
-import styles from '../../../assets/MenstrualCycle.module.scss';
-
-const cx = classNames.bind(styles);
+import PropTypes from 'prop-types';
 
 function CycleInputForm({ cycleData, onDataChange }) {
     const [timer, setTimer] = useState(null);
@@ -139,22 +136,26 @@ function CycleInputForm({ cycleData, onDataChange }) {
     }
 
     return (
-        <div className={cx('input-section')}>
-            <h2>Thông tin chu kì</h2>
+        <div className="bg-white p-6 rounded-lg shadow-lg">
+            <h2 className="text-2xl font-bold text-gray-800 mb-6">Thông tin chu kì</h2>
 
-            <div className={cx("form-group")} style={{ display: 'block' }}>
-                <span>Ngày đầu kì kinh nguyệt gần nhất:</span>
+            <div className="mb-6">
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Ngày đầu kì kinh nguyệt gần nhất:
+                </label>
                 <input
                     type='date'
                     name="lastPeriodDate"
                     value={cycleData.lastPeriodDate}
                     onChange={handleInputChange}
-                    style={{ width: '100%' }}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-pink-500 focus:border-transparent"
                 />
             </div>
 
-            <div className={cx("form-group")} style={{ display: 'block' }}>
-                <span>Độ dài chu kì (ngày):</span>
+            <div className="mb-6">
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Độ dài chu kì (ngày):
+                </label>
                 <input
                     type='number'
                     name="cycleLength"
@@ -162,12 +163,14 @@ function CycleInputForm({ cycleData, onDataChange }) {
                     onChange={handleInputChange}
                     min="21"
                     max="35"
-                    style={{ width: '100%' }}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-pink-500 focus:border-transparent"
                 />
             </div>
 
-            <div className={cx("form-group")} style={{ display: 'block' }}>
-                <span>Số ngày kinh nguyệt:</span>
+            <div className="mb-6">
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Số ngày kinh nguyệt:
+                </label>
                 <input
                     type='number'
                     name="periodLength"
@@ -175,13 +178,15 @@ function CycleInputForm({ cycleData, onDataChange }) {
                     onChange={handleInputChange}
                     min="3"
                     max="8"
-                    style={{ width: '100%' }}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-pink-500 focus:border-transparent"
                 />
             </div>
 
-            <div className={cx("form-group")}>
-                <span>Thời gian uống thuốc tránh thai:</span>
-                <div className={cx("time-input-container")}>
+            <div className="mb-6">
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Thời gian uống thuốc tránh thai:
+                </label>
+                <div className="flex gap-2 mb-4">
                     <input
                         type='time'
                         name="birthControlTime"
@@ -189,12 +194,12 @@ function CycleInputForm({ cycleData, onDataChange }) {
                         onChange={handleInputChange}
                         min="06:00"
                         max="23:00"
-                        className={cx('time-input')}
+                        className="flex-1 px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-pink-500 focus:border-transparent"
                     />
 
                     <button
                         type='button'
-                        className={cx('current-time-btn')}
+                        className="px-4 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600 transition-colors text-sm"
                         onClick={() => setQuickTime(getCurrentTime())}
                         title='Đặt thời gian hiện tại'
                     >
@@ -202,47 +207,47 @@ function CycleInputForm({ cycleData, onDataChange }) {
                     </button>
                 </div>
 
-                <div className={cx("quick-time-buttons")}>
-                    <span className={cx("quick-time-label")}>Thời gian phổ biến:</span>
-                    <div className={cx("time-buttons-grid")}>
+                <div className="mb-4">
+                    <span className="text-sm font-medium text-gray-700 mb-2 block">Thời gian phổ biến:</span>
+                    <div className="grid grid-cols-3 gap-2">
                         <button
                             type="button"
-                            className={cx("quick-time-btn")}
+                            className="px-3 py-2 bg-gray-100 text-gray-700 rounded-md hover:bg-gray-200 transition-colors text-sm"
                             onClick={() => setQuickTime('07:00')}
                         >
                             7:00 AM
                         </button>
                         <button
                             type="button"
-                            className={cx("quick-time-btn")}
+                            className="px-3 py-2 bg-gray-100 text-gray-700 rounded-md hover:bg-gray-200 transition-colors text-sm"
                             onClick={() => setQuickTime('08:00')}
                         >
                             8:00 AM
                         </button>
                         <button
                             type="button"
-                            className={cx("quick-time-btn")}
+                            className="px-3 py-2 bg-gray-100 text-gray-700 rounded-md hover:bg-gray-200 transition-colors text-sm"
                             onClick={() => setQuickTime('12:00')}
                         >
                             12:00 CH
                         </button>
                         <button
                             type="button"
-                            className={cx("quick-time-btn")}
+                            className="px-3 py-2 bg-gray-100 text-gray-700 rounded-md hover:bg-gray-200 transition-colors text-sm"
                             onClick={() => setQuickTime('18:00')}
                         >
                             6:00 CH
                         </button>
                         <button
                             type="button"
-                            className={cx("quick-time-btn")}
+                            className="px-3 py-2 bg-gray-100 text-gray-700 rounded-md hover:bg-gray-200 transition-colors text-sm"
                             onClick={() => setQuickTime('20:00')}
                         >
                             8:00 CH
                         </button>
                         <button
                             type="button"
-                            className={cx("quick-time-btn")}
+                            className="px-3 py-2 bg-gray-100 text-gray-700 rounded-md hover:bg-gray-200 transition-colors text-sm"
                             onClick={() => setQuickTime('22:00')}
                         >
                             10:00 CH
@@ -250,13 +255,13 @@ function CycleInputForm({ cycleData, onDataChange }) {
                     </div>
                 </div>
 
-                <div className={cx("day-selection-container")}>
-                    <div className={cx("day-selection-header")}>
-                        <span className={cx("day-selection-label")}>Chọn ngày trong tuần:</span>
-                        <div className={cx("day-selection-actions")}>
+                <div className="mb-4">
+                    <div className="flex justify-between items-center mb-3">
+                        <span className="text-sm font-medium text-gray-700">Chọn ngày trong tuần:</span>
+                        <div className="flex gap-2">
                             <button 
                                 type="button" 
-                                className={cx("select-all-btn")}
+                                className="px-3 py-1 bg-green-100 text-green-700 rounded-md hover:bg-green-200 transition-colors text-sm"
                                 onClick={selectAllDays}
                                 title="Chọn tất cả ngày"
                             >
@@ -264,7 +269,7 @@ function CycleInputForm({ cycleData, onDataChange }) {
                             </button>
                             <button 
                                 type="button" 
-                                className={cx("clear-all-btn")}
+                                className="px-3 py-1 bg-red-100 text-red-700 rounded-md hover:bg-red-200 transition-colors text-sm"
                                 onClick={clearAllDays}
                                 title="Bỏ chọn tất cả"
                             >
@@ -273,34 +278,43 @@ function CycleInputForm({ cycleData, onDataChange }) {
                         </div>
                     </div>
 
-                    <div className={cx("days-grid")}>
+                    <div className="grid grid-cols-7 gap-2">
                         {daysOfWeek.map(day => (
                             <label 
                                 key={day.value}
-                                className={cx("day-checkbox", { selected: selectedDays.includes(day.value) })}
+                                className={`flex flex-col items-center p-3 border rounded-md cursor-pointer transition-colors ${
+                                    selectedDays.includes(day.value) 
+                                        ? 'bg-pink-100 border-pink-500 text-pink-700' 
+                                        : 'bg-gray-50 border-gray-300 text-gray-700 hover:bg-gray-100'
+                                }`}
                             >
                                 <input
                                     type="checkbox"
                                     checked={selectedDays.includes(day.value)}
                                     onChange={() => handleDaySelection(day.value)}
+                                    className="sr-only"
                                 />
-                                <span className={cx("day-short")}>{day.short}</span>
-                                <span className={cx("day-full")}>{day.label}</span>
+                                <span className="font-bold text-lg">{day.short}</span>
+                                <span className="text-xs mt-1">{day.label}</span>
                             </label>
                         ))}
                     </div>
                     
                     {selectedDays.length > 0 && (
-                        <div className={cx("selected-days-info")}>
+                        <div className="mt-3 p-2 bg-green-100 text-green-700 rounded-md text-sm">
                             <span>✅ Đã chọn: {selectedDays.length} ngày</span>
                         </div>
                     )}
                 </div>
 
-                <div className={cx("reminder-section")}>
+                <div className="mb-4">
                     <button
                         type='button'
-                        className={cx("reminder-btn", { active: isTimerActive })}
+                        className={`w-full py-3 px-4 rounded-md font-medium transition-colors ${
+                            isTimerActive 
+                                ? 'bg-red-500 text-white hover:bg-red-600' 
+                                : 'bg-pink-500 text-white hover:bg-pink-600'
+                        } disabled:bg-gray-300 disabled:cursor-not-allowed`}
                         onClick={setReminder}
                         title={isTimerActive ? 'Hủy hẹn giờ' : 'Đặt hẹn giờ'}
                         disabled={!cycleData.birthControlTime || selectedDays.length === 0}
@@ -309,20 +323,30 @@ function CycleInputForm({ cycleData, onDataChange }) {
                     </button>
 
                     {isTimerActive && (
-                        <div className={cx("reminder-status")}>
-                            <span className={cx("status-text")}>
+                        <div className="mt-3 p-3 bg-blue-100 text-blue-700 rounded-md text-sm">
+                            <span className="font-medium">
                                 🔔 Đang hoạt động cho {selectedDays.length} ngày/tuần
                             </span>
                         </div>
                     )}
                 </div>
 
-                <small style={{ color: '#7f8c8d', fontSize: '0.85rem', marginTop: '5px', display: 'block' }}>
+                <small className="text-gray-500 text-sm block mt-2">
                     Thời gian nên đặt hẹn từ 6:00 sáng đến 11:00 tối
                 </small>
             </div>
         </div>
     );
 }
+
+CycleInputForm.propTypes = {
+    cycleData: PropTypes.shape({
+        lastPeriodDate: PropTypes.string,
+        cycleLength: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
+        periodLength: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
+        birthControlTime: PropTypes.string
+    }).isRequired,
+    onDataChange: PropTypes.func.isRequired
+};
 
 export default CycleInputForm;

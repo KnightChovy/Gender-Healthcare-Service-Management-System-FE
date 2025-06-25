@@ -2,10 +2,8 @@ import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faArrowLeft, faArrowRight, faPhone, faKey, faLock } from '@fortawesome/free-solid-svg-icons';
-import classNames from 'classnames/bind';
-import styles from './ForgetPassword.module.scss';
-
-const cx = classNames.bind(styles);
+import { Navbar } from '../../Layouts/LayoutHomePage/Navbar';
+import { Footer } from '../../Layouts/LayoutHomePage/Footer';
 
 function ForgetPassword() {
     const [step, setStep] = useState(1);
@@ -191,18 +189,19 @@ function ForgetPassword() {
     };
 
     return (
-        <div className={cx('forget-password-page')}>
-            <div className={cx('forget-password-container')}>
+        <div className="min-h-screen bg-gradient-to-br from-blue-50 to-pink-50 flex items-center justify-center px-4">
+            <Navbar />
+            <div className="bg-white rounded-2xl shadow-2xl p-8 w-full max-w-md">
                 <button
                     type="button"
-                    className={cx('back-button')}
+                    className="flex items-center gap-2 text-blue-600 hover:text-blue-800 font-medium mb-6 transition-colors"
                     onClick={handleBack}
                 >
                     <FontAwesomeIcon icon={faArrowLeft} />
                     <span>{step === 1 ? 'Quay lại đăng nhập': 'Quay lại'}</span>
                 </button>
 
-                <div className={cx('form-header')}>
+                <div className="text-center mb-8">
                     <h2>
                         {step === 1 && 'Quên mật khẩu'}
                         {step === 2 && 'Nhập mã OTP'}
@@ -216,16 +215,16 @@ function ForgetPassword() {
                 </div>
 
                 {errors.general && (
-                    <div className={cx('error-message', 'general-error')}>
+                    <div className="text-red-500 text-sm font-medium general-error">
                         {errors.general}
                     </div>
                 )}
 
                 {step === 1 && (
                     <form onSubmit={handleSendOTP}>
-                        <div className={cx('form-group')}>
-                            <div className={cx('input-container')}>
-                                <div className={cx('input-icon')}>
+                        <div className="space-y-2">
+                            <div className="input-container">
+                                <div className="input-icon">
                                     <FontAwesomeIcon icon={faPhone} />
                                 </div>
                                 <input
@@ -234,22 +233,22 @@ function ForgetPassword() {
                                     placeholder="Nhập số điện thoại (VD: 0901234567)"
                                     value={formData.phone}
                                     onChange={handleInputChange}
-                                    className={cx('input-field', { error: errors.phone })}
+                                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
                                     maxLength="10"
                                 />
                             </div>
                             {errors.phone && (
-                                <span className={cx('error-text')}>{errors.phone}</span>
+                                <span className="text-red-500 text-sm font-medium">{errors.phone}</span>
                             )}
                         </div>
 
                         <button 
                             type='submit' 
-                            className={cx('submit-button', { loading: isLoading })} 
+                            className="w-full bg-gradient-to-r from-blue-600 to-purple-600 text-white font-semibold py-3 px-6 rounded-lg hover:shadow-lg transform hover:scale-105 transition-all" 
                             disabled={isLoading}
                         >
                             {isLoading ? (
-                                <div className={cx('spinner')}></div>
+                                <div className="spinner"></div>
                             ) : (
                                 <>
                                     <span>Gửi mã OTP</span>
@@ -262,35 +261,35 @@ function ForgetPassword() {
 
                 {step === 2 && (
                     <form onSubmit={handleVerifyOTP}>
-                        <div className={cx('form-group')}>
-                            <div className={cx('input-container')}>
+                        <div className="space-y-2">
+                            <div className="input-container">
                                 <input
                                     type="text"
                                     name="otp"
                                     placeholder="* * * * * *"
                                     value={formData.otp}
                                     onChange={handleInputChange}
-                                    className={cx('input-field', 'otp-input', { error: errors.otp })}
+                                    className={`w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors text-center text-lg font-mono tracking-widest ${errors.otp ? 'border-red-500 bg-red-50' : ''}`}
                                     maxLength="6"
                                     style={{ textAlign: 'center', letterSpacing: '8px', fontSize: '18px' }}
                                 />
                             </div>
                             {errors.otp && (
-                                <span className={cx('error-text')}>{errors.otp}</span>
+                                <span className="text-red-500 text-sm font-medium">{errors.otp}</span>
                             )}
                         </div>
                         
-                        <p className={cx('otp-note')}>
+                        <p className="otp-note">
                             💡 Mã OTP demo: <strong>123456</strong>
                         </p>
                         
                         <button 
                             type='submit' 
-                            className={cx('submit-button', { loading: isLoading })} 
+                            className="w-full bg-gradient-to-r from-blue-600 to-purple-600 text-white font-semibold py-3 px-6 rounded-lg hover:shadow-lg transform hover:scale-105 transition-all" 
                             disabled={isLoading}
                         >
                             {isLoading ? (
-                                <div className={cx('spinner')}></div>
+                                <div className="spinner"></div>
                             ) : (
                                 <>
                                     <span>Xác nhận</span>
@@ -303,9 +302,9 @@ function ForgetPassword() {
 
                 {step === 3 && (
                     <form onSubmit={handleResetPassword}>
-                        <div className={cx('form-group')}>
-                            <div className={cx('input-container')}>
-                                <div className={cx('input-icon')}>
+                        <div className="space-y-2">
+                            <div className="input-container">
+                                <div className="input-icon">
                                     <FontAwesomeIcon icon={faKey} />
                                 </div>
                                 <input
@@ -314,17 +313,17 @@ function ForgetPassword() {
                                     placeholder="Mật khẩu mới (ít nhất 8 ký tự)"
                                     value={formData.newPassword}
                                     onChange={handleInputChange}
-                                    className={cx('input-field', { error: errors.newPassword })}
+                                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
                                 />
                             </div>
                             {errors.newPassword && (
-                                <span className={cx('error-text')}>{errors.newPassword}</span>
+                                <span className="text-red-500 text-sm font-medium">{errors.newPassword}</span>
                             )}
                         </div>
 
-                        <div className={cx('form-group')}>
-                            <div className={cx('input-container')}>
-                                <div className={cx('input-icon')}>
+                        <div className="space-y-2">
+                            <div className="input-container">
+                                <div className="input-icon">
                                     <FontAwesomeIcon icon={faLock} />
                                 </div>
                                 <input
@@ -333,27 +332,27 @@ function ForgetPassword() {
                                     placeholder="Xác nhận mật khẩu mới"
                                     value={formData.confirmPassword}
                                     onChange={handleInputChange}
-                                    className={cx('input-field', { error: errors.confirmPassword })}
+                                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
                                 />
                             </div>
                             {errors.confirmPassword && (
-                                <span className={cx('error-text')}>{errors.confirmPassword}</span>
+                                <span className="text-red-500 text-sm font-medium">{errors.confirmPassword}</span>
                             )}
                         </div>
 
-                        <div className={cx('password-requirements')}>
+                        <div className="password-requirements">
                             <small>Mật khẩu phải chứa:</small>
                             <ul>
-                                <li className={cx({ valid: /[a-z]/.test(formData.newPassword) })}>
+                                <li className={`text-sm ${/[a-z]/.test(formData.newPassword) ? 'text-green-600' : 'text-gray-500'}`}>
                                     Ít nhất 1 chữ thường
                                 </li>
-                                <li className={cx({ valid: /[A-Z]/.test(formData.newPassword) })}>
+                                <li className={`text-sm ${/[A-Z]/.test(formData.newPassword) ? 'text-green-600' : 'text-gray-500'}`}>
                                     Ít nhất 1 chữ hoa
                                 </li>
-                                <li className={cx({ valid: /\d/.test(formData.newPassword) })}>
+                                <li className={`text-sm ${/\d/.test(formData.newPassword) ? 'text-green-600' : 'text-gray-500'}`}>
                                     Ít nhất 1 chữ số
                                 </li>
-                                <li className={cx({ valid: formData.newPassword.length >= 8 })}>
+                                <li className={`text-sm ${formData.newPassword.length >= 8 ? 'text-green-600' : 'text-gray-500'}`}>
                                     Tối thiểu 8 ký tự
                                 </li>
                             </ul>
@@ -361,11 +360,11 @@ function ForgetPassword() {
 
                         <button 
                             type='submit' 
-                            className={cx('submit-button', { loading: isLoading })} 
+                            className="w-full bg-gradient-to-r from-blue-600 to-purple-600 text-white font-semibold py-3 px-6 rounded-lg hover:shadow-lg transform hover:scale-105 transition-all" 
                             disabled={isLoading}
                         >
                             {isLoading ? (
-                                <div className={cx('spinner')}></div>
+                                <div className="spinner"></div>
                             ) : (
                                 <>
                                     <span>Đặt lại mật khẩu</span>
@@ -376,6 +375,8 @@ function ForgetPassword() {
                     </form>
                 )}
             </div>
+
+            <Footer />
         </div>
     );
 }

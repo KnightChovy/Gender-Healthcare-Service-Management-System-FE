@@ -1,8 +1,5 @@
 import React from 'react';
-import classNames from 'classnames/bind';
-import styles from '../../../assets/MenstrualCycle.module.scss';
-
-const cx = classNames.bind(styles);
+import PropTypes from 'prop-types';
 
 function HealthTips({ currentPhase }) {
     const getPhaseTips = (phase) => {
@@ -53,23 +50,29 @@ function HealthTips({ currentPhase }) {
     const phaseTips = getPhaseTips(currentPhase);
 
     return ( 
-        <div className={cx('health-tips')}>
-            <h2>Lời khuyên sức khỏe</h2>
-            <div className={cx('tips-content')}>
+        <div className="bg-white rounded-xl shadow-lg p-6 border border-pink-100">
+            <h2 className="text-xl font-bold text-gray-800 mb-4 flex items-center">
+                <span className="text-2xl mr-2">💡</span>
+                Lời khuyên sức khỏe
+            </h2>
+            <div className="space-y-4">
                 {currentPhase && (
-                    <div className={cx('tip')}>
-                        <h4>{phaseTips.title}</h4>
-                        <ul>
-                            {phaseTips.tips.map((tip, index) => (
-                                <li key={index}>{tip}</li>
+                    <div className="bg-pink-50 rounded-lg p-4 border-l-4 border-pink-400">
+                        <h4 className="font-semibold text-pink-800 mb-2">{phaseTips.title}</h4>
+                        <ul className="space-y-1">
+                            {phaseTips.tips.map((tip) => (
+                                <li key={tip} className="flex items-start text-pink-700">
+                                    <span className="text-pink-400 mr-2 mt-1">•</span>
+                                    {tip}
+                                </li>
                             ))}
                         </ul>
                     </div>
                 )}
 
-                <div className={cx('general-tip')}>
-                    <h4>Lưu ý chung:</h4>
-                    <p>
+                <div className="bg-blue-50 rounded-lg p-4 border-l-4 border-blue-400">
+                    <h4 className="font-semibold text-blue-800 mb-2">Lưu ý chung:</h4>
+                    <p className="text-blue-700 text-sm leading-relaxed">
                         Hãy theo dõi thường xuyên và ghi chép các triệu chứng để có 
                         thông tin chính xác nhất về chu kì của bạn. Nếu có bất thường, 
                         hãy tham khảo ý kiến bác sĩ.
@@ -78,6 +81,14 @@ function HealthTips({ currentPhase }) {
             </div>
         </div>
     );
+};
+
+HealthTips.propTypes = {
+    currentPhase: PropTypes.string,
+};
+
+HealthTips.defaultProps = {
+    currentPhase: '',
 };
 
 export default HealthTips;
