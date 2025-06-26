@@ -48,7 +48,7 @@ export const SectionHero = () => {
 
               <div className="flex flex-wrap gap-3">
                 <Link
-                  to={accessToken ? "/booking" : "/login"}
+                  to={accessToken ? "/services/test" : "/login"}
                   className="flex items-center bg-white rounded-lg py-2 px-5 hover:shadow-md transition-shadow"
                 >
                   <div className="bg-blue-100 p-2 rounded-full mr-3">
@@ -73,7 +73,7 @@ export const SectionHero = () => {
                 </Link>
 
                 <Link
-                  to={accessToken ? "/packages" : "/login"}
+                  to={accessToken ? "/service" : "/login"}
                   className="flex items-center bg-white rounded-lg py-2 px-5 hover:shadow-md transition-shadow max-w-[235px]"
                 >
                   <div className="bg-green-100 p-2 rounded-full mr-3">
@@ -93,12 +93,16 @@ export const SectionHero = () => {
                     </svg>
                   </div>
                   <span className="text-gray-800 text-sm font-medium">
-                    Khám phá gói xét nghiệm
+                    Khám phá các dịch vụ xét nghiệm
                   </span>
                 </Link>
 
                 <Link
-                  to={accessToken ? "/appointment" : "/login"}
+                  to={
+                    accessToken
+                      ? "/services/appointment-consultation"
+                      : "/login"
+                  }
                   className="flex items-center bg-white rounded-lg py-2 px-5 hover:shadow-md transition-shadow"
                 >
                   <div className="bg-red-100 p-2 rounded-full mr-3">

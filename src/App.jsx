@@ -13,7 +13,7 @@ import PaymentSuccess from "./page/Payment/PaymentSuccess";
 import PaymentCancel from "./page/Payment/PaymentCancel";
 import { AdminRoute } from "./routes/AdminRouter";
 import TestServicePage from "./page/testservice";
-import ServicePage from "./page/Services/ServicePage";
+import { ServicePage } from "./page/Services/ServicePage";
 import ScrollToTop from "./components/ui/ScrollToTop";
 import MeetWidget from "./components/ui/MeetWidget";
 import About from "./page/AboutUs/About";
@@ -115,7 +115,7 @@ function App() {
           }
         ></Route>
         <Route
-          path="/appointment"
+          path="/services/appointment-consultation"
           element={
             <LayoutAccount>
               <Appointment />
@@ -193,7 +193,7 @@ function App() {
         </Route>
         {/* Test Service */}
         <Route
-          path="/service"
+          path="/services/test"
           element={
             <LayoutAccount>
               <TestServicePage />
