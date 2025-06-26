@@ -36,6 +36,8 @@ import ProfilePage from "./page/profile";
 import { ChangePassword } from "./page/changePassword/ChangePassword";
 import MyAppointments from "./page/account/MyAppointments";
 import GeminiChatbot from "./components/ui/GeminiChatbot";
+import FeedbackAppointment from "./page/Feedback/FeedbackAppointment";
+
 import { useEffect, useState } from "react";
 function App() {
   const [isAuthen, setIsAuthen] = useState(false);
@@ -167,6 +169,14 @@ function App() {
           element={
             <LayoutAccount>
               <PaymentCancel />
+            </LayoutAccount>
+          }
+        ></Route>
+        <Route
+          path="/feedbackappointment/:appointmentId"
+          element={
+            <LayoutAccount>
+              <FeedbackAppointment />
             </LayoutAccount>
           }
         ></Route>

@@ -358,130 +358,140 @@ function DateTimeSection({ formData, errors, onChange }) {
                             🕐 Giờ tư vấn
                         </label>
                         
-                        {!formData.appointmentDate ? (
-                            <div className={cx('time-placeholder')}>
-                                <div className={cx('placeholder-content')}>
-                                    <span className={cx('placeholder-icon')}>📅</span>
-                                    <p>Vui lòng chọn ngày trước để xem các khung giờ có sẵn</p>
-                                </div>
-                            </div>
-                        ) : isLoadingTimes ? (
-                            <div className={cx('time-loading')}>
-                                <div className={cx('loading-spinner')}></div>
-                                <p>Đang tải khung giờ có sẵn...</p>
-                            </div>
-                        ) : (availableTimes.morning?.length === 0 && availableTimes.afternoon?.length === 0) ? (
-                            <div className={cx('no-times')}>
-                                <span className={cx('no-times-icon')}>❌</span>
-                                <p>Không có khung giờ nào có sẵn cho ngày này</p>
-                                <small>Vui lòng chọn ngày khác</small>
-                            </div>
-                        ) : (
-                            <div className={cx('time-periods')}>
-                                {/* Morning Slots */}
-                                {availableTimes.morning?.length > 0 && (
-                                    <div className={cx('time-period')}>
-                                        <h4 className={cx('period-title')}>
-                                            🌅 Buổi sáng
-                                        </h4>
-                                        <div className={cx('time-slots')}>
-                                            {availableTimes.morning?.map(slot => (
-                                                <label
-                                                    key={slot.value}
-                                                    className={cx('time-slot', {
-                                                        'selected': formData.appointmentTime === slot.value,
-                                                        'available': slot.isAvailable,
-                                                        'unavailable': !slot.isAvailable,
-                                                        'no-schedule': slot.reason === 'Không có lịch',
-                                                        'booked': slot.reason === 'Đã đặt'
-                                                    })}
-                                                    style={{
-                                                        cursor: slot.isAvailable ? 'pointer' : 'not-allowed'
-                                                    }}
-                                                >
-                                                    <input
-                                                        type="radio"
-                                                        name="appointmentTime"
-                                                        value={slot.value}
-                                                        checked={formData.appointmentTime === slot.value}
-                                                        onChange={slot.isAvailable ? onChange : undefined}
-                                                        disabled={!slot.isAvailable}
-                                                        className={cx('time-radio')}
-                                                    />
-                                                    <span className={cx('time-label')}>
-                                                        {slot.label}
-                                                        {!slot.isAvailable && (
-                                                            <span className={cx('unavailable-badge', {
-                                                                'no-schedule-badge': slot.reason === 'Không có lịch',
-                                                                'booked-badge': slot.reason === 'Đã đặt'
-                                                            })}>
-                                                                {slot.reason}
-                                                            </span>
-                                                        )}
-                                                    </span>
-                                                </label>
-                                            ))}
+                        {(() => {
+                            if (!formData.appointmentDate) {
+                                return (
+                                    <div className={cx('time-placeholder')}>
+                                        <div className={cx('placeholder-content')}>
+                                            <span className={cx('placeholder-icon')}>📅</span>
+                                            <p>Vui lòng chọn ngày trước để xem các khung giờ có sẵn</p>
                                         </div>
                                     </div>
-                                )}
-
-                                {/* Afternoon Slots */}
-                                {availableTimes.afternoon?.length > 0 && (
-                                    <div className={cx('time-period')}>
-                                        <h4 className={cx('period-title')}>
-                                            🌇 Buổi chiều
-                                        </h4>
-                                        <div className={cx('time-slots')}>
-                                            {availableTimes.afternoon?.map(slot => (
-                                                <label
-                                                    key={slot.value}
-                                                    className={cx('time-slot', {
-                                                        'selected': formData.appointmentTime === slot.value,
-                                                        'available': slot.isAvailable,
-                                                        'unavailable': !slot.isAvailable,
-                                                        'no-schedule': slot.reason === 'Không có lịch',
-                                                        'booked': slot.reason === 'Đã đặt'
-                                                    })}
-                                                    style={{
-                                                        cursor: slot.isAvailable ? 'pointer' : 'not-allowed'
-                                                    }}
-                                                >
-                                                    <input
-                                                        type="radio"
-                                                        name="appointmentTime"
-                                                        value={slot.value}
-                                                        checked={formData.appointmentTime === slot.value}
-                                                        onChange={slot.isAvailable ? onChange : undefined}
-                                                        disabled={!slot.isAvailable}
-                                                        className={cx('time-radio')}
-                                                    />
-                                                    <span className={cx('time-label')}>
-                                                        {slot.label}
-                                                        {!slot.isAvailable && (
-                                                            <span className={cx('unavailable-badge', {
-                                                                'no-schedule-badge': slot.reason === 'Không có lịch',
-                                                                'booked-badge': slot.reason === 'Đã đặt'
-                                                            })}>
-                                                                {slot.reason}
-                                                            </span>
-                                                        )}
-                                                    </span>
-                                                </label>
-                                            ))}
-                                        </div>
+                                );
+                            } else if (isLoadingTimes) {
+                                return (
+                                    <div className={cx('time-loading')}>
+                                        <div className={cx('loading-spinner')}></div>
+                                        <p>Đang tải khung giờ có sẵn...</p>
                                     </div>
-                                )}
-
-                                {/* No slots available message for specific periods */}
-                                {availableTimes.morning?.length === 0 && availableTimes.afternoon?.length === 0 && (
+                                );
+                            } else if (availableTimes.morning?.length === 0 && availableTimes.afternoon?.length === 0) {
+                                return (
                                     <div className={cx('no-times')}>
                                         <span className={cx('no-times-icon')}>❌</span>
                                         <p>Không có khung giờ nào có sẵn cho ngày này</p>
                                         <small>Vui lòng chọn ngày khác</small>
                                     </div>
-                                )}
-                            </div>
-                        )}
+                                );
+                            } else {
+                                return (
+                                    <div className={cx('time-periods')}>
+                                        {/* Morning Slots */}
+                                        {availableTimes.morning?.length > 0 && (
+                                            <div className={cx('time-period')}>
+                                                <h4 className={cx('period-title')}>
+                                                    🌅 Buổi sáng
+                                                </h4>
+                                                <div className={cx('time-slots')}>
+                                                    {availableTimes.morning?.map(slot => (
+                                                        <label
+                                                            key={slot.value}
+                                                            className={cx('time-slot', {
+                                                                'selected': formData.appointmentTime === slot.value,
+                                                                'available': slot.isAvailable,
+                                                                'unavailable': !slot.isAvailable,
+                                                                'no-schedule': slot.reason === 'Không có lịch',
+                                                                'booked': slot.reason === 'Đã đặt'
+                                                            })}
+                                                            style={{
+                                                                cursor: slot.isAvailable ? 'pointer' : 'not-allowed'
+                                                            }}
+                                                        >
+                                                            <input
+                                                                type="radio"
+                                                                name="appointmentTime"
+                                                                value={slot.value}
+                                                                checked={formData.appointmentTime === slot.value}
+                                                                onChange={slot.isAvailable ? onChange : undefined}
+                                                                disabled={!slot.isAvailable}
+                                                                className={cx('time-radio')}
+                                                            />
+                                                            <span className={cx('time-label')}>
+                                                                {slot.label}
+                                                                {!slot.isAvailable && (
+                                                                    <span className={cx('unavailable-badge', {
+                                                                        'no-schedule-badge': slot.reason === 'Không có lịch',
+                                                                        'booked-badge': slot.reason === 'Đã đặt'
+                                                                    })}>
+                                                                        {slot.reason}
+                                                                    </span>
+                                                                )}
+                                                            </span>
+                                                        </label>
+                                                    ))}
+                                                </div>
+                                            </div>
+                                        )}
+
+                                        {/* Afternoon Slots */}
+                                        {availableTimes.afternoon?.length > 0 && (
+                                            <div className={cx('time-period')}>
+                                                <h4 className={cx('period-title')}>
+                                                    🌇 Buổi chiều
+                                                </h4>
+                                                <div className={cx('time-slots')}>
+                                                    {availableTimes.afternoon?.map(slot => (
+                                                        <label
+                                                            key={slot.value}
+                                                            className={cx('time-slot', {
+                                                                'selected': formData.appointmentTime === slot.value,
+                                                                'available': slot.isAvailable,
+                                                                'unavailable': !slot.isAvailable,
+                                                                'no-schedule': slot.reason === 'Không có lịch',
+                                                                'booked': slot.reason === 'Đã đặt'
+                                                            })}
+                                                            style={{
+                                                                cursor: slot.isAvailable ? 'pointer' : 'not-allowed'
+                                                            }}
+                                                        >
+                                                            <input
+                                                                type="radio"
+                                                                name="appointmentTime"
+                                                                value={slot.value}
+                                                                checked={formData.appointmentTime === slot.value}
+                                                                onChange={slot.isAvailable ? onChange : undefined}
+                                                                disabled={!slot.isAvailable}
+                                                                className={cx('time-radio')}
+                                                            />
+                                                            <span className={cx('time-label')}>
+                                                                {slot.label}
+                                                                {!slot.isAvailable && (
+                                                                    <span className={cx('unavailable-badge', {
+                                                                        'no-schedule-badge': slot.reason === 'Không có lịch',
+                                                                        'booked-badge': slot.reason === 'Đã đặt'
+                                                                    })}>
+                                                                        {slot.reason}
+                                                                    </span>
+                                                                )}
+                                                            </span>
+                                                        </label>
+                                                    ))}
+                                                </div>
+                                            </div>
+                                        )}
+
+                                        {/* No slots available message for specific periods */}
+                                        {availableTimes.morning?.length === 0 && availableTimes.afternoon?.length === 0 && (
+                                            <div className={cx('no-times')}>
+                                                <span className={cx('no-times-icon')}>❌</span>
+                                                <p>Không có khung giờ nào có sẵn cho ngày này</p>
+                                                <small>Vui lòng chọn ngày khác</small>
+                                            </div>
+                                        )}
+                                    </div>
+                                );
+                            }
+                        })()}
                         
                         {errors.appointmentTime && (
                             <span className={cx('error-message')}>

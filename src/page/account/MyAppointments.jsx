@@ -39,7 +39,7 @@ function MyAppointments() {
   const statusConfig = {
     'pending': { label: 'Chờ xác nhận', icon: faHourglassHalf, bgColor: '#fff8e1', textColor: '#e65100' },
     'confirmed': { label: 'Đã xác nhận', icon: faCheckCircle, bgColor: '#e8f5e8', textColor: '#2e7d32' },
-    'success': { label: 'Hoàn thành', icon: faCalendarCheck, bgColor: '#e3f2fd', textColor: '#1976d2' },
+    'success': { label: 'Đã hoàn thành thanh toán', icon: faCalendarCheck, bgColor: '#e3f2fd', textColor: '#1976d2' },
     'rejected': { label: 'Đã hủy', icon: faTimesCircle, bgColor: '#ffebee', textColor: '#d32f2f' }
   };
 
@@ -212,7 +212,7 @@ function MyAppointments() {
     { label: 'Tổng cuộc hẹn', value: appointments.length },
     { label: 'Chờ xác nhận', value: appointments.filter(apt => apt.status === 'pending').length },
     { label: 'Đã xác nhận', value: appointments.filter(apt => apt.status === 'confirmed' && apt.booking === 0).length },
-    { label: 'Hoàn thành', value: appointments.filter(apt => apt.status === 'confirmed' && apt.booking === 1).length },
+    { label: 'Đã hoàn thành thanh toán', value: appointments.filter(apt => apt.status === 'confirmed' && apt.booking === 1).length },
     { label: 'Đã hủy', value: appointments.filter(apt => apt.status === 'rejected').length }
   ];
 
@@ -266,7 +266,7 @@ function MyAppointments() {
               <option value="all">Tất cả</option>
               <option value="pending">Chờ xác nhận</option>
               <option value="confirmed">Đã xác nhận</option>
-              <option value="success">Hoàn thành</option>
+              <option value="success">Đã hoàn thành thanh toán</option>
               <option value="rejected">Đã hủy</option>
             </select>
           </div>
@@ -317,7 +317,7 @@ function MyAppointments() {
                       <FontAwesomeIcon icon={statusInfo.icon} />
                       {/* Logic hiển thị label dựa trên booking */}
                       {appointment.status === 'confirmed' && appointment.booking === 0 && 'Chờ thanh toán'}
-                      {appointment.status === 'confirmed' && appointment.booking === 1 && 'Hoàn thành'}
+                      {appointment.status === 'confirmed' && appointment.booking === 1 && 'Đã hoàn thành thanh toán'}
                       {appointment.status !== 'confirmed' && statusInfo.label}
                     </div>
                     
@@ -510,7 +510,7 @@ function MyAppointments() {
                 <div className={cx('detail-row')}>
                   <strong>Trạng thái:</strong>
                   <span className={cx('status-text')}>
-                    {getStatusInfo(selectedAppointment.status).label}
+                    {selectedAppointment.status === 'confirmed' && selectedAppointment.booking === 1 && 'Đã hoàn thành thanh toán'}
                   </span>
                 </div>
                 <div className={cx('detail-row')}>
