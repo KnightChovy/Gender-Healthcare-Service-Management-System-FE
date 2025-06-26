@@ -1,79 +1,55 @@
-import React, { useState } from "react";
+import { useState, useEffect } from "react";
+import { useSelector } from "react-redux";
+import doctorService from "../../services/doctor.service";
 
 // Mock data for doctor appointments
-const doctorAppointments = [
-  {
-    id: 1,
-    patientId: "P001",
-    patientName: "Nguyễn Thị An",
-    startTime: "2025-06-15T08:00:00",
-    endTime: "2025-06-15T09:00:00",
-    serviceName: "Khám sức khỏe tiền hôn nhân",
-    status: "PENDING",
-    notes: "Sưng, mủ và đau ở bẹn hạch.",
-  },
-  {
-    id: 2,
-    patientId: "P002",
-    patientName: "Trần Văn Bình",
-    startTime: "2025-06-15T09:30:00",
-    endTime: "2025-06-15T10:30:00",
-    serviceName: "Khám sức khỏe tiền hôn nhân",
-    status: "PENDING",
-  },
-  {
-    id: 3,
-    patientId: "P003",
-    patientName: "Lê Thị Cúc",
-    startTime: "2025-06-14T14:00:00",
-    endTime: "2025-06-14T15:00:00",
-    serviceName: "Khám sức khỏe tiền hôn nhân",
-    status: "COMPLETED",
-    notes: "Sưng và đau ở đầu dương vật, cũng như tinh hoàn.  ",
-  },
-  {
-    id: 4,
-    patientId: "P004",
-    patientName: "Phạm Văn Đạt",
-    startTime: "2025-06-14T10:00:00",
-    endTime: "2025-06-14T11:00:00",
-    serviceName: "Khám sức khỏe tiền hôn nhân",
-    status: "CANCELLED",
-  },
-  {
-    id: 5,
-    patientId: "P005",
-    patientName: "Hoàng Thị Em",
-    startTime: "2025-06-16T08:00:00",
-    endTime: "2025-06-16T09:00:00",
-    serviceName: "Khám sức khỏe tiền hôn nhân",
-    status: "PENDING",
-    notes: "Thai 5 tháng, siêu âm 4D",
-  },
-];
 
-const Appointments = () => {
-  const [appointments, setAppointments] = useState(doctorAppointments || []);
+const DoctorAppointments = () => {
+  const [doctorAppointments, setDoctorAppointments] = useState([]);
   const [filterStatus, setFilterStatus] = useState("ALL");
   const [searchTerm, setSearchTerm] = useState("");
+  const { user } = useSelector((state) => state.auth);
+
+  useEffect(() => {
+    const fetchAppointments = async () => {
+      if (user && user.user_id) {
+        try {
+          // Lấy ngày hiện tại khi component được mount
+          const data = await doctorService.fetchDoctorAppointmentsById(
+            user.user_id
+          );
+          setDoctorAppointments(data.data);
+        } catch (error) {
+          console.error("Error fetching appointments:", error);
+        }
+      }
+    };
+
+    fetchAppointments();
+  }, [user?.user_id]);
+  console.log("DoctorAppointments:", doctorAppointments);
 
   // Filter appointments by status and search term
-  const filteredAppointments = appointments.filter((app) => {
+  const filteredAppointments = doctorAppointments.filter((app) => {
     const matchesStatus = filterStatus === "ALL" || app.status === filterStatus;
     const matchesSearch =
-      app.patientName.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      app.serviceName.toLowerCase().includes(searchTerm.toLowerCase());
+      (app.first_name &&
+        app.first_name.toLowerCase().includes(searchTerm.toLowerCase())) ||
+      (app.last_name &&
+        app.last_name.toLowerCase().includes(searchTerm.toLowerCase())) ||
+      (app.serviceName &&
+        app.serviceName.toLowerCase().includes(searchTerm.toLowerCase()));
     return matchesStatus && matchesSearch;
   });
 
   // Status color mapping
   const getStatusClass = (status) => {
     switch (status) {
-      case "COMPLETED":
+      case "confirmed":
         return "bg-green-100 text-green-800";
-      case "CANCELLED":
+      case "rejected":
         return "bg-red-100 text-red-800";
-      case "PENDING":
+      case "pending":
         return "bg-yellow-100 text-yellow-800";
       default:
         return "bg-gray-100 text-gray-800";
@@ -94,7 +70,7 @@ const Appointments = () => {
 
   // Handle status change
   const handleStatusChange = (id, newStatus) => {
-    setAppointments((prevAppointments) =>
+    setDoctorAppointments((prevAppointments) =>
       prevAppointments.map((app) =>
         app.id === id ? { ...app, status: newStatus } : app
       )
@@ -131,9 +107,9 @@ const Appointments = () => {
             onChange={(e) => setFilterStatus(e.target.value)}
           >
             <option value="ALL">Tất cả trạng thái</option>
-            <option value="PENDING">Đang chờ</option>
-            <option value="COMPLETED">Đã hoàn thành</option>
-            <option value="CANCELLED">Đã hủy</option>
+            <option value="pending">Đang chờ xác nhận</option>
+            <option value="confirmed">Đã xác nhận, chờ thực hiện</option>
+            <option value="rejected">Đã hủy</option>
           </select>
         </div>
       </div>
@@ -169,41 +145,35 @@ const Appointments = () => {
               </tr>
             ) : (
               filteredAppointments.map((appointment) => (
-                <tr key={appointment.id}>
+                <tr key={appointment.appointment_id || appointment.id}>
                   <td className="px-6 py-4 whitespace-nowrap">
                     <div className="flex items-center">
                       <div className="flex-shrink-0 h-10 w-10">
                         <div className="h-10 w-10 rounded-full bg-blue-100 flex items-center justify-center text-blue-600">
-                          {appointment.patientName.charAt(0)}
+                          {appointment.first_name
+                            ? appointment.first_name.charAt(0)
+                            : "N"}
                         </div>
                       </div>
                       <div className="ml-4">
                         <div className="text-sm font-medium text-gray-900">
-                          {appointment.patientName}
-                        </div>
-                        <div className="text-sm text-gray-500">
-                          ID: {appointment.patientId}
+                          {appointment.first_name} {appointment.last_name}
                         </div>
                       </div>
                     </div>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
                     <div className="text-sm text-gray-900">
-                      {formatDateTime(appointment.startTime)}
+                      {appointment.date}
                     </div>
                     <div className="text-xs text-gray-500">
-                      Đến {formatDateTime(appointment.endTime).split(",")[1]}
+                      {appointment.appointment_time}
                     </div>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
                     <div className="text-sm text-gray-900">
-                      {appointment.serviceName}
+                      {appointment.serviceName || appointment.consultant_type}
                     </div>
-                    {appointment.notes && (
-                      <div className="text-xs text-gray-500">
-                        {appointment.notes}
-                      </div>
-                    )}
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
                     <span
@@ -211,9 +181,9 @@ const Appointments = () => {
                         appointment.status
                       )}`}
                     >
-                      {appointment.status === "COMPLETED" && "Đã hoàn thành"}
-                      {appointment.status === "CANCELLED" && "Đã hủy"}
-                      {appointment.status === "PENDING" && "Đang chờ"}
+                      {appointment.status === "confirmed" && "Đã được xác nhận, chờ thực hiện"}
+                      {appointment.status === "rejected" && "Đã hủy"}
+                      {appointment.status === "pending" && "Đang chờ xác nhận"}
                     </span>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm">
@@ -222,30 +192,25 @@ const Appointments = () => {
                         className="text-indigo-600 hover:text-indigo-900"
                         onClick={() =>
                           alert(
-                            `Xem chi tiết cuộc hẹn với ${appointment.patientName}`
+                            `Xem chi tiết cuộc hẹn với ${appointment.first_name} ${appointment.last_name}`
                           )
                         }
                       >
                         Chi tiết
                       </button>
 
-                      {appointment.status === "PENDING" && (
+                      {appointment.status === "confirmed" && (
                         <>
                           <button
                             className="text-green-600 hover:text-green-900"
                             onClick={() =>
-                              handleStatusChange(appointment.id, "COMPLETED")
+                              handleStatusChange(
+                                appointment.appointment_id || appointment.id,
+                                "completed"
+                              )
                             }
                           >
                             Hoàn thành
-                          </button>
-                          <button
-                            className="text-red-600 hover:text-red-900"
-                            onClick={() =>
-                              handleStatusChange(appointment.id, "CANCELLED")
-                            }
-                          >
-                            Hủy
                           </button>
                         </>
                       )}
@@ -261,4 +226,4 @@ const Appointments = () => {
   );
 };
 
-export default Appointments;
+export default DoctorAppointments;

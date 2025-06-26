@@ -2,26 +2,6 @@ import React, { useEffect, useState } from "react";
 import doctorService from "../../services/doctor.service";
 import Avatar from "@mui/material/Avatar";
 import axiosClient from "../../services/axiosClient";
-// Mock doctor data
-// const mockDoctorData = {
-//   id: "DR0123",
-//   name: "Nguyễn Thị Minh",
-//   email: "nguyen.minh@healthcare.com",
-//   phone: "0901234567",
-//   dob: "1985-08-15",
-//   gender: "Nữ",
-//   specialty: "Khoa Phụ sản",
-//   experience: "12 năm",
-//   education: "Đại học Y Hà Nội",
-//   certifications: [
-//     "Chứng chỉ hành nghề bác sĩ chuyên khoa sản",
-//     "Chứng nhận tư vấn dinh dưỡng thai kỳ",
-//     "Chứng nhận siêu âm 4D",
-//   ],
-//   avatar: "https://via.placeholder.com/150",
-//   bio: "Bác sĩ Nguyễn Thị Minh có hơn 12 năm kinh nghiệm trong lĩnh vực sản khoa và chăm sóc sức khỏe phụ nữ. Chuyên môn sâu về theo dõi thai kỳ, siêu âm 4D và tư vấn dinh dưỡng cho mẹ và bé.",
-//   address: "123 Đường Trường Chinh, Quận Đống Đa, Hà Nội",
-// };
 
 const Profile = () => {
   const [doctor, setDoctor] = useState();
@@ -208,7 +188,7 @@ const Profile = () => {
               BS. {doctor?.first_name} {doctor?.last_name}
             </h1>
             <p>{doctor?.bio}</p>
-            <p className="text-sm text-blue-100">ID: {doctor?.doctor_id}</p>
+            <p className="text-sm text-blue-100"></p>
           </div>
           <div className="space-x-2">
             <button

@@ -17,11 +17,15 @@ const Calendar = ({ appointments }) => {
   const [selectedDate, setSelectedDate] = useState(new Date());
   const { user } = useSelector((state) => state.auth);
   const [doctorAppointments, setDoctorAppointments] = useState([]);
-  useEffect(async () => {
-    // Lấy ngày hiện tại khi component được mount
-    const data = await doctorService.fetchDoctorAppointmentsById(user.user_id);
-    setDoctorAppointments(data.data);
-  }, []);
+  useEffect(() => {
+    const fetchDoctorAppointments = async () => {
+      // Lấy ngày hiện tại khi component được mount
+      const data = await doctorService.fetchDoctorAppointmentsById(user.user_id);
+      setDoctorAppointments(data.data);
+    };
+    
+    fetchDoctorAppointments();
+  }, [user.user_id]);
 
   const weekDates = getWeekDates(selectedDate);
 
