@@ -13,7 +13,7 @@ import PaymentSuccess from "./page/Payment/PaymentSuccess";
 import PaymentCancel from "./page/Payment/PaymentCancel";
 import { AdminRoute } from "./routes/AdminRouter";
 import TestServicePage from "./page/testservice";
-import ServicePage from "./page/Services/ServicePage";
+import { ServicePage } from "./page/Services/ServicePage";
 import ScrollToTop from "./components/ui/ScrollToTop";
 import MeetWidget from "./components/ui/MeetWidget";
 import About from "./page/AboutUs/About";
@@ -36,6 +36,8 @@ import ProfilePage from "./page/profile";
 import { ChangePassword } from "./page/changePassword/ChangePassword";
 import MyAppointments from "./page/account/MyAppointments";
 import GeminiChatbot from "./components/ui/GeminiChatbot";
+import FeedbackAppointment from "./page/Feedback/FeedbackAppointment";
+
 import { useEffect, useState } from "react";
 function App() {
   const [isAuthen, setIsAuthen] = useState(false);
@@ -115,7 +117,7 @@ function App() {
           }
         ></Route>
         <Route
-          path="/appointment"
+          path="/services/appointment-consultation"
           element={
             <LayoutAccount>
               <Appointment />
@@ -170,6 +172,14 @@ function App() {
             </LayoutAccount>
           }
         ></Route>
+        <Route
+          path="/feedbackappointment/:appointmentId"
+          element={
+            <LayoutAccount>
+              <FeedbackAppointment />
+            </LayoutAccount>
+          }
+        ></Route>
         {/* Admin */}
         <Route
           path="/admin"
@@ -193,7 +203,7 @@ function App() {
         </Route>
         {/* Test Service */}
         <Route
-          path="/service"
+          path="/services/test"
           element={
             <LayoutAccount>
               <TestServicePage />

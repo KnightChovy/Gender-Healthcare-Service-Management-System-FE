@@ -11,6 +11,7 @@ import { ProfilePage } from "../page/profile";
 import ServicePage from "../page/Services/ServicePage"; // Import trang dịch vụ mới
 import PaymentSuccess from "../page/Payment/PaymentSuccess";
 import PaymentCancel from "../page/Payment/PaymentCancel";
+import FeedbackAppointment from "../page/Feedback/FeedbackAppointment";
 
 const LayoutAccount = React.lazy(() => {
   import("../components/Layouts/LayoutAccount/LayoutAccount");
@@ -104,6 +105,14 @@ export function AccountRoutes() {
         element={
           <LayoutAccount>
             <PaymentCancel />
+          </LayoutAccount>
+        }
+      />
+      <Route
+        path="/feedbackappointment/:appointmentId"
+        element={
+          <LayoutAccount>
+            <FeedbackAppointment />
           </LayoutAccount>
         }
       />

@@ -180,7 +180,7 @@ function DoctorSelection({ formData, errors, onChange }) {
   };
 
   const handleDoctorSelect = async (doctor) => {
-    onChange({ target: { name: 'selectedDoctor', value: doctor.id } });
+    onChange({ target: { name: 'doctor_id', value: doctor.id } });
     onChange({ target: { name: 'doctorName', value: doctor.name } });
     onChange({ target: { name: 'preferredTime', value: '' } });
     
@@ -190,7 +190,7 @@ function DoctorSelection({ formData, errors, onChange }) {
 
   // Clear doctor selection
   const handleClearSelection = () => {
-    onChange({ target: { name: 'selectedDoctor', value: '' } });
+    onChange({ target: { name: 'doctor_id', value: '' } });
     onChange({ target: { name: 'doctorName', value: '' } });
     onChange({ target: { name: 'availableTimeSlots', value: [] } });
     onChange({ target: { name: 'preferredTime', value: '' } });
@@ -213,7 +213,7 @@ function DoctorSelection({ formData, errors, onChange }) {
       const randomDoctor = filteredDoctors[randomIndex];
       
       // Temporarily highlight the doctor during cycling
-      onChange({ target: { name: 'selectedDoctor', value: randomDoctor.id } });
+      onChange({ target: { name: 'doctor_id', value: randomDoctor.id } });
       
       cycleCount++;
       
@@ -226,7 +226,7 @@ function DoctorSelection({ formData, errors, onChange }) {
           const finalRandomDoctor = filteredDoctors[finalRandomIndex];
           
           // Update selection with final doctor
-          onChange({ target: { name: 'selectedDoctor', value: finalRandomDoctor.id } });
+          onChange({ target: { name: 'doctor_id', value: finalRandomDoctor.id } });
           onChange({ target: { name: 'doctorName', value: finalRandomDoctor.name } });
           onChange({ target: { name: 'preferredTime', value: '' } });
           
@@ -329,7 +329,7 @@ function DoctorSelection({ formData, errors, onChange }) {
             </button>
           )}
 
-          {formData.selectedDoctor && (
+          {formData.doctor_id && (
             <button
               type="button"
               className={cx('clear-selection-btn')}
@@ -344,15 +344,15 @@ function DoctorSelection({ formData, errors, onChange }) {
       </div>
 
       {/* Validation error message */}
-      {errors.selectedDoctor && (
+      {errors.doctor_id && (
         <div className={cx('doctor-error-message')}>
           <FontAwesomeIcon icon={faExclamationTriangle} />
-          <span>{errors.selectedDoctor}</span>
+          <span>{errors.doctor_id}</span>
         </div>
       )}
 
       {/* No selection warning */}
-      {!formData.selectedDoctor && !isRandomizing && filteredDoctors.length > 0 && (
+      {!formData.doctor_id && !isRandomizing && filteredDoctors.length > 0 && (
         <div className={cx('selection-warning')}>
           <div className={cx('warning-content')}>
             <FontAwesomeIcon icon={faExclamationTriangle} className={cx('warning-icon')} />
@@ -375,8 +375,8 @@ function DoctorSelection({ formData, errors, onChange }) {
               type="button"
               key={doctor.id}
               className={cx('doctor-card', {
-                selected: formData.selectedDoctor === doctor.id,
-                randomizing: isRandomizing && formData.selectedDoctor === doctor.id
+                selected: formData.doctor_id === doctor.id,
+                randomizing: isRandomizing && formData.doctor_id === doctor.id
               })}
               onClick={() => handleDoctorSelect(doctor)}
               disabled={isRandomizing}
@@ -438,7 +438,7 @@ function DoctorSelection({ formData, errors, onChange }) {
       </div>
 
       {/* Selected doctor confirmation */}
-      {formData.selectedDoctor && !isRandomizing && (
+      {formData.doctor_id && !isRandomizing && (
         <div className={cx('doctor-selected-note')}>
           <div className={cx('success-content')}>
             <div className={cx('success-text')}>

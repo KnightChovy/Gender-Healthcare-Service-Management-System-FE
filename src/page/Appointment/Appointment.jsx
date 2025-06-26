@@ -26,7 +26,7 @@ function Appointment() {
 
     // Thông tin cuộc hẹn
     consultationType: "",
-    selectedDoctor: "",
+    doctor_id: "",
     doctorName: "",
     appointmentDate: "",
     appointmentTime: "",
@@ -410,8 +410,8 @@ function Appointment() {
     }
 
     // Validate doctor selection - BẮT BUỘC
-    if (!formData.selectedDoctor) {
-      newErrors.selectedDoctor = "Vui lòng chọn bác sĩ tư vấn";
+    if (!formData.doctor_id) {
+      newErrors.doctor_id = "Vui lòng chọn bác sĩ tư vấn";
     }
 
     if (!formData.appointmentDate) {
@@ -449,7 +449,7 @@ function Appointment() {
     console.log('📋 Form data:', {
       appointmentDate: formData.appointmentDate,
       appointmentTime: formData.appointmentTime,
-      selectedDoctor: formData.selectedDoctor,
+      doctor_id: formData.doctor_id,
       doctorName: formData.doctorName
     });
 
@@ -496,11 +496,11 @@ function Appointment() {
 
         // Thông tin cuộc hẹn
         consultant_type: formData.consultationType,
-        selectedDoctor: formData.selectedDoctor,
+        doctor_id: formData.doctor_id,
         doctorName: formData.doctorName,
         appointmentDate: formData.appointmentDate,
         appointment_time: formData.appointmentTime,
-        timeslot_id: timeslotId, // ✅ Đã có timeslot_id
+        timeslot_id: timeslotId,
 
         // Thông tin y tế
         symptoms: formData.symptoms,
@@ -525,8 +525,8 @@ function Appointment() {
         throw new Error('Missing timeslot_id in final data');
       }
 
-      if (!appointmentData.selectedDoctor) {
-        throw new Error('Missing selectedDoctor in final data');
+      if (!appointmentData.doctor_id) {
+        throw new Error('Missing doctor_id in final data');
       }
 
       // Lưu vào localStorage
@@ -570,7 +570,7 @@ function Appointment() {
       if (error.message.includes('timeslot_id')) {
         errorMessage += "• Không thể xác định khung giờ\n";
       }
-      if (error.message.includes('selectedDoctor')) {
+      if (error.message.includes('doctor_id')) {
         errorMessage += "• Thiếu thông tin bác sĩ\n";
       }
       if (error.message.includes('HTTP error')) {
@@ -897,7 +897,7 @@ function Appointment() {
       formData.phone &&
       formData.email &&
       formData.consultationType &&
-      formData.selectedDoctor && // BẮT BUỘC phải chọn bác sĩ
+      formData.doctor_id && // BẮT BUỘC phải chọn bác sĩ
       formData.appointmentDate &&
       formData.appointmentTime
     );
@@ -1088,16 +1088,16 @@ function Appointment() {
               {/* Cập nhật validation cho bác sĩ - BẮT BUỘC */}
               <div
                 className={cx("validation-item", {
-                  valid: formData.selectedDoctor && !errors.selectedDoctor,
-                  invalid: !formData.selectedDoctor || errors.selectedDoctor,
+                  valid: formData.doctor_id && !errors.doctor_id,
+                  invalid: !formData.doctor_id || errors.doctor_id,
                 })}
               >
                 <span className={cx("validation-icon")}>
-                  {formData.selectedDoctor && !errors.selectedDoctor ? "✅" : "❌"}
+                  {formData.doctor_id && !errors.doctor_id ? "✅" : "❌"}
                 </span>
                 <span>
-                  {formData.selectedDoctor 
-                    ? `Bác sĩ: ${formData.doctorName}` 
+                  {formData.doctor_id
+                    ? `Bác sĩ: ${formData.doctorName}`
                     : "Chưa chọn bác sĩ"
                   }
                 </span>
