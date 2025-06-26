@@ -7,10 +7,12 @@ const GeminiChatbot = () => {
   const [input, setInput] = useState("");
   const [loading, setLoading] = useState(false);
   const [chatHistory, setChatHistory] = useState([]);
+
   const [isOpen, setIsOpen] = useState(false);
   const [isTyping, setIsTyping] = useState(false);
   const [currentTypingIndex, setCurrentTypingIndex] = useState(-1);
   const [displayText, setDisplayText] = useState("");
+
   const [responseLength, setResponseLength] = useState("short");
   const [showFeedbackRequest, setShowFeedbackRequest] = useState(false);
   const [lastResponseIndex, setLastResponseIndex] = useState(-1);

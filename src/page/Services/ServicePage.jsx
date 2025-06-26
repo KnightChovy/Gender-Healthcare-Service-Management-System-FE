@@ -545,9 +545,7 @@ const ServicePage = () => {
           </button>
         </div>
       </div>
-      {/* Add Scroll to Top button */}
       <ScrollToTop />
-
     </div>
   );
 };
