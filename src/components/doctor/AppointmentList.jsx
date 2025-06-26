@@ -6,14 +6,19 @@ const AppointmentList = ({}) => {
   const [appointments, setAppointments] = useState([]);
   const { user } = useSelector((state) => state.auth);
 
-  useEffect(async () => {
-    // Lấy ngày hiện tại khi component được mount
-    const data = await doctorService.fetchDoctorAppointmentsById(user.user_id);
-    setAppointments(data.data);
-  }, []);
+  useEffect(() => {
+    const fetchAppointments = async () => {
+      // Lấy ngày hiện tại khi component được mount
+      const data = await doctorService.fetchDoctorAppointmentsById(user.user_id);
+      setAppointments(data.data);
+    };
+    
+    fetchAppointments();
+  }, [user.user_id]);
+  console.log("Appointments:", appointments);
   // Sắp xếp lịch hẹn theo ngày và giờ
   const sortedAppointments = [...appointments].sort(
-    (a, b) => new Date(a.startTime) - new Date(b.startTime)
+    (a, b) => new Date(a.appointment_time) - new Date(b.appointment_time)
   );
 
   // Lọc lịch hẹn sắp tới (chỉ hiển thị trạng thái PENDING)
@@ -73,12 +78,12 @@ const AppointmentList = ({}) => {
             className="flex items-center py-4 border-b border-gray-100 last:border-b-0"
           >
             <div className="text-center px-3 py-2 bg-gray-100 rounded text-sm text-gray-700 min-w-[80px]">
-              {formatDateTime(appointment.startTime)}
+              {formatDateTime(appointment.appointment_time)}
             </div>
 
             <div className="flex-1 px-4">
               <h3 className="font-medium text-gray-800">
-                {appointment.patientName}
+                {appointment.first_name}
               </h3>
               <p className="text-sm text-gray-600">{appointment.serviceName}</p>
               <span

@@ -2,11 +2,12 @@ import React from "react";
 import Calendar from "../../components/doctor/Calender";
 import AppointmentList from "../../components/doctor/AppointmentList";
 import { doctorAppointments } from "../../components/Data/Doctor"; // Import từ file có sẵn
+import { useSelector } from "react-redux";
 
 const DoctorDashboard = () => {
   // Dữ liệu từ file có sẵn
   const mockAppointments = doctorAppointments || [];
-
+  const { user } = useSelector((state) => state.auth);
   // Tính toán thống kê từ dữ liệu
   // Đếm lịch hẹn hôm nay
   const today = new Date();
@@ -49,7 +50,7 @@ const DoctorDashboard = () => {
   return (
     <div className="p-6 max-w-[85rem] mx-auto">
       <h1 className="text-2xl text-blue-600 font-medium mb-8">
-        Xin chào, Bác sĩ Nguyễn Thị Minh
+        Xin chào, Bác sĩ {user.last_name} {user.first_name}!
       </h1>
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
