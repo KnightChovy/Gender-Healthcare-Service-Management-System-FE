@@ -1,103 +1,72 @@
-import React, { useState } from "react";
-
-// Mock data for patients
-const mockPatients = [
-  {
-    id: 1,
-    name: "Nguyễn Thị An",
-    gender: "Nữ",
-    age: 28,
-    phone: "0912345678",
-    visitCount: 5,
-    lastVisit: "2025-06-12",
-    medicalCondition: "Triệu chứng giống bệnh lậu",
-  },
-  {
-    id: 2,
-    name: "Trần Văn Bình",
-    gender: "Nam",
-    age: 35,
-    phone: "0923456789",
-    visitCount: 2,
-    lastVisit: "2025-06-10",
-    medicalCondition: "Sưng, mủ và đau ở bẹn hạch.",
-  },
-  {
-    id: 3,
-    name: "Lê Thị Cúc",
-    gender: "Nữ",
-    age: 42,
-    phone: "0934567890",
-    visitCount: 3,
-    lastVisit: "2025-06-05",
-    medicalCondition: "Ngứa vùng kín, dịch âm đạo bất thường",
-  },
-  {
-    id: 4,
-    name: "Phạm Văn Đạt",
-    gender: "Nam",
-    age: 30,
-    phone: "0945678901",
-    visitCount: 1,
-    lastVisit: "2025-05-30",
-    medicalCondition: "Khám sức khỏe",
-  },
-  {
-    id: 5,
-    name: "Hoàng Thị Hoa",
-    gender: "Nữ",
-    age: 25,
-    phone: "0956789012",
-    visitCount: 4,
-    lastVisit: "2025-06-09",
-    medicalCondition: "Viêm nhiễm phụ khoa",
-  },
-  {
-    id: 6,
-    name: "Vũ Văn Giang",
-    gender: "Nam",
-    age: 45,
-    phone: "0967890123",
-    visitCount: 2,
-    lastVisit: "2025-05-20",
-    medicalCondition:
-      "Xuất hiện vết loét ở vùng sinh dục, có thể nổi hạch bẹn đi kèm",
-  },
-  {
-    id: 7,
-    name: "Đặng Thị Hương",
-    gender: "Nữ",
-    age: 29,
-    phone: "0978901234",
-    visitCount: 6,
-    lastVisit: "2025-06-11",
-    medicalCondition: "Triệu chứng giống bệnh mụn rộp sinh dục",
-  },
-  {
-    id: 8,
-    name: "Ngô Thanh Long",
-    gender: "Nam",
-    age: 38,
-    phone: "0989012345",
-    visitCount: 1,
-    lastVisit: "2025-06-01",
-    medicalCondition:
-      "Đau dạ dàySưng và đau ở đầu dương vật, cũng như tinh hoàn.  ",
-  },
-];
+import React, { useState, useEffect } from "react";
+import { useSelector } from "react-redux";
+import doctorService from "../../services/doctor.service";
 
 const Patients = () => {
-  const [patients, setPatients] = useState(mockPatients);
+  const [patients, setPatients] = useState([]);
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedPatient, setSelectedPatient] = useState(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const { user } = useSelector((state) => state.auth);
+  useEffect(() => {
+    const fetchAppointments = async () => {
+      if (user && user.user_id) {
+        try {
+          // Lấy danh sách bệnh nhân từ các cuộc hẹn của bác sĩ
+          const data = await doctorService.fetchDoctorAppointmentsById(
+            user.user_id
+          );
+          // Xử lý dữ liệu để tạo danh sách bệnh nhân duy nhất
+          const appointmentsData = data.data || [];
+          const uniquePatients = [];
+          const patientMap = new Map();
+          
+          appointmentsData.forEach(appointment => {
+            const patientId = appointment.patient_id;
+            if (!patientMap.has(patientId)) {
+              patientMap.set(patientId, {
+                id: patientId,
+                name: `${appointment.first_name} ${appointment.last_name}`,
+                first_name: appointment.first_name,
+                last_name: appointment.last_name,
+                phone: appointment.phone || 'Chưa có thông tin',
+                gender: appointment.gender || 'Chưa xác định',
+                age: appointment.age || 'Chưa có thông tin',
+                medicalCondition: appointment.consultant_type || 'Tư vấn chung',
+                lastVisit: appointment.appointment_time || new Date().toISOString(),
+                visitCount: 1
+              });
+              uniquePatients.push(patientMap.get(patientId));
+            } else {
+              // Cập nhật số lần khám
+              const existingPatient = patientMap.get(patientId);
+              existingPatient.visitCount += 1;
+              // Cập nhật lần khám gần nhất nếu cần
+              if (new Date(appointment.appointment_time) > new Date(existingPatient.lastVisit)) {
+                existingPatient.lastVisit = appointment.appointment_time;
+              }
+            }
+          });
+          
+          setPatients(uniquePatients);
+        } catch (error) {
+          console.error("Error fetching appointments:", error);
+          setPatients([]); // Set mảng rỗng khi có lỗi
+        }
+      }
+    };
+
+    fetchAppointments();
+  }, [user?.user_id]);
+  console.log("Patients:", patients);
 
   // Filter patients based on search term
-  const filteredPatients = patients.filter(
+  const filteredPatients = (patients || []).filter(
     (patient) =>
-      patient.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      patient.phone.includes(searchTerm) ||
-      patient.medicalCondition.toLowerCase().includes(searchTerm.toLowerCase())
+      (patient.first_name && patient.first_name.toLowerCase().includes(searchTerm.toLowerCase())) ||
+      (patient.name && patient.name.toLowerCase().includes(searchTerm.toLowerCase())) ||
+      (patient.phone && patient.phone.includes(searchTerm)) ||
+      (patient.medicalCondition && patient.medicalCondition.toLowerCase().includes(searchTerm.toLowerCase()))
   );
 
   // Format date
@@ -171,8 +140,8 @@ const Patients = () => {
                 </tr>
               </thead>
               <tbody className="bg-white divide-y divide-gray-200">
-                {filteredPatients.map((patient) => (
-                  <tr key={patient.id} className="hover:bg-gray-50">
+                {filteredPatients.map((patient, index) => (
+                  <tr key={patient.id || `patient-${index}`} className="hover:bg-gray-50">
                     <td className="px-6 py-4 whitespace-nowrap">
                       <div className="flex items-center">
                         <div className="flex-shrink-0 h-10 w-10">
@@ -183,12 +152,12 @@ const Patients = () => {
                                 : "bg-blue-100 text-blue-600"
                             } flex items-center justify-center`}
                           >
-                            {patient.name.charAt(0)}
+                            {patient.first_name ? patient.first_name.charAt(0) : 'N'}
                           </div>
                         </div>
                         <div className="ml-4">
                           <div className="text-sm font-medium text-gray-900">
-                            {patient.name}
+                            {patient.first_name}
                           </div>
                           <div className="text-sm text-gray-500">
                             {patient.gender}, {patient.age} tuổi
