@@ -1350,6 +1350,28 @@
     }
   }
 
+  &:nth-child(4) {
+    border-left-color: #b9102c;
+    animation-delay: 0.3s;
+    
+    &:hover {
+      background: linear-gradient(
+        135deg,
+        rgba(185, 16, 44, 0.05),
+        rgba(185, 16, 44, 0.02)
+      );
+    }
+
+    .note-icon {
+      background: linear-gradient(135deg, #d1fae5, #a7f3d0);
+      color: #b9102c;
+    }
+
+    p strong {
+      color: #c3383a;
+    }
+  }
+
   @media (max-width: 768px) {
     padding: var(--spacing-sm);
     margin-bottom: var(--spacing-sm);

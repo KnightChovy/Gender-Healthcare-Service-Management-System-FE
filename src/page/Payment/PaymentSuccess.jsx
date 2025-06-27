@@ -17,22 +17,18 @@ function PaymentSuccess() {
     const navigate = useNavigate();
     const [searchParams] = useSearchParams();
     
-    // States
     const [paymentData, setPaymentData] = useState(null);
     const [appointmentData, setAppointmentData] = useState(null);
     const [isLoading, setIsLoading] = useState(true);
 
-    // Get params from URL
     const sessionId = searchParams.get('session_id') || searchParams.get('checkout_session_id');
     const paymentId = searchParams.get('payment_id') || searchParams.get('transaction_id');
     const appointmentId = searchParams.get('appointment_id');
     const amount = searchParams.get('amount');
 
-    // User info
     const user = JSON.parse(localStorage.getItem('user') || '{}');
     const accessToken = localStorage.getItem('accessToken');
 
-    // Format functions
     const formatCurrency = (amount) => {
         return new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(amount);
     };
@@ -59,13 +55,11 @@ function PaymentSuccess() {
         }).format(date);
     };
 
-    // Load payment and appointment data
     useEffect(() => {
         const loadPaymentSuccess = async () => {
             try {
                 setIsLoading(true);
 
-                // Get saved payment session
                 const savedSession = JSON.parse(localStorage.getItem('currentPaymentSession') || '{}');
                 
                 console.log('✅ Payment success params:', {
@@ -76,7 +70,6 @@ function PaymentSuccess() {
                     savedSession
                 });
 
-                // Create payment record
                 const paymentRecord = {
                     sessionId: sessionId || savedSession.sessionId,
                     paymentId: paymentId,
@@ -89,7 +82,6 @@ function PaymentSuccess() {
 
                 setPaymentData(paymentRecord);
 
-                // Load appointment data if available
                 if (paymentRecord.appointmentId && accessToken) {
                     try {
                         const response = await axiosClient.get(`/v1/appointments/user/${user.user_id}`, {
@@ -111,15 +103,12 @@ function PaymentSuccess() {
                     }
                 }
 
-                // Save payment success record
                 const existingPayments = JSON.parse(localStorage.getItem('paymentSuccess') || '[]');
                 existingPayments.push(paymentRecord);
                 localStorage.setItem('paymentSuccess', JSON.stringify(existingPayments));
 
-                // Clean up payment session
                 localStorage.removeItem('currentPaymentSession');
 
-                // Optional: Update appointment payment status via API
                 if (paymentRecord.appointmentId && accessToken) {
                     try {
                         await axiosClient.post('/v1/emails/booking-confirmation', {
@@ -140,7 +129,6 @@ function PaymentSuccess() {
         loadPaymentSuccess();
     }, [sessionId, paymentId, appointmentId, amount]);
 
-    // Action handlers
     const handleDownloadReceipt = () => {
         const receiptData = {
             paymentId: paymentData.paymentId,
@@ -181,8 +169,7 @@ function PaymentSuccess() {
             }
         });
     };
-
-    // Loading state
+    
     if (isLoading) {
         return (
             <div className={cx('wrap')}>

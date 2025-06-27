@@ -40,7 +40,6 @@ function Login() {
     password: null,
   });
 
-  // Validation function
   const validate = () => validateRulesLogin(formData);
 
   const focusFirstError = (errors) => {
@@ -51,7 +50,6 @@ function Login() {
     }
   };
 
-  // Input handlers
   const handleInputChange = (name, value) => {
     setFormData((prev) => ({
       ...prev,
@@ -111,7 +109,6 @@ function Login() {
           })
         );
 
-        // Thêm toast success khi đăng nhập thành công
         toast.success("Đăng nhập thành công", {
           autoClose: 1000,
           position: "top-right",
@@ -137,13 +134,12 @@ function Login() {
             navigate("/manager");
             break;
           case "user":
-            navigate("/"); // Chuyển về trang chủ thay vì /account
+            navigate("/");
             break;
         }
       } catch (error) {
         console.error("Login error: ", error);
 
-        // Thêm toast error khi đăng nhập thất bại
         toast.error("Đăng nhập thất bại", {
           autoClose: 1000,
           position: "top-right",
@@ -162,7 +158,6 @@ function Login() {
       setErrorMessage("Đã xảy ra lỗi không mong muốn");
       console.log("Login failed: ", error);
 
-      // Thêm toast error cho lỗi không mong muốn
       toast.error("Đăng nhập thất bại", {
         autoClose: 1000,
         position: "top-right",

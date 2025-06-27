@@ -2,7 +2,6 @@ import React, { useState, useEffect } from 'react';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import {
   faUserMd,
-  faStar,
   faGraduationCap,
   faStethoscope,
   faCheckCircle,
@@ -25,7 +24,6 @@ function DoctorSelection({ formData, errors, onChange }) {
   const [apiError, setApiError] = useState(null);
   const [isLoadingTimeslots, setIsLoadingTimeslots] = useState(false);
 
-  // Fetch doctors from API
   useEffect(() => {
     const fetchDoctors = async () => {
       try {
@@ -36,14 +34,11 @@ function DoctorSelection({ formData, errors, onChange }) {
         
         const apiData = response.data;
         
-        // Check if response has success flag and data
         if (!apiData.success || !apiData.listAllDoctors) {
           throw new Error('Invalid API response format');
         }
         
-        // Transform API data to match the expected format
         const transformedDoctors = apiData.listAllDoctors.map(doctor => {
-          // Get specialization from certificates
           const specializations = doctor.certificates?.map(cert => cert.specialization) || [];
           
           return {
@@ -51,8 +46,6 @@ function DoctorSelection({ formData, errors, onChange }) {
             name: `${doctor.last_name} ${doctor.first_name}`.trim(),
             specialty: specializations.length > 0 ? specializations : ['Tư vấn tổng quát'],
             experience: `${doctor.experience_year} năm kinh nghiệm`,
-            rating: (Math.random() * 2 + 3).toFixed(1), // Random rating 3.0-5.0
-            reviews: Math.floor(Math.random() * 100) + 20, // Random reviews for demo
             education: doctor.certificates?.[0]?.certificate || 'Bằng cấp y khoa',
             bio: doctor.bio || 'Bác sĩ chuyên nghiệp với nhiều năm kinh nghiệm',
             consultationTypes: specializations,
@@ -62,7 +55,7 @@ function DoctorSelection({ formData, errors, onChange }) {
             status: doctor.status,
             certificates: doctor.certificates || []
           };
-        }).filter(doctor => doctor.status === 1); // Only active doctors
+        }).filter(doctor => doctor.status === 1);
         
         setAllDoctors(transformedDoctors);
         console.log('✅ Fetched doctors from API:', transformedDoctors);
@@ -70,20 +63,16 @@ function DoctorSelection({ formData, errors, onChange }) {
       } catch (error) {
         console.error('❌ Error fetching doctors:', error);
         
-        // Xử lý lỗi chi tiết hơn với axios
         let errorMessage = 'Không thể tải danh sách bác sĩ';
         
         if (error.response) {
-          // Lỗi từ server
           errorMessage = `Server error: ${error.response.status}`;
           if (error.response.data?.message) {
             errorMessage += ` - ${error.response.data.message}`;
           }
         } else if (error.request) {
-          // Lỗi network
           errorMessage = 'Lỗi kết nối mạng';
         } else {
-          // Lỗi khác
           errorMessage = error.message;
         }
         
@@ -97,11 +86,9 @@ function DoctorSelection({ formData, errors, onChange }) {
     fetchDoctors();
   }, []);
 
-  // Filter doctors based on consultation type
   useEffect(() => {
     if (formData.consultationType && allDoctors.length > 0) {
       const filtered = allDoctors.filter(doctor => {
-        // Check if doctor's specialty matches consultation type
         return doctor.specialty.some(spec => 
           spec.toLowerCase().includes(formData.consultationType.toLowerCase()) ||
           formData.consultationType.toLowerCase().includes(spec.toLowerCase())
@@ -111,44 +98,36 @@ function DoctorSelection({ formData, errors, onChange }) {
         );
       });
       
-      // If no specific match, show all doctors (they can handle general consultations)
       setFilteredDoctors(filtered.length > 0 ? filtered : allDoctors);
     } else {
       setFilteredDoctors(allDoctors);
     }
   }, [formData.consultationType, allDoctors]);
 
-  // Fetch available time slots for selected doctor
   const fetchDoctorTimeSlots = async (doctorId) => {
     setIsLoadingTimeslots(true);
     
     try {
       console.log(`🕒 Fetching available time slots for doctor ID: ${doctorId}`);
       
-      // Get access token from localStorage
       const accessToken = localStorage.getItem('accessToken');
       
-      // Make API request with token in headers
       const response = await axiosClient.get(`/v1/doctors/${doctorId}/available-timeslots`, {
         headers: {
           "x-access-token": accessToken,
         }
       });
       
-      // Check for the exact response format provided
       if (response.data && response.data.success && response.data.data && response.data.data.schedules) {
         const schedules = response.data.data.schedules;
         console.log('✅ Available schedules:', schedules);
 
-        // Sort schedules by date
         schedules.sort((a, b) => {
           return new Date(a.date) - new Date(b.date);
         });
         
-        // Save to localStorage for DateTimeSection to use
         localStorage.setItem('doctorAvailableTimeslots', JSON.stringify(schedules));
         
-        // Pass the entire schedules array to parent component
         onChange({ 
           target: { 
             name: 'availableTimeSlots', 
@@ -163,7 +142,6 @@ function DoctorSelection({ formData, errors, onChange }) {
     } catch (error) {
       console.error('❌ Error fetching doctor time slots:', error);
       
-      // Reset timeSlots to empty array on error
       onChange({ 
         target: { 
           name: 'availableTimeSlots', 
@@ -184,11 +162,9 @@ function DoctorSelection({ formData, errors, onChange }) {
     onChange({ target: { name: 'doctorName', value: doctor.name } });
     onChange({ target: { name: 'preferredTime', value: '' } });
     
-    // Fetch available time slots when doctor is selected
     await fetchDoctorTimeSlots(doctor.id);
   };
 
-  // Clear doctor selection
   const handleClearSelection = () => {
     onChange({ target: { name: 'doctor_id', value: '' } });
     onChange({ target: { name: 'doctorName', value: '' } });
@@ -198,13 +174,11 @@ function DoctorSelection({ formData, errors, onChange }) {
     localStorage.removeItem('doctorAvailableTimeslots');
   };
 
-  // Random doctor selection function
   const handleRandomSelection = async () => {
     if (filteredDoctors.length === 0) return;
     
     setIsRandomizing(true);
     
-    // Create animation effect by cycling through doctors
     let cycleCount = 0;
     const maxCycles = 8;
     
@@ -212,7 +186,6 @@ function DoctorSelection({ formData, errors, onChange }) {
       const randomIndex = Math.floor(Math.random() * filteredDoctors.length);
       const randomDoctor = filteredDoctors[randomIndex];
       
-      // Temporarily highlight the doctor during cycling
       onChange({ target: { name: 'doctor_id', value: randomDoctor.id } });
       
       cycleCount++;
@@ -220,29 +193,24 @@ function DoctorSelection({ formData, errors, onChange }) {
       if (cycleCount >= maxCycles) {
         clearInterval(cycleInterval);
         
-        // Final selection after a short delay
         setTimeout(async () => {
           const finalRandomIndex = Math.floor(Math.random() * filteredDoctors.length);
           const finalRandomDoctor = filteredDoctors[finalRandomIndex];
           
-          // Update selection with final doctor
           onChange({ target: { name: 'doctor_id', value: finalRandomDoctor.id } });
           onChange({ target: { name: 'doctorName', value: finalRandomDoctor.name } });
           onChange({ target: { name: 'preferredTime', value: '' } });
           
-          // Fetch available time slots
           await fetchDoctorTimeSlots(finalRandomDoctor.id);
           
           setIsRandomizing(false);
           
-          // Show success notification
           console.log(`🎲 Đã chọn ngẫu nhiên bác sĩ: ${finalRandomDoctor.name}`);
         }, 300);
       }
     }, 120);
   };
 
-  // Loading state
   if (isLoading) {
     return (
       <div className={cx('form-section', 'doctor-selection-section')}>
@@ -262,7 +230,6 @@ function DoctorSelection({ formData, errors, onChange }) {
     );
   }
 
-  // Error state
   if (apiError) {
     return (
       <div className={cx('form-section', 'doctor-selection-section')}>
@@ -407,13 +374,6 @@ function DoctorSelection({ formData, errors, onChange }) {
                 {doctor.bio && (
                   <p className={cx('bio')}>{doctor.bio}</p>
                 )}
-
-                {/* Rating */}
-                <div className={cx('rating')}>
-                  <FontAwesomeIcon icon={faStar} />
-                  <span>{doctor.rating}</span>
-                  <span className={cx('reviews')}>({doctor.reviews} đánh giá)</span>
-                </div>
               </div>
 
               <div className={cx('selection-indicator')}>
@@ -470,7 +430,7 @@ function DoctorSelection({ formData, errors, onChange }) {
         {filteredDoctors.length > 0 && (
           <div className={cx('doctors-stats')}>
             <span className={cx('stats-text')}>
-              📊 Có <strong>{filteredDoctors.length}</strong> bác sĩ có sẵn
+              Có <strong>{filteredDoctors.length}</strong> bác sĩ có sẵn
               {formData.consultationType && ` chuyên về ${formData.consultationType}`}
             </span>
           </div>

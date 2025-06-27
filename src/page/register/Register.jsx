@@ -69,7 +69,6 @@ function Register() {
       }
     }
 
-    // Check birthDate
     const { day, month, year } = formData.birthDate;
     if (!day || !month || !year) {
       const birthDateElement = document.querySelector(".date-of-birth");
@@ -87,7 +86,6 @@ function Register() {
         block: "center",
       });
 
-      // Focus vào radio button đầu tiên
       const firstRadio = inputRefs.current.gender.querySelector(
         "input[type='radio']"
       );
@@ -134,13 +132,11 @@ function Register() {
 
       const formatBirthDate = () => {
         const { day, month, year } = formData.birthDate;
-        // Đảm bảo day và month có 2 chữ số
         const formattedDay = day.toString().padStart(2, "0");
         const formattedMonth = month.toString().padStart(2, "0");
         return `${year}-${formattedMonth}-${formattedDay}`;
       };
 
-      // Chuẩn bị dữ liệu để gửi đến API
       const userData = {
         username: formData.username,
         password: formData.password,
@@ -165,11 +161,9 @@ function Register() {
     } catch (error) {
       console.error("Error during registration:", error);
 
-      // Xử lý lỗi từ server
       let errorMessage = "Đăng ký thất bại: ";
 
       if (error.response) {
-        // Lỗi từ server (4xx, 5xx)
         const responseData = error.response.data;
 
         if (responseData.message) {
@@ -180,7 +174,6 @@ function Register() {
           errorMessage += "\n• " + responseData.errors.join("\n• ");
         }
       } else {
-        // Lỗi network hoặc lỗi khác
         errorMessage +=
           "Đã xảy ra lỗi trong quá trình đăng ký. Vui lòng thử lại sau.";
       }

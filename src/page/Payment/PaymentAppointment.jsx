@@ -18,7 +18,6 @@ function PaymentAppointment() {
     const location = useLocation();
     const { appointmentId } = useParams();
 
-    // States
     const [appointmentData, setAppointmentData] = useState(null);
     const [paymentMethod, setPaymentMethod] = useState('');
     const [isProcessing, setIsProcessing] = useState(false);
@@ -26,20 +25,16 @@ function PaymentAppointment() {
     const [isLoading, setIsLoading] = useState(true);
     const [error, setError] = useState(null);
 
-    // User info
     const user = JSON.parse(localStorage.getItem('user') || '{}');
     const accessToken = localStorage.getItem('accessToken');
 
-    // Payment methods
     const paymentMethods = [
         { id: 'zalopay', name: 'Ví ZaloPay', icon: faMobileAlt, description: 'Thanh toán qua ví điện tử ZaloPay' },
         { id: 'momo', name: 'Ví MoMo', icon: faMobileAlt, description: 'Thanh toán qua ví điện tử MoMo' },
         { id: 'vnpay', name: 'VNPay', icon: faMobileAlt, description: 'Thanh toán qua cổng VNPay' }
     ];
 
-    // Utility functions
     const formatCurrency = (amount) => {
-        // Chuyển đổi thành số nguyên để loại bỏ phần thập phân
         const numericAmount = parseInt(amount) || parseFloat(amount) || 0;
         return new Intl.NumberFormat('vi-VN', { 
             style: 'currency', 
@@ -60,7 +55,6 @@ function PaymentAppointment() {
         return specialtyKey ? specialtyMapping[specialtyKey] : (specialtyMapping[consultationType] || consultationType);
     };
 
-    // Load appointment data
     useEffect(() => {
         const loadAppointmentData = async () => {
             if (!user.user_id || !accessToken) {
@@ -69,7 +63,6 @@ function PaymentAppointment() {
                 return;
             }
 
-            // Use data from location state if available
             if (!appointmentId && location.state?.appointmentData) {
                 setAppointmentData(location.state.appointmentData);
                 setIsLoading(false);
@@ -121,7 +114,6 @@ function PaymentAppointment() {
         loadAppointmentData();
     }, [appointmentId, user.user_id, accessToken, location.state]);
 
-    // Handle payment
     const handlePayment = async () => {
         if (!paymentMethod) {
             alert('Vui lòng chọn phương thức thanh toán');
@@ -133,23 +125,22 @@ function PaymentAppointment() {
         try {
             const paymentData = {
                 user_id: parseInt(user.user_id),
-                price: Math.floor(parseFloat(appointmentData.price_apm)), // Chuyển thành số nguyên
+                price: Math.floor(parseFloat(appointmentData.price_apm)),
                 appointment_id: appointmentData.appointment_id,
             };
 
             console.log('💰 Payment data with formatted price:', paymentData);
 
-            // Save payment session với price đã format
             localStorage.setItem('currentPaymentSession', JSON.stringify({
                 sessionId: `session_${Date.now()}`,
                 appointmentId: appointmentData.id || appointmentData.appointment_id,
-                amount: Math.floor(parseFloat(appointmentData.price_apm)), // Format ở đây cũng
+                amount: Math.floor(parseFloat(appointmentData.price_apm)),
                 paymentMethod: paymentMethod,
                 createdAt: new Date().toISOString(),
                 status: 'pending',
                 appointmentData: {
                     ...appointmentData,
-                    price_apm: Math.floor(parseFloat(appointmentData.price_apm)) // Format trong appointmentData
+                    price_apm: Math.floor(parseFloat(appointmentData.price_apm))
                 }
             }));
 
@@ -164,7 +155,6 @@ function PaymentAppointment() {
                 throw new Error('Không nhận được phản hồi từ máy chủ');
             }
 
-            // Redirect to payment gateway
             window.location.href = response.data.url;
 
         } catch (error) {
@@ -175,7 +165,6 @@ function PaymentAppointment() {
         }
     };
 
-    // Render loading state
     if (isLoading) {
         return (
             <div className={cx('container')}>
@@ -187,7 +176,6 @@ function PaymentAppointment() {
         );
     }
 
-    // Render error state
     if (error) {
         return (
             <div className={cx('container')}>
@@ -208,7 +196,6 @@ function PaymentAppointment() {
         );
     }
 
-    // Render success state
     if (paymentStatus === 'success') {
         return (
             <div className={cx('container')}>
@@ -226,7 +213,6 @@ function PaymentAppointment() {
         );
     }
 
-    // Render failed state
     if (paymentStatus === 'failed') {
         return (
             <div className={cx('container')}>
@@ -242,7 +228,6 @@ function PaymentAppointment() {
         );
     }
 
-    // Main payment UI
     return (
         <div className={cx('wrap')}>
             <div className={cx('container')}>

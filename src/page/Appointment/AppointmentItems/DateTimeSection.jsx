@@ -8,15 +8,12 @@ function DateTimeSection({ formData, errors, onChange }) {
     const [availableTimes, setAvailableTimes] = useState([]);
     const [isLoadingTimes, setIsLoadingTimes] = useState(false);
 
-    // Lấy timeslots từ localStorage
     const availableTimeslots = JSON.parse(localStorage.getItem('doctorAvailableTimeslots')) || [];
 
-    // Tìm schedule theo ngày đã chọn
     const getScheduleForDate = (date) => {
         return availableTimeslots.find(sch => sch.date === date);
     };
 
-    // Khi ngày thay đổi, cập nhật availableTimes dựa trên timeslots của doctor
     useEffect(() => {
         if (!formData.appointmentDate) {
             setAvailableTimes([]);
@@ -26,25 +23,20 @@ function DateTimeSection({ formData, errors, onChange }) {
         setIsLoadingTimes(true);
 
         setTimeout(() => {
-            // Lấy lại timeslots từ localStorage mỗi lần chọn ngày
             const availableTimeslots = JSON.parse(localStorage.getItem('doctorAvailableTimeslots')) || [];
             const schedule = availableTimeslots.find(sch => sch.date === formData.appointmentDate);
             
-            // Tạo tất cả các slot trong khung giờ làm việc
             const createAllTimeSlots = () => {
                 const morningSlots = [];
                 const afternoonSlots = [];
                 
-                // Tạo slots buổi sáng (8:00 - 11:00) - bao gồm 11:00
                 for (let hour = 8; hour <= 11; hour++) {
                     for (let minute = 0; minute < 60; minute += 30) {
-                        // Chỉ tạo slot 11:00, không tạo 11:30
                         if (hour === 11 && minute > 0) break;
                         
                         const timeString = `${hour.toString().padStart(2, '0')}:${minute.toString().padStart(2, '0')}:00`;
                         const displayTime = `${hour.toString().padStart(2, '0')}:${minute.toString().padStart(2, '0')}`;
                         
-                        // Kiểm tra xem slot này có trong schedule không và có được đặt chưa
                         let isAvailable = false;
                         let timeslotId = null;
                         let reason = 'Không có lịch';
@@ -81,16 +73,15 @@ function DateTimeSection({ formData, errors, onChange }) {
                     }
                 }
                 
-                // Tạo slots buổi chiều (13:30 - 16:30) - bao gồm 16:30
                 for (let hour = 13; hour <= 16; hour++) {
                     let startMinute, endMinute;
                     
                     if (hour === 13) {
-                        startMinute = 30; // Bắt đầu từ 13:30
+                        startMinute = 30;
                         endMinute = 60;
                     } else if (hour === 16) {
                         startMinute = 0;
-                        endMinute = 30; // Chỉ tạo đến 16:30
+                        endMinute = 30;
                     } else {
                         startMinute = 0;
                         endMinute = 60;
@@ -101,7 +92,6 @@ function DateTimeSection({ formData, errors, onChange }) {
                             const timeString = `16:30:00`;
                             const displayTime = `16:30`;
                             
-                            // Kiểm tra availability logic...
                             let isAvailable = false;
                             let timeslotId = null;
                             let reason = 'Không có lịch';
@@ -189,33 +179,28 @@ function DateTimeSection({ formData, errors, onChange }) {
         }, 300);
     }, [formData.appointmentDate]);
 
-    // Get tomorrow's date in YYYY-MM-DD format (không cho phép đặt hôm nay)
     const getMinDate = () => {
         const tomorrow = new Date();
         tomorrow.setDate(tomorrow.getDate() + 1);
         return tomorrow.toISOString().split('T')[0];
     };
 
-    // Get max date (6 months from now)
     const getMaxDate = () => {
         const maxDate = new Date();
         maxDate.setMonth(maxDate.getMonth() + 6);
         return maxDate.toISOString().split('T')[0];
     };
 
-    // Check if selected date is Sunday (Chủ nhật = 0)
     const isSunday = (dateString) => {
         const date = new Date(dateString + 'T00:00:00');
         return date.getDay() === 0;
     };
 
-    // Check if selected date is Saturday
     const isSaturday = (dateString) => {
         const date = new Date(dateString + 'T00:00:00');
         return date.getDay() === 6;
     };
 
-    // Check if date is in the past
     const isPastDate = (dateString) => {
         const selectedDate = new Date(dateString + 'T00:00:00');
         const today = new Date();
@@ -223,7 +208,6 @@ function DateTimeSection({ formData, errors, onChange }) {
         return selectedDate <= today;
     };
 
-    // Validate date selection
     const validateDate = (dateString) => {
         if (!dateString) return true;
 
@@ -240,8 +224,6 @@ function DateTimeSection({ formData, errors, onChange }) {
 
     const handleDateChange = (e) => {
         const { name, value } = e.target;
-        
-        // Validate date trước khi set
         if (name === 'appointmentDate' && value) {
             const dateError = validateDate(value);
             if (dateError) {
@@ -259,7 +241,6 @@ function DateTimeSection({ formData, errors, onChange }) {
 
         onChange(e);
         
-        // Reset selected time when date changes
         if (name === 'appointmentDate' && formData.appointmentTime) {
             const timeResetEvent = {
                 target: {
@@ -271,7 +252,6 @@ function DateTimeSection({ formData, errors, onChange }) {
         }
     };
 
-    // Check if selected date has any validation issues
     const hasDateIssues = formData.appointmentDate && (
         isPastDate(formData.appointmentDate) || 
         isSunday(formData.appointmentDate)
