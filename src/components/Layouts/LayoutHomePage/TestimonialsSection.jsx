@@ -1,4 +1,5 @@
 import React from "react";
+import { Link } from "react-router-dom";
 
 export const TestimonialsSection = () => {
   return (
@@ -194,6 +195,12 @@ export const TestimonialsSection = () => {
               </div>
             </div>
           </div>
+        </div>
+
+        <div className="mt-10 text-center">
+          <Link to="/feedback" className="px-4 py-2 bg-blue-600 text-white rounded-md">
+            Chia sẻ trải nghiệm của bạn
+          </Link>
         </div>
       </div>
     </section>

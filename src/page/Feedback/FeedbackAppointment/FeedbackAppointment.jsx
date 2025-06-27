@@ -2,9 +2,10 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate, useParams, useLocation } from 'react-router-dom';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import {
-  faStar, faComment, faUserMd, faCalendarAlt,
+  faStar, faUserMd, faCalendarAlt,
   faClock, faCheckCircle, faTimesCircle, faSpinner,
-  faThumbsUp, faThumbsDown, faPaperPlane, faArrowLeft
+  faThumbsUp, faThumbsDown, faPaperPlane, faArrowLeft,
+  faStethoscope
 } from '@fortawesome/free-solid-svg-icons';
 import axiosClient from '../../../services/axiosClient';
 import classNames from 'classnames/bind';
@@ -23,23 +24,15 @@ function FeedbackAppointment() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState(null);
   
-  // Feedback form states
-  const [rating, setRating] = useState(0);
+  // Simplified feedback form - chỉ cho tư vấn
   const [hoverRating, setHoverRating] = useState(0);
   const [feedback, setFeedback] = useState({
-    overall_rating: 0,
-    doctor_rating: 0,
-    service_rating: 0,
-    facility_rating: 0,
-    comment: '',
-    would_recommend: null,
-    improvement_suggestions: '',
-    categories: {
-      punctuality: 0,
-      communication: 0,
-      professionalism: 0,
-      effectiveness: 0
-    }
+    overall_rating: 0,           
+    doctor_rating: 0,            
+    consultation_quality: 0,     
+    comment: '',                 
+    would_recommend: null,       
+    improvement_suggestions: ''  
   });
   const [showSuccess, setShowSuccess] = useState(false);
 
@@ -66,20 +59,7 @@ function FeedbackAppointment() {
   };
 
   const handleRatingChange = (category, value) => {
-    if (category === 'overall') {
-      setFeedback(prev => ({ ...prev, overall_rating: value }));
-    } else if (category === 'doctor') {
-      setFeedback(prev => ({ ...prev, doctor_rating: value }));
-    } else if (category === 'service') {
-      setFeedback(prev => ({ ...prev, service_rating: value }));
-    } else if (category === 'facility') {
-      setFeedback(prev => ({ ...prev, facility_rating: value }));
-    } else {
-      setFeedback(prev => ({
-        ...prev,
-        categories: { ...prev.categories, [category]: value }
-      }));
-    }
+    setFeedback(prev => ({ ...prev, [category]: value }));
   };
 
   const handleInputChange = (field, value) => {
@@ -90,7 +70,7 @@ function FeedbackAppointment() {
     e.preventDefault();
     
     if (feedback.overall_rating === 0) {
-      alert('Vui lòng đánh giá tổng quan về dịch vụ');
+      alert('Vui lòng đánh giá tổng quan về buổi tư vấn');
       return;
     }
 
@@ -187,7 +167,7 @@ function FeedbackAppointment() {
         <div className={cx('success-animation')}>
           <FontAwesomeIcon icon={faCheckCircle} className={cx('success-icon')} />
           <h2>Cảm ơn bạn đã đánh giá!</h2>
-          <p>Phản hồi của bạn rất quan trọng với chúng tôi</p>
+          <p>Phản hồi của bạn giúp chúng tôi cải thiện chất lượng tư vấn</p>
           <div className={cx('redirect-info')}>
             <FontAwesomeIcon icon={faSpinner} spin />
             <span>Đang chuyển về trang lịch hẹn...</span>
@@ -210,15 +190,15 @@ function FeedbackAppointment() {
             Quay lại
           </button>
           <div className={cx('header-content')}>
-            <h1>Đánh giá chất lượng dịch vụ</h1>
-            <p>Chia sẻ trải nghiệm của bạn để chúng tôi cải thiện dịch vụ tốt hơn</p>
+            <h1>🩺 Đánh giá buổi tư vấn</h1>
+            <p>Chia sẻ trải nghiệm tư vấn của bạn để chúng tôi phục vụ tốt hơn</p>
           </div>
         </div>
 
         {/* Appointment Info */}
         {appointmentData && (
           <div className={cx('appointment-info')}>
-            <h3>Thông tin cuộc hẹn</h3>
+            <h3>Thông tin buổi tư vấn</h3>
             <div className={cx('info-grid')}>
               <div className={cx('info-item')}>
                 <FontAwesomeIcon icon={faUserMd} />
@@ -233,7 +213,7 @@ function FeedbackAppointment() {
                 <span>Giờ: {appointmentData.appointment_time}</span>
               </div>
               <div className={cx('info-item')}>
-                <FontAwesomeIcon icon={faComment} />
+                <FontAwesomeIcon icon={faStethoscope} />
                 <span>Loại tư vấn: {appointmentData.consultant_type}</span>
               </div>
             </div>
@@ -244,10 +224,10 @@ function FeedbackAppointment() {
         <form onSubmit={handleSubmit} className={cx('feedback-form')}>
           {/* Overall Rating */}
           <div className={cx('rating-section', 'main-rating')}>
-            <h3>Đánh giá tổng quan</h3>
+            <h3>🌟 Đánh giá tổng quan về buổi tư vấn</h3>
             <div className={cx('rating-container')}>
               <div className={cx('stars-container')}>
-                {renderStarRating('overall', feedback.overall_rating, 'large')}
+                {renderStarRating('overall_rating', feedback.overall_rating, 'large')}
               </div>
               <div className={cx('rating-text')}>
                 {getRatingText(hoverRating || feedback.overall_rating)}
@@ -255,14 +235,17 @@ function FeedbackAppointment() {
             </div>
           </div>
 
-          {/* Detailed Ratings */}
-          <div className={cx('detailed-ratings')}>
-            <h3>Đánh giá chi tiết</h3>
+          {/* Consultation Specific Ratings */}
+          <div className={cx('consultation-ratings')}>
+            <h3>📋 Đánh giá chi tiết</h3>
             
             <div className={cx('rating-row')}>
-              <label>Bác sĩ tư vấn</label>
+              <label>
+                <FontAwesomeIcon icon={faUserMd} className={cx('rating-icon')} />
+                Bác sĩ tư vấn
+              </label>
               <div className={cx('rating-stars')}>
-                {renderStarRating('doctor', feedback.doctor_rating)}
+                {renderStarRating('doctor_rating', feedback.doctor_rating)}
               </div>
               <span className={cx('rating-label')}>
                 {getRatingText(feedback.doctor_rating)}
@@ -270,64 +253,22 @@ function FeedbackAppointment() {
             </div>
 
             <div className={cx('rating-row')}>
-              <label>Chất lượng dịch vụ</label>
+              <label>
+                <FontAwesomeIcon icon={faStethoscope} className={cx('rating-icon')} />
+                Chất lượng tư vấn
+              </label>
               <div className={cx('rating-stars')}>
-                {renderStarRating('service', feedback.service_rating)}
+                {renderStarRating('consultation_quality', feedback.consultation_quality)}
               </div>
               <span className={cx('rating-label')}>
-                {getRatingText(feedback.service_rating)}
+                {getRatingText(feedback.consultation_quality)}
               </span>
-            </div>
-
-            <div className={cx('rating-row')}>
-              <label>Cơ sở vật chất</label>
-              <div className={cx('rating-stars')}>
-                {renderStarRating('facility', feedback.facility_rating)}
-              </div>
-              <span className={cx('rating-label')}>
-                {getRatingText(feedback.facility_rating)}
-              </span>
-            </div>
-          </div>
-
-          {/* Category Ratings */}
-          <div className={cx('category-ratings')}>
-            <h3>Các tiêu chí đánh giá</h3>
-            
-            <div className={cx('categories-grid')}>
-              <div className={cx('category-item')}>
-                <label>Đúng giờ</label>
-                <div className={cx('rating-stars')}>
-                  {renderStarRating('punctuality', feedback.categories.punctuality)}
-                </div>
-              </div>
-
-              <div className={cx('category-item')}>
-                <label>Giao tiếp</label>
-                <div className={cx('rating-stars')}>
-                  {renderStarRating('communication', feedback.categories.communication)}
-                </div>
-              </div>
-
-              <div className={cx('category-item')}>
-                <label>Chuyên nghiệp</label>
-                <div className={cx('rating-stars')}>
-                  {renderStarRating('professionalism', feedback.categories.professionalism)}
-                </div>
-              </div>
-
-              <div className={cx('category-item')}>
-                <label>Hiệu quả</label>
-                <div className={cx('rating-stars')}>
-                  {renderStarRating('effectiveness', feedback.categories.effectiveness)}
-                </div>
-              </div>
             </div>
           </div>
 
           {/* Recommendation */}
           <div className={cx('recommendation-section')}>
-            <h3>Bạn có giới thiệu dịch vụ này cho người khác không?</h3>
+            <h3>💡 Bạn có giới thiệu dịch vụ tư vấn này cho người khác không?</h3>
             <div className={cx('recommendation-buttons')}>
               <button
                 type="button"
@@ -350,10 +291,10 @@ function FeedbackAppointment() {
 
           {/* Comments */}
           <div className={cx('comment-section')}>
-            <h3>Nhận xét chi tiết</h3>
+            <h3>💬 Nhận xét về buổi tư vấn</h3>
             <textarea
               className={cx('comment-textarea')}
-              placeholder="Chia sẻ trải nghiệm của bạn về dịch vụ tư vấn..."
+              placeholder="Chia sẻ cảm nhận của bạn về buổi tư vấn: Bác sĩ có nhiệt tình không? Lời khuyên có hữu ích không? Thời gian tư vấn có đủ không?..."
               value={feedback.comment}
               onChange={(e) => handleInputChange('comment', e.target.value)}
               rows={5}
@@ -362,10 +303,10 @@ function FeedbackAppointment() {
 
           {/* Improvement Suggestions */}
           <div className={cx('suggestion-section')}>
-            <h3>Đề xuất cải thiện</h3>
+            <h3>🚀 Đề xuất cải thiện</h3>
             <textarea
               className={cx('suggestion-textarea')}
-              placeholder="Bạn có đề xuất gì để chúng tôi cải thiện dịch vụ tốt hơn?"
+              placeholder="Bạn có đề xuất gì để chúng tôi cải thiện chất lượng tư vấn? (Ví dụ: thời gian tư vấn, cách thức tư vấn, thông tin cung cấp...)"
               value={feedback.improvement_suggestions}
               onChange={(e) => handleInputChange('improvement_suggestions', e.target.value)}
               rows={3}
@@ -382,15 +323,19 @@ function FeedbackAppointment() {
               {isSubmitting ? (
                 <>
                   <FontAwesomeIcon icon={faSpinner} spin />
-                  Đang gửi...
+                  Đang gửi đánh giá...
                 </>
               ) : (
                 <>
                   <FontAwesomeIcon icon={faPaperPlane} />
-                  Gửi đánh giá
+                  Gửi đánh giá tư vấn
                 </>
               )}
             </button>
+
+            <p className={cx('submit-note')}>
+              * Đánh giá của bạn sẽ giúp chúng tôi cải thiện chất lượng dịch vụ tư vấn
+            </p>
           </div>
         </form>
       </div>
