@@ -19,13 +19,12 @@ import { vi } from "date-fns/locale";
 import { DayPicker } from "react-day-picker";
 import "react-day-picker/dist/style.css";
 
-// Hàm giải mã serviceId đã được hash
 const unhashServiceId = (hashedId) => {
   try {
     return atob(hashedId);
   } catch (error) {
     console.error("Error unhashing serviceId:", error);
-    return hashedId; // Trả về giá trị gốc nếu không giải mã được
+    return hashedId;
   }
 };
 Font.register({
@@ -89,12 +88,10 @@ const TestAppointmentPage = () => {
     window.scrollTo(0, 0);
     document.title = "Đặt lịch xét nghiệm | Healthcare Service";
 
-    // Kiểm tra nếu có service ID từ query params
     const queryParams = new URLSearchParams(location.search);
     const hashedServiceId = queryParams.get("serviceId");
     const serviceId = hashedServiceId ? unhashServiceId(hashedServiceId) : null;
 
-    // Fetch thông tin user từ local storage nếu đã đăng nhập
     const fetchUserInfo = () => {
       const userJson = localStorage.getItem("userProfile");
       if (userJson) {
@@ -156,7 +153,6 @@ const TestAppointmentPage = () => {
   };
   console.log(selectedServices.price);
 
-  // Format giá tiền
   const formatPrice = (price) => {
     return new Intl.NumberFormat("vi-VN", {
       style: "currency",
@@ -239,7 +235,6 @@ const TestAppointmentPage = () => {
   const processPayment = async () => {
     setLoading(true);
     try {
-      // Tạo object chứa thông tin đặt lịch
       const appointmentData = {
         userInfo: userInfo,
         services: selectedServices,
@@ -250,9 +245,8 @@ const TestAppointmentPage = () => {
         paymentMethod: paymentMethod,
       };
 
-      // Gọi API tạo appointment
-      // Trong thực tế, đây sẽ là một API call thực sự
-      // const response = await axiosClient.post('v1/appointments', appointmentData);
+      // Debug: Hiển thị dữ liệu gửi đi
+      console.log("Dữ liệu đặt lịch:", appointmentData);
 
       // Mock response cho demo
       const mockResponse = {
@@ -1033,21 +1027,6 @@ const TestAppointmentPage = () => {
                       checked={paymentMethod === "momo"}
                       onChange={handlePaymentMethodChange}
                       className="focus:ring-blue-500 h-4 w-4 text-blue-600 border-gray-300"
-                    />
-                    <label
-                      htmlFor="momo"
-                      className="ml-3 block text-sm font-medium text-gray-700 flex items-center"
-                    >
-                      <img
-                        src="https://upload.wikimedia.org/wikipedia/vi/f/fe/MoMo_Logo.png"
-                        alt="MoMo"
-                        className="h-8 w-8 mr-2"
-                      />
-                      Ví MoMo
-                    </label>
-                  </div>
-                  <div className="flex items-center">
-                    <input
                       id="vnpay"
                       name="paymentMethod"
                       type="radio"
