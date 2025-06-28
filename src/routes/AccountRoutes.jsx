@@ -118,7 +118,7 @@ export function AccountRoutes() {
         }
       />
       <Route
-        path="/feedback/appointment/:appointmentId"
+        path="/feedback/consultation/:appointmentId"
         element={
           <LayoutAccount>
             <FeedbackAppointment />

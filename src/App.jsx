@@ -174,7 +174,7 @@ function App() {
           }
         ></Route>
         <Route
-          path="/feedback/appointment/:appointmentId"
+          path="/feedback/consultation/:appointmentId"
           element={
             <LayoutAccount>
               <FeedbackAppointment />

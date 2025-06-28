@@ -2,12 +2,13 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import {
-  faStethoscope, faFlaskVial, faStar, faComments, 
+  faStethoscope, faFlaskVial, faStar, faComments,
   faCalendarCheck, faClipboardList, faArrowRight,
   faUserMd, faHospital, faChartLine, faHandHoldingHeart
 } from '@fortawesome/free-solid-svg-icons';
 import classNames from 'classnames/bind';
 import styles from './Feedback.module.scss';
+import axiosClient from '../../services/axiosClient';
 
 const cx = classNames.bind(styles);
 
@@ -17,29 +18,29 @@ function Feedback() {
   const [recentTestOrders, setRecentTestOrders] = useState([]);
 
   useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const accessToken = localStorage.getItem('accessToken');
+        const user = JSON.parse(localStorage.getItem('user'));
+        if (!accessToken || !user) {
+          navigate('/login');
+          return;
+        }
+        const response = await axiosClient.get(`/v1/appointments/user/${user.user_id}`, {
+          headers: {
+            'x-access-token': accessToken
+          }
+        });
+        if (response.data.success) {
+          setRecentAppointments(response.data.data);
+        }
 
-    // Giả lập data - trong thực tế sẽ gọi API
-    setRecentAppointments([
-      {
-        id: 'APT001',
-        doctorName: 'BS. Nguyễn Văn A',
-        date: '2024-01-15',
-        time: '09:00',
-        type: 'Tư vấn sức khỏe sinh sản',
-        status: 'completed',
-        canFeedback: true
-      },
-      {
-        id: 'APT002', 
-        doctorName: 'BS. Trần Thị B',
-        date: '2024-01-10',
-        time: '14:30',
-        type: 'Tư vấn dinh dưỡng',
-        status: 'completed',
-        canFeedback: true
+      } catch (error) {
+        console.error('Error fetching data:', error);
       }
-    ]);
 
+    };
+    fetchData();
     setRecentTestOrders([
       {
         id: 'TST001',
@@ -52,7 +53,7 @@ function Feedback() {
       {
         id: 'TST002',
         serviceName: 'Xét nghiệm hormone',
-        date: '2024-01-08', 
+        date: '2024-01-08',
         time: '10:30',
         status: 'completed',
         canFeedback: true
@@ -61,7 +62,7 @@ function Feedback() {
   }, []);
 
   const handleAppointmentFeedback = (appointmentId) => {
-    navigate(`/feedback/appointment/${appointmentId}`);
+    navigate(`/feedback/consultation/${appointmentId}`);
   };
 
   const handleTestServiceFeedback = (testOrderId) => {
@@ -105,8 +106,8 @@ function Feedback() {
 
         {/* Feedback Options */}
         <div className={cx('feedback-options')}>
-          <h2>🌟 Chọn loại dịch vụ để đánh giá</h2>
-          
+          <h2>Chọn loại dịch vụ để đánh giá</h2>
+
           <div className={cx('options-grid')}>
             {/* Appointment Feedback Option */}
             <div className={cx('option-card', 'appointment-option')}>
@@ -117,7 +118,7 @@ function Feedback() {
                 <h3>Đánh giá buổi tư vấn</h3>
                 <p>Chia sẻ trải nghiệm về buổi tư vấn với bác sĩ</p>
               </div>
-              
+
               <div className={cx('option-features')}>
                 <div className={cx('feature-item')}>
                   <FontAwesomeIcon icon={faStar} />
@@ -138,18 +139,19 @@ function Feedback() {
                 <div className={cx('recent-items')}>
                   <h4>Cuộc hẹn gần đây</h4>
                   {recentAppointments.slice(0, 2).map((appointment) => (
-                    <div key={appointment.id} className={cx('recent-item')}>
+                    <div key={appointment.appointment_id} className={cx('recent-item')}>
                       <div className={cx('item-info')}>
-                        <div className={cx('item-title')}>{appointment.doctorName}</div>
+                        <div className={cx('item-title')}>{appointment.consultant_type} - Bác sĩ <span className={cx('item-type')}>{appointment.doctor_name}</span></div>
+
                         <div className={cx('item-details')}>
-                          <span>{formatDate(appointment.date)} - {appointment.time}</span>
-                          <span className={cx('item-type')}>{appointment.type}</span>
+                          <span>{formatDate(appointment.appointment_date)} - {appointment.appointment_time}</span>
+
                         </div>
                       </div>
-                      {appointment.canFeedback && (
-                        <button 
+                      {!appointment.feedback && (
+                        <button
                           className={cx('feedback-btn')}
-                          onClick={() => handleAppointmentFeedback(appointment.id)}
+                          onClick={() => handleAppointmentFeedback(appointment.appointment_id)}
                         >
                           Đánh giá
                           <FontAwesomeIcon icon={faArrowRight} />
@@ -161,7 +163,7 @@ function Feedback() {
               )}
 
               <div className={cx('option-action')}>
-                <button 
+                <button
                   className={cx('primary-btn')}
                   onClick={() => navigate('/feedback/appointment')}
                 >
@@ -180,7 +182,7 @@ function Feedback() {
                 <h3>Đánh giá dịch vụ xét nghiệm</h3>
                 <p>Chia sẻ trải nghiệm về quy trình xét nghiệm</p>
               </div>
-              
+
               <div className={cx('option-features')}>
                 <div className={cx('feature-item')}>
                   <FontAwesomeIcon icon={faHospital} />
@@ -212,7 +214,7 @@ function Feedback() {
                         </div>
                       </div>
                       {testOrder.canFeedback && (
-                        <button 
+                        <button
                           className={cx('feedback-btn')}
                           onClick={() => handleTestServiceFeedback(testOrder.id)}
                         >
@@ -226,7 +228,7 @@ function Feedback() {
               )}
 
               <div className={cx('option-action')}>
-                <button 
+                <button
                   className={cx('primary-btn')}
                   onClick={() => navigate('/feedback/test-service')}
                 >

@@ -263,29 +263,13 @@ const ProfilePage = () => {
         }
       });
 
-      if (response.data?.success) {
+      if (response.data.message) {
         setProfile({
           ...profile,
           ...formData
         });
         setIsEditing(false);
-        toast.success('Cập nhật thông tin thành công!', {
-          position: "top-right",
-          autoClose: 2000,
-          hideProgressBar: false,
-          closeOnClick: true,
-          pauseOnHover: true,
-          draggable: true,
-          className: 'custom-toast-success',
-          style: {
-            background: 'linear-gradient(135deg, #10b981 0%, #059669 100%)',
-            color: '#ffffff',
-            borderRadius: '12px',
-            fontWeight: '500',
-            fontSize: '14px',
-            boxShadow: '0 4px 12px rgba(16, 185, 129, 0.4)'
-          }
-        });
+        toast.success('Cập nhật thông tin thành công!');
         setTimeout(() => {
           window.location.reload();
         }, 2500);
@@ -294,23 +278,7 @@ const ProfilePage = () => {
       }
     } catch (err) {
       console.error("❌ Error updating profile:", err);
-      toast.error(err.message || 'Đã xảy ra lỗi khi cập nhật thông tin', {
-        position: "top-right",
-        autoClose: 3000,
-        hideProgressBar: false,
-        closeOnClick: true,
-        pauseOnHover: true,
-        draggable: true,
-        className: 'custom-toast-error',
-        style: {
-          background: 'linear-gradient(135deg, #ef4444 0%, #dc2626 100%)',
-          color: '#ffffff',
-          borderRadius: '12px',
-          fontWeight: '500',
-          fontSize: '14px',
-          boxShadow: '0 4px 12px rgba(239, 68, 68, 0.4)'
-        }
-      });
+      toast.error(err.message || 'Đã xảy ra lỗi khi cập nhật thông tin');
     } finally {
       setIsSubmitting(false);
     }
