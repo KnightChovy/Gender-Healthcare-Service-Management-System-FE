@@ -9,7 +9,7 @@ export const API_LOGOUT = "/v1/auth/logout";
 export const API_MANAGER_APPOINTMENT = "/v1/managers/appointments";
 
 //Admin
-
+export const API_ADMIN_CREATESTAFF = "/v1/admins/createStaff";
 //Appointment
 
 //Service Test
