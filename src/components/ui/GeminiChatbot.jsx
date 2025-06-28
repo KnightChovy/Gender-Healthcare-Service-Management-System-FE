@@ -52,12 +52,23 @@ const GeminiChatbot = () => {
 
         charIndexRef.current = 0;
         setDisplayText("");
+
         if (currentTypingIndex >= 0 && currentTypingIndex < messages.length) {
+          const formattedText = formatMessage(textToTypeRef.current);
+
+          const parts = formattedText
+            .split(/(<[^>]*>|\s+)/g)
+            .filter((part) => part);
+          const combinedParts = [];
+          for (let i = 0; i < parts.length; i++) {
+            combinedParts.push(parts.slice(0, i + 1).join(""));
+          }
+
+          charIndexRef.current = 0;
+
           typeIntervalRef.current = setInterval(() => {
-            if (charIndexRef.current < textToTypeRef.current.length) {
-              setDisplayText(
-                (text) => text + textToTypeRef.current[charIndexRef.current]
-              );
+            if (charIndexRef.current < combinedParts.length) {
+              setDisplayText(combinedParts[charIndexRef.current]);
               charIndexRef.current++;
             } else {
               clearInterval(typeIntervalRef.current);
@@ -81,7 +92,7 @@ const GeminiChatbot = () => {
               setLastResponseIndex(currentTypingIndex);
               setShowFeedbackRequest(true);
             }
-          }, 15);
+          }, 20);
         } else {
           console.log("CurrentTypingIndex khong hop le: ", currentTypingIndex);
           setIsTyping(false);
@@ -389,7 +400,7 @@ const GeminiChatbot = () => {
                         {index === currentTypingIndex && isTyping ? (
                           <div
                             dangerouslySetInnerHTML={{
-                              __html: formatMessage(displayText),
+                              __html: displayText,
                             }}
                           />
                         ) : (

@@ -1,0 +1,182 @@
+import * as React from "react";
+import Box from "@mui/material/Box";
+import Avatar from "@mui/material/Avatar";
+import Menu from "@mui/material/Menu";
+import MenuItem from "@mui/material/MenuItem";
+import ListItemIcon from "@mui/material/ListItemIcon";
+import Divider from "@mui/material/Divider";
+import IconButton from "@mui/material/IconButton";
+import Typography from "@mui/material/Typography";
+import Tooltip from "@mui/material/Tooltip";
+import PersonAdd from "@mui/icons-material/PersonAdd";
+import Settings from "@mui/icons-material/Settings";
+import Logout from "@mui/icons-material/Logout";
+import { useDispatch, useSelector } from "react-redux";
+import { Link, useNavigate } from "react-router-dom";
+import { logout } from "../../store/feature/auth/authenSlice";
+import { toast } from "react-toastify";
+import axiosClient from "../../services/axiosClient";
+import { API_LOGOUT } from "../../constants/Apis";
+
+export default function AdminMenu() {
+  const { user } = useSelector((state) => state.auth);
+  const navigate = useNavigate();
+  const dispatch = useDispatch();
+  const getInitials = (name) => {
+    if (!name) return "A";
+
+    return name.charAt(0).toUpperCase();
+  };
+
+  const handleLogout = async () => {
+    try {
+      handleClose();
+      toast.info("Đang đăng xuất...", { autoClose: 800 });
+
+      const response = await axiosClient.post(API_LOGOUT);
+
+      if (response.data?.success) {
+        setTimeout(() => {
+          dispatch(logout());
+          toast.success("Đăng xuất thành công", { autoClose: 1500 });
+          navigate("/login");
+        }, 500);
+      } else {
+        toast.error("Logout thất bại: " + (response.data?.message || ""));
+      }
+    } catch (error) {
+      console.error("Lỗi khi logout:", error);
+
+      if (error.response) {
+        console.error("Chi tiết lỗi từ server:", error.response.data);
+        toast.error(
+          "Logout thất bại: " +
+            (error.response.data?.message || "403 Forbidden")
+        );
+      } else {
+        toast.error("Lỗi mạng hoặc server không phản hồi.");
+      }
+    }
+  };
+
+  const [anchorEl, setAnchorEl] = React.useState(null);
+  const open = Boolean(anchorEl);
+
+  const handleClick = (event) => {
+    setAnchorEl(event.currentTarget);
+  };
+
+  const handleClose = () => {
+    setAnchorEl(null);
+  };
+
+  return (
+    <React.Fragment>
+      <Box sx={{ display: "flex", alignItems: "center", textAlign: "center" }}>
+        <Tooltip title="Cài đặt tài khoản">
+          <IconButton
+            onClick={handleClick}
+            size="small"
+            sx={{ ml: 2 }}
+            aria-controls={open ? "admin-menu" : undefined}
+            aria-haspopup="true"
+            aria-expanded={open ? "true" : undefined}
+          >
+            <Avatar
+              sx={{
+                width: 38,
+                height: 38,
+                border: "2px solid rgba(255,255,255,0.2)",
+              }}
+            >
+              {user && user.first_name ? getInitials(user.first_name) : "A"}
+            </Avatar>
+            <Box sx={{ display: { xs: "none", sm: "block" } }}>
+              <Typography
+                variant="body2"
+                fontWeight="500"
+                sx={{ lineHeight: 1.2 }}
+              >
+                Admin
+              </Typography>
+              <Typography variant="caption" sx={{ opacity: 0.7 }}>
+                {user?.role || "Administrator"}
+              </Typography>
+            </Box>
+          </IconButton>
+        </Tooltip>
+      </Box>
+      <Menu
+        anchorEl={anchorEl}
+        id="admin-menu"
+        open={open}
+        onClose={handleClose}
+        onClick={handleClose}
+        slotProps={{
+          paper: {
+            elevation: 0,
+            sx: {
+              overflow: "visible",
+              filter: "drop-shadow(0px 2px 8px rgba(0,0,0,0.32))",
+              mt: 1.5,
+              "& .MuiAvatar-root": {
+                width: 32,
+                height: 32,
+                ml: -0.5,
+                mr: 1,
+              },
+              "&::before": {
+                content: '""',
+                display: "block",
+                position: "absolute",
+                top: 0,
+                right: 60,
+                width: 10,
+                height: 10,
+                bgcolor: "background.paper",
+                transform: "translateY(-50%) rotate(45deg)",
+                zIndex: 0,
+              },
+            },
+          },
+        }}
+        transformOrigin={{ horizontal: "right", vertical: "top" }}
+        anchorOrigin={{ horizontal: "right", vertical: "bottom" }}
+      >
+        <MenuItem onClick={handleClose}>
+          <Avatar />
+          <Link to="/profile">Hồ sơ</Link>
+        </MenuItem>
+
+        <MenuItem
+          onClick={() => {
+            handleClose();
+            navigate("/admin");
+          }}
+        >
+          <Avatar /> Bảng điều khiển Admin
+        </MenuItem>
+
+        <Divider />
+
+        <MenuItem
+          onClick={() => {
+            handleClose();
+            navigate("/changepassword");
+          }}
+        >
+          <ListItemIcon>
+            <Settings fontSize="small" />
+          </ListItemIcon>
+          Đổi mật khẩu
+        </MenuItem>
+        <MenuItem onClick={handleLogout}>
+          <ListItemIcon>
+            <Logout fontSize="small" />
+          </ListItemIcon>
+          Đăng xuất
+        </MenuItem>
+      </Menu>
+    </React.Fragment>
+  );
+}

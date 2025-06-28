@@ -1,37 +1,61 @@
-import React from "react";
-import axiosClient from "../../../services/axiosClient";
-import { API_ADMIN_CREATESTAFF } from "../../../constants/Apis";
+import React, { useEffect, useState } from "react";
+import { Formik, Form, Field, ErrorMessage, FieldArray } from "formik";
 import * as Yup from "yup";
-import { ErrorMessage, Field, FieldArray, Form, Formik } from "formik";
+import { useLocation, useNavigate } from "react-router-dom";
+import axiosClient from "../../../services/axiosClient";
+import {
+  API_ADMIN_CREATESTAFF,
+  API_ADMIN_UPDATESTAFF,
+} from "../../../constants/Apis";
+
 const AddEmployees = () => {
+  const navigate = useNavigate();
+  const location = useLocation();
+
+  // Kiểm tra xem có phải đang ở chế độ sửa hay không
+  const isEdit = location.state?.isEdit || false;
+  const staffData = location.state?.staffData || null;
+
+  // Schema validation với Yup
   const validationSchema = Yup.object({
     username: Yup.string()
-      .required("Vui lòng nhập thông tin đăng nhập")
-      .min(4, "Tên đăng nhâp phải có 4 ký tự"),
+      .required("Vui lòng nhập tên đăng nhập")
+      .min(4, "Tên đăng nhập phải có ít nhất 4 ký tự"),
     password: Yup.string()
-      .required("Vui lòng nhập mật khẩu")
-      .min(8, "Mật khẩu phải có ít nhất 8 ký tự")
-      .matches(/[a-z]/, "Mật khẩu phải có ít nhất một chữ cái thường")
-      .matches(/[A-Z]/, "Mật khẩu phải có ít nhất một chữ cái in hoa")
-      .matches(/\d/, "Mật khẩu phải có ít nhất một chữ số")
-      .matches(
-        /[@$!%*?&]/,
-        "Mật khẩu phải có ít nhất một ký tự đặc biệt (@$!%*?&)"
-      ),
-    confirm_password: Yup.string()
-      .required("Vui lòng xác nhận mật khẩu")
-      .oneOf([Yup.ref("password")], "Mật khẩu không khớp"),
+      .test("conditional-required", "Vui lòng nhập mật khẩu", function (value) {
+        // Chỉ bắt buộc khi tạo mới, không bắt buộc khi sửa
+        if (!isEdit) {
+          return !!value;
+        }
+        return true;
+      })
+      .min(6, "Mật khẩu phải có ít nhất 6 ký tự"),
+    confirm_password: Yup.string().test(
+      "conditional-match",
+      "Mật khẩu không khớp",
+      function (value) {
+        const { password } = this.parent;
+        if (password && !isEdit) {
+          return value === password;
+        }
+        if (password && value) {
+          return value === password;
+        }
+        return true;
+      }
+    ),
     first_name: Yup.string().required("Vui lòng nhập tên"),
     last_name: Yup.string().required("Vui lòng nhập họ"),
-    gender: Yup.string().required("vui lòng chọn giới tính"),
+    gender: Yup.string().required("Vui lòng chọn giới tính"),
     email: Yup.string()
       .email("Email không hợp lệ")
       .required("Vui lòng nhập email"),
     phone: Yup.string()
       .required("Vui lòng nhập số điện thoại")
-      .matches(/^[0-9]{10}/, "Số điện thoại phải có 10 số"),
+      .matches(/^[0-9]{10,11}$/, "Số điện thoại phải có 10-11 chữ số"),
     role: Yup.string().required("Vui lòng chọn chức vụ"),
     birthday: Yup.date().required("Vui lòng chọn ngày sinh"),
+    // Validation có điều kiện cho Doctor
     experience_year: Yup.number().when("role", {
       is: "doctor",
       then: () =>
@@ -51,30 +75,32 @@ const AddEmployees = () => {
           .required("Vui lòng thêm bằng cấp"),
     }),
   });
+
+  // Thiết lập giá trị ban đầu dựa trên dữ liệu nhân viên (nếu có)
   const initialValues = {
-    username: "",
-    password: "",
+    username: staffData?.username || "",
+    password: "", // Không điền sẵn mật khẩu vì lý do bảo mật
     confirm_password: "",
-    first_name: "",
-    last_name: "",
-    gender: "male",
-    email: "",
-    phone: "",
-    role: "",
-    birthday: "",
-    experience_year: "",
-    certificate: [],
-    specialization: "",
+    first_name: staffData?.first_name || "",
+    last_name: staffData?.last_name || "",
+    gender: staffData?.gender || "male",
+    email: staffData?.email || "",
+    phone: staffData?.phone || "",
+    role: staffData?.role || "",
+    birthday: staffData?.birthday || "",
+    experience_year: staffData?.experience_year || "",
+    certificate: staffData?.certificate || [],
+    specialization: staffData?.specialization || "",
+    newCertificate: "",
   };
+
   const handleSubmit = async (
     values,
     { setSubmitting, resetForm, setStatus }
   ) => {
     try {
-      const staffData = {
+      const submitData = {
         username: values.username,
-        password: values.password,
-        confirm_password: values.confirm_password,
         first_name: values.first_name,
         last_name: values.last_name,
         gender: values.gender,
@@ -83,38 +109,65 @@ const AddEmployees = () => {
         role: values.role,
         birthday: values.birthday,
       };
-      if (values.role === "doctor") {
-        staffData.experience_year = parseInt(values.experience_year);
-        staffData.certificate = values.certificate;
-        staffData.specialization = values.specialization;
-      }
-      console.log("Dữ liệu nhân viên", staffData);
-      const res = await axiosClient.post(API_ADMIN_CREATESTAFF, staffData);
-      console.log("success", res.data);
 
-      resetForm();
-      setStatus({ success: true, message: "Tạo nhân viên thành công!" });
+      if (values.password) {
+        submitData.password = values.password;
+        submitData.confirm_password = values.confirm_password;
+      }
+
+      if (values.role === "doctor") {
+        submitData.experience_year = parseInt(values.experience_year);
+        submitData.certificate = values.certificate;
+        submitData.specialization = values.specialization;
+      }
+
+      let response;
+
+      if (isEdit) {
+        submitData.user_id = staffData.user_id;
+        response = await axiosClient.put(API_ADMIN_UPDATESTAFF, submitData);
+        setStatus({
+          success: true,
+          message: "Cập nhật thông tin nhân viên thành công!",
+        });
+      } else {
+        response = await axiosClient.post(API_ADMIN_CREATESTAFF, submitData);
+        resetForm();
+        setStatus({
+          success: true,
+          message: "Tạo nhân viên thành công!",
+        });
+      }
+
+      console.log("Success:", response.data);
+
+      setTimeout(() => {
+        navigate("/admin/employees");
+      }, 2000);
     } catch (error) {
-      console.log("Error: ", error.response?.data);
+      console.error("Error:", error.response?.data);
       setStatus({
         success: false,
         message:
-          error.response?.data?.message || "Có lỗi xảy ra khi tạo nhân viên",
+          error.response?.data?.message ||
+          "Có lỗi xảy ra trong quá trình xử lý",
       });
     } finally {
       setSubmitting(false);
     }
   };
+
   return (
     <div className="max-w-2xl mx-auto p-8 bg-white rounded-xl shadow-lg border border-gray-100">
-      <h2 className="text-2xl font-bold mb-6 text-gray-600 pb-2 border-b border-gray-200">
-        Tạo Nhân Viên Mới
+      <h2 className="text-2xl font-bold mb-6 text-gray-800 pb-2 border-b border-gray-200">
+        {isEdit ? "Cập nhật thông tin nhân viên" : "Tạo nhân viên mới"}
       </h2>
 
       <Formik
         initialValues={initialValues}
         validationSchema={validationSchema}
         onSubmit={handleSubmit}
+        enableReinitialize={true}
       >
         {({ values, errors, touched, isSubmitting, status, setFieldValue }) => (
           <Form className="space-y-6">
@@ -177,14 +230,17 @@ const AddEmployees = () => {
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Username
+                  Username {isEdit && "(không thể thay đổi)"}
                 </label>
                 <Field
                   type="text"
                   name="username"
+                  disabled={isEdit}
                   className={`w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors ${
                     errors.username && touched.username
                       ? "border-red-500"
+                      : isEdit
+                      ? "bg-gray-100 border-gray-300"
                       : "border-gray-300"
                   }`}
                   placeholder="Nhập tên đăng nhập"
@@ -423,7 +479,6 @@ const AddEmployees = () => {
                     </div>
                   </div>
 
-                  {/* Bằng cấp với FieldArray */}
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-1">
                       Bằng cấp
@@ -522,15 +577,26 @@ const AddEmployees = () => {
               </div>
             )}
 
-            <div className="pt-4">
+            <div className="pt-4 flex gap-3">
+              <button
+                type="button"
+                onClick={() => navigate("/admin/employees")}
+                className="flex-1 bg-gray-100 text-gray-700 py-2.5 px-4 rounded-lg hover:bg-gray-200 transition-colors focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2 font-medium text-sm shadow-sm"
+              >
+                Hủy
+              </button>
               <button
                 type="submit"
                 disabled={isSubmitting}
-                className={`w-full bg-blue-600 text-white py-2.5 px-4 rounded-lg hover:bg-blue-700 transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 font-medium text-sm shadow-sm ${
+                className={`flex-1 bg-blue-600 text-white py-2.5 px-4 rounded-lg hover:bg-blue-700 transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 font-medium text-sm shadow-sm ${
                   isSubmitting ? "opacity-70 cursor-not-allowed" : ""
                 }`}
               >
-                {isSubmitting ? "Đang xử lý..." : "Tạo Nhân Viên"}
+                {isSubmitting
+                  ? "Đang xử lý..."
+                  : isEdit
+                  ? "Cập nhật"
+                  : "Tạo nhân viên"}
               </button>
             </div>
           </Form>
