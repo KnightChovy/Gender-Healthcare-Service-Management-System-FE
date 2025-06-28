@@ -4,7 +4,7 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
   faArrowLeft,
   faArrowRight,
-  faPhone,
+  faEnvelope,
   faKey,
   faLock,
   faUser,
@@ -17,7 +17,7 @@ const cx = classNames.bind(styles);
 function ForgetPassword() {
   const [step, setStep] = useState(1);
   const [formData, setFormData] = useState({
-    phone: "",
+    email: "",
     username: "",
     otp: "",
     newPassword: "",
@@ -27,14 +27,14 @@ function ForgetPassword() {
   const [isLoading, setIsLoading] = useState(false);
   const navigate = useNavigate();
 
-  // Validate phone number
-  const validatePhone = (phone) => {
-    const phoneRegex = /^(0[3|5|7|8|9])+([0-9]{8})$/;
-    if (!phone) {
+  // Validate email
+  const validateEmail = (email) => {
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!email) {
       return "";
     }
-    if (!phoneRegex.test(phone)) {
-      return "Số điện thoại không hợp lệ (VD: 0901234567)";
+    if (!emailRegex.test(email)) {
+      return "Email không hợp lệ (VD: example@gmail.com)";
     }
     return "";
   };
@@ -95,16 +95,8 @@ function ForgetPassword() {
   const handleInputChange = (e) => {
     const { name, value } = e.target;
 
-    // Format phone number
-    let formattedValue = value;
-    if (name === "phone") {
-      // Remove all non-digits
-      formattedValue = value.replace(/\D/g, "");
-      // Limit to 10 digits
-      formattedValue = formattedValue.slice(0, 10);
-    }
-
     // Format OTP
+    let formattedValue = value;
     if (name === "otp") {
       formattedValue = value.replace(/\D/g, "").slice(0, 6);
     }
@@ -127,22 +119,22 @@ function ForgetPassword() {
     e.preventDefault();
 
     // Validate both fields
-    const phoneError = validatePhone(formData.phone);
+    const emailError = validateEmail(formData.email);
     const usernameError = validateUsername(formData.username);
 
     // Check if at least one field is filled and valid
-    const hasValidPhone = formData.phone && !phoneError;
+    const hasValidEmail = formData.email && !emailError;
     const hasValidUsername = formData.username && !usernameError;
 
     let newErrors = {};
 
-    if (!hasValidPhone && !hasValidUsername) {
-      if (!formData.phone && !formData.username) {
+    if (!hasValidEmail && !hasValidUsername) {
+      if (!formData.email && !formData.username) {
         newErrors.general =
-          "Vui lòng nhập ít nhất một trong hai: số điện thoại hoặc tên đăng nhập";
+          "Vui lòng nhập ít nhất một trong hai: email hoặc tên đăng nhập";
       } else {
-        if (formData.phone && phoneError) {
-          newErrors.phone = phoneError;
+        if (formData.email && emailError) {
+          newErrors.email = emailError;
         }
         if (formData.username && usernameError) {
           newErrors.username = usernameError;
@@ -238,7 +230,7 @@ function ForgetPassword() {
   // Get sent target for step 2 message
   const getSentTarget = () => {
     const targets = [];
-    if (formData.phone) targets.push(`số ${formData.phone}`);
+    if (formData.email) targets.push(`email ${formData.email}`);
     if (formData.username) targets.push(`tài khoản ${formData.username}`);
     return targets.join(" và ");
   };
@@ -297,24 +289,23 @@ function ForgetPassword() {
                 )}
               </div>
 
-              {/* Phone Number Input */}
+              {/* Email Input */}
               <div className={cx("form-group")}>
                 <div className={cx("input-container")}>
                   <div className={cx("input-icon")}>
-                    <FontAwesomeIcon icon={faPhone} />
+                    <FontAwesomeIcon icon={faEnvelope} />
                   </div>
                   <input
-                    type="text"
-                    name="phone"
-                    placeholder="Nhập số điện thoại (VD: 0123456789)"
-                    value={formData.phone}
+                    type="email"
+                    name="email"
+                    placeholder="Nhập email (VD: example@gmail.com)"
+                    value={formData.email}
                     onChange={handleInputChange}
-                    className={cx("input-field", { error: errors.phone })}
-                    maxLength="10"
+                    className={cx("input-field", { error: errors.email })}
                   />
                 </div>
-                {errors.phone && (
-                  <span className={cx("error-text")}>{errors.phone}</span>
+                {errors.email && (
+                  <span className={cx("error-text")}>{errors.email}</span>
                 )}
               </div>
 
@@ -349,11 +340,6 @@ function ForgetPassword() {
                       error: errors.otp,
                     })}
                     maxLength="6"
-                    style={{
-                      textAlign: "center",
-                      letterSpacing: "8px",
-                      fontSize: "18px",
-                    }}
                   />
                 </div>
                 {errors.otp && (

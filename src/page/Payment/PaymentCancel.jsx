@@ -2,8 +2,8 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { 
-    faTimesCircle, faArrowLeft, 
+import {
+    faTimesCircle, faArrowLeft,
     faQuestionCircle, faPhone, faEnvelope,
     faExclamationTriangle, faCalendarAlt,
     faCreditCard
@@ -16,24 +16,20 @@ const cx = classNames.bind(styles);
 function PaymentCancel() {
     const navigate = useNavigate();
     const [searchParams] = useSearchParams();
-    
-    // States
+
     const [cancelData, setCancelData] = useState(null);
     const [appointmentData, setAppointmentData] = useState(null);
     const [isLoading, setIsLoading] = useState(true);
 
-    // Get params from URL
     const sessionId = searchParams.get('session_id') || searchParams.get('checkout_session_id');
     const reason = searchParams.get('reason') || searchParams.get('error');
     const appointmentId = searchParams.get('appointment_id');
     const amount = searchParams.get('amount');
 
-    // Format currency
     const formatCurrency = (amount) => {
         return new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(amount);
     };
 
-    // Get cancellation reason
     const getCancelReason = (reason) => {
         const reasons = {
             'user_cancelled': 'Bạn đã hủy giao dịch',
@@ -48,15 +44,13 @@ function PaymentCancel() {
         return reasons[reason] || 'Giao dịch bị hủy';
     };
 
-    // Process cancellation
     useEffect(() => {
         const processCancellation = async () => {
             try {
                 setIsLoading(true);
 
-                // Get saved payment session
                 const savedSession = JSON.parse(localStorage.getItem('currentPaymentSession') || '{}');
-                
+
                 console.log('❌ Payment cancelled:', {
                     sessionId,
                     reason,
@@ -65,7 +59,6 @@ function PaymentCancel() {
                     savedSession
                 });
 
-                // Create cancellation record
                 const cancelRecord = {
                     sessionId: sessionId || savedSession.sessionId,
                     appointmentId: appointmentId || savedSession.appointmentId,
@@ -77,18 +70,13 @@ function PaymentCancel() {
 
                 setCancelData(cancelRecord);
 
-                // Get appointment data from saved session or localStorage
                 if (savedSession.appointmentData) {
                     setAppointmentData(savedSession.appointmentData);
                 }
 
-                // Save cancellation record for analytics
                 const existingCancellations = JSON.parse(localStorage.getItem('paymentCancellations') || '[]');
                 existingCancellations.push(cancelRecord);
                 localStorage.setItem('paymentCancellations', JSON.stringify(existingCancellations));
-
-                // Keep payment session for retry
-                // Don't remove currentPaymentSession in case user wants to retry
 
             } catch (error) {
                 console.error('❌ Error processing cancellation:', error);
@@ -100,11 +88,10 @@ function PaymentCancel() {
         processCancellation();
     }, [sessionId, reason, appointmentId, amount]);
 
-    // Action handlers
     const retryPayment = () => {
         if (cancelData?.appointmentId) {
             navigate(`/paymentappointment/${cancelData.appointmentId}`, {
-                state: { 
+                state: {
                     appointmentData: appointmentData,
                     retryPayment: true,
                     previousError: cancelData.reason
@@ -116,7 +103,6 @@ function PaymentCancel() {
     };
 
     const goToAppointments = () => {
-        // Clean up payment session on explicit navigation away
         localStorage.removeItem('currentPaymentSession');
         navigate('/my-appointments');
     };
@@ -136,7 +122,6 @@ Vui lòng hỗ trợ tôi hoàn tất thanh toán.`;
         window.location.href = `mailto:support@example.com?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
     };
 
-    // Loading state
     if (isLoading) {
         return (
             <div className={cx('wrap')}>
@@ -170,7 +155,7 @@ Vui lòng hỗ trợ tôi hoàn tất thanh toán.`;
                     {/* Cancel Details */}
                     <div className={cx('cancel-summary')}>
                         <h3 className={cx('section-title')}>Chi tiết giao dịch</h3>
-                        
+
                         <div className={cx('summary-grid')}>
                             {cancelData?.sessionId && (
                                 <div className={cx('summary-item')}>
@@ -178,19 +163,19 @@ Vui lòng hỗ trợ tôi hoàn tất thanh toán.`;
                                     <span className={cx('value')}>{cancelData.sessionId}</span>
                                 </div>
                             )}
-                            
+
                             {cancelData?.amount && (
                                 <div className={cx('summary-item')}>
                                     <span className={cx('label')}>Số tiền:</span>
                                     <span className={cx('value', 'amount')}>{formatCurrency(cancelData.amount)}</span>
                                 </div>
                             )}
-                            
+
                             <div className={cx('summary-item')}>
                                 <span className={cx('label')}>Thời gian hủy:</span>
                                 <span className={cx('value')}>{new Date(cancelData?.cancelledAt).toLocaleString('vi-VN')}</span>
                             </div>
-                            
+
                             {cancelData?.paymentMethod && (
                                 <div className={cx('summary-item')}>
                                     <span className={cx('label')}>Phương thức:</span>
@@ -207,7 +192,7 @@ Vui lòng hỗ trợ tôi hoàn tất thanh toán.`;
                                 <FontAwesomeIcon icon={faCalendarAlt} />
                                 Cuộc hẹn chưa thanh toán
                             </h3>
-                            
+
                             <div className={cx('appointment-card', 'unpaid')}>
                                 <div className={cx('appointment-header')}>
                                     <div className={cx('doctor-info')}>
@@ -218,7 +203,7 @@ Vui lòng hỗ trợ tôi hoàn tất thanh toán.`;
                                         Chưa thanh toán
                                     </div>
                                 </div>
-                                
+
                                 <div className={cx('unpaid-warning')}>
                                     <FontAwesomeIcon icon={faExclamationTriangle} />
                                     <span>Cuộc hẹn sẽ được hủy nếu không thanh toán trong 24h</span>
@@ -241,7 +226,7 @@ Vui lòng hỗ trợ tôi hoàn tất thanh toán.`;
                                 <FontAwesomeIcon icon={faCalendarAlt} />
                                 Xem danh sách cuộc hẹn
                             </button>
-                            
+
                             <button className={cx('secondary-btn')} onClick={contactSupport}>
                                 <FontAwesomeIcon icon={faQuestionCircle} />
                                 Liên hệ hỗ trợ
@@ -255,23 +240,23 @@ Vui lòng hỗ trợ tôi hoàn tất thanh toán.`;
                             <FontAwesomeIcon icon={faQuestionCircle} />
                             Gặp sự cố?
                         </h3>
-                        
+
                         <div className={cx('troubleshooting-grid')}>
                             <div className={cx('troubleshoot-item')}>
                                 <h4>Kiểm tra thông tin thẻ</h4>
                                 <p>Đảm bảo số thẻ, ngày hết hạn và CVV chính xác</p>
                             </div>
-                            
+
                             <div className={cx('troubleshoot-item')}>
                                 <h4>Kiểm tra số dư</h4>
                                 <p>Đảm bảo tài khoản có đủ số dư để thực hiện giao dịch</p>
                             </div>
-                            
+
                             <div className={cx('troubleshoot-item')}>
                                 <h4>Thử phương thức khác</h4>
                                 <p>Sử dụng ví điện tử hoặc thẻ khác nếu có</p>
                             </div>
-                            
+
                             <div className={cx('troubleshoot-item')}>
                                 <h4>Liên hệ ngân hàng</h4>
                                 <p>Gọi hotline ngân hàng nếu thẻ bị khóa giao dịch online</p>
@@ -282,7 +267,7 @@ Vui lòng hỗ trợ tôi hoàn tất thanh toán.`;
                     {/* Contact Info */}
                     <div className={cx('contact-section')}>
                         <h3 className={cx('section-title')}>Cần hỗ trợ?</h3>
-                        
+
                         <div className={cx('contact-options')}>
                             <div className={cx('contact-item')}>
                                 <FontAwesomeIcon icon={faPhone} />
@@ -291,7 +276,7 @@ Vui lòng hỗ trợ tôi hoàn tất thanh toán.`;
                                     <span>1900-xxxx (24/7)</span>
                                 </div>
                             </div>
-                            
+
                             <div className={cx('contact-item')}>
                                 <FontAwesomeIcon icon={faEnvelope} />
                                 <div>

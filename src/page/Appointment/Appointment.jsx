@@ -910,21 +910,6 @@ function Appointment() {
         <Header />
 
         <form onSubmit={handleSubmit} className={cx("appointment-form")}>
-          {/* User Status Display */}
-          {isLoggedIn && userProfile && (
-            <div className={cx("user-status-section")}>
-              <div className={cx("user-welcome")}>
-                <span className={cx("welcome-icon")}>👋</span>
-                <div className={cx("welcome-text")}>
-                  <h3>
-                    Xin chào, {userProfile.fullName || userProfile.first_name}!
-                  </h3>
-                  <p>Thông tin của bạn đã được tự động điền từ tài khoản</p>
-                </div>
-              </div>
-            </div>
-          )}
-
           <div className={cx("form-content")}>
             <div className={cx("form-row")}>
               {/* Personal Info Section */}
@@ -1085,7 +1070,6 @@ function Appointment() {
                 <span>Loại tư vấn</span>
               </div>
 
-              {/* Cập nhật validation cho bác sĩ - BẮT BUỘC */}
               <div
                 className={cx("validation-item", {
                   valid: formData.doctor_id && !errors.doctor_id,
