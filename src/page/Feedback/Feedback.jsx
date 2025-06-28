@@ -161,16 +161,6 @@ function Feedback() {
                   ))}
                 </div>
               )}
-
-              <div className={cx('option-action')}>
-                <button
-                  className={cx('primary-btn')}
-                  onClick={() => navigate('/feedback/appointment')}
-                >
-                  <FontAwesomeIcon icon={faStethoscope} />
-                  Đánh giá buổi tư vấn
-                </button>
-              </div>
             </div>
 
             {/* Test Service Feedback Option */}
@@ -226,16 +216,6 @@ function Feedback() {
                   ))}
                 </div>
               )}
-
-              <div className={cx('option-action')}>
-                <button
-                  className={cx('primary-btn')}
-                  onClick={() => navigate('/feedback/test-service')}
-                >
-                  <FontAwesomeIcon icon={faFlaskVial} />
-                  Đánh giá dịch vụ xét nghiệm
-                </button>
-              </div>
             </div>
           </div>
         </div>

@@ -1,4 +1,3 @@
-// NotificationBell.js
 import React, { useState, useEffect, useRef, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
@@ -29,7 +28,6 @@ function NotificationBell() {
   const [isLoading, setIsLoading] = useState(false);
   const dropdownRef = useRef(null);
 
-  // Get user info
   const user = JSON.parse(localStorage.getItem('user') || '{}');
   const accessToken = localStorage.getItem('accessToken');
 
@@ -86,13 +84,12 @@ function NotificationBell() {
     }
   };
 
-  // Create notification from appointment data
   const createNotificationFromAppointment = (appointment) => {
     const notifications = [];
     const appointmentDate = new Date(appointment.created_at);
 
     switch (appointment.status) {
-      case 'pending': // Pending
+      case 'pending':
         notifications.push({
           id: `pending_${appointment.appointment_id}`,
           type: "appointment_pending",
@@ -105,8 +102,7 @@ function NotificationBell() {
         });
         break;
 
-      case 'confirmed': // Confirmed
-        // Nếu đã thanh toán (booking = 1) - Chỉ hiển thị thông báo hoàn thành
+      case 'confirmed':
         if (appointment.booking === 1) {
           notifications.push({
             id: `success_${appointment.appointment_id}`,
@@ -118,12 +114,10 @@ function NotificationBell() {
             appointmentId: appointment.appointment_id,
             appointmentData: appointment,
             amount: appointment.price_apm,
-            isPaid: true // Đánh dấu đã thanh toán
+            isPaid: true
           });
         } 
-        // Nếu chưa thanh toán (booking = 0) - Hiển thị thông báo cần thanh toán
         else if (appointment.booking === 0) {
-          // Thông báo cần thanh toán (chỉ khi có phí và chưa thanh toán)
           if (appointment.price_apm && appointment.price_apm > 0) {
             notifications.push({
               id: `payment_${appointment.appointment_id}`,
@@ -135,11 +129,10 @@ function NotificationBell() {
               amount: appointment.price_apm,
               appointmentId: appointment.appointment_id,
               appointmentData: appointment,
-              isPaid: false // Đánh dấu chưa thanh toán
+              isPaid: false
             });
           }
 
-          // Thông báo xác nhận
           notifications.push({
             id: `confirmed_${appointment.appointment_id}`,
             type: "appointment_confirmed",
@@ -153,7 +146,7 @@ function NotificationBell() {
         }
         break;
 
-      case 'rejected': // Cancelled/Rejected
+      case 'rejected':
         notifications.push({
           id: `cancelled_${appointment.appointment_id}`,
           type: "appointment_cancelled",
@@ -173,7 +166,6 @@ function NotificationBell() {
     return notifications;
   };
 
-  // Thêm function để quản lý deleted notifications
   const getDeletedNotifications = () => {
     return JSON.parse(localStorage.getItem('deletedNotifications') || '{}');
   };
@@ -187,7 +179,6 @@ function NotificationBell() {
     localStorage.setItem('deletedNotifications', JSON.stringify(deletedNotifications));
   };
 
-  // Cleanup old deleted notifications (older than 30 days)
   const cleanupDeletedNotifications = () => {
     const deletedNotifications = getDeletedNotifications();
     const thirtyDaysAgo = new Date();
@@ -205,14 +196,11 @@ function NotificationBell() {
     return cleanedDeleted;
   };
 
-  // Cập nhật loadNotifications function
   const loadNotifications = useCallback(async () => {
     if (!user.user_id || !accessToken) return;
 
     try {
       setIsLoading(true);
-
-      console.log('🔔 Loading notifications for user:', user.user_id);
 
       const response = await axiosClient.get(`/v1/appointments/user/${user.user_id}`, {
         headers: {
@@ -222,39 +210,31 @@ function NotificationBell() {
 
       if (response.data?.success) {
         const appointments = response.data.data || [];
-        console.log('📋 Fetched appointments for notifications:', appointments.length);
 
-        // Get existing read status and deleted notifications from localStorage
         const savedNotifications = JSON.parse(localStorage.getItem('notificationReadStatus') || '{}');
-        const deletedNotifications = cleanupDeletedNotifications(); // Cleanup old deleted notifications
+        const deletedNotifications = cleanupDeletedNotifications();
 
-        // Create notifications from appointments
         let allNotifications = [];
         appointments.forEach(appointment => {
           const appointmentNotifications = createNotificationFromAppointment(appointment);
           allNotifications = [...allNotifications, ...appointmentNotifications];
         });
 
-        // Filter out deleted notifications
         allNotifications = allNotifications.filter(notif => {
           const isDeleted = deletedNotifications[notif.id];
           if (isDeleted) {
-            console.log(`🗑️ Skipping deleted notification: ${notif.id}`);
             return false;
           }
           return true;
         });
 
-        // Apply read status from localStorage
         allNotifications = allNotifications.map(notif => ({
           ...notif,
           isRead: savedNotifications[notif.id] || false
         }));
 
-        // Sort by timestamp (newest first)
         allNotifications.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
 
-        // Only keep notifications from last 30 days
         const thirtyDaysAgo = new Date();
         thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
 
@@ -264,31 +244,22 @@ function NotificationBell() {
 
         setNotifications(recentNotifications);
         setUnreadCount(recentNotifications.filter((n) => !n.isRead).length);
-
-        console.log('✅ Loaded notifications:', recentNotifications.length);
-        console.log('🗑️ Deleted notifications count:', Object.keys(deletedNotifications).length);
-      } else {
-        console.warn('⚠️ Invalid API response:', response.data);
       }
     } catch (error) {
       console.error('❌ Error loading notifications:', error);
-      // Don't show error to user, just log it
     } finally {
       setIsLoading(false);
     }
   }, [user.user_id, accessToken]);
 
-  // Load notifications on mount and periodically
   useEffect(() => {
     loadNotifications();
 
-    // Refresh notifications every 30 seconds
     const interval = setInterval(loadNotifications, 30000);
 
     return () => clearInterval(interval);
   }, [loadNotifications]);
 
-  // Handle click outside to close dropdown
   useEffect(() => {
     const handleClickOutside = (event) => {
       if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
@@ -311,7 +282,6 @@ function NotificationBell() {
     setNotifications(updated);
     setUnreadCount(updated.filter((n) => !n.isRead).length);
 
-    // Save read status to localStorage
     const readStatus = JSON.parse(localStorage.getItem('notificationReadStatus') || '{}');
     readStatus[notificationId] = true;
     localStorage.setItem('notificationReadStatus', JSON.stringify(readStatus));
@@ -322,7 +292,6 @@ function NotificationBell() {
     setNotifications(updated);
     setUnreadCount(0);
 
-    // Save all as read to localStorage
     const readStatus = {};
     notifications.forEach(n => {
       readStatus[n.id] = true;
@@ -333,44 +302,33 @@ function NotificationBell() {
   const deleteNotification = (notificationId, event) => {
     event.stopPropagation();
 
-    // Remove from current notifications list
     const updated = notifications.filter((n) => n.id !== notificationId);
     setNotifications(updated);
     setUnreadCount(updated.filter((n) => !n.isRead).length);
 
-    // Save as deleted to localStorage
     saveDeletedNotification(notificationId);
-    console.log(`🗑️ Marked notification as deleted: ${notificationId}`);
 
-    // Remove from read status as well (cleanup)
     const readStatus = JSON.parse(localStorage.getItem('notificationReadStatus') || '{}');
     delete readStatus[notificationId];
     localStorage.setItem('notificationReadStatus', JSON.stringify(readStatus));
   };
 
-  // Cập nhật handleNotificationClick function
   const handleNotificationClick = (notification) => {
     if (!notification.isRead) {
       markAsRead(notification.id);
     }
 
-    // Handle different notification types
     switch (notification.type) {
       case "payment_required":
-        // Kiểm tra xem đã thanh toán chưa trước khi cho phép navigate
         if (notification.isPaid) {
-          // Đã thanh toán - chỉ navigate đến appointments list
-          console.log('⚠️ Payment already completed for this appointment');
           navigate("/my-appointments");
         } else {
-          // Chưa thanh toán - cho phép navigate đến payment page
           navigate(`/paymentappointment/${notification.appointmentId}`, {
             state: { appointmentData: notification.appointmentData }
           });
         }
         break;
       case "appointment_success":
-        // Đã hoàn thành - chỉ navigate đến appointments list
         navigate("/my-appointments");
         break;
       case "appointment_confirmed":
@@ -386,7 +344,6 @@ function NotificationBell() {
     setIsOpen(false);
   };
 
-  // Show loading state in bell icon
   const bellIcon = isLoading ? faSpinner : faBell;
 
   return (

@@ -16,7 +16,6 @@ const cx = classNames.bind(styles);
 function MyAppointments() {
   const navigate = useNavigate();
   
-  // States
   const [appointments, setAppointments] = useState([]);
   const [filteredAppointments, setFilteredAppointments] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -30,12 +29,10 @@ function MyAppointments() {
   });
   const [currentPage, setCurrentPage] = useState(1);
   
-  // Constants
   const appointmentsPerPage = 6;
   const user = JSON.parse(localStorage.getItem('user') || '{}');
   const accessToken = localStorage.getItem('accessToken');
 
-  // Status configuration
   const statusConfig = {
     'pending': { label: 'Chờ xác nhận', icon: faHourglassHalf, bgColor: '#fff8e1', textColor: '#e65100' },
     'confirmed': { label: 'Đã xác nhận', icon: faCheckCircle, bgColor: '#e8f5e8', textColor: '#2e7d32' },
@@ -45,7 +42,6 @@ function MyAppointments() {
 
   const getStatusInfo = (status) => statusConfig[status] || statusConfig['pending'];
 
-  // API calls
   const fetchAppointments = async () => {
     try {
       setIsLoading(true);
@@ -73,7 +69,6 @@ function MyAppointments() {
     }
   };
 
-  // Filter logic
   const applyFilters = () => {
     let filtered = [...appointments];
 
@@ -102,7 +97,6 @@ function MyAppointments() {
     setCurrentPage(1);
   };
 
-  // Event handlers
   const handleFilterChange = (filterType, value) => {
     setFilters(prev => ({ ...prev, [filterType]: value }));
   };
@@ -137,15 +131,11 @@ function MyAppointments() {
     setShowModal(true);
   };
 
-  // Thêm handler cho Google Meet
   const handleJoinMeeting = (appointment) => {
-    // Google Meet URL cố định
     const meetUrl = 'https://meet.google.com/ymf-dwbi-uhy';
     
-    // Mở trong tab mới
     window.open(meetUrl, '_blank', 'noopener,noreferrer');
     
-    // Optional: Log meeting join
     console.log(`User joined meeting for appointment ${appointment.id}`);
   };
 
@@ -156,20 +146,16 @@ function MyAppointments() {
     });
   };
 
-  // Cập nhật formatCurrency để xử lý price_apm
   const formatCurrency = (amount) => {
-    // Parse và làm tròn số để loại bỏ .00
     const numericAmount = Math.floor(parseFloat(amount) || 0);
     return numericAmount.toLocaleString('vi-VN') + 'đ';
   };
 
-  // Pagination
   const indexOfLastAppointment = currentPage * appointmentsPerPage;
   const indexOfFirstAppointment = indexOfLastAppointment - appointmentsPerPage;
   const currentAppointments = filteredAppointments.slice(indexOfFirstAppointment, indexOfLastAppointment);
   const totalPages = Math.ceil(filteredAppointments.length / appointmentsPerPage);
 
-  // Effects
   useEffect(() => {
     if (accessToken && user.user_id) fetchAppointments();
   }, [accessToken, user.user_id]);
@@ -178,7 +164,6 @@ function MyAppointments() {
     applyFilters();
   }, [filters, appointments]);
 
-  // Loading & Error states
   if (isLoading) {
     return (
       <div className={cx('appointments-page')}>
@@ -207,7 +192,6 @@ function MyAppointments() {
 
   console.log('Appointments fetched:', appointments);
 
-  // Statistics
   const stats = [
     { label: 'Tổng cuộc hẹn', value: appointments.length },
     { label: 'Chờ xác nhận', value: appointments.filter(apt => apt.status === 'pending').length },
@@ -300,7 +284,6 @@ function MyAppointments() {
             {currentAppointments.map((appointment) => {
               const statusInfo = getStatusInfo(appointment.status);
               
-              // Logic mới: Cần thanh toán khi confirmed và booking = 0
               const needsPayment = appointment.status === 'confirmed' && 
                                   appointment.booking === 0 && 
                                   appointment.price_apm && 
