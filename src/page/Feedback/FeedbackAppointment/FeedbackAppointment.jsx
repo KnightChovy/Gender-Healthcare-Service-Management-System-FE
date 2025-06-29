@@ -22,7 +22,12 @@ function FeedbackAppointment() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState(null);
   
-  const [hoverRating, setHoverRating] = useState(0);
+  // FIX: Separate hover states for each rating category
+  const [hoverRating, setHoverRating] = useState({
+    doctor_rating: 0,
+    consultation_rating: 0
+  });
+  
   const [feedback, setFeedback] = useState({
     doctor_rating: 0,
     consultation_rating: 0,
@@ -36,27 +41,55 @@ function FeedbackAppointment() {
     } else if (location.state?.appointmentData) {
       setAppointmentData(location.state.appointmentData);
       setIsLoading(false);
+    } else {
+      // FIX: Handle case when no appointment data
+      setError('Không tìm thấy thông tin cuộc hẹn');
+      setIsLoading(false);
     }
   }, [appointmentId, location.state]);
 
   const fetchAppointmentDetails = async () => {
     try {
-      const accessToken = localStorage.getItem('access_token');
+      const accessToken = localStorage.getItem('accessToken');
       const user = JSON.parse(localStorage.getItem('user'));
+
+      if (!accessToken || !user) {
+        setError('Vui lòng đăng nhập để tiếp tục');
+        setIsLoading(false);
+        return;
+      }
+
       setIsLoading(true);
       const response = await axiosClient.get(`/v1/appointments/user/${user.user_id}`, {
         headers: {
           'x-access-token': accessToken
         }
       });
+      
       if (response.data.success) {
         const arrayAppointments = response.data.data || [];
         const appointment = arrayAppointments.find(app => app.appointment_id === appointmentId);
-        setAppointmentData(appointment);
+        
+        // FIX: Handle case when appointment not found
+        if (!appointment) {
+          setError('Không tìm thấy cuộc hẹn này');
+        } else {
+          setAppointmentData(appointment);
+        }
+      } else {
+        setError('Không thể tải thông tin cuộc hẹn');
       }
     } catch (error) {
       console.error('Error fetching appointment:', error);
-      setError('Không thể tải thông tin cuộc hẹn');
+      
+      // FIX: More specific error messages
+      if (error.response?.status === 401) {
+        setError('Phiên đăng nhập đã hết hạn. Vui lòng đăng nhập lại');
+      } else if (error.response?.status === 404) {
+        setError('Không tìm thấy cuộc hẹn');
+      } else {
+        setError('Không thể tải thông tin cuộc hẹn. Vui lòng thử lại');
+      }
     } finally {
       setIsLoading(false);
     }
@@ -64,66 +97,120 @@ function FeedbackAppointment() {
 
   const handleRatingChange = (category, value) => {
     setFeedback(prev => ({ ...prev, [category]: value }));
+    // FIX: Reset hover when rating is set
+    setHoverRating(prev => ({ ...prev, [category]: 0 }));
   };
 
   const handleInputChange = (field, value) => {
     setFeedback(prev => ({ ...prev, [field]: value }));
   };
 
+  // FIX: Handle hover for specific category
+  const handleStarHover = (category, value) => {
+    setHoverRating(prev => ({ ...prev, [category]: value }));
+  };
+
+  const handleStarLeave = (category) => {
+    setHoverRating(prev => ({ ...prev, [category]: 0 }));
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     
-    if (feedback.doctor_rating === 0 || feedback.consultation_rating === 0) {
-      alert('Vui lòng đánh giá cả bác sĩ và cuộc tư vấn');
+    // FIX: Better validation messages
+    if (feedback.doctor_rating === 0) {
+      alert('Vui lòng đánh giá bác sĩ');
+      return;
+    }
+    
+    if (feedback.consultation_rating === 0) {
+      alert('Vui lòng đánh giá cuộc tư vấn');
       return;
     }
 
     setIsSubmitting(true);
     
     try {
+      const user = JSON.parse(localStorage.getItem('user'));
+      const accessToken = localStorage.getItem('access_token');
+      
+      // FIX: Validate user data before submit
+      if (!user || !accessToken) {
+        alert('Vui lòng đăng nhập để gửi đánh giá');
+        navigate('/login');
+        return;
+      }
+
       const feedbackData = {
         appointment_id: appointmentId || appointmentData?.appointment_id,
-        user_id: JSON.parse(localStorage.getItem('user'))?.user_id,
-        ...feedback,
+        user_id: user.user_id,
+        doctor_rating: feedback.doctor_rating,
+        consultation_rating: feedback.consultation_rating,
+        comment: feedback.comment.trim(), // FIX: Trim whitespace
         created_at: new Date().toISOString()
       };
 
-      const response = await axiosClient.post('/feedback', feedbackData);
+      console.log('Submitting feedback:', feedbackData);
+
+      const response = await axiosClient.post('/v1/feedback', feedbackData, {
+        headers: {
+          'x-access-token': accessToken,
+          'Content-Type': 'application/json'
+        }
+      });
       
       if (response.status === 200 || response.status === 201) {
         setShowSuccess(true);
         setTimeout(() => {
           navigate('/feedback');
         }, 3000);
+      } else {
+        throw new Error('Server responded with error');
       }
     } catch (error) {
       console.error('Error submitting feedback:', error);
-      alert('Có lỗi xảy ra khi gửi đánh giá. Vui lòng thử lại.');
+      
+      // FIX: More specific error handling
+      if (error.response?.status === 401) {
+        alert('Phiên đăng nhập đã hết hạn. Vui lòng đăng nhập lại');
+        navigate('/login');
+      } else if (error.response?.status === 400) {
+        alert('Dữ liệu đánh giá không hợp lệ. Vui lòng kiểm tra lại');
+      } else if (error.response?.status === 409) {
+        alert('Bạn đã đánh giá cuộc hẹn này rồi');
+        navigate('/feedback');
+      } else {
+        alert('Có lỗi xảy ra khi gửi đánh giá. Vui lòng thử lại');
+      }
     } finally {
       setIsSubmitting(false);
     }
   };
 
-  const renderStarRating = (category, currentRating, size = 'normal') => {
+  // FIX: Corrected star rating logic
+  const renderStarRating = (category, currentRating) => {
     const stars = [];
     const starSize = '1.5rem';
+    const currentHover = hoverRating[category];
     
     for (let i = 1; i <= 5; i++) {
+      const isActive = i <= (currentHover || currentRating);
+      
       stars.push(
         <button
           key={i}
           type="button"
-          className={cx('star-btn')}
+          className={cx('star-btn', { 'active': isActive })}
           onClick={() => handleRatingChange(category, i)}
-          onMouseEnter={() => setHoverRating(i)}
-          onMouseLeave={() => setHoverRating(0)}
+          onMouseEnter={() => handleStarHover(category, i)}
+          onMouseLeave={() => handleStarLeave(category)}
         >
           <FontAwesomeIcon 
             icon={faStar} 
             style={{ 
               fontSize: starSize,
-              color: i <= (hoverRating && category === 'doctor_rating' ? hoverRating : currentRating) 
-                ? '#fbbf24' : '#e5e7eb'
+              color: isActive ? '#fbbf24' : '#e5e7eb',
+              transition: 'color 0.2s ease'
             }}
           />
         </button>
@@ -155,7 +242,7 @@ function FeedbackAppointment() {
       <div className={cx('error-container')}>
         <FontAwesomeIcon icon={faTimesCircle} className={cx('error-icon')} />
         <p>{error}</p>
-        <button onClick={() => navigate('/my-appointments')} className={cx('back-btn')}>
+        <button onClick={() => navigate('/feedback')} className={cx('back-btn')}>
           Quay lại
         </button>
       </div>
@@ -171,7 +258,7 @@ function FeedbackAppointment() {
           <p>Phản hồi của bạn giúp chúng tôi cải thiện chất lượng dịch vụ</p>
           <div className={cx('redirect-info')}>
             <FontAwesomeIcon icon={faSpinner} spin />
-            <span>Đang chuyển về trang lịch hẹn...</span>
+            <span>Đang chuyển về trang feedback...</span>
           </div>
         </div>
       </div>
@@ -184,7 +271,7 @@ function FeedbackAppointment() {
         {/* Header */}
         <div className={cx('page-header')}>
           <button 
-            onClick={() => navigate('/my-appointments')} 
+            onClick={() => navigate('/feedback')} 
             className={cx('back-button')}
           >
             <FontAwesomeIcon icon={faArrowLeft} />
@@ -224,7 +311,7 @@ function FeedbackAppointment() {
         {/* Feedback Form */}
         <form onSubmit={handleSubmit} className={cx('feedback-form')}>
           {/* Rating Grid - 2 columns */}
-          <div className={cx('rating-grid')}>
+          <div className={cx('ratings-grid')}>
             {/* Doctor Rating */}
             <div className={cx('rating-section', 'doctor-rating')}>
               <h3>
@@ -276,7 +363,11 @@ function FeedbackAppointment() {
               value={feedback.comment}
               onChange={(e) => handleInputChange('comment', e.target.value)}
               rows={3}
+              maxLength={500} // FIX: Add character limit
             />
+            <div className={cx('char-count')}>
+              {feedback.comment.length}/500 ký tự
+            </div>
           </div>
 
           {/* Submit Button */}
@@ -289,7 +380,7 @@ function FeedbackAppointment() {
               {isSubmitting ? (
                 <>
                   <FontAwesomeIcon icon={faSpinner} spin />
-                  Đang gửi...
+                  Đang gửi đánh giá...
                 </>
               ) : (
                 <>
@@ -300,7 +391,7 @@ function FeedbackAppointment() {
             </button>
 
             <p className={cx('submit-note')}>
-              * Đánh giá giúp cải thiện chất lượng dịch vụ
+              * Đánh giá của bạn sẽ giúp chúng tôi cải thiện chất lượng dịch vụ
             </p>
           </div>
         </form>

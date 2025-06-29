@@ -1,70 +1,52 @@
 .feedback-page {
   min-height: 100vh;
   background: #ffffff;
-  padding: 1rem 0; // Giảm từ 2rem xuống 1rem
+  padding: 1rem 0;
 }
 
 .container {
-  max-width: 600px; // Giảm từ 700px xuống 600px
+  max-width: 800px;
   margin: 0 auto;
   padding: 0 1rem;
 }
 
-/* Loading States */
-.loading-container {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  min-height: 60vh;
-  color: #374151;
-
-  .loading-icon {
-    font-size: 2.5rem; // Giảm từ 3rem
-    margin-bottom: 0.75rem; // Giảm từ 1rem
-    color: #10b981;
-  }
-
-  p {
-    font-size: 1.1rem; // Giảm từ 1.2rem
-    font-weight: 500;
-  }
-}
-
+/* Loading & Error States */
+.loading-container,
 .error-container {
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
   min-height: 60vh;
-  color: #374151;
   text-align: center;
+}
 
-  .error-icon {
-    font-size: 3rem; // Giảm từ 4rem
-    color: #ef4444;
-    margin-bottom: 0.75rem; // Giảm từ 1rem
-  }
+.loading-icon,
+.error-icon {
+  font-size: 3rem;
+  margin-bottom: 1rem;
+}
 
-  p {
-    font-size: 1.1rem; // Giảm từ 1.2rem
-    margin-bottom: 1.5rem; // Giảm từ 2rem
-  }
+.loading-icon {
+  color: #3b82f6;
+}
 
-  .back-btn {
-    background: #10b981;
-    color: white;
-    border: none;
-    padding: 0.6rem 1.5rem; // Giảm từ 0.75rem 2rem
-    border-radius: 6px;
-    font-weight: 500;
-    cursor: pointer;
-    transition: all 0.2s ease;
+.error-icon {
+  color: #ef4444;
+}
 
-    &:hover {
-      background: #059669;
-    }
-  }
+.back-btn {
+  background: #3b82f6;
+  color: white;
+  border: none;
+  padding: 0.75rem 1.5rem;
+  border-radius: 6px;
+  cursor: pointer;
+  margin-top: 1rem;
+}
+
+.back-btn:hover {
+  background: #06b6d4;
 }
 
 /* Success State */
@@ -78,336 +60,314 @@
 
 .success-animation {
   text-align: center;
+}
+
+.success-icon {
+  font-size: 4rem;
+  color: #3b82f6;
+  margin-bottom: 1rem;
+}
+
+.success-animation h2 {
+  font-size: 1.8rem;
+  margin-bottom: 1rem;
   color: #374151;
+}
 
-  .success-icon {
-    font-size: 4rem; // Giảm từ 5rem
-    margin-bottom: 1.5rem; // Giảm từ 2rem
-    color: #10b981;
-  }
+.success-animation p {
+  color: #6b7280;
+  margin-bottom: 1.5rem;
+}
 
-  h2 {
-    font-size: 1.8rem; // Giảm từ 2rem
-    margin-bottom: 0.75rem; // Giảm từ 1rem
-    font-weight: 600;
-    color: #374151;
-  }
-
-  p {
-    font-size: 1rem; // Giảm từ 1.1rem
-    margin-bottom: 1.5rem; // Giảm từ 2rem
-    color: #6b7280;
-  }
-
-  .redirect-info {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 0.5rem;
-    font-size: 0.9rem; // Giảm từ 1rem
-    color: #6b7280;
-  }
+.redirect-info {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  color: #6b7280;
 }
 
 /* Page Header */
 .page-header {
-  background: #ffffff;
+  background: white;
   border: 1px solid #e5e7eb;
-  border-radius: 8px; // Giảm từ 12px
-  padding: 1.5rem; // Giảm từ 2rem
-  margin-bottom: 1.5rem; // Giảm từ 2rem
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05); // Giảm shadow
+  border-radius: 8px;
+  padding: 1.5rem;
+  margin-bottom: 1.5rem;
+}
 
-  .back-button {
-    background: #10b981;
-    color: white;
-    border: none;
-    padding: 0.4rem 0.8rem; // Giảm từ 0.5rem 1rem
-    border-radius: 4px; // Giảm từ 6px
-    margin-bottom: 0.75rem; // Giảm từ 1rem
-    cursor: pointer;
-    transition: all 0.2s ease;
-    font-size: 0.9rem; // Thêm font size nhỏ hơn
+.back-button {
+  background: #3b82f6;
+  color: white;
+  border: none;
+  padding: 0.5rem 1rem;
+  border-radius: 4px;
+  cursor: pointer;
+  margin-bottom: 1rem;
+  font-size: 0.9rem;
+}
 
-    &:hover {
-      background: #059669;
-    }
-  }
+.back-button:hover {
+  background: #06b6d4;
+}
 
-  .header-content {
-    text-align: center;
+.header-content {
+  text-align: center;
+}
 
-    h1 {
-      font-size: 1.6rem; // Giảm từ 2rem
-      margin-bottom: 0.4rem; // Giảm từ 0.5rem
-      font-weight: 600;
-      color: #374151;
-    }
+.header-content h1 {
+  font-size: 1.6rem;
+  margin-bottom: 0.5rem;
+  color: #374151;
+}
 
-    p {
-      font-size: 0.9rem; // Giảm từ 1rem
-      color: #6b7280;
-    }
-  }
+.header-content p {
+  color: #6b7280;
+  font-size: 0.9rem;
 }
 
 /* Appointment Info */
 .appointment-info {
-  background: #ffffff;
+  background: white;
   border: 1px solid #e5e7eb;
-  border-radius: 8px; // Giảm từ 12px
-  padding: 1.5rem; // Giảm từ 2rem
-  margin-bottom: 1.5rem; // Giảm từ 2rem
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05); // Giảm shadow
+  border-radius: 8px;
+  padding: 1.5rem;
+  margin-bottom: 1.5rem;
+}
 
-  h3 {
-    color: #374151;
-    margin-bottom: 1rem; // Giảm từ 1.5rem
-    font-size: 1.1rem; // Giảm từ 1.2rem
-    font-weight: 600;
-  }
+.appointment-info h3 {
+  color: #374151;
+  margin-bottom: 1rem;
+  font-size: 1.1rem;
+}
 
-  .info-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); // Giảm từ 250px
-    gap: 0.75rem; // Giảm từ 1rem
-  }
+.info-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 1rem;
+}
 
-  .info-item {
-    display: flex;
-    align-items: center;
-    gap: 0.6rem; // Giảm từ 0.75rem
-    padding: 0.8rem; // Giảm từ 1rem
-    background: #f9fafb;
-    border-radius: 6px; // Giảm từ 8px
-    font-size: 0.9rem; // Thêm font size nhỏ hơn
+.info-item {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.75rem;
+  background: #f9fafb;
+  border-radius: 6px;
+}
 
-    svg {
-      color: #10b981;
-      font-size: 1rem; // Giảm từ 1.1rem
-    }
+.info-item svg {
+  color: #3b82f6;
+}
 
-    span {
-      color: #374151;
-      font-weight: 500;
-    }
-  }
+.info-item span {
+  color: #374151;
+  font-size: 0.9rem;
 }
 
 /* Feedback Form */
 .feedback-form {
-  background: #ffffff;
+  background: white;
   border: 1px solid #e5e7eb;
-  border-radius: 8px; // Giảm từ 12px
-  padding: 1.5rem; // Giảm từ 2rem
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05); // Giảm shadow
+  border-radius: 8px;
+  padding: 1.5rem;
 }
 
-/* Rating Grid Layout */
-.rating-grid {
+/* Rating Grid */
+.ratings-grid {
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: 1rem;
   margin-bottom: 1.5rem;
 }
 
-/* Rating Sections */
 .rating-section {
-  margin-bottom: 0; // Bỏ margin-bottom vì đã có gap
-  padding: 1rem; // Giảm từ 1.2rem
   border: 1px solid #e5e7eb;
   border-radius: 8px;
-  background: #ffffff;
-
-  h3 {
-    color: #374151;
-    margin-bottom: 0.3rem; // Giảm từ 0.4rem
-    font-size: 1.1rem; // Giảm từ 1.2rem
-    font-weight: 600;
-    display: flex;
-    align-items: center;
-    gap: 0.3rem; // Giảm từ 0.4rem
-
-    svg {
-      color: #10b981;
-      font-size: 1rem;
-    }
-  }
-
-  .rating-description {
-    color: #6b7280;
-    font-size: 0.8rem; // Giảm từ 0.85rem
-    margin-bottom: 1rem; // Giảm từ 1.2rem
-    line-height: 1.4;
-  }
+  padding: 1rem;
+  text-align: center;
 }
 
 .doctor-rating {
-  border-left: 3px solid #10b981; // Giảm từ 4px
+  border-left: 3px solid #3b82f6;
 }
 
 .consultation-rating {
-  border-left: 3px solid #3b82f6; // Giảm từ 4px
+  border-left: 3px solid #06b6d4;
+}
+
+.rating-section h3 {
+  color: #374151;
+  font-size: 1rem;
+  margin-bottom: 0.5rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+}
+
+.rating-section h3 svg {
+  color: #3b82f6;
+}
+
+.consultation-rating h3 svg {
+  color: #06b6d4;
+}
+
+.rating-description {
+  color: #6b7280;
+  font-size: 0.8rem;
+  margin-bottom: 1rem;
 }
 
 .rating-container {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 0.6rem; // Giảm từ 0.75rem
+  gap: 0.75rem;
 }
 
 .stars-container {
   display: flex;
-  gap: 0.2rem; // Giảm từ 0.3rem
+  gap: 0.25rem;
 }
 
 .star-btn {
   background: none;
   border: none;
   cursor: pointer;
-  transition: all 0.2s ease;
-  padding: 0.2rem; // Giảm từ 0.3rem
+  padding: 0.25rem;
   border-radius: 3px;
+  transition: all 0.2s ease;
+}
 
-  &:hover {
-    background: #f3f4f6;
-    transform: scale(1.1);
-  }
+.star-btn:hover {
+  background: #f3f4f6;
+  transform: scale(1.1);
 }
 
 .rating-text {
-  font-size: 0.85rem; // Giảm từ 1rem
+  font-size: 0.9rem;
   font-weight: 600;
   color: #374151;
-  min-height: 1rem; // Giảm từ 1.2rem
-  text-align: center;
+  min-height: 1.2rem;
 }
 
 /* Comment Section */
 .comment-section {
-  margin-bottom: 1.2rem; // Giảm từ 1.5rem
+  margin-bottom: 1.5rem;
+}
 
-  h3 {
-    color: #374151;
-    margin-bottom: 0.6rem; // Giảm từ 0.75rem
-    font-size: 1rem; // Giảm từ 1.1rem
-    font-weight: 600;
-    display: flex;
-    align-items: center;
-    gap: 0.3rem;
+.comment-section h3 {
+  color: #374151;
+  font-size: 1.1rem;
+  margin-bottom: 0.75rem;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
 
-    svg {
-      color: #10b981;
-      font-size: 0.9rem;
-    }
-  }
+.comment-section h3 svg {
+  color: #3b82f6;
+}
 
-  textarea {
-    width: 100%;
-    border: 1px solid #d1d5db;
-    border-radius: 6px;
-    padding: 0.7rem; // Giảm từ 0.8rem
-    font-family: inherit;
-    font-size: 0.85rem; // Giảm từ 0.9rem
-    line-height: 1.4;
-    resize: vertical;
-    transition: all 0.2s ease;
+.comment-section textarea {
+  width: 100%;
+  border: 1px solid #d1d5db;
+  border-radius: 6px;
+  padding: 0.75rem;
+  font-family: inherit;
+  font-size: 0.9rem;
+  resize: vertical;
+  transition: border-color 0.2s ease;
+}
 
-    &:focus {
-      outline: none;
-      border-color: #10b981;
-      box-shadow: 0 0 0 2px rgba(16, 185, 129, 0.1);
-    }
+.comment-section textarea:focus {
+  outline: none;
+  border-color: #3b82f6;
+  box-shadow: 0 0 0 2px rgba(16, 185, 129, 0.1);
+}
 
-    &::placeholder {
-      color: #9ca3af;
-    }
-  }
+.char-count {
+  text-align: right;
+  font-size: 0.8rem;
+  color: #6b7280;
+  margin-top: 0.5rem;
 }
 
 /* Submit Section */
 .submit-section {
   text-align: center;
-  padding-top: 1rem; // Giảm từ 1.2rem
+  padding-top: 1rem;
   border-top: 1px solid #e5e7eb;
-
-  .submit-btn {
-    background: #10b981;
-    color: white;
-    border: none;
-    padding: 0.7rem 1.8rem; // Giảm từ 0.8rem 2rem
-    border-radius: 6px;
-    font-size: 0.95rem; // Giảm từ 1rem
-    font-weight: 600;
-    cursor: pointer;
-    transition: all 0.2s ease;
-    margin-bottom: 0.6rem; // Giảm từ 0.75rem
-
-    &:hover:not(:disabled) {
-      background: #059669;
-      transform: translateY(-1px);
-    }
-
-    &:disabled {
-      opacity: 0.6;
-      cursor: not-allowed;
-    }
-
-    svg {
-      margin-right: 0.3rem; // Giảm từ 0.4rem
-    }
-  }
-
-  .submit-note {
-    color: #6b7280;
-    font-size: 0.75rem; // Giảm từ 0.8rem
-    margin: 0;
-  }
 }
 
-/* Responsive Design */
-@media (max-width: 768px) {
-  .feedback-page {
-    padding: 0.75rem 0; // Giảm từ 1rem
-  }
+.submit-btn {
+  background: #3b82f6;
+  color: white;
+  border: none;
+  padding: 0.75rem 2rem;
+  border-radius: 6px;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  margin-bottom: 0.75rem;
+}
 
+.submit-btn:hover:not(:disabled) {
+  background: #06b6d4;
+  transform: translateY(-1px);
+}
+
+.submit-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.submit-btn svg {
+  margin-right: 0.5rem;
+}
+
+.submit-note {
+  color: #6b7280;
+  font-size: 0.8rem;
+  margin: 0;
+}
+
+/* Mobile Responsive */
+@media (max-width: 768px) {
   .container {
-    max-width: 100%;
     padding: 0 0.75rem;
   }
 
-  .page-header {
-    padding: 1.2rem; // Giảm từ 1.5rem
-
-    .header-content h1 {
-      font-size: 1.5rem; // Giảm từ 1.8rem
-    }
+  .ratings-grid {
+    grid-template-columns: 1fr;
   }
 
-  .appointment-info {
-    padding: 1.2rem; // Giảm từ 1.5rem
-
-    .info-grid {
-      grid-template-columns: 1fr;
-      gap: 0.6rem; // Giảm gap
-    }
+  .info-grid {
+    grid-template-columns: 1fr;
   }
 
+  .submit-btn {
+    width: 100%;
+    padding: 1rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .feedback-page {
+    padding: 0.5rem 0;
+  }
+
+  .page-header,
+  .appointment-info,
   .feedback-form {
-    padding: 1.2rem; // Giảm từ 1.5rem
+    padding: 1rem;
   }
 
   .rating-section {
-    padding: 0.8rem;
-
-    h3 {
-      font-size: 1rem;
-    }
-
-    .rating-description {
-      font-size: 0.75rem;
-    }
+    padding: 0.75rem;
   }
 
   .stars-container {
@@ -416,29 +376,5 @@
 
   .star-btn {
     padding: 0.15rem;
-  }
-
-  .submit-btn {
-    width: 100%;
-    padding: 0.9rem;
-  }
-}
-
-@media (max-width: 480px) {
-  .page-header .header-content h1 {
-    font-size: 1.4rem; // Giảm từ 1.8rem
-  }
-
-  .rating-section {
-    padding: 0.7rem;
-
-    h3 {
-      font-size: 0.95rem;
-    }
-  }
-
-  .submit-btn {
-    width: 100%;
-    padding: 0.9rem;
   }
 }
