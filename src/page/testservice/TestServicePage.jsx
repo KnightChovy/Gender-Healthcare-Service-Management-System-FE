@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
+import vnpay_ico from "../../assets/VNpay_ico.png";
 import {
   PDFDownloadLink,
   Document,
@@ -10,7 +11,7 @@ import {
   Font,
   Image,
 } from "@react-pdf/renderer";
-
+import { Buffer } from "buffer";
 import logo from "../../assets/gender_healthcare_logo.png";
 import RobotoRegular from "../../assets/fonts/Roboto-Regular.ttf";
 import axiosClient from "../../services/axiosClient";
@@ -18,7 +19,7 @@ import { format } from "date-fns";
 import { vi } from "date-fns/locale";
 import { DayPicker } from "react-day-picker";
 import "react-day-picker/dist/style.css";
-
+window.Buffer = Buffer;
 const unhashServiceId = (hashedId) => {
   try {
     return atob(hashedId);
@@ -234,10 +235,11 @@ const TestAppointmentPage = () => {
   // Xử lý thanh toán
   const processPayment = async () => {
     setLoading(true);
+    const serviceIds = selectedServices.map((ser) => ser.service_id);
     try {
       const appointmentData = {
         userInfo: userInfo,
-        services: selectedServices,
+        services: serviceIds,
         medicalHistory: medicalHistory,
         appointmentDate: format(selectedDate, "dd-MM-yyyy"),
         appointmentTime: selectedTimeSlot,
@@ -245,10 +247,8 @@ const TestAppointmentPage = () => {
         paymentMethod: paymentMethod,
       };
 
-      // Debug: Hiển thị dữ liệu gửi đi
       console.log("Dữ liệu đặt lịch:", appointmentData);
 
-      // Mock response cho demo
       const mockResponse = {
         success: true,
         data: {
@@ -1020,13 +1020,6 @@ const TestAppointmentPage = () => {
                 <div className="space-y-4">
                   <div className="flex items-center">
                     <input
-                      id="momo"
-                      name="paymentMethod"
-                      type="radio"
-                      value="momo"
-                      checked={paymentMethod === "momo"}
-                      onChange={handlePaymentMethodChange}
-                      className="focus:ring-blue-500 h-4 w-4 text-blue-600 border-gray-300"
                       id="vnpay"
                       name="paymentMethod"
                       type="radio"
@@ -1037,12 +1030,12 @@ const TestAppointmentPage = () => {
                     />
                     <label
                       htmlFor="vnpay"
-                      className="ml-3 block text-sm font-medium text-gray-700 flex items-center"
+                      className="ml-3  text-sm font-medium text-gray-700 flex items-center"
                     >
                       <img
-                        src="https://cdn.haitrieu.com/wp-content/uploads/2022/10/Icon-VNPAY-QR-1024x1024.png"
+                        src={vnpay_ico}
                         alt="VNPAY"
-                        className="h-8 w-8 mr-2"
+                        className="h-5 w-auto mr-2"
                       />
                       VNPAY
                     </label>
@@ -1059,7 +1052,7 @@ const TestAppointmentPage = () => {
                     />
                     <label
                       htmlFor="cash"
-                      className="ml-3 block text-sm font-medium text-gray-700 flex items-center"
+                      className="ml-3  text-sm font-medium text-gray-700 flex items-center"
                     >
                       <svg
                         xmlns="http://www.w3.org/2000/svg"
