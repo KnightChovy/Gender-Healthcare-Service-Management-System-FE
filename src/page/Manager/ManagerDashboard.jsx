@@ -131,18 +131,40 @@ function ManagerDashboard() {
         calculateStats();
     };
 
+    const getTestPrice = (testId) => {
+        const testPrices = {
+            'blood-test': 300000,
+            'urine-test': 200000,
+            'hormone-test': 800000,
+            'std-test': 1200000,
+            'general-checkup': 1500000
+        };
+        
+        const test = testOrders.find(t => t.id === testId);
+        return test ? testPrices[test.testType] || 500000 : 500000;
+    };
+
     const createNotificationForUser = (requestId, status, type) => {
         const statusText = status === 2 ? 'đã được duyệt' : 'đã bị từ chối';
         const typeText = type === 'appointment' ? 'lịch hẹn khám' : 'lịch xét nghiệm';
+        
+        let message = `${typeText.charAt(0).toUpperCase() + typeText.slice(1)} của bạn ${statusText} bởi quản lý.`;
+        
+        // Thêm thông tin thanh toán khi được duyệt
+        if (status === 2) {
+            message += ' Vui lòng tiến hành thanh toán để hoàn tất đặt lịch.';
+        }
         
         const notification = {
             id: `NOTIF_MGR_${Date.now()}`,
             type: `${type}-update`,
             title: `Cập nhật ${typeText}`,
-            message: `${typeText.charAt(0).toUpperCase() + typeText.slice(1)} của bạn ${statusText} bởi quản lý.`,
+            message: message,
             timestamp: new Date().toISOString(),
             read: false,
-            requestId: requestId
+            requestId: requestId,
+            requiresPayment: status === 2, // Thêm flag để biết cần thanh toán
+            amount: type === 'appointment' ? 500000 : getTestPrice(requestId) // Thêm số tiền cần thanh toán
         };
         
         const existingNotifications = JSON.parse(localStorage.getItem('notifications') || '[]');
@@ -169,18 +191,22 @@ function ManagerDashboard() {
 
     const getStatusColor = (status) => {
         switch (status) {
-            case 1: return 'text-yellow-600 bg-yellow-100';
-            case 2: return 'text-green-600 bg-green-100';
-            case 3: return 'text-red-600 bg-red-100';
+            case 0: return 'text-red-600 bg-red-100';        // Rejected
+            case 1: return 'text-yellow-600 bg-yellow-100';  // Pending
+            case 2: return 'text-blue-600 bg-blue-100';      // Confirmed
+            case 3: return 'text-green-600 bg-green-100';    // Confirmed & Paid
+            case 4: return 'text-purple-600 bg-purple-100';  // Completed
             default: return 'text-gray-600 bg-gray-100';
         }
     };
 
     const getStatusText = (status) => {
         switch (status) {
+            case 0: return 'Đã từ chối';
             case 1: return 'Chờ duyệt';
             case 2: return 'Đã duyệt';
-            case 3: return 'Đã từ chối';
+            case 3: return 'Đã thanh toán';
+            case 4: return 'Hoàn thành';
             default: return 'Không xác định';
         }
     };
@@ -445,7 +471,7 @@ function ManagerDashboard() {
                                                             <FontAwesomeIcon icon={faCheck} /> Duyệt
                                                         </button>
                                                         <button
-                                                            onClick={() => updateStatus(appointment.id, 3, 'appointment')}
+                                                            onClick={() => updateStatus(appointment.id, 0, 'appointment')}
                                                             className="text-red-600 hover:text-red-900"
                                                         >
                                                             <FontAwesomeIcon icon={faTimes} /> Từ chối
@@ -512,7 +538,7 @@ function ManagerDashboard() {
                                                             <FontAwesomeIcon icon={faCheck} /> Duyệt
                                                         </button>
                                                         <button
-                                                            onClick={() => updateStatus(test.id, 3, 'test')}
+                                                            onClick={() => updateStatus(test.id, 0, 'test')}
                                                             className="text-red-600 hover:text-red-900"
                                                         >
                                                             <FontAwesomeIcon icon={faTimes} /> Từ chối

@@ -8,7 +8,8 @@ import {
     faEye,
     faCheck,
     faTimes,
-    faSearch
+    faSearch,
+    faVideo
 } from '@fortawesome/free-solid-svg-icons';
 import Navbar from '../../Layouts/LayoutHomePage/Navbar';
 import { Footer } from '../../Layouts/LayoutHomePage/Footer';
@@ -36,18 +37,22 @@ function DoctorDashboard() {
 
     const getStatusColor = (status) => {
         switch (status) {
-            case 1: return 'text-yellow-600 bg-yellow-100';
-            case 2: return 'text-green-600 bg-green-100';
-            case 3: return 'text-red-600 bg-red-100';
+            case 0: return 'text-red-600 bg-red-100';        // Rejected
+            case 1: return 'text-yellow-600 bg-yellow-100';  // Pending
+            case 2: return 'text-blue-600 bg-blue-100';      // Confirmed
+            case 3: return 'text-green-600 bg-green-100';    // Confirmed & Paid
+            case 4: return 'text-purple-600 bg-purple-100';  // Completed
             default: return 'text-gray-600 bg-gray-100';
         }
     };
 
     const getStatusText = (status) => {
         switch (status) {
-            case 1: return 'Chờ xét duyệt';
+            case 0: return 'Đã từ chối';
+            case 1: return 'Chờ duyệt';
             case 2: return 'Đã duyệt';
-            case 3: return 'Đã hủy';
+            case 3: return 'Đã thanh toán';
+            case 4: return 'Hoàn thành';
             default: return 'Không xác định';
         }
     };
@@ -244,20 +249,22 @@ function DoctorDashboard() {
                                                 >
                                                     <FontAwesomeIcon icon={faEye} /> Xem
                                                 </button>
-                                                {appointment.status === 1 && (
+                                                {appointment.status === 3 && (
                                                     <>
                                                         <button
-                                                            onClick={() => updateStatus(appointment.id, 2, 'appointment')}
-                                                            className="text-green-600 hover:text-green-900"
+                                                            onClick={() => updateStatus(appointment.id, 4, 'appointment')}
+                                                            className="text-purple-600 hover:text-purple-900"
                                                         >
-                                                            <FontAwesomeIcon icon={faCheck} /> Duyệt
+                                                            <FontAwesomeIcon icon={faCheck} /> Hoàn thành
                                                         </button>
-                                                        <button
-                                                            onClick={() => updateStatus(appointment.id, 3, 'appointment')}
-                                                            className="text-red-600 hover:text-red-900"
+                                                        <a
+                                                            href="https://meet.google.com/sqm-jpse-ovb"
+                                                            target="_blank"
+                                                            rel="noopener noreferrer"
+                                                            className="text-blue-600 hover:text-blue-900 underline"
                                                         >
-                                                            <FontAwesomeIcon icon={faTimes} /> Hủy
-                                                        </button>
+                                                            <FontAwesomeIcon icon={faVideo} /> Tham gia Meet
+                                                        </a>
                                                     </>
                                                 )}
                                             </td>
@@ -328,7 +335,7 @@ function DoctorDashboard() {
                                                 >
                                                     <FontAwesomeIcon icon={faEye} /> Xem
                                                 </button>
-                                                {test.status === 2 && (
+                                                {test.status === 3 && (
                                                     <button
                                                         onClick={() => uploadTestResult(test.id)}
                                                         className="text-purple-600 hover:text-purple-900"
@@ -336,21 +343,13 @@ function DoctorDashboard() {
                                                         <FontAwesomeIcon icon={faUpload} /> Tải kết quả
                                                     </button>
                                                 )}
-                                                {test.status === 1 && (
-                                                    <>
-                                                        <button
-                                                            onClick={() => updateStatus(test.id, 2, 'test')}
-                                                            className="text-green-600 hover:text-green-900"
-                                                        >
-                                                            <FontAwesomeIcon icon={faCheck} /> Duyệt
-                                                        </button>
-                                                        <button
-                                                            onClick={() => updateStatus(test.id, 3, 'test')}
-                                                            className="text-red-600 hover:text-red-900"
-                                                        >
-                                                            <FontAwesomeIcon icon={faTimes} /> Hủy
-                                                        </button>
-                                                    </>
+                                                {test.status === 3 && (
+                                                    <button
+                                                        onClick={() => updateStatus(test.id, 4, 'test')}
+                                                        className="text-green-600 hover:text-green-900"
+                                                    >
+                                                        <FontAwesomeIcon icon={faCheck} /> Hoàn thành
+                                                    </button>
                                                 )}
                                             </td>
                                         </tr>

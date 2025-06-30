@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faBell, faCheck, faTimes, faCalendarAlt, faFlask } from '@fortawesome/free-solid-svg-icons';
 
@@ -6,6 +7,7 @@ function NotificationBell() {
     const [notifications, setNotifications] = useState([]);
     const [showDropdown, setShowDropdown] = useState(false);
     const [unreadCount, setUnreadCount] = useState(0);
+    const navigate = useNavigate();
 
     useEffect(() => {
         loadNotifications();
@@ -60,6 +62,19 @@ function NotificationBell() {
             default:
                 return faBell;
         }
+    };
+
+    const handlePayment = (notification) => {
+        // Navigate to payment page
+        setShowDropdown(false);
+        navigate(`/payment/${notification.requestId}`);
+    };
+
+    const formatCurrency = (amount) => {
+        return new Intl.NumberFormat('vi-VN', {
+            style: 'currency',
+            currency: 'VND'
+        }).format(amount);
     };
 
     const formatTime = (timestamp) => {
@@ -147,6 +162,32 @@ function NotificationBell() {
                                             <p className="text-xs text-gray-400 mt-1">
                                                 {formatTime(notification.timestamp)}
                                             </p>
+                                            
+                                            {/* Google Meet link for payment success */}
+                                            {notification.meetLink && (
+                                                <div className="mt-2">
+                                                    <a
+                                                        href={notification.meetLink}
+                                                        target="_blank"
+                                                        rel="noopener noreferrer"
+                                                        className="px-3 py-1 bg-blue-600 text-white text-xs rounded hover:bg-blue-700 transition-colors"
+                                                    >
+                                                        Tham gia cuộc họp tư vấn
+                                                    </a>
+                                                </div>
+                                            )}
+
+                                            {/* Payment button for approved requests */}
+                                            {notification.requiresPayment && (
+                                                <div className="mt-2">
+                                                    <button
+                                                        onClick={() => handlePayment(notification)}
+                                                        className="px-3 py-1 bg-green-600 text-white text-xs rounded hover:bg-green-700 transition-colors"
+                                                    >
+                                                        Thanh toán {formatCurrency(notification.amount)}
+                                                    </button>
+                                                </div>
+                                            )}
                                         </div>
 
                                         {/* Actions */}

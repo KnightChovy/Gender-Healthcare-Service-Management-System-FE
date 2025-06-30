@@ -114,7 +114,7 @@ function TestOrder() {
             const testOrderData = {
                 id: `TEST_${Date.now()}`,
                 timestamp: new Date().toISOString(),
-                status: 1, // 1: Chờ xét duyệt, 2: Đã duyệt, 3: Đã hủy
+                status: 1, // 0: Từ chối, 1: Chờ duyệt, 2: Đã duyệt, 3: Đã thanh toán, 4: Hoàn thành
                 type: 'test-order',
                 ...formData,
                 ...(isLoggedIn && userProfile && {

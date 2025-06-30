@@ -8,6 +8,7 @@ const Navbar = () => {
   const [userRole, setUserRole] = useState(null);
   const [showDropdown, setShowDropdown] = useState(false);
   const [userName, setUserName] = useState('');
+  const [userType, setUserType] = useState('');
   const navigate = useNavigate();
 
   // Kiểm tra trạng thái đăng nhập
@@ -19,8 +20,10 @@ const Navbar = () => {
       setIsLoggedIn(true);
       try {
         const user = JSON.parse(userData);
+        const userTypeFromStorage = localStorage.getItem('userType');
         setUserRole(user.role || user.user_type || 'user');
-        
+        setUserType(userTypeFromStorage || ''); // Lưu user_type vào state
+
         // Lấy tên từ first_name và last_name
         const firstName = user.first_name || user.firstName || '';
         const lastName = user.last_name || user.lastName || '';
@@ -97,7 +100,8 @@ const Navbar = () => {
             <div className="flex items-center space-x-4">
               {isLoggedIn ? (
                 <div className="flex items-center space-x-4">
-                  <NotificationBell />
+                  {/* Only show NotificationBell for regular users, not doctors or managers */}
+                  {(!userRole || userRole === 'user') && <NotificationBell />}
                   
                   {/* Avatar Dropdown */}
                   <div className="relative">
@@ -145,7 +149,22 @@ const Navbar = () => {
                           </svg>
                           <span>Hồ sơ cá nhân</span>
                         </button>
-                        
+
+                        {userType === 'customer' && (
+                          <button
+                            onClick={() => {
+                              navigate('/my-appointments');
+                              setShowDropdown(false);
+                            }}
+                            className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 flex items-center space-x-2"
+                          >
+                            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3a1 1 0 011-1h6a1 1 0 011 1v4h3a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9a2 2 0 012-2h3z" />
+                            </svg>
+                            <span>Lịch hẹn của tôi</span>
+                          </button>
+                        )}
+
                         <button
                           onClick={() => {
                             localStorage.removeItem('authTokens');

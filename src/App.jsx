@@ -8,6 +8,8 @@ import Appointment from "./page/Appointment";
 import MenstrualCycle from "./page/MenstrualCycle";
 import ForgetPassword from "./page/ForgetPassword";
 import Profile from "./page/Profile";
+import Payment from "./page/Payment";
+import MyAppointments from "./page/MyAppointments";
 import NotFound from "./page/NotFound";
 import ProtectedRoute from "./components/ProtectedRoute";
 import DoctorDashboard from "./page/Doctor/DoctorDashboard";
@@ -49,6 +51,22 @@ function App() {
         element={
           <ProtectedRoute>
             <Profile />
+          </ProtectedRoute>
+        } 
+      />
+      <Route 
+        path="/my-appointments" 
+        element={
+          <ProtectedRoute>
+            <MyAppointments />
+          </ProtectedRoute>
+        } 
+      />
+      <Route 
+        path="/payment/:id" 
+        element={
+          <ProtectedRoute>
+            <Payment />
           </ProtectedRoute>
         } 
       />
