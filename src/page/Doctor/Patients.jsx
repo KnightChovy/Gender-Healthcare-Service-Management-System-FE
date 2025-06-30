@@ -1,8 +1,10 @@
 import React, { useState, useEffect } from "react";
 import { useSelector } from "react-redux";
+import { useNavigate } from "react-router-dom";
 import doctorService from "../../services/doctor.service";
 
 const Patients = () => {
+  const navigate = useNavigate();
   const [patients, setPatients] = useState([]);
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedPatient, setSelectedPatient] = useState(null);
@@ -20,8 +22,8 @@ const Patients = () => {
           const appointmentsData = data.data || [];
           const uniquePatients = [];
           const patientMap = new Map();
-          
-          appointmentsData.forEach(appointment => {
+
+          appointmentsData.forEach((appointment) => {
             const patientId = appointment.patient_id;
             if (!patientMap.has(patientId)) {
               patientMap.set(patientId, {
@@ -29,12 +31,13 @@ const Patients = () => {
                 name: `${appointment.first_name} ${appointment.last_name}`,
                 first_name: appointment.first_name,
                 last_name: appointment.last_name,
-                phone: appointment.phone || 'Chưa có thông tin',
-                gender: appointment.gender || 'Chưa xác định',
-                age: appointment.age || 'Chưa có thông tin',
-                medicalCondition: appointment.consultant_type || 'Tư vấn chung',
-                lastVisit: appointment.appointment_time || new Date().toISOString(),
-                visitCount: 1
+                phone: appointment.phone || "Chưa có thông tin",
+                gender: appointment.gender || "Chưa xác định",
+                age: appointment.age || "Chưa có thông tin",
+                medicalCondition: appointment.consultant_type || "Tư vấn chung",
+                lastVisit:
+                  appointment.appointment_time || new Date().toISOString(),
+                visitCount: 1,
               });
               uniquePatients.push(patientMap.get(patientId));
             } else {
@@ -42,12 +45,15 @@ const Patients = () => {
               const existingPatient = patientMap.get(patientId);
               existingPatient.visitCount += 1;
               // Cập nhật lần khám gần nhất nếu cần
-              if (new Date(appointment.appointment_time) > new Date(existingPatient.lastVisit)) {
+              if (
+                new Date(appointment.appointment_time) >
+                new Date(existingPatient.lastVisit)
+              ) {
                 existingPatient.lastVisit = appointment.appointment_time;
               }
             }
           });
-          
+
           setPatients(uniquePatients);
         } catch (error) {
           console.error("Error fetching appointments:", error);
@@ -63,10 +69,15 @@ const Patients = () => {
   // Filter patients based on search term
   const filteredPatients = (patients || []).filter(
     (patient) =>
-      (patient.first_name && patient.first_name.toLowerCase().includes(searchTerm.toLowerCase())) ||
-      (patient.name && patient.name.toLowerCase().includes(searchTerm.toLowerCase())) ||
+      (patient.first_name &&
+        patient.first_name.toLowerCase().includes(searchTerm.toLowerCase())) ||
+      (patient.name &&
+        patient.name.toLowerCase().includes(searchTerm.toLowerCase())) ||
       (patient.phone && patient.phone.includes(searchTerm)) ||
-      (patient.medicalCondition && patient.medicalCondition.toLowerCase().includes(searchTerm.toLowerCase()))
+      (patient.medicalCondition &&
+        patient.medicalCondition
+          .toLowerCase()
+          .includes(searchTerm.toLowerCase()))
   );
 
   // Format date
@@ -131,9 +142,7 @@ const Patients = () => {
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                     Tình trạng
                   </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Lần khám gần nhất
-                  </th>
+
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                     Thao tác
                   </th>
@@ -141,7 +150,10 @@ const Patients = () => {
               </thead>
               <tbody className="bg-white divide-y divide-gray-200">
                 {filteredPatients.map((patient, index) => (
-                  <tr key={patient.id || `patient-${index}`} className="hover:bg-gray-50">
+                  <tr
+                    key={patient.id || `patient-${index}`}
+                    className="hover:bg-gray-50"
+                  >
                     <td className="px-6 py-4 whitespace-nowrap">
                       <div className="flex items-center">
                         <div className="flex-shrink-0 h-10 w-10">
@@ -152,7 +164,9 @@ const Patients = () => {
                                 : "bg-blue-100 text-blue-600"
                             } flex items-center justify-center`}
                           >
-                            {patient.first_name ? patient.first_name.charAt(0) : 'N'}
+                            {patient.first_name
+                              ? patient.first_name.charAt(0)
+                              : "N"}
                           </div>
                         </div>
                         <div className="ml-4">
@@ -246,18 +260,7 @@ const Patients = () => {
                         {selectedPatient.phone}
                       </div>
                     </div>
-                    <div className="flex items-center">
-                      <div className="w-32 text-gray-500">Số lần khám:</div>
-                      <div className="text-gray-900">
-                        {selectedPatient.visitCount}
-                      </div>
-                    </div>
-                    <div className="flex items-center">
-                      <div className="w-32 text-gray-500">Lần khám cuối:</div>
-                      <div className="text-gray-900">
-                        {formatDate(selectedPatient.lastVisit)}
-                      </div>
-                    </div>
+
                     <div className="flex items-start">
                       <div className="w-32 text-gray-500">Tình trạng:</div>
                       <div className="text-gray-900">
@@ -265,15 +268,6 @@ const Patients = () => {
                       </div>
                     </div>
                   </div>
-                </div>
-              </div>
-
-              <div className="mt-8 border-t border-gray-200 pt-4">
-                <h4 className="text-lg font-medium text-gray-800 mb-4">
-                  Lịch sử khám bệnh
-                </h4>
-                <div className="bg-gray-100 p-4 rounded text-center text-gray-500">
-                  Chức năng đang được phát triển
                 </div>
               </div>
             </div>

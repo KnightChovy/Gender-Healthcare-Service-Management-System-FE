@@ -209,14 +209,9 @@ const Header = () => {
                 to="/doctor/profile"
                 className="block px-4 py-2 text-sm text-gray-700 hover:bg-blue-600 hover:text-white"
               >
-                <i className="fas fa-user-md mr-2"></i>Hồ sơ
+                <i className="fas fa-user-md mr-2"></i>Hồ sơ của tôi
               </Link>
-              <Link
-                to="/doctor/settings"
-                className="block px-4 py-2 text-sm text-gray-700 hover:bg-blue-600 hover:text-white"
-              >
-                <i className="fas fa-cog mr-2"></i>Cài đặt
-              </Link>
+             
               <button
                 onClick={handleLogout}
                 className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-blue-600 hover:text-white"

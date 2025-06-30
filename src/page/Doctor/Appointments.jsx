@@ -51,6 +51,8 @@ const DoctorAppointments = () => {
         return "bg-red-100 text-red-800";
       case "pending":
         return "bg-yellow-100 text-yellow-800";
+      case "completed":
+        return "bg-blue-100 text-blue-800";
       default:
         return "bg-gray-100 text-gray-800";
     }
@@ -80,7 +82,7 @@ const DoctorAppointments = () => {
   return (
     <div className="bg-white rounded-lg shadow-md p-6">
       <h1 className="text-2xl font-semibold text-gray-800 mb-6">
-        Quản lý lịch hẹn
+        Quản lý lịch hẹn tư vấn
       </h1>
 
       {/* Filters and search */}
@@ -110,6 +112,7 @@ const DoctorAppointments = () => {
             <option value="pending">Đang chờ xác nhận</option>
             <option value="confirmed">Đã xác nhận, chờ thực hiện</option>
             <option value="rejected">Đã hủy</option>
+            <option value="completed">Đã hoàn thành</option>
           </select>
         </div>
       </div>
@@ -181,9 +184,11 @@ const DoctorAppointments = () => {
                         appointment.status
                       )}`}
                     >
-                      {appointment.status === "confirmed" && "Đã được xác nhận, chờ thực hiện"}
+                      {appointment.status === "confirmed" &&
+                        "Đã được xác nhận, chờ thực hiện"}
                       {appointment.status === "rejected" && "Đã hủy"}
                       {appointment.status === "pending" && "Đang chờ xác nhận"}
+                      {appointment.status === "completed" && "Đã hoàn thành"}
                     </span>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm">
@@ -202,7 +207,7 @@ const DoctorAppointments = () => {
                       {appointment.status === "confirmed" && (
                         <>
                           <button
-                            className="text-green-600 hover:text-green-900"
+                            className="text-green-600 hover:text-green-900 ml-10 mr-0"
                             onClick={() =>
                               handleStatusChange(
                                 appointment.appointment_id || appointment.id,
