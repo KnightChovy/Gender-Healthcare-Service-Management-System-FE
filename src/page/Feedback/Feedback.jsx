@@ -140,22 +140,26 @@ function Feedback() {
                   <h4>Cuộc hẹn gần đây</h4>
                   {recentAppointments.slice(0, 2).map((appointment) => (
                     <div key={appointment.appointment_id} className={cx('recent-item')}>
-                      <div className={cx('item-info')}>
-                        <div className={cx('item-title')}>{appointment.consultant_type} - Bác sĩ <span className={cx('item-type')}>{appointment.doctor_name}</span></div>
-
-                        <div className={cx('item-details')}>
-                          <span>{formatDate(appointment.appointment_date)} - {appointment.appointment_time}</span>
-
-                        </div>
-                      </div>
-                      {!appointment.feedback && (
-                        <button
-                          className={cx('feedback-btn')}
-                          onClick={() => handleAppointmentFeedback(appointment.appointment_id)}
-                        >
-                          Đánh giá
-                          <FontAwesomeIcon icon={faArrowRight} />
-                        </button>
+                      {appointment.status === 'completed' && (
+                        <>
+                          <div className={cx('item-info')}>
+                            <div className={cx('item-title')}>
+                              {appointment.consultant_type} - Bác sĩ <span className={cx('item-type')}>{appointment.doctor_name}</span>
+                            </div>
+                            <div className={cx('item-details')}>
+                              <span>{formatDate(appointment.appointment_date)} - {appointment.appointment_time}</span>
+                            </div>
+                          </div>
+                          {!appointment.feedback && (
+                            <button
+                              className={cx('feedback-btn')}
+                              onClick={() => handleAppointmentFeedback(appointment.appointment_id)}
+                            >
+                              Đánh giá
+                              <FontAwesomeIcon icon={faArrowRight} />
+                            </button>
+                          )}
+                        </>
                       )}
                     </div>
                   ))}
