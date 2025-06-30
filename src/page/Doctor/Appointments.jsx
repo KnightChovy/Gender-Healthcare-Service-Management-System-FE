@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { useSelector } from "react-redux";
 import doctorService from "../../services/doctor.service";
+import axiosClient from "../../services/axiosClient";
 
 // Mock data for doctor appointments
 
@@ -71,12 +72,43 @@ const DoctorAppointments = () => {
   };
 
   // Handle status change
-  const handleStatusChange = (id, newStatus) => {
-    setDoctorAppointments((prevAppointments) =>
-      prevAppointments.map((app) =>
-        app.id === id ? { ...app, status: newStatus } : app
-      )
-    );
+  const handleStatusChange = async (appointmentId) => {
+    try {
+      console.log("Đang cập nhật trạng thái cho appointment:", appointmentId);
+
+      const appointment = {
+        appointment_id: appointmentId,
+        status: "completed", // Cập nhật trạng thái thành "completed"
+        doctor_id: user.user_id, // Thêm ID bác sĩ để xác định
+      };
+
+      const res = await doctorService.fetchDoctorAppointmentsCompleted(
+        user.user_id,
+        appointment
+      );
+
+      console.log("Kết quả từ API:", res);
+
+      if (res) {
+        // Cập nhật state local với ID đúng
+        setDoctorAppointments((prevAppointments) =>
+          prevAppointments.map((app) =>
+            app.appointment_id === appointmentId || app.id === appointmentId
+              ? { ...app, status: "completed" }
+              : app
+          )
+        );
+
+        alert("Đã hoàn thành cuộc hẹn thành công!");
+      } else {
+        throw new Error(res?.message || "Cập nhật không thành công");
+      }
+    } catch (error) {
+      console.error("Error updating appointment status:", error);
+      alert(
+        "Lỗi khi cập nhật trạng thái: " + (error.message || "Đã xảy ra lỗi")
+      );
+    }
   };
 
   return (
@@ -209,10 +241,7 @@ const DoctorAppointments = () => {
                           <button
                             className="text-green-600 hover:text-green-900 ml-10 mr-0"
                             onClick={() =>
-                              handleStatusChange(
-                                appointment.appointment_id || appointment.id,
-                                "completed"
-                              )
+                              handleStatusChange(appointment.appointment_id)
                             }
                           >
                             Hoàn thành
