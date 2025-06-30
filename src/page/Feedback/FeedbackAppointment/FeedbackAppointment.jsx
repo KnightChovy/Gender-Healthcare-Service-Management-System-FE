@@ -132,30 +132,20 @@ function FeedbackAppointment() {
     
     try {
       const user = JSON.parse(localStorage.getItem('user'));
-      const accessToken = localStorage.getItem('access_token');
-      
-      // FIX: Validate user data before submit
-      if (!user || !accessToken) {
-        alert('Vui lòng đăng nhập để gửi đánh giá');
-        navigate('/login');
-        return;
-      }
+      const accessToken = localStorage.getItem('accessToken');
 
       const feedbackData = {
-        appointment_id: appointmentId || appointmentData?.appointment_id,
-        user_id: user.user_id,
-        doctor_rating: feedback.doctor_rating,
-        consultation_rating: feedback.consultation_rating,
-        comment: feedback.comment.trim(), // FIX: Trim whitespace
-        created_at: new Date().toISOString()
+        // appointment_id: appointmentId || appointmentData?.appointment_id,
+        // user_id: user.user_id,
+        rating: parseInt((feedback.doctor_rating + feedback.consultation_rating) / 2),
+        feedback: feedback.comment.trim()
       };
 
       console.log('Submitting feedback:', feedbackData);
 
-      const response = await axiosClient.post('/v1/feedback', feedbackData, {
+      const response = await axiosClient.post(`/v1/appointments/${appointmentId}/feedback`, feedbackData, {
         headers: {
           'x-access-token': accessToken,
-          'Content-Type': 'application/json'
         }
       });
       
@@ -169,19 +159,6 @@ function FeedbackAppointment() {
       }
     } catch (error) {
       console.error('Error submitting feedback:', error);
-      
-      // FIX: More specific error handling
-      if (error.response?.status === 401) {
-        alert('Phiên đăng nhập đã hết hạn. Vui lòng đăng nhập lại');
-        navigate('/login');
-      } else if (error.response?.status === 400) {
-        alert('Dữ liệu đánh giá không hợp lệ. Vui lòng kiểm tra lại');
-      } else if (error.response?.status === 409) {
-        alert('Bạn đã đánh giá cuộc hẹn này rồi');
-        navigate('/feedback');
-      } else {
-        alert('Có lỗi xảy ra khi gửi đánh giá. Vui lòng thử lại');
-      }
     } finally {
       setIsSubmitting(false);
     }
