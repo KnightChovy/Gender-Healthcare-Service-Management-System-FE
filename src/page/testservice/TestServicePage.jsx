@@ -111,7 +111,6 @@ const TestAppointmentPage = () => {
       }
     };
 
-    // Fetch tất cả dịch vụ
     const fetchServices = async () => {
       setLoading(true);
       try {
@@ -142,7 +141,6 @@ const TestAppointmentPage = () => {
     fetchServices();
   }, [location.search]);
 
-  // Tính tổng số tiền
   const calculateTotalAmount = () => {
     return selectedServices.reduce((total, service) => {
       const price =
@@ -238,13 +236,14 @@ const TestAppointmentPage = () => {
     const serviceIds = selectedServices.map((ser) => ser.service_id);
     try {
       const appointmentData = {
-        userInfo: userInfo,
-        services: serviceIds,
+        user_id: userInfo.user_id,
+        services: selectedServices,
         medicalHistory: medicalHistory,
         appointmentDate: format(selectedDate, "dd-MM-yyyy"),
         appointmentTime: selectedTimeSlot,
         totalAmount: calculateTotalAmount(),
         paymentMethod: paymentMethod,
+        userInfo: userInfo,
       };
 
       console.log("Dữ liệu đặt lịch:", appointmentData);
@@ -253,8 +252,9 @@ const TestAppointmentPage = () => {
         success: true,
         data: {
           ...appointmentData,
+          service_id: serviceIds,
           appointmentId: "AP" + Date.now().toString().slice(-6),
-          paymentStatus: "completed",
+          status: "completed",
           createdAt: new Date().toLocaleDateString("vi-VN"),
         },
       };
