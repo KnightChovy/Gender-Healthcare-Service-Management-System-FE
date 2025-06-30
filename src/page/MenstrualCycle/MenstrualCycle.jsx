@@ -4,7 +4,7 @@ import CycleInputForm from './MenstrualCycleItems/CycleInputForm';
 import CurrentStatus from './MenstrualCycleItems/CurrentStatus';
 import NotificationSettings from './MenstrualCycleItems/NotificationSettings';
 import HealthTips from './MenstrualCycleItems/HealthTips';
-import { Navbar } from '../../Layouts/LayoutHomePage/Navbar';
+import Navbar from '../../Layouts/LayoutHomePage/Navbar';
 import { Footer } from '../../Layouts/LayoutHomePage/Footer';
 
 function MenstrualCycle() {
@@ -29,13 +29,10 @@ function MenstrualCycle() {
 
     const [currentPhase, setCurrentPhase] = useState('');
 
-    useEffect(() => {
-        if (cycleData.lastPeriodDate) {
-            calculatePredictions();
-        }
-    }, [cycleData, calculatePredictions]);
-
+    // Move calculatePredictions before useEffect
     const calculatePredictions = useCallback(() => {
+        if (!cycleData.lastPeriodDate) return;
+        
         const lastPeriod = new Date(cycleData.lastPeriodDate);
         const cycleLength = parseInt(cycleData.cycleLength);
 
@@ -70,36 +67,45 @@ function MenstrualCycle() {
         }
     }, [cycleData.lastPeriodDate, cycleData.cycleLength, cycleData.periodLength]);
 
+    // Now useEffect can safely use calculatePredictions
+    useEffect(() => {
+        if (cycleData.lastPeriodDate) {
+            calculatePredictions();
+        }
+    }, [cycleData.lastPeriodDate, cycleData.cycleLength, cycleData.periodLength, calculatePredictions]);
+
     const handleCycleDataChange = (newData) => {
         setCycleData(prev => ({
             ...prev,
             ...newData
         }));
-    }
+    };
 
     return (
-        <div className="min-h-screen bg-gradient-to-br from-pink-50 to-purple-50 p-4">
+        <div className="min-h-screen bg-gradient-to-br from-pink-50 to-purple-50">
             <Navbar />
+            
+            <div className="py-8">
+                <Header />
 
-            <Header />
+                <div className="max-w-6xl mx-auto grid grid-cols-1 lg:grid-cols-2 gap-6 mt-6 px-4 sm:px-6 lg:px-8">
+                    <CycleInputForm
+                        cycleData={cycleData}
+                        onDataChange={handleCycleDataChange}
+                    />
 
-            <div className="max-w-6xl mx-auto grid grid-cols-1 lg:grid-cols-2 gap-6 mt-6">
-                <CycleInputForm
-                    cycleData={cycleData}
-                    onDataChange={handleCycleDataChange}
-                />
+                    <CurrentStatus
+                        predictions={predictions}
+                        currentPhase={currentPhase}
+                    />
 
-                <CurrentStatus
-                    predictions={predictions}
-                    currentPhase={currentPhase}
-                />
+                    <HealthTips currentPhase={currentPhase} />
 
-                <HealthTips currentPhase={currentPhase} />
-
-                <NotificationSettings
-                    notifications={cycleData.notifications}
-                    onNotificationChange={handleCycleDataChange}
-                />
+                    <NotificationSettings
+                        notifications={cycleData.notifications}
+                        onNotificationChange={handleCycleDataChange}
+                    />
+                </div>
             </div>
 
             <Footer />

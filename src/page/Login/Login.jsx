@@ -2,8 +2,9 @@ import React, { useState, useRef } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import FormInputText from "../../components/ui/FormInputText";
 import { validateRulesLogin } from "../../components/Validation/validateRulesLogin";
-import { Navbar } from "../../Layouts/LayoutHomePage/Navbar";
+import Navbar from "../../Layouts/LayoutHomePage/Navbar";
 import { Footer } from "../../Layouts/LayoutHomePage/Footer";
+import { loginUser, authUtils } from "../../utils/api";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { 
   faEye, 
@@ -13,9 +14,8 @@ import {
   faHeart,
   faShieldAlt,
   faUserMd,
-  faSignInAlt,
-  faArrowRight,
-  faSpinner
+  faSpinner,
+  faExclamationTriangle
 } from "@fortawesome/free-solid-svg-icons";
 
 function Login() {
@@ -28,6 +28,7 @@ function Login() {
   const [touchedFields, setTouchedFields] = useState({});
   const [isLoading, setIsLoading] = useState(false);
   const [loginType, setLoginType] = useState("customer"); // customer | staff
+  const [apiError, setApiError] = useState("");
   const navigate = useNavigate();
 
   const inputRefs = useRef({
@@ -54,6 +55,11 @@ function Login() {
     if (showErrors) {
       setShowErrors(false);
     }
+    
+    // Clear API error when user starts typing
+    if (apiError) {
+      setApiError("");
+    }
   };
 
   const handleBlur = (fieldName) => {
@@ -79,28 +85,85 @@ function Login() {
     }
 
     setIsLoading(true);
+    setApiError("");
 
     try {
-      // Simulate API call
-      await new Promise(resolve => setTimeout(resolve, 2000));
-      
-      if (formData.username && formData.password) {
-        // Store auth token
-        localStorage.setItem('authToken', 'dummy-token-' + Date.now());
+      // Prepare login credentials
+      const credentials = {
+        username: formData.username,
+        password: formData.password,
+      };
+
+      // Call the login API
+      const response = await loginUser(credentials);
+
+      if (response.success) {
+        // Extract tokens and user data with safe access
+        const responseData = response.data;
+        console.log('🔍 Full response.data:', responseData);
+
+        const tokens = responseData.data?.tokens;
+        const userData = responseData.data?.user;
+
+        console.log('🔑 Tokens object:', tokens);
+        console.log('👤 User data:', userData);
+        
+        // Safely get tokens
+        const accessToken = tokens.accessToken;
+        const refreshToken = tokens.refreshToken;
+        
+        console.log('✅ Access token:', accessToken ? `Found (${accessToken.length} chars)` : 'NOT FOUND');
+        console.log('🔄 Refresh token:', refreshToken ? `Found (${refreshToken.length} chars)` : 'NOT FOUND');
+        
+        if (accessToken) {
+          const tokenData = {
+            accessToken: accessToken,
+            refreshToken: refreshToken || ''
+          };
+          console.log('💾 Storing tokens:', tokenData);
+          localStorage.setItem('authTokens', JSON.stringify(tokenData));
+        } else {
+          console.error('❌ No access token to store!');
+        }
+        
+        // Store user data in localStorage
+        console.log('💾 Storing user data...');
+        localStorage.setItem('userData', JSON.stringify(userData));
         localStorage.setItem('userType', loginType);
         
-        if (loginType === "staff") {
-          console.log("Nhân viên/Admin đăng nhập:", formData);
-          // Navigate to admin dashboard (create this route later)
-          navigate('/');
-        } else {
-          console.log("Khách hàng đăng nhập:", formData);
-          navigate('/');
+        // Also use authUtils for consistency
+        if (accessToken) {
+          authUtils.setToken(accessToken);
         }
+        authUtils.setUserData(userData);
+        authUtils.setUserType(loginType);
+        
+        // Show success message
+        console.log("Đăng nhập thành công:", response.data);
+        
+        // Navigate based on user role
+        const userRole = userData?.role || userData?.user_type || 'user';
+        console.log('🔀 Navigating based on role:', userRole);
+        
+        switch (userRole) {
+          case 'doctor':
+            navigate('/doctor-dashboard');
+            break;
+          case 'manager':
+            navigate('/manager-dashboard');
+            break;
+          case 'user':
+          default:
+            navigate('/');
+            break;
+        }
+      } else {
+        // Handle API error
+        setApiError(response.error.message || "Đăng nhập thất bại. Vui lòng kiểm tra lại thông tin đăng nhập.");
       }
     } catch (error) {
-      console.error("Login failed:", error);
-      alert("Đăng nhập thất bại! Vui lòng thử lại.");
+      console.error("Login error:", error);
+      setApiError("Lỗi kết nối đến server. Vui lòng thử lại sau.");
     } finally {
       setIsLoading(false);
     }
@@ -190,7 +253,6 @@ function Login() {
                     value={formData.username}
                     onChange={handleInputChange}
                     onBlur={() => handleBlur("username")}
-                    validation={validate().username}
                     showErrors={shouldShowError("username")}
                     ref={(el) => (inputRefs.current.username = el)}
                     className="pl-10 block w-full px-3 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm"
@@ -217,7 +279,6 @@ function Login() {
                     value={formData.password}
                     onChange={handleInputChange}
                     onBlur={() => handleBlur("password")}
-                    validation={validate().password}
                     showErrors={shouldShowError("password")}
                     ref={(el) => (inputRefs.current.password = el)}
                     className="pl-10 pr-10 block w-full px-3 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm"
@@ -249,6 +310,18 @@ function Login() {
               </Link>
             </div>
 
+            {/* API Error Display */}
+            {apiError && (
+              <div className="bg-red-50 border border-red-200 rounded-md p-3">
+                <div className="flex">
+                  <FontAwesomeIcon icon={faExclamationTriangle} className="h-5 w-5 text-red-400 mr-2 mt-0.5" />
+                  <div className="text-sm">
+                    <p className="text-red-800">{apiError}</p>
+                  </div>
+                </div>
+              </div>
+            )}
+
             {/* Submit Button */}
             <button
               type="submit"
@@ -265,9 +338,7 @@ function Login() {
                 <FontAwesomeIcon icon={faSpinner} className="h-5 w-5 animate-spin" />
               ) : (
                 <>
-                  <FontAwesomeIcon icon={faSignInAlt} className="h-5 w-5 mr-2" />
                   Đăng nhập
-                  <FontAwesomeIcon icon={faArrowRight} className="h-4 w-4 ml-2 group-hover:translate-x-1 transition-transform" />
                 </>
               )}
             </button>

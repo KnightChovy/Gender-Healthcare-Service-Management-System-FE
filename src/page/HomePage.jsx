@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { Navbar } from "../Layouts/LayoutHomePage/Navbar";
+import Navbar from "../Layouts/LayoutHomePage/Navbar";
 import { Footer } from "../Layouts/LayoutHomePage/Footer";
 
 export const HomePage = () => {
@@ -10,8 +10,8 @@ export const HomePage = () => {
 
   // Kiểm tra trạng thái đăng nhập
   useEffect(() => {
-    const token = localStorage.getItem('authToken');
-    setIsLoggedIn(!!token);
+    const authTokens = localStorage.getItem('authTokens');
+    setIsLoggedIn(!!authTokens);
   }, []);
 
   // Xử lý khi click vào dịch vụ cần đăng nhập

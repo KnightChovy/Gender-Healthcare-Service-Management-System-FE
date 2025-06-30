@@ -3,11 +3,16 @@ import FormInputText from "../../components/ui/FormInputText";
 import GenderChoice from "../../components/ui/GenderChoice";
 import { validateRules } from "../../components/Validation/validateRulesRegister";
 import React, { useState, useRef } from "react";
-import { Link } from "react-router-dom";
-import { Navbar } from "../../Layouts/LayoutHomePage/Navbar";
+import { Link, useNavigate } from "react-router-dom";
+import Navbar from "../../Layouts/LayoutHomePage/Navbar";
 import { Footer } from "../../Layouts/LayoutHomePage/Footer";
+import { registerUser } from "../../utils/api";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { faSpinner, faExclamationTriangle, faCheckCircle } from "@fortawesome/free-solid-svg-icons";
 
 function Register() {
+  const navigate = useNavigate();
+  
   const [formData, setFormData] = useState({
     firstname: "",
     lastname: "",
@@ -25,6 +30,9 @@ function Register() {
   });
 
   const [showErrors, setShowErrors] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
+  const [apiError, setApiError] = useState("");
+  const [successMessage, setSuccessMessage] = useState("");
 
   const inputRefs = useRef({
     firstname: null,
@@ -83,10 +91,19 @@ function Register() {
     if (showErrors) {
       setShowErrors(false);
     }
+    
+    // Clear API error and success message when user starts typing
+    if (apiError) {
+      setApiError("");
+    }
+    if (successMessage) {
+      setSuccessMessage("");
+    }
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
+    
     const isEmpty =
       !formData.firstname ||
       !formData.lastname ||
@@ -106,8 +123,68 @@ function Register() {
       focusFirstError();
       return;
     }
-    // Here you can handle form submission, e.g., send data to the server
-    console.log("Form submitted:", formData);
+
+    // Validate form data
+    const errors = validate();
+    if (Object.keys(errors).length > 0) {
+      setShowErrors(true);
+      focusFirstError(errors);
+      return;
+    }
+
+    setIsLoading(true);
+    setApiError("");
+    setSuccessMessage("");
+
+    try {
+      // Prepare user data for API
+      const userData = {
+        firstName: formData.firstname,
+        lastName: formData.lastname,
+        username: formData.username,
+        email: formData.email,
+        phone: formData.phone,
+        address: formData.address,
+        password: formData.password,
+        dateOfBirth: `${formData.birthDate.year}-${formData.birthDate.month.padStart(2, '0')}-${formData.birthDate.day.padStart(2, '0')}`,
+        gender: formData.gender,
+      };
+
+      // Call the register API
+      const response = await registerUser(userData);
+
+      if (response.success) {
+        setSuccessMessage("Đăng ký thành công! Bạn sẽ được chuyển đến trang đăng nhập.");
+        console.log("Registration successful:", response.data);
+        
+        // Clear form
+        setFormData({
+          firstname: "",
+          lastname: "",
+          username: "",
+          email: "",
+          phone: "",
+          address: "",
+          password: "",
+          confirmPassword: "",
+          birthDate: { day: "", month: "", year: "" },
+          gender: "",
+        });
+        
+        // Redirect to login after 2 seconds
+        setTimeout(() => {
+          navigate('/login');
+        }, 2000);
+      } else {
+        // Handle API error
+        setApiError(response.error.message || "Đăng ký thất bại. Vui lòng thử lại.");
+      }
+    } catch (error) {
+      console.error("Registration error:", error);
+      setApiError("Lỗi kết nối đến server. Vui lòng thử lại sau.");
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   const validate = () => validateRules(formData);
@@ -139,7 +216,6 @@ function Register() {
                   textName="firstname"
                   value={formData.firstname}
                   onChange={handleInputChange}
-                  validation={validate().firstname}
                   showErrors={showErrors}
                 />
                 <FormInputText
@@ -147,7 +223,6 @@ function Register() {
                   textName="lastname"
                   value={formData.lastname}
                   onChange={handleInputChange}
-                  validation={validate().lastname}
                   showErrors={showErrors}
                 />
               </div>
@@ -167,7 +242,6 @@ function Register() {
                 textName="username"
                 value={formData.username}
                 onChange={handleInputChange}
-                validation={validate().username}
                 showErrors={showErrors}
               />
               <span className="flex text-gray-600 text-xs font-semibold mb-2">
@@ -178,7 +252,6 @@ function Register() {
                 textName="email"
                 value={formData.email}
                 onChange={handleInputChange}
-                validation={validate().email}
                 showErrors={showErrors}
               />
               <span className="flex text-gray-600 text-xs font-semibold mb-2">
@@ -189,7 +262,6 @@ function Register() {
                 textName="phone"
                 value={formData.phone}
                 onChange={handleInputChange}
-                validation={validate().phone}
                 showErrors={showErrors}
               />
               <span className="flex text-gray-600 text-xs font-semibold mb-2">
@@ -200,7 +272,6 @@ function Register() {
                 textName="address"
                 value={formData.address}
                 onChange={handleInputChange}
-                validation={validate().address}
                 showErrors={showErrors}
               />
               <span className="flex text-gray-600 text-xs font-semibold mb-2">
@@ -211,7 +282,6 @@ function Register() {
                 textName="password"
                 value={formData.password}
                 onChange={handleInputChange}
-                validation={validate().password}
                 showErrors={showErrors}
               />
               <span className="block text-gray-600 text-xs font-semibold mb-2">Xác nhận mật khẩu</span>
@@ -220,7 +290,6 @@ function Register() {
                 textName="confirmPassword"
                 value={formData.confirmPassword}
                 onChange={handleInputChange}
-                validation={validate().confirmPassword}
               />
 
               <p className="text-gray-500 text-xs leading-4 my-4 text-center">
@@ -235,12 +304,48 @@ function Register() {
                 của chúng tôi. Bạn có thể nhận được thông báo SMS từ chúng tôi và
                 có thể từ chối bất cứ lúc nào.
               </p>
+
+              {/* Success Message */}
+              {successMessage && (
+                <div className="bg-green-50 border border-green-200 rounded-md p-3 mb-3">
+                  <div className="flex">
+                    <FontAwesomeIcon icon={faCheckCircle} className="h-5 w-5 text-green-400 mr-2 mt-0.5" />
+                    <div className="text-sm">
+                      <p className="text-green-800">{successMessage}</p>
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {/* Error Message */}
+              {apiError && (
+                <div className="bg-red-50 border border-red-200 rounded-md p-3 mb-3">
+                  <div className="flex">
+                    <FontAwesomeIcon icon={faExclamationTriangle} className="h-5 w-5 text-red-400 mr-2 mt-0.5" />
+                    <div className="text-sm">
+                      <p className="text-red-800">{apiError}</p>
+                    </div>
+                  </div>
+                </div>
+              )}
               <button
                 type="submit"
-                className="w-full bg-gradient-to-b from-green-400 to-green-600 bg-green-500 border border-green-800 rounded-md text-white cursor-pointer text-lg font-semibold py-3 px-4 shadow-inner mt-3 hover:bg-green-600 transition-colors"
+                disabled={isLoading}
+                className={`w-full bg-gradient-to-b from-green-400 to-green-600 bg-green-500 border border-green-800 rounded-md text-white cursor-pointer text-lg font-semibold py-3 px-4 shadow-inner mt-3 transition-colors flex items-center justify-center ${
+                  isLoading 
+                    ? "opacity-75 cursor-not-allowed" 
+                    : "hover:bg-green-600"
+                }`}
                 onClick={handleSubmit}
               >
-                Đăng ký
+                {isLoading ? (
+                  <>
+                    <FontAwesomeIcon icon={faSpinner} className="h-5 w-5 animate-spin mr-2" />
+                    Đang đăng ký...
+                  </>
+                ) : (
+                  "Đăng ký"
+                )}
               </button>
               <p className="text-center text-sm text-gray-600 mt-4">
                 Bạn đã có tài khoản? <Link to="/login" className="text-blue-600 hover:underline">Đăng nhập</Link>

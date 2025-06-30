@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faArrowLeft, faArrowRight, faPhone, faKey, faLock } from '@fortawesome/free-solid-svg-icons';
-import { Navbar } from '../../Layouts/LayoutHomePage/Navbar';
+import Navbar from '../../Layouts/LayoutHomePage/Navbar';
 import { Footer } from '../../Layouts/LayoutHomePage/Footer';
 
 function ForgetPassword() {

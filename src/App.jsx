@@ -7,8 +7,11 @@ import Login from "./page/Login";
 import Appointment from "./page/Appointment";
 import MenstrualCycle from "./page/MenstrualCycle";
 import ForgetPassword from "./page/ForgetPassword";
+import Profile from "./page/Profile";
 import NotFound from "./page/NotFound";
 import ProtectedRoute from "./components/ProtectedRoute";
+import DoctorDashboard from "./page/Doctor/DoctorDashboard";
+import ManagerDashboard from "./page/Manager/ManagerDashboard";
 
 function App() {
   return (
@@ -38,6 +41,30 @@ function App() {
         element={
           <ProtectedRoute>
             <MenstrualCycle />
+          </ProtectedRoute>
+        } 
+      />
+      <Route 
+        path="/profile" 
+        element={
+          <ProtectedRoute>
+            <Profile />
+          </ProtectedRoute>
+        } 
+      />
+      <Route 
+        path="/doctor-dashboard" 
+        element={
+          <ProtectedRoute requiredRole="doctor">
+            <DoctorDashboard />
+          </ProtectedRoute>
+        } 
+      />
+      <Route 
+        path="/manager-dashboard" 
+        element={
+          <ProtectedRoute requiredRole="manager">
+            <ManagerDashboard />
           </ProtectedRoute>
         } 
       />
