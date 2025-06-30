@@ -179,6 +179,11 @@ export default function LayoutManager() {
       icon: <CalendarMonthIcon />,
     },
     {
+      text: "Quản lí đặt lịch xét nghiệm",
+      path: "/manager/test_appointment",
+      icon: <CalendarMonthIcon />,
+    },
+    {
       text: "Quản lí lịch làm việc",
       path: "/manager/schedulemanagerment",
       icon: <WorkHistoryIcon />,
