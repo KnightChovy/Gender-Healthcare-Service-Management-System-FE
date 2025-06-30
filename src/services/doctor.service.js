@@ -59,6 +59,29 @@ const fetchDoctorAppointmentsById = async (doctorId) => {
   }
 };
 
+const fetchDoctorAppointmentsCompleted = async (doctorId, appointment) => {
+  try {
+    const appointmentSend = {
+      ...appointment,
+    };
+    console.log("appointmentSend", appointmentSend);
+    const result = await axiosClient.post(
+      `/v1/doctors/${doctorId}/appointments`,
+      appointmentSend,
+      {
+        headers: {
+          "Content-Type": "application/json",
+          "x-access-token": localStorage.getItem("accessToken"),
+        },
+      }
+    );
+    return result.data;
+  } catch (error) {
+    console.error("Error fetching doctor's appointments by ID:", error);
+    throw error;
+  }
+};
+
 //Lấy danh sách tất cả bác sĩ.
 const fetchAllDoctors = async () => {
   try {
@@ -90,6 +113,7 @@ const doctorService = {
   fetchDoctorAppointmentsById,
   fetchAllDoctors,
   fetchAvailableTimeslotsByDoctorId,
+  fetchDoctorAppointmentsCompleted,
 };
 
 export default doctorService;
