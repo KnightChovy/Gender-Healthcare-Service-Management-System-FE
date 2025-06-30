@@ -233,40 +233,68 @@ const TestAppointmentPage = () => {
   // Xử lý thanh toán
   const processPayment = async () => {
     setLoading(true);
-    const serviceIds = selectedServices.map((ser) => ser.service_id);
+    // Lấy thông tin dịch vụ đã chọn với định dạng cần thiết
+    const simplifiedServices = selectedServices.map((ser) => ({
+      service_id: ser.service_id,
+      name: ser.name,
+      price: ser.price,
+    }));
+
     try {
-      const appointmentData = {
-        user_id: userInfo.user_id,
-        services: selectedServices,
-        medicalHistory: medicalHistory,
-        appointmentDate: format(selectedDate, "dd-MM-yyyy"),
-        appointmentTime: selectedTimeSlot,
-        totalAmount: calculateTotalAmount(),
-        paymentMethod: paymentMethod,
-        userInfo: userInfo,
-      };
+      // Tạo appointment_id với đúng định dạng "AP" + 6 chữ số (đảm bảo có đủ số 0)
+      const appointmentId =
+        "AP" +
+        String(Math.floor(Math.random() * 900000) + 100000).padStart(6, "0");
 
-      console.log("Dữ liệu đặt lịch:", appointmentData);
-
-      const mockResponse = {
-        success: true,
-        data: {
-          ...appointmentData,
-          service_id: serviceIds,
-          appointmentId: "AP" + Date.now().toString().slice(-6),
-          status: "completed",
-          createdAt: new Date().toLocaleDateString("vi-VN"),
+      const requestBody = {
+        bookingData: {
+          appointment_id: "AP000009",
+          user_id: "US000007",
+          services: [
+            {
+              service_id: "SV000001",
+              name: "Xét nghiệm máu",
+              price: 150000,
+            },
+            {
+              service_id: "SV000002",
+              name: "Xét nghiệm nước tiểu",
+              price: 100000,
+            },
+          ],
         },
       };
 
-      if (mockResponse.success) {
-        setAppointmentDetails(mockResponse.data);
+      console.log("Dữ liệu gửi lên Server:", requestBody);
+
+      // Gọi API với cấu trúc đúng
+      const res = await axiosClient.post("/v1/services", requestBody);
+      console.log("Response:", res);
+
+      if (res && res.data && res.data.success) {
+        // Tạo appointmentDetails cho màn hình xác nhận
+        setAppointmentDetails({
+          appointmentId: appointmentId,
+          services: simplifiedServices,
+          medicalHistory: medicalHistory,
+          appointmentDate: format(selectedDate, "dd-MM-yyyy"),
+          appointmentTime: selectedTimeSlot,
+          totalAmount: calculateTotalAmount(),
+          payment_method: paymentMethod,
+          userInfo: userInfo,
+          payment_status: "confirmed",
+          createdAt: new Date().toLocaleDateString("vi-VN"),
+        });
         setIsPaymentComplete(true);
         setCurrentStep(4);
       } else {
         setError("Không thể hoàn tất thanh toán");
       }
     } catch (err) {
+      console.error("Error details:", err);
+      if (err.response) {
+        console.error("Server response:", err.response.data);
+      }
       setError(`Lỗi khi thanh toán: ${err.message}`);
     } finally {
       setLoading(false);
