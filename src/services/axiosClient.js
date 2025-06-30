@@ -37,12 +37,12 @@ axiosClient.interceptors.response.use(
     if (
       error.response?.status === 401 &&
       !originalRequest._retry &&
-      !originalRequest.url.includes("/refresh")
+      !originalRequest.url.includes("/v1/auth/refresh-token")
     ) {
       originalRequest._retry = true;
       try {
         // Dùng raw axios không có interceptor để gọi refresh
-        const res = await rawAxios.post("/refresh");
+        const res = await rawAxios.post("/v1/auth/refresh-token");
         const { accessToken, user } = res.data;
 
         store.dispatch(doLogin({ user, access_token: accessToken }));

@@ -40,6 +40,7 @@ import FeedbackAppointment from "./page/Feedback/FeedbackAppointment";
 import Feedback from "./page/Feedback/Feedback";
 
 import { useEffect, useState } from "react";
+import { TestAppointment } from "./page/manager/TestAppointment/TestAppointment";
 function App() {
   const [isAuthen, setIsAuthen] = useState(false);
   useEffect(() => {
@@ -234,6 +235,7 @@ function App() {
             element={<ConsultSchedulerManagerment />}
           />
         </Route>
+        <Route path="/manager/test_appointment" element={<TestAppointment />} />
       </Routes>
 
       {/* <MeetWidget /> */}

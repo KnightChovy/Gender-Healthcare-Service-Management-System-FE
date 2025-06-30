@@ -5,7 +5,7 @@ import {
   faCalendarAlt, faClock, faUserMd, faPhone, faEnvelope, faStethoscope,
   faNotesMedical, faMoneyBillWave, faEye, faEdit, faTrash, faFilter, faSearch,
   faSpinner, faExclamationTriangle, faCheckCircle, faTimesCircle, faHourglassHalf,
-  faCalendarCheck, faRefresh, faCreditCard, faVideo // Thêm icon video
+  faCalendarCheck, faRefresh, faCreditCard, faVideo, faStar // Thêm icon video và star
 } from '@fortawesome/free-solid-svg-icons';
 import axiosClient from '../../services/axiosClient';
 import classNames from 'classnames/bind';
@@ -33,10 +33,12 @@ function MyAppointments() {
   const user = JSON.parse(localStorage.getItem('user') || '{}');
   const accessToken = localStorage.getItem('accessToken');
 
+  // Cập nhật statusConfig để thêm status completed
   const statusConfig = {
     'pending': { label: 'Chờ xác nhận', icon: faHourglassHalf, bgColor: '#fff8e1', textColor: '#e65100' },
     'confirmed': { label: 'Đã xác nhận', icon: faCheckCircle, bgColor: '#e8f5e8', textColor: '#2e7d32' },
     'success': { label: 'Đã hoàn thành thanh toán', icon: faCalendarCheck, bgColor: '#e3f2fd', textColor: '#1976d2' },
+    'completed': { label: 'Đã hoàn thành tư vấn', icon: faCheckCircle, bgColor: '#f3e5f5', textColor: '#7b1fa2' }, // Thêm completed
     'rejected': { label: 'Đã hủy', icon: faTimesCircle, bgColor: '#ffebee', textColor: '#d32f2f' }
   };
 
@@ -197,6 +199,7 @@ function MyAppointments() {
     { label: 'Chờ xác nhận', value: appointments.filter(apt => apt.status === 'pending').length },
     { label: 'Đã xác nhận', value: appointments.filter(apt => apt.status === 'confirmed' && apt.booking === 0).length },
     { label: 'Đã hoàn thành thanh toán', value: appointments.filter(apt => apt.status === 'confirmed' && apt.booking === 1).length },
+    { label: 'Đã hoàn thành tư vấn', value: appointments.filter(apt => apt.status === 'completed').length }, // Thêm completed
     { label: 'Đã hủy', value: appointments.filter(apt => apt.status === 'rejected').length }
   ];
 
@@ -251,6 +254,7 @@ function MyAppointments() {
               <option value="pending">Chờ xác nhận</option>
               <option value="confirmed">Đã xác nhận</option>
               <option value="success">Đã hoàn thành thanh toán</option>
+              <option value="completed">Đã hoàn thành tư vấn</option> {/* Thêm completed */}
               <option value="rejected">Đã hủy</option>
             </select>
           </div>
@@ -301,7 +305,8 @@ function MyAppointments() {
                       {/* Logic hiển thị label dựa trên booking */}
                       {appointment.status === 'confirmed' && appointment.booking === 0 && 'Chờ thanh toán'}
                       {appointment.status === 'confirmed' && appointment.booking === 1 && 'Đã hoàn thành thanh toán'}
-                      {appointment.status !== 'confirmed' && statusInfo.label}
+                      {appointment.status === 'completed' && 'Đã hoàn thành tư vấn'} {/* Thêm completed */}
+                      {!['confirmed', 'completed'].includes(appointment.status) && statusInfo.label}
                     </div>
                     
                     {needsPayment && (
@@ -417,6 +422,16 @@ function MyAppointments() {
                         <FontAwesomeIcon icon={faCalendarAlt} /> Đặt lại
                       </button>
                     )}
+
+                    {/* Feedback button - chỉ cho completed */}
+                    {appointment.status === 'completed' && (
+                      <button 
+                        className={cx('action-btn', 'feedback-btn')}
+                        onClick={() => navigate(`/feedback/consultation/${appointment.appointment_id || appointment.id}`)}
+                      >
+                        <FontAwesomeIcon icon={faStar} /> Đánh giá
+                      </button>
+                    )}
                   </div>
 
                   <div className={cx('card-footer')}>
@@ -493,7 +508,11 @@ function MyAppointments() {
                 <div className={cx('detail-row')}>
                   <strong>Trạng thái:</strong>
                   <span className={cx('status-text')}>
+                    {selectedAppointment.status === 'confirmed' && selectedAppointment.booking === 0 && 'Chờ thanh toán'}
                     {selectedAppointment.status === 'confirmed' && selectedAppointment.booking === 1 && 'Đã hoàn thành thanh toán'}
+                    {selectedAppointment.status === 'completed' && 'Đã hoàn thành tư vấn'}
+                    {selectedAppointment.status === 'pending' && 'Chờ xác nhận'}
+                    {selectedAppointment.status === 'rejected' && 'Đã hủy'}
                   </span>
                 </div>
                 <div className={cx('detail-row')}>
