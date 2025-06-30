@@ -13,6 +13,7 @@ import {
   faCheckCircle,
   faTimesCircle,
   faSpinner,
+  faStar, // Thêm faStar
 } from "@fortawesome/free-solid-svg-icons";
 import classNames from "classnames/bind";
 import styles from "./NotificationBell.module.scss";
@@ -62,6 +63,8 @@ function NotificationBell() {
         return faTimesCircle;
       case "appointment_success":
         return faCalendarCheck;
+      case "appointment_completed":  // Thêm completed
+        return faStar;
       default:
         return faCalendarCheck;
     }
@@ -79,6 +82,8 @@ function NotificationBell() {
         return "danger";
       case "appointment_success":
         return "success";
+      case "appointment_completed":  // Thêm completed
+        return "completed";
       default:
         return "info";
     }
@@ -107,8 +112,8 @@ function NotificationBell() {
           notifications.push({
             id: `success_${appointment.appointment_id}`,
             type: "appointment_success",
-            title: "🎉 Lịch hẹn hoàn thành!",
-            message: `Lịch hẹn ${appointment.consultant_type} đã hoàn thành thành công. Cảm ơn bạn đã sử dụng dịch vụ!`,
+            title: "🎉 Lịch hẹn hoàn thành thanh toán!",
+            message: `Lịch hẹn ${appointment.consultant_type} đã hoàn thành thanh toán. Sẵn sàng tham gia buổi tư vấn!`,
             timestamp: appointmentDate.toISOString(),
             isRead: false,
             appointmentId: appointment.appointment_id,
@@ -144,6 +149,21 @@ function NotificationBell() {
             appointmentData: appointment
           });
         }
+        break;
+
+      // Thêm case completed
+      case 'completed':
+        notifications.push({
+          id: `completed_${appointment.appointment_id}`,
+          type: "appointment_completed",
+          title: "Buổi tư vấn đã hoàn thành!",
+          message: `Buổi tư vấn ${appointment.consultant_type} với bác sĩ ${appointment.doctor_name || 'bác sĩ'} đã hoàn thành. Hãy chia sẻ đánh giá của bạn!`,
+          timestamp: appointmentDate.toISOString(),
+          isRead: false,
+          appointmentId: appointment.appointment_id,
+          appointmentData: appointment,
+          canFeedback: !appointment.feedback // Kiểm tra đã đánh giá chưa
+        });
         break;
 
       case 'rejected':
@@ -331,10 +351,15 @@ function NotificationBell() {
       case "appointment_success":
         navigate("/my-appointments");
         break;
+      case "appointment_completed":  // Thêm case completed
+        // Dẫn đến trang feedback cho appointment cụ thể
+        navigate(`/feedback/consultation/${notification.appointmentId}`, {
+          state: { appointmentData: notification.appointmentData }
+        });
+        break;
       case "appointment_confirmed":
       case "appointment_pending":
       case "appointment_cancelled":
-        // Navigate to appointments list
         navigate("/my-appointments");
         break;
       default:
@@ -401,7 +426,8 @@ function NotificationBell() {
                       unread: !notification.isRead,
                       [getColor(notification.type)]: true,
                       clickable: true,
-                      paid: notification.isPaid, // Thêm class cho đã thanh toán
+                      paid: notification.isPaid,
+                      completed: notification.type === "appointment_completed",
                     })}
                     onClick={() => handleNotificationClick(notification)}
                   >
@@ -419,7 +445,7 @@ function NotificationBell() {
                       <h4>{notification.title}</h4>
                       <p>{notification.message}</p>
                       
-                      {/* Hiển thị khác nhau cho payment_required dựa trên trạng thái thanh toán */}
+                      {/* Hiển thị cho payment_required */}
                       {notification.amount && notification.type === "payment_required" && (
                         <div className={cx("amount", { "paid-amount": notification.isPaid })}>
                           <strong>{formatCurrency(notification.amount)}</strong>
@@ -437,6 +463,17 @@ function NotificationBell() {
                           <strong>
                             ✅ Đã thanh toán: {formatCurrency(notification.amount)}
                           </strong>
+                        </div>
+                      )}
+                      
+                      {/* Hiển thị cho appointment_completed */}
+                      {notification.type === "appointment_completed" && (
+                        <div className={cx("feedback-action")}>
+                          {notification.canFeedback ? (
+                            <span className={cx("feedback-prompt")}>Nhấn để đánh giá</span>
+                          ) : (
+                            <span className={cx("feedback-done")}>✅ Đã đánh giá</span>
+                          )}
                         </div>
                       )}
                       

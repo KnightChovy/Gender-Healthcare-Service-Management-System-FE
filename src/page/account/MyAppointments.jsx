@@ -1,11 +1,11 @@
 import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import {
   faCalendarAlt, faClock, faUserMd, faPhone, faEnvelope, faStethoscope,
   faNotesMedical, faMoneyBillWave, faEye, faEdit, faTrash, faFilter, faSearch,
   faSpinner, faExclamationTriangle, faCheckCircle, faTimesCircle, faHourglassHalf,
-  faCalendarCheck, faRefresh, faCreditCard, faVideo, faStar // Thêm icon video và star
+  faCalendarCheck, faRefresh, faCreditCard, faVideo, faStar, faFlaskVial // Thêm faFlaskVial
 } from '@fortawesome/free-solid-svg-icons';
 import axiosClient from '../../services/axiosClient';
 import classNames from 'classnames/bind';
@@ -13,9 +13,13 @@ import styles from './MyAppointments.module.scss';
 
 const cx = classNames.bind(styles);
 
+const hashAppointmentId = (appointmentId) => {
+  return btoa(appointmentId.toString()).replace(/=/g, "");
+};
+
 function MyAppointments() {
   const navigate = useNavigate();
-  
+
   const [appointments, setAppointments] = useState([]);
   const [filteredAppointments, setFilteredAppointments] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -28,7 +32,7 @@ function MyAppointments() {
     searchTerm: ''
   });
   const [currentPage, setCurrentPage] = useState(1);
-  
+
   const appointmentsPerPage = 6;
   const user = JSON.parse(localStorage.getItem('user') || '{}');
   const accessToken = localStorage.getItem('accessToken');
@@ -105,7 +109,7 @@ function MyAppointments() {
 
   const handlePayment = (appointment) => {
     const appointmentId = appointment.id || appointment.appointment_id;
-    
+
     if (!appointmentId || !appointment.price_apm || appointment.price_apm <= 0) {
       alert('Cuộc hẹn này không thể thanh toán');
       return;
@@ -135,9 +139,9 @@ function MyAppointments() {
 
   const handleJoinMeeting = (appointment) => {
     const meetUrl = 'https://meet.google.com/ymf-dwbi-uhy';
-    
+
     window.open(meetUrl, '_blank', 'noopener,noreferrer');
-    
+
     console.log(`User joined meeting for appointment ${appointment.id}`);
   };
 
@@ -287,11 +291,11 @@ function MyAppointments() {
           <div className={cx('appointments-grid')}>
             {currentAppointments.map((appointment) => {
               const statusInfo = getStatusInfo(appointment.status);
-              
-              const needsPayment = appointment.status === 'confirmed' && 
-                                  appointment.booking === 0 && 
-                                  appointment.price_apm && 
-                                  appointment.price_apm > 0;
+
+              const needsPayment = appointment.status === 'confirmed' &&
+                appointment.booking === 0 &&
+                appointment.price_apm &&
+                appointment.price_apm > 0;
 
               return (
                 <div key={appointment.id} className={cx('appointment-card')}>
@@ -308,7 +312,7 @@ function MyAppointments() {
                       {appointment.status === 'completed' && 'Đã hoàn thành tư vấn'} {/* Thêm completed */}
                       {!['confirmed', 'completed'].includes(appointment.status) && statusInfo.label}
                     </div>
-                    
+
                     {needsPayment && (
                       <div className={cx('payment-indicator')}>
                         <FontAwesomeIcon icon={faCreditCard} />
@@ -369,14 +373,16 @@ function MyAppointments() {
                     )}
                   </div>
 
-                  {/* Actions - Update logic */}
+                  {/* Actions - Cập nhật với nút đặt lịch xét nghiệm */}
                   <div className={cx('card-actions')}>
-                    <button
-                      className={cx('action-btn', 'view-btn')}
-                      onClick={() => viewAppointmentDetails(appointment)}
-                    >
-                      <FontAwesomeIcon icon={faEye} /> Xem chi tiết
-                    </button>
+                    {appointment.status !== 'completed' && (
+                      <button
+                        className={cx('action-btn', 'view-btn')}
+                        onClick={() => viewAppointmentDetails(appointment)}
+                      >
+                        <FontAwesomeIcon icon={faEye} /> Xem chi tiết
+                      </button>
+                    )}
 
                     {/* Payment button - chỉ hiển thị khi confirmed và booking = 0 */}
                     {needsPayment && (
@@ -396,16 +402,16 @@ function MyAppointments() {
                     )}
 
                     {/* Cancel button - cho pending và confirmed với booking = 0 */}
-                    {(appointment.status === 'pending' || 
+                    {(appointment.status === 'pending' ||
                       (appointment.status === 'confirmed' && appointment.booking === 0)) && (
-                      <button className={cx('action-btn', 'cancel-btn')}>
-                        <FontAwesomeIcon icon={faTrash} /> Hủy hẹn
-                      </button>
-                    )}
+                        <button className={cx('action-btn', 'cancel-btn')}>
+                          <FontAwesomeIcon icon={faTrash} /> Hủy hẹn
+                        </button>
+                      )}
 
                     {/* Join Meeting button - thay thế Review button cho confirmed với booking = 1 */}
                     {appointment.status === 'confirmed' && appointment.booking === 1 && (
-                      <button 
+                      <button
                         className={cx('action-btn', 'meeting-btn')}
                         onClick={() => handleJoinMeeting(appointment)}
                       >
@@ -415,7 +421,7 @@ function MyAppointments() {
 
                     {/* Rebook button - chỉ cho rejected */}
                     {appointment.status === 'rejected' && (
-                      <button 
+                      <button
                         className={cx('action-btn', 'rebook-btn')}
                         onClick={() => handleRebook(appointment)}
                       >
@@ -423,13 +429,49 @@ function MyAppointments() {
                       </button>
                     )}
 
-                    {/* Feedback button - chỉ cho completed */}
+                    {/* Actions cho completed - Xem chi tiết và Đánh giá cùng hàng, Đặt lịch xét nghiệm riêng */}
                     {appointment.status === 'completed' && (
-                      <button 
-                        className={cx('action-btn', 'feedback-btn')}
-                        onClick={() => navigate(`/feedback/consultation/${appointment.appointment_id || appointment.id}`)}
+                      <div className={cx('completed-actions')}>
+                        {/* Hàng đầu: Xem chi tiết + Đánh giá */}
+                        <div className={cx('top-actions')}>
+                          <button
+                            className={cx('action-btn', 'view-btn')}
+                            onClick={() => viewAppointmentDetails(appointment)}
+                          >
+                            <FontAwesomeIcon icon={faEye} /> Xem chi tiết
+                          </button>
+
+                          <button
+                            className={cx('action-btn', 'feedback-btn')}
+                            onClick={() => navigate(`/feedback/consultation/${appointment.appointment_id || appointment.id}`)}
+                          >
+                            <FontAwesomeIcon icon={faStar} /> Đánh giá
+                          </button>
+                        </div>
+
+                        {/* Hàng dưới: Đặt lịch xét nghiệm */}
+                        <span style={{ fontSize: '0.85rem', paddingTop: '10px'}}>Bạn có muốn tiếp tục đặt lịch xét nghiệm?</span>
+                        <Link
+                          to={{
+                            pathname: "/services/test",
+                            search: `?appointmentId=${hashAppointmentId(
+                              appointment.appointment_id || appointment.id
+                            )}`,
+                          }}
+                          className={cx('action-btn', 'test-order-btn', 'full-width')}
+                        >
+                          <FontAwesomeIcon icon={faFlaskVial} /> Đặt lịch xét nghiệm
+                        </Link>
+                      </div>
+                    )}
+
+                    {/* Đối với status khác, vẫn hiển thị nút Xem chi tiết bình thường */}
+                    {appointment.status !== 'completed' && (
+                      <button
+                        className={cx('action-btn', 'view-btn')}
+                        onClick={() => viewAppointmentDetails(appointment)}
                       >
-                        <FontAwesomeIcon icon={faStar} /> Đánh giá
+                        <FontAwesomeIcon icon={faEye} /> Xem chi tiết
                       </button>
                     )}
                   </div>
@@ -494,7 +536,7 @@ function MyAppointments() {
         </div>
       )}
 
-      {/* Modal */}
+      {/* Modal - Thêm nút đặt lịch xét nghiệm trong modal */}
       {showModal && selectedAppointment && (
         <div className={cx('modal-overlay')} onClick={() => setShowModal(false)}>
           <div className={cx('modal-content')} onClick={(e) => e.stopPropagation()}>
@@ -565,6 +607,41 @@ function MyAppointments() {
                 </div>
               )}
             </div>
+
+            {/* Modal Actions */}
+            {selectedAppointment.status === 'completed' && (
+              <div className={cx('modal-actions')}>
+                <h3>Hành động khả dụng</h3>
+                <div className={cx('action-buttons-vertical')}>
+                  <button
+                    className={cx('modal-action-btn', 'feedback-btn')}
+                    onClick={() => {
+                      setShowModal(false);
+                      navigate(`/feedback/consultation/${selectedAppointment.appointment_id || selectedAppointment.id}`);
+                    }}
+                  >
+                    <FontAwesomeIcon icon={faStar} /> Đánh giá cuộc tư vấn
+                  </button>
+
+                  <Link
+                    to={{
+                      pathname: "/services/test",
+                      search: `?appointmentId=${hashAppointmentId(
+                        selectedAppointment.appointment_id || selectedAppointment.id
+                      )}`,
+                    }}
+                    className={cx('modal-action-btn', 'test-order-btn')}
+                    onClick={() => setShowModal(false)}
+                  >
+                    <FontAwesomeIcon icon={faFlaskVial} /> Đặt lịch xét nghiệm
+                  </Link>
+                </div>
+
+                <div className={cx('action-note')}>
+                  <p>💡 <strong>Gợi ý:</strong> Sau khi tư vấn, bạn có thể đặt lịch xét nghiệm để theo dõi sức khỏe theo chỉ định của bác sĩ.</p>
+                </div>
+              </div>
+            )}
           </div>
         </div>
       )}

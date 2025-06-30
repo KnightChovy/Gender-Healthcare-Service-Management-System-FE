@@ -153,6 +153,21 @@
     }
   }
 
+  &.completed {
+    border-left: 3px solid #f59e0b;
+    background: linear-gradient(135deg, #fffbeb, #fef3c7);
+    
+    .icon {
+      color: #f59e0b;
+      background: rgba(245, 158, 11, 0.1);
+    }
+    
+    &:hover {
+      background: linear-gradient(135deg, #fef3c7, #fed7aa);
+      transform: translateX(2px);
+    }
+  }
+
   .dot {
     color: #2c9b95;
     font-size: 0.5rem;

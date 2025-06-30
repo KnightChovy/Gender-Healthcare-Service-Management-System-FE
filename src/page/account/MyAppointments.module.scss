@@ -103,7 +103,7 @@
 
   .header-stats {
     display: grid;
-    grid-template-columns: repeat(5, 1fr);
+    grid-template-columns: repeat(6, 1fr);
     gap: 1rem;
     margin-top: 1.5rem;
 
@@ -191,8 +191,13 @@
         .stat-number { color: #06b6d4; }
         &:hover::before { height: 8px; }
       }
-
       &:nth-child(5) {
+        &::before { background: #8b5cf6; }
+        .stat-number { color: #8b5cf6; }
+        &:hover::before { height: 8px; }
+      }
+
+      &:nth-child(6) {
         &::before { background: #ef4444; }
         .stat-number { color: #ef4444; }
         &:hover::before { height: 8px; }
@@ -489,6 +494,12 @@
       svg {
         font-size: 0.9rem;
       }
+
+      // Thêm style cho completed status
+      &.completed {
+        background-color: #f3e5f5;
+        color: #7b1fa2;
+      }
     }
 
     .payment-indicator {
@@ -703,117 +714,111 @@
 
       // View button
       &.view-btn {
-        background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
-        color: #495057;
-        border: 1px solid #dee2e6;
+        background: linear-gradient(135deg, #6b7280, #4b5563);
+        color: white;
 
         &:hover {
-          background: linear-gradient(135deg, #e9ecef 0%, #dee2e6 100%);
-          color: #212529;
+          background: linear-gradient(135deg, #4b5563, #374151);
         }
       }
 
       // Payment button - Prominent styling
       &.payment-btn {
-        background: linear-gradient(135deg, #22c55e 0%, #16a34a 100%);
+        background: linear-gradient(135deg, #10b981, #059669);
         color: white;
-        font-weight: 600;
-        position: relative;
-        overflow: hidden;
-
-        &::before {
-          content: '';
-          position: absolute;
-          top: 0;
-          left: -100%;
-          width: 100%;
-          height: 100%;
-          background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent);
-          transition: all 0.5s;
-        }
 
         &:hover {
-          background: linear-gradient(135deg, #16a34a 0%, #15803d 100%);
-          box-shadow: 0 6px 20px rgba(34, 197, 94, 0.4);
-
-          &::before {
-            left: 100%;
-          }
+          background: linear-gradient(135deg, #059669, #047857);
         }
       }
 
       // Edit button
       &.edit-btn {
-        background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
+        background: linear-gradient(135deg, #f59e0b, #d97706);
         color: white;
 
         &:hover {
-          background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%);
-          box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
+          background: linear-gradient(135deg, #d97706, #b45309);
         }
       }
 
       // Cancel button
       &.cancel-btn {
-        background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+        background: linear-gradient(135deg, #ef4444, #dc2626);
         color: white;
 
         &:hover {
-          background: linear-gradient(135deg, #dc2626 0%, #b91c1c 100%);
-          box-shadow: 0 4px 12px rgba(239, 68, 68, 0.3);
+          background: linear-gradient(135deg, #dc2626, #b91c1c);
         }
       }
 
       // Meeting button - thay thế review button
       &.meeting-btn {
-        background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+        background: linear-gradient(135deg, #8b5cf6, #7c3aed);
         color: white;
-        font-weight: 600;
-        position: relative;
-        overflow: hidden;
-
-        &::before {
-          content: '';
-          position: absolute;
-          top: 0;
-          left: -100%;
-          width: 100%;
-          height: 100%;
-          background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent);
-          transition: all 0.5s;
-        }
 
         &:hover {
-          background: linear-gradient(135deg, #059669 0%, #047857 100%);
-          box-shadow: 0 6px 20px rgba(16, 185, 129, 0.4);
+          background: linear-gradient(135deg, #7c3aed, #6d28d9);
+        }
+      }
 
-          &::before {
-            left: 100%;
+      // Rebook button - thêm nút đặt lại lịch
+      &.rebook-btn {
+        background: linear-gradient(135deg, #10b981, #059669);
+        color: white;
+
+        &:hover {
+          background: linear-gradient(135deg, #059669, #047857);
+        }
+      }
+
+      // Completed Actions - Layout dọc
+      &.completed-actions {
+        display: flex;
+        flex-direction: column;
+        gap: 0.75rem;
+        width: 100%;
+
+        // Hàng đầu: Xem chi tiết + Đánh giá
+        .top-actions {
+          display: flex;
+          gap: 0.5rem;
+          
+          .action-btn {
+            flex: 1; // Chia đều 2 nút
+            
+            &.view-btn {
+              background: linear-gradient(135deg, #6b7280, #4b5563);
+              color: white;
+
+              &:hover {
+                background: linear-gradient(135deg, #4b5563, #374151);
+              }
+            }
+
+            &.feedback-btn {
+              background: linear-gradient(135deg, #fbbf24, #f59e0b);
+              color: white;
+              
+              &:hover {
+                background: linear-gradient(135deg, #f59e0b, #d97706);
+              }
+            }
           }
         }
 
-        // Special pulsing effect để thu hút sự chú ý
-        animation: meetingPulse 3s ease-in-out infinite;
-      }
-
-      @keyframes meetingPulse {
-        0%, 100% {
-          box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
-        }
-        50% {
-          box-shadow: 0 6px 20px rgba(16, 185, 129, 0.6);
-          transform: translateY(-1px) scale(1.02);
-        }
-      }
-
-      @media (max-width: 768px) {
-        flex-direction: column;
-        gap: 0.5rem;
-
-        .action-btn {
-          min-width: unset;
-          flex: none;
+        // Hàng dưới: Đặt lịch xét nghiệm full width
+        .test-order-btn {
           width: 100%;
+          background: linear-gradient(135deg, #3b82f6, #1d4ed8);
+          text-decoration: none;
+          color: white;
+          
+          &:hover {
+            background: linear-gradient(135deg, #1d4ed8, #1e40af);
+            text-decoration: none;
+            color: white;
+          }
         }
       }
     }
@@ -1216,5 +1221,243 @@
 
   @media (max-width: 768px) {
     padding: 0 0.5rem;
+  }
+}
+
+// Cập nhật MyAppointments.module.scss
+
+.feedback-btn {
+  background: linear-gradient(135deg, #fbbf24, #f59e0b);
+  color: white;
+  
+  &:hover {
+    background: linear-gradient(135deg, #f59e0b, #d97706);
+    transform: translateY(-2px);
+  }
+}
+
+// Test Order Button
+.test-order-btn {
+  background: linear-gradient(135deg, #3b82f6, #1d4ed8);
+  color: white;
+  text-decoration: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  
+  &:hover {
+    background: linear-gradient(135deg, #1d4ed8, #1e40af);
+    transform: translateY(-2px);
+    text-decoration: none;
+    color: white;
+  }
+}
+
+// Completed Actions - Layout dọc
+.completed-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  width: 100%;
+
+  // Hàng đầu: Xem chi tiết + Đánh giá
+  .top-actions {
+    display: flex;
+    gap: 0.5rem;
+    
+    .action-btn {
+      flex: 1; // Chia đều 2 nút
+      
+      &.view-btn {
+        background: linear-gradient(135deg, #6b7280, #4b5563);
+        color: white;
+
+        &:hover {
+          background: linear-gradient(135deg, #4b5563, #374151);
+        }
+      }
+
+      &.feedback-btn {
+        background: linear-gradient(135deg, #fbbf24, #f59e0b);
+        color: white;
+        
+        &:hover {
+          background: linear-gradient(135deg, #f59e0b, #d97706);
+        }
+      }
+    }
+  }
+
+  // Hàng dưới: Đặt lịch xét nghiệm full width
+  .test-order-btn {
+    width: 100%;
+    background: linear-gradient(135deg, #3b82f6, #1d4ed8);
+    text-decoration: none;
+    color: white;
+    
+    &:hover {
+      background: linear-gradient(135deg, #1d4ed8, #1e40af);
+      text-decoration: none;
+      color: white;
+    }
+  }
+
+  .action-btn {
+    padding: 0.6rem 1rem;
+    border: none;
+    border-radius: 6px;
+    font-size: 0.85rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    text-decoration: none;
+
+    &:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+    }
+  }
+}
+
+// Card Actions - Cập nhật để xử lý completed actions
+.card-actions {
+  display: flex;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+  padding: 1rem;
+  border-top: 1px solid #e5e7eb;
+  background: #f9fafb;
+
+  // Khi có completed-actions, cho phép full width
+  &:has(.completed-actions) {
+    padding: 1rem;
+  }
+
+  .action-btn {
+    flex: 1;
+    min-width: 120px;
+    padding: 0.6rem 1rem;
+    border: none;
+    border-radius: 6px;
+    font-size: 0.85rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    text-decoration: none;
+
+    &:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+    }
+
+    // Other existing button styles...
+    &.view-btn {
+      background: linear-gradient(135deg, #6b7280, #4b5563);
+      color: white;
+
+      &:hover {
+        background: linear-gradient(135deg, #4b5563, #374151);
+      }
+    }
+
+    &.payment-btn {
+      background: linear-gradient(135deg, #10b981, #059669);
+      color: white;
+
+      &:hover {
+        background: linear-gradient(135deg, #059669, #047857);
+      }
+    }
+
+    &.edit-btn {
+      background: linear-gradient(135deg, #f59e0b, #d97706);
+      color: white;
+
+      &:hover {
+        background: linear-gradient(135deg, #d97706, #b45309);
+      }
+    }
+
+    &.cancel-btn {
+      background: linear-gradient(135deg, #ef4444, #dc2626);
+      color: white;
+
+      &:hover {
+        background: linear-gradient(135deg, #dc2626, #b91c1c);
+      }
+    }
+
+    &.meeting-btn {
+      background: linear-gradient(135deg, #8b5cf6, #7c3aed);
+      color: white;
+
+      &:hover {
+        background: linear-gradient(135deg, #7c3aed, #6d28d9);
+      }
+    }
+
+    &.rebook-btn {
+      background: linear-gradient(135deg, #10b981, #059669);
+      color: white;
+
+      &:hover {
+        background: linear-gradient(135deg, #059669, #047857);
+      }
+    }
+  }
+}
+
+// Responsive
+@media (max-width: 768px) {
+  .completed-actions {
+    gap: 0.5rem;
+
+    .top-actions {
+      gap: 0.25rem;
+      
+      .action-btn {
+        padding: 0.5rem 0.75rem;
+        font-size: 0.8rem;
+        min-width: 0; // Allow shrinking on mobile
+      }
+    }
+
+    .test-order-btn {
+      padding: 0.75rem;
+      font-size: 0.85rem;
+    }
+  }
+}
+
+@media (max-width: 480px) {
+  .completed-actions {
+    .top-actions {
+      .action-btn {
+        padding: 0.4rem 0.6rem;
+        font-size: 0.75rem;
+
+        svg {
+          font-size: 0.8rem;
+        }
+      }
+    }
+
+    .test-order-btn {
+      padding: 0.6rem;
+      font-size: 0.8rem;
+
+      svg {
+        font-size: 0.9rem;
+      }
+    }
   }
 }
