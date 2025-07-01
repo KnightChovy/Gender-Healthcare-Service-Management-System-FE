@@ -5,6 +5,17 @@ import axiosClient from "../../services/axiosClient";
 
 // Mock data for doctor appointments
 
+const isToday = (dateStr) => {
+  const today = new Date();
+  const target = new Date(dateStr);
+  return (
+    target.getDate() === today.getDate() &&
+    target.getMonth() === today.getMonth() &&
+    target.getFullYear() === today.getFullYear()
+  );
+};
+
+
 const DoctorAppointments = () => {
   const [doctorAppointments, setDoctorAppointments] = useState([]);
   const [filterStatus, setFilterStatus] = useState("ALL");
@@ -239,13 +250,31 @@ const DoctorAppointments = () => {
                       {appointment.status === "confirmed" && (
                         <>
                           <button
-                            className="text-green-600 hover:text-green-900 ml-10 mr-0"
+                            className={`ml-10 mr-0 ${
+                              !isToday(appointment.date)
+                                ? "opacity-50 cursor-not-allowed"
+                                : "text-green-600 hover:text-green-900"
+                            }`}
+                            disabled={!isToday(appointment.date)}
                             onClick={() =>
                               handleStatusChange(appointment.appointment_id)
                             }
                           >
                             Hoàn thành
                           </button>
+
+                          <a
+                            href="https://meet.google.com/ymf-dwbi-uhy"
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className={`ml-4 ${
+                              !isToday(appointment.date)
+                                ? "text-blue-300 pointer-events-none"
+                                : "text-blue-600 hover:text-blue-900"
+                            }`}
+                          >
+                            Vào Google Meet
+                          </a>
                         </>
                       )}
                     </div>
