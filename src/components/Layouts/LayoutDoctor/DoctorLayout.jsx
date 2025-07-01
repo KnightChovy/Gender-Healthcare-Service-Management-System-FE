@@ -6,14 +6,14 @@ import DoctorNotificationBell from "../../ui/NotificationBell/DoctorNotification
 // Sidebar Component
 const Sidebar = () => {
   const navigate = useNavigate();
-  
+
   // Xử lý đăng xuất
   const handleLogout = () => {
     localStorage.removeItem("user");
     localStorage.removeItem("accessToken");
     navigate("/login");
   };
-  
+
   return (
     <div className="bg-blue-800 text-blue-100 w-64 space-y-6 py-7 px-2 absolute inset-y-0 left-0 transform -translate-x-full md:relative md:translate-x-0 transition duration-200 ease-in-out">
       <div className="flex items-center space-x-2 px-4">
@@ -78,6 +78,20 @@ const Sidebar = () => {
         </NavLink>
 
         <NavLink
+          to="/doctor/test-management"
+          className={({ isActive }) =>
+            `flex items-center space-x-2 py-2.5 px-4 rounded transition duration-200 ${
+              isActive ? "bg-blue-700 text-white" : "hover:bg-blue-700"
+            }`
+          }
+        >
+          <span className="text-xl">
+            <i className="fas fa-flask"></i>
+          </span>
+          <span>Quản lý xét nghiệm</span>
+        </NavLink>
+
+        <NavLink
           to="/doctor/profile"
           className={({ isActive }) =>
             `flex items-center space-x-2 py-2.5 px-4 rounded transition duration-200 ${
@@ -92,8 +106,6 @@ const Sidebar = () => {
         </NavLink>
 
         <div className="border-t border-blue-700 my-4"></div>
-
-        
       </nav>
     </div>
   );
@@ -185,7 +197,7 @@ const Header = () => {
 
           {/* Avatar dropdown */}
           <div className="relative" ref={dropdownRef}>
-            <div 
+            <div
               onClick={() => setIsDropdownOpen(!isDropdownOpen)}
               className="cursor-pointer ml-4"
             >
@@ -198,20 +210,26 @@ const Header = () => {
                 }}
               >
                 {localStorage.getItem("user")
-                  ? JSON.parse(localStorage.getItem("user")).first_name.charAt(0)
+                  ? JSON.parse(localStorage.getItem("user")).first_name.charAt(
+                      0
+                    )
                   : null}
               </Avatar>
             </div>
 
             {/* Dropdown menu */}
-            <div className={`absolute right-0 mt-2 py-2 w-48 bg-white rounded-md shadow-xl z-20 ${isDropdownOpen ? 'block' : 'hidden'}`}>
+            <div
+              className={`absolute right-0 mt-2 py-2 w-48 bg-white rounded-md shadow-xl z-20 ${
+                isDropdownOpen ? "block" : "hidden"
+              }`}
+            >
               <Link
                 to="/doctor/profile"
                 className="block px-4 py-2 text-sm text-gray-700 hover:bg-blue-600 hover:text-white"
               >
                 <i className="fas fa-user-md mr-2"></i>Hồ sơ của tôi
               </Link>
-             
+
               <button
                 onClick={handleLogout}
                 className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-blue-600 hover:text-white"
