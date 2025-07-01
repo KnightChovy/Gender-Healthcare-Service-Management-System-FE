@@ -370,7 +370,7 @@ function DateTimeSection({ formData, errors, onChange }) {
                                         {availableTimes.morning?.length > 0 && (
                                             <div className={cx('time-period')}>
                                                 <h4 className={cx('period-title')}>
-                                                    🌅 Buổi sáng
+                                                    Buổi sáng
                                                 </h4>
                                                 <div className={cx('time-slots')}>
                                                     {availableTimes.morning?.map(slot => (
@@ -417,7 +417,7 @@ function DateTimeSection({ formData, errors, onChange }) {
                                         {availableTimes.afternoon?.length > 0 && (
                                             <div className={cx('time-period')}>
                                                 <h4 className={cx('period-title')}>
-                                                    🌇 Buổi chiều
+                                                    Buổi chiều
                                                 </h4>
                                                 <div className={cx('time-slots')}>
                                                     {availableTimes.afternoon?.map(slot => (

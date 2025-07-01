@@ -237,8 +237,11 @@ function App() {
             path="/manager/consultScheduler"
             element={<ConsultSchedulerManagerment />}
           />
+          <Route
+            path="/manager/test_appointment"
+            element={<TestAppointment />}
+          />
         </Route>
-        <Route path="/manager/test_appointment" element={<TestAppointment />} />
       </Routes>
 
       {/* <MeetWidget /> */}
