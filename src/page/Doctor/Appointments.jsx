@@ -82,6 +82,34 @@ const DoctorAppointments = () => {
     });
   };
 
+  // Format appointment time - chỉ hiển thị giờ cụ thể
+  const formatAppointmentTime = (timeStr) => {
+    if (!timeStr) return "Chưa xác định";
+    
+    // Nếu là khung giờ (có dấu -), chỉ lấy giờ bắt đầu
+    if (timeStr.includes(" - ")) {
+      const [startTime] = timeStr.split(" - ");
+      return startTime;
+    }
+    
+    return timeStr;
+  };
+
+  // Lấy khung giờ làm việc dựa trên giờ hẹn
+  const getWorkingPeriod = (timeStr) => {
+    if (!timeStr) return "";
+    
+    const hour = parseInt(timeStr.split(":")[0]);
+    
+    if (hour >= 7 && hour < 12) {
+      return "Ca sáng (07:30 - 11:30)";
+    } else if (hour >= 13 && hour < 17) {
+      return "Ca chiều (13:00 - 17:00)";
+    } else {
+      return "Ngoài giờ hành chính";
+    }
+  };
+
   // Handle status change
   const handleStatusChange = async (appointmentId) => {
     try {
@@ -160,7 +188,8 @@ const DoctorAppointments = () => {
         </div>
       </div>
 
-      {/* Appointments table */}
+      
+      
       <div className="overflow-x-auto">
         <table className="min-w-full divide-y divide-gray-200">
           <thead className="bg-gray-50">
@@ -169,7 +198,7 @@ const DoctorAppointments = () => {
                 Bệnh nhân
               </th>
               <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                Thời gian
+                Ngày & Giờ hẹn
               </th>
               <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                 Dịch vụ
@@ -209,11 +238,14 @@ const DoctorAppointments = () => {
                     </div>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
-                    <div className="text-sm text-gray-900">
+                    <div className="text-sm text-gray-900 font-medium">
                       {appointment.date}
                     </div>
+                    <div className="text-sm text-blue-600 font-semibold">
+                      {formatAppointmentTime(appointment.appointment_time)}
+                    </div>
                     <div className="text-xs text-gray-500">
-                      {appointment.appointment_time}
+                      {getWorkingPeriod(appointment.appointment_time)}
                     </div>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
