@@ -552,7 +552,8 @@ const Patients = () => {
               </button>
               <button
                 onClick={() => {
-                  // TODO: Chuyển đến trang đặt lịch với thông tin bệnh nhân
+                  // Chuyển đến trang nhập kết quả tư vấn với thông tin bệnh nhân
+                  navigate(`/doctor/consultation-result/${selectedPatient.appointment_id}`);
                   closeModal();
                 }}
                 className="px-4 py-2 rounded-md text-sm font-medium text-white bg-blue-600 hover:bg-blue-700"
