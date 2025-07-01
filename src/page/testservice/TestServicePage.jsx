@@ -19,6 +19,7 @@ import { format } from "date-fns";
 import { vi } from "date-fns/locale";
 import { DayPicker } from "react-day-picker";
 import "react-day-picker/dist/style.css";
+import { useSelector } from "react-redux";
 window.Buffer = Buffer;
 const unhashServiceId = (hashedId) => {
   try {
@@ -35,7 +36,7 @@ Font.register({
 const TestAppointmentPage = () => {
   const location = useLocation();
   const navigate = useNavigate();
-
+  const { accessToken, user } = useSelector((state) => state.auth);
   // State quản lý các bước đặt lịch
   const [currentStep, setCurrentStep] = useState(1);
 
@@ -58,7 +59,7 @@ const TestAppointmentPage = () => {
   const [paymentMethod, setPaymentMethod] = useState("momo");
   const [isPaymentComplete, setIsPaymentComplete] = useState(false);
   const [appointmentDetails, setAppointmentDetails] = useState(null);
-
+  const [orderId, setOrderId] = useState("");
   const timeSlots = [
     "08:00 - 08:30",
     "08:30 - 09:00",
@@ -99,6 +100,7 @@ const TestAppointmentPage = () => {
         try {
           const user = JSON.parse(userJson);
           setUserInfo({
+            user_id: user.user_id,
             fullName: `${user.lastname || ""} ${user.firstname || ""}`.trim(),
             email: user.email || "",
             phone: user.phoneNumber || "",
@@ -140,6 +142,29 @@ const TestAppointmentPage = () => {
     fetchUserInfo();
     fetchServices();
   }, [location.search]);
+
+  useEffect(() => {
+    if (!userInfo?.user_id || !accessToken) return;
+
+    const fetchOrderId = async () => {
+      try {
+        const response = await axiosClient.get(
+          `v1/users/${userInfo.user_id}/services`,
+          {
+            headers: {
+              "x-access-token": accessToken,
+            },
+          }
+        );
+        setOrderId(response.data.user_id); // Đảm bảo rằng res.data.user_id thực sự tồn tại
+        console.log(response, "Response from services API");
+      } catch (error) {
+        console.error("Error fetching services:", error);
+      }
+    };
+
+    fetchOrderId();
+  }, [userInfo?.user_id, accessToken]);
 
   const calculateTotalAmount = () => {
     return selectedServices.reduce((total, service) => {
@@ -231,51 +256,38 @@ const TestAppointmentPage = () => {
   };
 
   // Xử lý thanh toán
-  const processPayment = async () => {
+  const processPayment = async (appointment_id) => {
     setLoading(true);
     // Lấy thông tin dịch vụ đã chọn với định dạng cần thiết
-    const simplifiedServices = selectedServices.map((ser) => ({
+    const serviceId = selectedServices.map((ser) => ({
       service_id: ser.service_id,
-      name: ser.name,
-      price: ser.price,
     }));
-
     try {
       // Tạo appointment_id với đúng định dạng "AP" + 6 chữ số (đảm bảo có đủ số 0)
-      const appointmentId =
-        "AP" +
-        String(Math.floor(Math.random() * 900000) + 100000).padStart(6, "0");
 
       const requestBody = {
         bookingData: {
-          appointment_id: "AP000009",
-          user_id: "US000007",
-          services: [
-            {
-              service_id: "SV000001",
-              name: "Xét nghiệm máu",
-              price: 150000,
-            },
-            {
-              service_id: "SV000002",
-              name: "Xét nghiệm nước tiểu",
-              price: 100000,
-            },
-          ],
+          appointment_id: appointment_id || null,
+          user_id: userInfo.user_id,
+          serviceData: serviceId,
+          payment_method: paymentMethod,
         },
       };
 
       console.log("Dữ liệu gửi lên Server:", requestBody);
 
       // Gọi API với cấu trúc đúng
-      const res = await axiosClient.post("/v1/services", requestBody);
+      const res = await axiosClient.post(
+        "/v1/services/bookingService",
+        requestBody
+      );
       console.log("Response:", res);
 
       if (res && res.data && res.data.success) {
         // Tạo appointmentDetails cho màn hình xác nhận
         setAppointmentDetails({
-          appointmentId: appointmentId,
-          services: simplifiedServices,
+          order_id: "OD00001",
+          services: selectedServices,
           medicalHistory: medicalHistory,
           appointmentDate: format(selectedDate, "dd-MM-yyyy"),
           appointmentTime: selectedTimeSlot,
@@ -336,9 +348,7 @@ const TestAppointmentPage = () => {
             <Text style={styles.sectionTitle}>Chi tiết lịch hẹn</Text>
             <View style={styles.infoRow}>
               <Text style={styles.label}>Mã lịch hẹn:</Text>
-              <Text style={styles.value}>
-                {appointmentDetails.appointmentId}
-              </Text>
+              <Text style={styles.value}>{appointmentDetails.order_id}</Text>
             </View>
             <View style={styles.infoRow}>
               <Text style={styles.label}>Ngày xét nghiệm:</Text>
@@ -1191,7 +1201,7 @@ const TestAppointmentPage = () => {
                         Mã lịch hẹn
                       </dt>
                       <dd className="mt-1 text-sm font-bold text-gray-900">
-                        {appointmentDetails.appointmentId}
+                        {appointmentDetails.order_id}
                       </dd>
                     </div>
                     <div className="sm:col-span-1">
@@ -1225,11 +1235,9 @@ const TestAppointmentPage = () => {
                         Phương thức thanh toán
                       </dt>
                       <dd className="mt-1 text-sm text-gray-900">
-                        {appointmentDetails.paymentMethod === "momo" &&
-                          "Ví MoMo"}
-                        {appointmentDetails.paymentMethod === "vnpay" &&
+                        {appointmentDetails.payment_method === "vnpay" &&
                           "VNPAY"}
-                        {appointmentDetails.paymentMethod === "cash" &&
+                        {appointmentDetails.payment_method === "cash" &&
                           "Thanh toán khi đến khám"}
                       </dd>
                     </div>
