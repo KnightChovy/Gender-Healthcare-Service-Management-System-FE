@@ -172,7 +172,7 @@ const Patients = () => {
         return "Đã xác nhận";
       case "completed":
         return "Hoàn thành";
-      case "cancelled":
+      case "rejected":
         return "Đã hủy";
       case "pending":
         return "Chờ xác nhận";
@@ -188,7 +188,7 @@ const Patients = () => {
         return "bg-blue-100 text-blue-800";
       case "completed":
         return "bg-green-100 text-green-800";
-      case "cancelled":
+      case "rejected":
         return "bg-red-100 text-red-800";
       case "pending":
         return "bg-yellow-100 text-yellow-800";
@@ -471,13 +471,21 @@ const Patients = () => {
                           <div className="w-24 text-gray-500 text-sm">
                             Trạng thái:
                           </div>
-                          <span
-                            className={`px-3 py-1 text-sm rounded-full font-medium ${getStatusBadge(
-                              selectedPatient.status
-                            )}`}
-                          >
-                            {getStatusText(selectedPatient.status)}
-                          </span>
+                          <td className="px-6 py-4 whitespace-nowrap">
+                            <span
+                              className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${getStatusClass(
+                                appointment.status
+                              )}`}
+                            >
+                              {appointment.status === "confirmed" &&
+                                "Đã được xác nhận, chờ thực hiện"}
+                              {appointment.status === "rejected" && "Đã hủy"}
+                              {appointment.status === "pending" &&
+                                "Đang chờ xác nhận"}
+                              {appointment.status === "completed" &&
+                                "Đã hoàn thành"}
+                            </span>
+                          </td>
                         </div>
                       </div>
                     </div>
