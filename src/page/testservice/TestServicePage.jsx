@@ -19,6 +19,7 @@ import { format } from "date-fns";
 import { vi } from "date-fns/locale";
 import { DayPicker } from "react-day-picker";
 import "react-day-picker/dist/style.css";
+import { useSelector } from "react-redux";
 window.Buffer = Buffer;
 const unhashServiceId = (hashedId) => {
   try {
@@ -35,7 +36,7 @@ Font.register({
 const TestAppointmentPage = () => {
   const location = useLocation();
   const navigate = useNavigate();
-
+  const { accessToken, user } = useSelector((state) => state.auth);
   // State quản lý các bước đặt lịch
   const [currentStep, setCurrentStep] = useState(1);
 
@@ -58,7 +59,7 @@ const TestAppointmentPage = () => {
   const [paymentMethod, setPaymentMethod] = useState("momo");
   const [isPaymentComplete, setIsPaymentComplete] = useState(false);
   const [appointmentDetails, setAppointmentDetails] = useState(null);
-
+  const [orderId, setOrderId] = useState("");
   const timeSlots = [
     "08:00 - 08:30",
     "08:30 - 09:00",
@@ -99,6 +100,7 @@ const TestAppointmentPage = () => {
         try {
           const user = JSON.parse(userJson);
           setUserInfo({
+            user_id: user.user_id,
             fullName: `${user.lastname || ""} ${user.firstname || ""}`.trim(),
             email: user.email || "",
             phone: user.phoneNumber || "",
@@ -140,6 +142,29 @@ const TestAppointmentPage = () => {
     fetchUserInfo();
     fetchServices();
   }, [location.search]);
+
+  useEffect(() => {
+    if (!userInfo?.user_id || !accessToken) return;
+
+    const fetchOrderId = async () => {
+      try {
+        const response = await axiosClient.get(
+          `v1/users/${userInfo.user_id}/services`,
+          {
+            headers: {
+              "x-access-token": accessToken,
+            },
+          }
+        );
+        setOrderId(response.data.user_id); // Đảm bảo rằng res.data.user_id thực sự tồn tại
+        console.log(response, "Response from services API");
+      } catch (error) {
+        console.error("Error fetching services:", error);
+      }
+    };
+
+    fetchOrderId();
+  }, [userInfo?.user_id, accessToken]);
 
   const calculateTotalAmount = () => {
     return selectedServices.reduce((total, service) => {
