@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import Calendar from "../../components/doctor/Calender";
 import AppointmentList from "../../components/doctor/AppointmentList";
-import { doctorAppointments } from "../../components/Data/Doctor"; // Import từ file có sẵn
+import { doctorAppointments } from "../../components/Data/Doctor";
 import { useSelector } from "react-redux";
 import doctorService from "../../services/doctor.service";
 
@@ -11,7 +11,6 @@ const DoctorDashboard = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
-  // Lấy dữ liệu lịch hẹn từ API
   useEffect(() => {
     const fetchAppointments = async () => {
       try {
@@ -29,14 +28,12 @@ const DoctorDashboard = () => {
         if (response?.data) {
           setAppointments(response.data);
         } else {
-          // Fallback về dữ liệu mock nếu API không trả về dữ liệu
           console.warn("API không trả về dữ liệu, sử dụng dữ liệu mock");
           setAppointments(doctorAppointments || []);
         }
       } catch (err) {
         console.error("Lỗi khi lấy dữ liệu lịch hẹn:", err);
         setError(err.message);
-        // Fallback về dữ liệu mock khi có lỗi
         setAppointments(doctorAppointments || []);
       } finally {
         setLoading(false);
@@ -46,21 +43,18 @@ const DoctorDashboard = () => {
     fetchAppointments();
   }, [user?.user_id]);
 
-  // Tính toán thống kê từ dữ liệu thật
   const today = new Date();
   today.setHours(0, 0, 0, 0);
   const tomorrow = new Date(today);
   tomorrow.setDate(tomorrow.getDate() + 1);
 
-  // Đếm lịch hẹn hôm nay
   const todayAppointments = appointments.filter((app) => {
     const appDate = new Date(app.date);
     return appDate >= today && appDate < tomorrow;
   });
 
-  // Đếm lịch hẹn tuần này
   const startOfWeek = new Date(today);
-  startOfWeek.setDate(today.getDate() - today.getDay()); // Chủ nhật là ngày đầu tuần
+  startOfWeek.setDate(today.getDate() - today.getDay());
   startOfWeek.setHours(0, 0, 0, 0);
   const endOfWeek = new Date(startOfWeek);
   endOfWeek.setDate(startOfWeek.getDate() + 7);
@@ -70,7 +64,13 @@ const DoctorDashboard = () => {
     return appDate >= startOfWeek && appDate < endOfWeek;
   });
 
-  // Đếm theo trạng thái
+  // ✅ Sort theo ngày và giờ
+  const sortedWeeklyAppointments = [...weeklyAppointments].sort((a, b) => {
+    const dateA = new Date(`${a.date}T${a.appointment_time || "00:00"}`);
+    const dateB = new Date(`${b.date}T${b.appointment_time || "00:00"}`);
+    return dateA - dateB;
+  });
+
   const completedAppointments = appointments.filter(
     (app) => app.status === "completed" || app.status === "COMPLETED"
   );
@@ -92,7 +92,6 @@ const DoctorDashboard = () => {
     inProgressAppointments: inProgressAppointments.length,
   };
 
-  // Hàm format giờ cụ thể cho appointment
   const formatAppointmentTime = (timeStart, timeEnd) => {
     if (!timeStart || !timeEnd) return "Chưa xác định";
 
@@ -106,7 +105,6 @@ const DoctorDashboard = () => {
     return `${formatTime(timeStart)} - ${formatTime(timeEnd)}`;
   };
 
-  // Loading state
   if (loading) {
     return (
       <div className="p-6 max-w-[85rem] mx-auto">
@@ -133,7 +131,7 @@ const DoctorDashboard = () => {
         Xin chào, Bác sĩ {user?.last_name} {user?.first_name}!
       </h1>
 
-      {/* Lịch làm việc hôm nay và tuần này */}
+      {/* Lịch hôm nay và tuần này */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
         {/* Lịch hôm nay */}
         <div className="bg-white rounded-lg shadow-md p-6">
@@ -156,7 +154,6 @@ const DoctorDashboard = () => {
                       <p className="text-sm text-blue-600 font-medium">
                         {appointment.appointment_time || "Chưa chọn giờ"}
                       </p>
-
                       <p className="text-sm text-gray-600">
                         {appointment.consultant_type || "Tư vấn chung"}
                       </p>
@@ -202,8 +199,8 @@ const DoctorDashboard = () => {
             Lịch hẹn tuần này
           </h3>
           <div className="space-y-3 max-h-80 overflow-y-auto">
-            {weeklyAppointments.length > 0 ? (
-              weeklyAppointments.slice(0, 5).map((appointment) => (
+            {sortedWeeklyAppointments.length > 0 ? (
+              sortedWeeklyAppointments.slice(0, 5).map((appointment) => (
                 <div
                   key={appointment.appointment_id}
                   className="p-3 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors"
@@ -252,15 +249,16 @@ const DoctorDashboard = () => {
                 Không có lịch hẹn nào tuần này
               </p>
             )}
-            {weeklyAppointments.length > 5 && (
+            {sortedWeeklyAppointments.length > 5 && (
               <p className="text-sm text-blue-600 text-center py-2">
-                Và {weeklyAppointments.length - 5} lịch hẹn khác...
+                Và {sortedWeeklyAppointments.length - 5} lịch hẹn khác...
               </p>
             )}
           </div>
         </div>
       </div>
 
+      {/* Lịch làm việc */}
       <div className="grid grid-cols-1 gap-6">
         <div className="lg:col-span-2">
           <div className="bg-white rounded-lg shadow-md p-6">

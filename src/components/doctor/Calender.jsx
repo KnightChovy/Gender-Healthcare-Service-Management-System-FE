@@ -131,38 +131,7 @@ const Calendar = ({ appointments: propAppointments }) => {
 
   return (
     <div>
-      <div className="flex gap-2 mb-4">
-        <button
-          className={`px-3 py-2 text-sm rounded-md ${
-            viewMode === "day"
-              ? "bg-blue-600 text-white"
-              : "bg-gray-100 text-gray-700 hover:bg-gray-200"
-          }`}
-          onClick={() => setViewMode("day")}
-        >
-          Ngày
-        </button>
-        <button
-          className={`px-3 py-2 text-sm rounded-md ${
-            viewMode === "week"
-              ? "bg-blue-600 text-white"
-              : "bg-gray-100 text-gray-700 hover:bg-gray-200"
-          }`}
-          onClick={() => setViewMode("week")}
-        >
-          Tuần
-        </button>
-        <button
-          className={`px-3 py-2 text-sm rounded-md ${
-            viewMode === "month"
-              ? "bg-blue-600 text-white"
-              : "bg-gray-100 text-gray-700 hover:bg-gray-200"
-          }`}
-          onClick={() => setViewMode("month")}
-        >
-          Tháng
-        </button>
-      </div>
+      
 
       <div className="flex items-center justify-between mb-4">
         {/* Week Navigation */}
