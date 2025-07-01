@@ -104,7 +104,7 @@ export const Navbar = () => {
                     Đặt lịch xét nghiệm
                   </Link>
                   <Link
-                    to="/services/appointment-consultant"
+                    to="/services/appointment-consultation"
                     className="block px-4 py-2 hover:bg-blue-50 transition-colors text-[16px]"
                     onClick={() => setShowService(false)}
                   >

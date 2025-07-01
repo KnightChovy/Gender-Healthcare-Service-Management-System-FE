@@ -10,46 +10,68 @@ const hashServiceId = (serviceId) => {
 const consultationServices = [
   {
     service_id: "c1",
-    name: "Tư vấn Sức khỏe Sinh sản",
+    name: "Tư vấn Giáo dục Giới tính Cơ bản",
     description:
-      "Tư vấn riêng tư với bác sĩ chuyên khoa về các vấn đề sức khỏe sinh sản.",
+      "Tư vấn riêng tư với chuyên gia về kiến thức cơ bản giới tính, cơ thể và các thay đổi sinh lý.",
     price: 250000,
     result_wait_time: "0",
     preparationGuidelines:
-      "Chuẩn bị câu hỏi và thông tin y tế liên quan. Buổi tư vấn kéo dài 45 phút.",
-    type: "consultation",
+      "Chuẩn bị câu hỏi hoặc vấn đề quan tâm. Buổi tư vấn kéo dài 45 phút.",
+    category: "consultation",
   },
   {
     service_id: "c2",
-    name: "Tư vấn Tâm lý Giới tính",
+    name: "Tư vấn Tâm lý Giới và Định hướng Tính dục",
     description:
-      "Giải đáp thắc mắc và tư vấn tâm lý về các vấn đề liên quan đến giới tính, xu hướng tính dục.",
+      "Giải đáp các thắc mắc về bản dạng giới, xu hướng tính dục và hỗ trợ tâm lý cá nhân.",
     price: 300000,
     result_wait_time: "0",
     preparationGuidelines:
       "Không cần chuẩn bị đặc biệt. Buổi tư vấn kéo dài 60 phút.",
-    type: "consultation",
+    category: "consultation",
   },
   {
     service_id: "c3",
-    name: "Tư vấn Kế hoạch hóa Gia đình",
+    name: "Tư vấn Quan hệ An toàn và Kế hoạch hóa",
     description:
-      "Tư vấn về các biện pháp tránh thai, kế hoạch hóa gia đình và sức khỏe sinh sản.",
+      "Chia sẻ kiến thức về quan hệ tình dục an toàn, tránh thai và xây dựng mối quan hệ lành mạnh.",
     price: 200000,
     result_wait_time: "0",
     preparationGuidelines:
-      "Mang theo thông tin về tình trạng sức khỏe hiện tại và các biện pháp đang sử dụng (nếu có).",
-    type: "consultation",
+      "Mang theo thông tin hoặc câu hỏi cụ thể liên quan nếu có.",
+    category: "consultation",
   },
   {
     service_id: "c4",
-    name: "Tư vấn STIs & HIV",
+    name: "Tư vấn Phòng tránh STIs & HIV cho Thanh thiếu niên",
     description:
-      "Tư vấn về các bệnh lây truyền qua đường tình dục, cách phòng ngừa và điều trị.",
+      "Tư vấn kiến thức về bệnh lây truyền qua đường tình dục và HIV phù hợp với lứa tuổi học sinh, sinh viên.",
     price: 350000,
     result_wait_time: "0",
-    preparationGuidelines: "Buổi tư vấn cá nhân kín đáo kéo dài 45-60 phút.",
-    type: "consultation",
+    preparationGuidelines: "Buổi tư vấn kín đáo, kéo dài 45-60 phút.",
+    category: "consultation",
+  },
+  {
+    service_id: "c5",
+    name: "Tư vấn Vấn đề Giới tính trong Mối quan hệ",
+    description:
+      "Hướng dẫn giải quyết các vấn đề về giới tính trong tình yêu, giao tiếp và đồng thuận.",
+    price: 280000,
+    result_wait_time: "0",
+    preparationGuidelines:
+      "Chuẩn bị các tình huống cụ thể nếu có. Kéo dài 50 phút.",
+    category: "consultation",
+  },
+  {
+    service_id: "c6",
+    name: "Tư vấn Phụ khoa",
+    description:
+      "Tư vấn về sức khỏe phụ khoa như kinh nguyệt không đều, viêm nhiễm, đau vùng chậu và các vấn đề liên quan.",
+    price: 320000,
+    result_wait_time: "0",
+    preparationGuidelines:
+      "Ghi lại triệu chứng cụ thể, tiền sử bệnh lý nếu có. Buổi tư vấn kéo dài 45 phút.",
+    category: "consultation",
   },
 ];
 
@@ -71,7 +93,7 @@ export const ServicePage = () => {
           // Sử dụng đúng cấu trúc API của bạn
           const testServices = (response.data.data || []).map((service) => ({
             ...service,
-            type: "test",
+            category: "test",
           }));
           setServices([...testServices, ...consultationServices]);
         } else {
@@ -95,7 +117,7 @@ export const ServicePage = () => {
       (service.description &&
         service.description.toLowerCase().includes(searchTerm.toLowerCase()));
     const matchesCategory =
-      selectedCategory === "all" || service.type === selectedCategory;
+      selectedCategory === "all" || service.category === selectedCategory;
     return matchesSearch && matchesCategory;
   });
 
@@ -207,7 +229,7 @@ export const ServicePage = () => {
                 </h2>
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
                   {filteredServices
-                    .filter((service) => service.type === "test")
+                    .filter((service) => service.category === "test")
                     .map((service) => (
                       <div
                         key={service.service_id}
@@ -312,7 +334,7 @@ export const ServicePage = () => {
                 </h2>
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
                   {filteredServices
-                    .filter((service) => service.type === "consultation")
+                    .filter((service) => service.category === "consultation")
                     .map((service) => (
                       <div
                         key={service.service_id}
