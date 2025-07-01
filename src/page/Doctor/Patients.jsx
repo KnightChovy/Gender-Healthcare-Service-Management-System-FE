@@ -471,21 +471,13 @@ const Patients = () => {
                           <div className="w-24 text-gray-500 text-sm">
                             Trạng thái:
                           </div>
-                          <td className="px-6 py-4 whitespace-nowrap">
-                            <span
-                              className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${getStatusClass(
-                                appointment.status
-                              )}`}
-                            >
-                              {appointment.status === "confirmed" &&
-                                "Đã được xác nhận, chờ thực hiện"}
-                              {appointment.status === "rejected" && "Đã hủy"}
-                              {appointment.status === "pending" &&
-                                "Đang chờ xác nhận"}
-                              {appointment.status === "completed" &&
-                                "Đã hoàn thành"}
-                            </span>
-                          </td>
+                          <span
+                            className={`ml-2 px-3 py-1 text-sm rounded-full font-medium ${getStatusBadge(
+                              selectedPatient.status
+                            )}`}
+                          >
+                            {getStatusText(selectedPatient.status)}
+                          </span>
                         </div>
                       </div>
                     </div>
@@ -566,7 +558,7 @@ const Patients = () => {
                 className="px-4 py-2 rounded-md text-sm font-medium text-white bg-blue-600 hover:bg-blue-700"
               >
                 <i className="fas fa-calendar-plus mr-2"></i>
-                Nhập kết quả
+                Nhập kết quả tư vấn
               </button>
               <button
                 onClick={() => {
@@ -576,7 +568,7 @@ const Patients = () => {
                 className="px-4 py-2 rounded-md text-sm font-medium text-white bg-green-600 hover:bg-green-700"
               >
                 <i className="fas fa-file-medical mr-2"></i>
-                Xem hồ sơ
+                Xem hồ sơ bệnh án
               </button>
             </div>
           </div>
