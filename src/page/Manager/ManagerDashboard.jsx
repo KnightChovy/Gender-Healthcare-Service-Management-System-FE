@@ -9,10 +9,13 @@ import {
     faCheck,
     faTimes,
     faSearch,
-    faDownload
+    faDownload,
+    faStar
 } from '@fortawesome/free-solid-svg-icons';
 import Navbar from '../../Layouts/LayoutHomePage/Navbar';
 import { Footer } from '../../Layouts/LayoutHomePage/Footer';
+import { testResults } from '../../data/testResults';
+import { pricing } from '../../data/config';
 
 function ManagerDashboard() {
     const [activeTab, setActiveTab] = useState('overview');
@@ -195,19 +198,32 @@ function ManagerDashboard() {
             case 1: return 'text-yellow-600 bg-yellow-100';  // Pending
             case 2: return 'text-blue-600 bg-blue-100';      // Confirmed
             case 3: return 'text-green-600 bg-green-100';    // Confirmed & Paid
-            case 4: return 'text-purple-600 bg-purple-100';  // Completed
+            case 4: return 'text-purple-600 bg-purple-100';  // Test Completed / Service Completed
+            case 5: return 'text-indigo-600 bg-indigo-100';  // Doctor Reviewed
             default: return 'text-gray-600 bg-gray-100';
         }
     };
 
-    const getStatusText = (status) => {
-        switch (status) {
-            case 0: return 'Đã từ chối';
-            case 1: return 'Chờ duyệt';
-            case 2: return 'Đã duyệt';
-            case 3: return 'Đã thanh toán';
-            case 4: return 'Hoàn thành';
-            default: return 'Không xác định';
+    const getStatusText = (status, type) => {
+        if (type === 'test') {
+            switch (status) {
+                case 0: return 'Đã từ chối';
+                case 1: return 'Chờ duyệt';
+                case 2: return 'Đã duyệt';
+                case 3: return 'Chờ xét nghiệm';
+                case 4: return 'Chờ bác sĩ xem xét';
+                case 5: return 'Hoàn thành';
+                default: return 'Không xác định';
+            }
+        } else {
+            switch (status) {
+                case 0: return 'Đã từ chối';
+                case 1: return 'Chờ duyệt';
+                case 2: return 'Đã duyệt';
+                case 3: return 'Đã thanh toán';
+                case 4: return 'Hoàn thành';
+                default: return 'Không xác định';
+            }
         }
     };
 
@@ -229,6 +245,38 @@ function ManagerDashboard() {
         URL.revokeObjectURL(url);
     };
 
+    const completeTestOrder = (testId) => {
+        const test = testOrders.find(t => t.id === testId);
+        if (!test) return;
+
+        // Random kết quả (70% tốt, 30% xấu)
+        const isGoodResult = Math.random() < 0.7;
+        const resultType = isGoodResult ? 'good' : 'bad';
+        const testResultData = testResults[test.testType] || testResults['blood-test'];
+        const selectedResult = testResultData[resultType];
+
+        // Tạo URL kết quả giả lập
+        const resultUrl = `https://hospital-results.com/test/${test.id}/result.pdf`;
+
+        const updatedTestOrders = testOrders.map(t => 
+            t.id === testId 
+                ? { 
+                    ...t, 
+                    status: 4, // Chờ bác sĩ xem xét
+                    testResult: resultUrl,
+                    testResultData: selectedResult,
+                    testCompletedAt: new Date().toISOString(),
+                    resultType: resultType
+                }
+                : t
+        );
+        setTestOrders(updatedTestOrders);
+        localStorage.setItem('testOrders', JSON.stringify(updatedTestOrders));
+        
+        const resultStatus = isGoodResult ? 'tốt' : 'cần chú ý';
+        alert(`Đã hoàn thành xét nghiệm! Kết quả ${resultStatus}. Chờ bác sĩ xem xét chi tiết.`);
+    };
+
     const filteredAppointments = appointments.filter(apt => 
         apt.fullName?.toLowerCase().includes(searchTerm.toLowerCase()) ||
         apt.phone?.includes(searchTerm)
@@ -244,6 +292,7 @@ function ManagerDashboard() {
         { id: 'approvals', label: 'Xét duyệt yêu cầu', icon: faCheck },
         { id: 'revenue', label: 'Doanh thu', icon: faDollarSign },
         { id: 'users', label: 'Quản lý người dùng', icon: faUsers },
+        { id: 'ratings', label: 'Xem đánh giá', icon: faStar, isLink: true, href: '/ratings' },
     ];
 
     return (
@@ -319,20 +368,31 @@ function ManagerDashboard() {
                 <div className="mb-6">
                     <div className="border-b border-gray-200">
                         <nav className="-mb-px flex space-x-8">
-                            {tabs.map(tab => (
-                                <button
-                                    key={tab.id}
-                                    onClick={() => setActiveTab(tab.id)}
-                                    className={`py-2 px-1 border-b-2 font-medium text-sm ${
-                                        activeTab === tab.id
-                                            ? 'border-blue-500 text-blue-600'
-                                            : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
-                                    }`}
-                                >
-                                    <FontAwesomeIcon icon={tab.icon} className="mr-2" />
-                                    {tab.label}
-                                </button>
-                            ))}
+                            {tabs.map(tab => 
+                                tab.isLink ? (
+                                    <a
+                                        key={tab.id}
+                                        href={tab.href}
+                                        className="py-2 px-1 border-b-2 font-medium text-sm border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300"
+                                    >
+                                        <FontAwesomeIcon icon={tab.icon} className="mr-2" />
+                                        {tab.label}
+                                    </a>
+                                ) : (
+                                    <button
+                                        key={tab.id}
+                                        onClick={() => setActiveTab(tab.id)}
+                                        className={`py-2 px-1 border-b-2 font-medium text-sm ${
+                                            activeTab === tab.id
+                                                ? 'border-blue-500 text-blue-600'
+                                                : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                                        }`}
+                                    >
+                                        <FontAwesomeIcon icon={tab.icon} className="mr-2" />
+                                        {tab.label}
+                                    </button>
+                                )
+                            )}
                         </nav>
                     </div>
                 </div>
@@ -389,7 +449,7 @@ function ManagerDashboard() {
                                                 </div>
                                             </div>
                                             <span className={`px-2 py-1 text-xs font-medium rounded-full ${getStatusColor(item.status)}`}>
-                                                {getStatusText(item.status)}
+                                                {getStatusText(item.status, item.testType ? 'test' : 'appointment')}
                                             </span>
                                         </div>
                                     ))}
@@ -543,6 +603,86 @@ function ManagerDashboard() {
                                                         >
                                                             <FontAwesomeIcon icon={faTimes} /> Từ chối
                                                         </button>
+                                                    </td>
+                                                </tr>
+                                            ))}
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+
+                        {/* Test Orders in Progress */}
+                        <div className="bg-white rounded-lg shadow">
+                            <div className="px-6 py-4 border-b border-gray-200">
+                                <h3 className="text-lg font-semibold text-gray-900">
+                                    Xét nghiệm đang thực hiện ({filteredTestOrders.filter(test => test.status === 3).length})
+                                </h3>
+                            </div>
+                            <div className="overflow-x-auto">
+                                <table className="min-w-full divide-y divide-gray-200">
+                                    <thead className="bg-gray-50">
+                                        <tr>
+                                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                                Bệnh nhân
+                                            </th>
+                                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                                Loại xét nghiệm
+                                            </th>
+                                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                                Ngày đặt
+                                            </th>
+                                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                                Kết quả
+                                            </th>
+                                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                                Thao tác
+                                            </th>
+                                        </tr>
+                                    </thead>
+                                    <tbody className="bg-white divide-y divide-gray-200">
+                                        {filteredTestOrders
+                                            .filter(test => test.status === 3)
+                                            .map((test) => (
+                                                <tr key={test.id} className="hover:bg-gray-50">
+                                                    <td className="px-6 py-4 whitespace-nowrap">
+                                                        <div>
+                                                            <div className="text-sm font-medium text-gray-900">
+                                                                {test.fullName}
+                                                            </div>
+                                                            <div className="text-sm text-gray-500">
+                                                                {test.phone}
+                                                            </div>
+                                                        </div>
+                                                    </td>
+                                                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                                                        {test.testType}
+                                                    </td>
+                                                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                                                        {formatDate(test.timestamp)}
+                                                    </td>
+                                                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                                                        {test.testResultData ? (
+                                                            <span className={`text-sm ${test.resultType === 'good' ? 'text-green-600' : 'text-orange-600'}`}>
+                                                                ✓ {test.resultType === 'good' ? 'Kết quả tốt' : 'Cần chú ý'}
+                                                            </span>
+                                                        ) : (
+                                                            <span className="text-gray-500">Chưa có</span>
+                                                        )}
+                                                    </td>
+                                                    <td className="px-6 py-4 whitespace-nowrap text-sm font-medium space-x-2">
+                                                        {!test.testResultData && (
+                                                            <button
+                                                                onClick={() => completeTestOrder(test.id)}
+                                                                className="text-green-600 hover:text-green-900"
+                                                            >
+                                                                <FontAwesomeIcon icon={faCheck} /> Hoàn thành XN
+                                                            </button>
+                                                        )}
+                                                        {test.testResultData && (
+                                                            <span className="text-green-600">
+                                                                <FontAwesomeIcon icon={faCheck} /> Đã hoàn thành
+                                                            </span>
+                                                        )}
                                                     </td>
                                                 </tr>
                                             ))}

@@ -1,8 +1,8 @@
 import React from 'react';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faTimes } from '@fortawesome/free-solid-svg-icons';
+import { faTimes, faStar, faPaperclip } from '@fortawesome/free-solid-svg-icons';
 
-const AppointmentDetailModal = ({ isOpen, onClose, item, type }) => {
+const AppointmentDetailModal = ({ isOpen, onClose, item, type, onOpenRating }) => {
     if (!isOpen || !item) return null;
 
     const formatDate = (dateString) => {
@@ -30,14 +30,26 @@ const AppointmentDetailModal = ({ isOpen, onClose, item, type }) => {
         return testTypes[testType] || testType;
     };
 
-    const getStatusText = (status) => {
-        switch (status) {
-            case 0: return 'Đã từ chối';
-            case 1: return 'Chờ duyệt';
-            case 2: return 'Đã duyệt';
-            case 3: return 'Đã thanh toán';
-            case 4: return 'Hoàn thành';
-            default: return 'Không xác định';
+    const getStatusText = (status, type) => {
+        if (type === 'test') {
+            switch (status) {
+                case 0: return 'Đã từ chối';
+                case 1: return 'Chờ duyệt';
+                case 2: return 'Đã duyệt';
+                case 3: return 'Chờ xét nghiệm';
+                case 4: return 'Chờ bác sĩ xem xét';
+                case 5: return 'Hoàn thành';
+                default: return 'Không xác định';
+            }
+        } else {
+            switch (status) {
+                case 0: return 'Đã từ chối';
+                case 1: return 'Chờ duyệt';
+                case 2: return 'Đã duyệt';
+                case 3: return 'Đã thanh toán';
+                case 4: return 'Hoàn thành';
+                default: return 'Không xác định';
+            }
         }
     };
 
@@ -48,6 +60,7 @@ const AppointmentDetailModal = ({ isOpen, onClose, item, type }) => {
             case 2: return 'text-blue-600 bg-blue-100';
             case 3: return 'text-green-600 bg-green-100';
             case 4: return 'text-purple-600 bg-purple-100';
+            case 5: return 'text-indigo-600 bg-indigo-100';
             default: return 'text-gray-600 bg-gray-100';
         }
     };
@@ -74,7 +87,7 @@ const AppointmentDetailModal = ({ isOpen, onClose, item, type }) => {
                     <div className="flex items-center justify-between">
                         <span className="text-sm font-medium text-gray-500">Trạng thái:</span>
                         <span className={`px-3 py-1 text-sm font-medium rounded-full ${getStatusColor(item.status)}`}>
-                            {getStatusText(item.status)}
+                            {getStatusText(item.status, type)}
                         </span>
                     </div>
 
@@ -188,15 +201,86 @@ const AppointmentDetailModal = ({ isOpen, onClose, item, type }) => {
                     </div>
 
                     {/* Test Result (if applicable) */}
-                    {type === 'test' && item.status === 4 && item.testResult && (
+                    {type === 'test' && item.status >= 4 && item.testResult && (
                         <div className="bg-green-50 rounded-lg p-4">
                             <h3 className="text-lg font-medium text-gray-900 mb-4">Kết quả xét nghiệm</h3>
+                            
+                            {/* Hiển thị kết quả chi tiết nếu có */}
+                            {item.testResultData && (
+                                <div className="mb-4 p-4 bg-white rounded border">
+                                    <h4 className="font-medium text-gray-900 mb-2">{item.testResultData.summary}</h4>
+                                    <pre className="text-sm text-gray-700 whitespace-pre-wrap font-mono">
+                                        {item.testResultData.details}
+                                    </pre>
+                                    {item.resultType && (
+                                        <div className="mt-2">
+                                            <span className={`inline-flex px-2 py-1 text-xs font-medium rounded-full ${
+                                                item.resultType === 'good' 
+                                                    ? 'bg-green-100 text-green-800' 
+                                                    : 'bg-orange-100 text-orange-800'
+                                            }`}>
+                                                {item.resultType === 'good' ? 'Kết quả bình thường' : 'Cần chú ý'}
+                                            </span>
+                                        </div>
+                                    )}
+                                </div>
+                            )}
+
                             <button
                                 onClick={() => window.open(item.testResult, '_blank')}
                                 className="bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700"
                             >
-                                Tải kết quả xét nghiệm
+                                Tải file kết quả xét nghiệm
                             </button>
+                        </div>
+                    )}
+
+                    {/* Doctor's Review (for tests with status 5) */}
+                    {type === 'test' && item.status === 5 && (
+                        <div className="bg-blue-50 rounded-lg p-4">
+                            <h3 className="text-lg font-medium text-gray-900 mb-4">Nhận xét từ bác sĩ</h3>
+                            <div className="space-y-4">
+                                {item.doctorAdvice && (
+                                    <div>
+                                        <label className="block text-sm font-medium text-gray-700">Lời khuyên:</label>
+                                        <p className="mt-1 text-sm text-gray-900 bg-white p-3 rounded border">
+                                            {item.doctorAdvice}
+                                        </p>
+                                    </div>
+                                )}
+                                {item.prescriptionUrl && (
+                                    <div>
+                                        <label className="block text-sm font-medium text-gray-700">Đơn thuốc:</label>
+                                        <div className="mt-1 bg-white p-3 rounded border">
+                                            <a 
+                                                href={item.prescriptionUrl} 
+                                                target="_blank" 
+                                                rel="noopener noreferrer"
+                                                className="inline-flex items-center text-blue-600 hover:text-blue-800 text-sm font-medium"
+                                            >
+                                                <FontAwesomeIcon icon={faPaperclip} className="mr-2" />
+                                                Tải xuống đơn thuốc
+                                            </a>
+                                        </div>
+                                    </div>
+                                )}
+                                {item.prescription && (
+                                    <div>
+                                        <label className="block text-sm font-medium text-gray-700">Ghi chú đơn thuốc:</label>
+                                        <p className="mt-1 text-sm text-gray-900 bg-white p-3 rounded border">
+                                            {item.prescription}
+                                        </p>
+                                    </div>
+                                )}
+                                {item.doctorReviewedAt && (
+                                    <div>
+                                        <label className="block text-sm font-medium text-gray-700">Thời gian xem xét:</label>
+                                        <p className="mt-1 text-sm text-gray-900">
+                                            {formatDate(item.doctorReviewedAt)}
+                                        </p>
+                                    </div>
+                                )}
+                            </div>
                         </div>
                     )}
 
@@ -223,6 +307,40 @@ const AppointmentDetailModal = ({ isOpen, onClose, item, type }) => {
                                         className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700"
                                     >
                                         Tham gia cuộc họp tư vấn
+                                    </button>
+                                </div>
+                            )}
+                        </div>
+                    )}
+
+                    {/* Rating Section for completed services */}
+                    {((type === 'appointment' && item.status === 4) || (type === 'test' && item.status === 5)) && (
+                        <div className="bg-yellow-50 rounded-lg p-4">
+                            <h3 className="text-lg font-medium text-gray-900 mb-4">Đánh giá dịch vụ</h3>
+                            {item.rated ? (
+                                <div className="text-center">
+                                    <p className="text-green-600 font-medium mb-2">
+                                        <FontAwesomeIcon icon={faStar} className="mr-2" />
+                                        Bạn đã đánh giá dịch vụ này
+                                    </p>
+                                    <p className="text-sm text-gray-600">
+                                        Cảm ơn bạn đã dành thời gian đánh giá!
+                                    </p>
+                                </div>
+                            ) : (
+                                <div className="text-center">
+                                    <p className="text-gray-700 mb-4">
+                                        Dịch vụ đã hoàn thành. Hãy chia sẻ trải nghiệm của bạn!
+                                    </p>
+                                    <button
+                                        onClick={() => {
+                                            onOpenRating(item, type);
+                                            onClose();
+                                        }}
+                                        className="bg-yellow-600 text-white px-4 py-2 rounded-lg hover:bg-yellow-700 transition-colors"
+                                    >
+                                        <FontAwesomeIcon icon={faStar} className="mr-2" />
+                                        Đánh giá dịch vụ
                                     </button>
                                 </div>
                             )}

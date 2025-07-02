@@ -9,11 +9,13 @@ import {
     faDownload,
     faCreditCard,
     faSpinner,
-    faCheck
+    faCheck,
+    faStar
 } from '@fortawesome/free-solid-svg-icons';
 import Navbar from '../../Layouts/LayoutHomePage/Navbar';
 import { Footer } from '../../Layouts/LayoutHomePage/Footer';
 import AppointmentDetailModal from '../../components/AppointmentDetailModal';
+import RatingModal from '../../components/RatingModal';
 
 const MyAppointments = () => {
     const [appointments, setAppointments] = useState([]);
@@ -23,6 +25,9 @@ const MyAppointments = () => {
     const [selectedItem, setSelectedItem] = useState(null);
     const [selectedType, setSelectedType] = useState(null);
     const [showModal, setShowModal] = useState(false);
+    const [selectedRatingItem, setSelectedRatingItem] = useState(null);
+    const [selectedRatingType, setSelectedRatingType] = useState(null);
+    const [showRatingModal, setShowRatingModal] = useState(false);
     const navigate = useNavigate();
 
     useEffect(() => {
@@ -72,19 +77,32 @@ const MyAppointments = () => {
             case 1: return 'text-yellow-600 bg-yellow-100';  // Pending
             case 2: return 'text-blue-600 bg-blue-100';      // Confirmed
             case 3: return 'text-green-600 bg-green-100';    // Confirmed & Paid
-            case 4: return 'text-purple-600 bg-purple-100';  // Completed
+            case 4: return 'text-purple-600 bg-purple-100';  // Test Completed (for tests) / Service Completed (for appointments)
+            case 5: return 'text-indigo-600 bg-indigo-100';  // Doctor Reviewed (for tests only)
             default: return 'text-gray-600 bg-gray-100';
         }
     };
 
-    const getStatusText = (status) => {
-        switch (status) {
-            case 0: return 'Đã từ chối';
-            case 1: return 'Chờ duyệt';
-            case 2: return 'Đã duyệt';
-            case 3: return 'Đã thanh toán';
-            case 4: return 'Hoàn thành';
-            default: return 'Không xác định';
+    const getStatusText = (status, type) => {
+        if (type === 'test') {
+            switch (status) {
+                case 0: return 'Đã từ chối';
+                case 1: return 'Chờ duyệt';
+                case 2: return 'Đã duyệt';
+                case 3: return 'Chờ xét nghiệm';
+                case 4: return 'Chờ bác sĩ xem xét';
+                case 5: return 'Hoàn thành';
+                default: return 'Không xác định';
+            }
+        } else {
+            switch (status) {
+                case 0: return 'Đã từ chối';
+                case 1: return 'Chờ duyệt';
+                case 2: return 'Đã duyệt';
+                case 3: return 'Đã thanh toán';
+                case 4: return 'Hoàn thành';
+                default: return 'Không xác định';
+            }
         }
     };
 
@@ -125,6 +143,24 @@ const MyAppointments = () => {
         setSelectedItem(item);
         setSelectedType(type);
         setShowModal(true);
+    };
+
+    const handleOpenRating = (item, type) => {
+        setSelectedRatingItem(item);
+        setSelectedRatingType(type);
+        setShowRatingModal(true);
+    };
+
+    const handleCloseRating = () => {
+        setShowRatingModal(false);
+        setSelectedRatingItem(null);
+        setSelectedRatingType(null);
+        // Reload data after rating
+        const storedUserData = localStorage.getItem('userData');
+        if (storedUserData) {
+            const user = JSON.parse(storedUserData);
+            loadUserAppointments(user.user_id);
+        }
     };
 
     const closeModal = () => {
@@ -230,7 +266,8 @@ const MyAppointments = () => {
                                             Hoàn thành
                                         </dt>
                                         <dd className="text-lg font-medium text-gray-900">
-                                            {[...appointments, ...testOrders].filter(item => item.status === 4).length}
+                                            {appointments.filter(item => item.status === 4).length + 
+                                             testOrders.filter(item => item.status === 5).length}
                                         </dd>
                                     </dl>
                                 </div>
@@ -330,7 +367,7 @@ const MyAppointments = () => {
                                                     </td>
                                                     <td className="px-6 py-4 whitespace-nowrap">
                                                         <span className={`px-2 py-1 text-xs font-medium rounded-full ${getStatusColor(appointment.status)}`}>
-                                                            {getStatusText(appointment.status)}
+                                                            {getStatusText(appointment.status, 'appointment')}
                                                         </span>
                                                     </td>
                                                     <td className="px-6 py-4 whitespace-nowrap text-sm font-medium space-x-2">
@@ -356,6 +393,15 @@ const MyAppointments = () => {
                                                                 className="text-purple-600 hover:text-purple-900"
                                                             >
                                                                 <FontAwesomeIcon icon={faVideo} /> Tham gia Meet
+                                                            </button>
+                                                        )}
+                                                        
+                                                        {appointment.status === 4 && !appointment.rated && (
+                                                            <button
+                                                                onClick={() => handleOpenRating(appointment, 'appointment')}
+                                                                className="text-yellow-600 hover:text-yellow-900"
+                                                            >
+                                                                <FontAwesomeIcon icon={faStar} /> Đánh giá
                                                             </button>
                                                         )}
                                                     </td>
@@ -430,7 +476,7 @@ const MyAppointments = () => {
                                                     </td>
                                                     <td className="px-6 py-4 whitespace-nowrap">
                                                         <span className={`px-2 py-1 text-xs font-medium rounded-full ${getStatusColor(test.status)}`}>
-                                                            {getStatusText(test.status)}
+                                                            {getStatusText(test.status, 'test')}
                                                         </span>
                                                     </td>
                                                     <td className="px-6 py-4 whitespace-nowrap text-sm font-medium space-x-2">
@@ -449,13 +495,21 @@ const MyAppointments = () => {
                                                                 <FontAwesomeIcon icon={faCreditCard} /> Thanh toán
                                                             </button>
                                                         )}
-                                                        
-                                                        {test.status === 4 && test.testResult && (
+                                                                          {(test.status === 4 || test.status === 5) && test.testResultData && (
+                                            <button
+                                                onClick={() => window.open(test.testResult || '#', '_blank')}
+                                                className="text-purple-600 hover:text-purple-900"
+                                            >
+                                                <FontAwesomeIcon icon={faDownload} /> Tải kết quả
+                                            </button>
+                                        )}
+
+                                                        {test.status === 5 && !test.rated && (
                                                             <button
-                                                                onClick={() => window.open(test.testResult, '_blank')}
-                                                                className="text-purple-600 hover:text-purple-900"
+                                                                onClick={() => handleOpenRating(test, 'test')}
+                                                                className="text-yellow-600 hover:text-yellow-900"
                                                             >
-                                                                <FontAwesomeIcon icon={faDownload} /> Tải kết quả
+                                                                <FontAwesomeIcon icon={faStar} /> Đánh giá
                                                             </button>
                                                         )}
                                                     </td>
@@ -479,6 +533,17 @@ const MyAppointments = () => {
                     onClose={closeModal}
                     item={selectedItem}
                     type={selectedType}
+                    onOpenRating={handleOpenRating}
+                />
+            )}
+
+            {/* Rating Modal */}
+            {showRatingModal && (
+                <RatingModal
+                    isOpen={showRatingModal}
+                    onClose={handleCloseRating}
+                    item={selectedRatingItem}
+                    type={selectedRatingType}
                 />
             )}
         </div>

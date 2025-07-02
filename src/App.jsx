@@ -10,6 +10,8 @@ import ForgetPassword from "./page/ForgetPassword";
 import Profile from "./page/Profile";
 import Payment from "./page/Payment";
 import MyAppointments from "./page/MyAppointments";
+import RatingsView from "./page/RatingsView";
+import PrescriptionView from "./page/PrescriptionView";
 import NotFound from "./page/NotFound";
 import ProtectedRoute from "./components/ProtectedRoute";
 import DoctorDashboard from "./page/Doctor/DoctorDashboard";
@@ -83,6 +85,22 @@ function App() {
         element={
           <ProtectedRoute requiredRole="manager">
             <ManagerDashboard />
+          </ProtectedRoute>
+        } 
+      />
+      <Route 
+        path="/ratings" 
+        element={
+          <ProtectedRoute requiredRole="manager">
+            <RatingsView />
+          </ProtectedRoute>
+        } 
+      />
+      <Route 
+        path="/prescriptions" 
+        element={
+          <ProtectedRoute>
+            <PrescriptionView />
           </ProtectedRoute>
         } 
       />

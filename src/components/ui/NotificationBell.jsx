@@ -2,11 +2,15 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faBell, faCheck, faTimes, faCalendarAlt, faFlask } from '@fortawesome/free-solid-svg-icons';
+import RatingModal from '../RatingModal';
 
 function NotificationBell() {
     const [notifications, setNotifications] = useState([]);
     const [showDropdown, setShowDropdown] = useState(false);
     const [unreadCount, setUnreadCount] = useState(0);
+    const [showRatingModal, setShowRatingModal] = useState(false);
+    const [selectedRatingItem, setSelectedRatingItem] = useState(null);
+    const [selectedRatingType, setSelectedRatingType] = useState(null);
     const navigate = useNavigate();
 
     useEffect(() => {
@@ -68,6 +72,30 @@ function NotificationBell() {
         // Navigate to payment page
         setShowDropdown(false);
         navigate(`/payment/${notification.requestId}`);
+    };
+
+    const handleRating = async (notification) => {
+        // Tìm item để đánh giá
+        const appointments = JSON.parse(localStorage.getItem('appointments') || '[]');
+        const testOrders = JSON.parse(localStorage.getItem('testOrders') || '[]');
+        
+        let item = null;
+        let type = '';
+        
+        if (notification.type === 'appointment-completed') {
+            item = appointments.find(apt => apt.id === notification.requestId);
+            type = 'appointment';
+        } else if (notification.type === 'test-completed') {
+            item = testOrders.find(test => test.id === notification.requestId);
+            type = 'test';
+        }
+        
+        if (item) {
+            setSelectedRatingItem(item);
+            setSelectedRatingType(type);
+            setShowRatingModal(true);
+            setShowDropdown(false);
+        }
     };
 
     const formatCurrency = (amount) => {
@@ -177,6 +205,18 @@ function NotificationBell() {
                                                 </div>
                                             )}
 
+                                            {/* Rating button for completed services */}
+                                            {notification.needsRating && (
+                                                <div className="mt-2">
+                                                    <button
+                                                        onClick={() => handleRating(notification)}
+                                                        className="px-3 py-1 bg-yellow-600 text-white text-xs rounded hover:bg-yellow-700 transition-colors"
+                                                    >
+                                                        Đánh giá dịch vụ
+                                                    </button>
+                                                </div>
+                                            )}
+
                                             {/* Payment button for approved requests */}
                                             {notification.requiresPayment && (
                                                 <div className="mt-2">
@@ -240,6 +280,19 @@ function NotificationBell() {
                     onClick={() => setShowDropdown(false)}
                 />
             )}
+
+            {/* Rating Modal */}
+            <RatingModal
+                isOpen={showRatingModal}
+                onClose={() => {
+                    setShowRatingModal(false);
+                    setSelectedRatingItem(null);
+                    setSelectedRatingType(null);
+                    loadNotifications(); // Reload notifications after rating
+                }}
+                item={selectedRatingItem}
+                type={selectedRatingType}
+            />
         </div>
     );
 }
