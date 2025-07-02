@@ -29,6 +29,14 @@ const unhashServiceId = (hashedId) => {
     return hashedId;
   }
 };
+const unhashAppointmentId = (hashedId) => {
+  try {
+    return atob(hashedId);
+  } catch (error) {
+    console.error("Error unhashing appointmentId: ", error);
+    return hashedId;
+  }
+};
 Font.register({
   family: "Roboto",
   src: RobotoRegular,
@@ -36,7 +44,7 @@ Font.register({
 const TestAppointmentPage = () => {
   const location = useLocation();
   const navigate = useNavigate();
-  const { accessToken, user } = useSelector((state) => state.auth);
+  // const { accessToken, user } = useSelector((state) => state.auth);
   // State quản lý các bước đặt lịch
   const [currentStep, setCurrentStep] = useState(1);
 
@@ -56,10 +64,13 @@ const TestAppointmentPage = () => {
   const [selectedTimeSlot, setSelectedTimeSlot] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  const [paymentMethod, setPaymentMethod] = useState("momo");
+  const [paymentMethod, setPaymentMethod] = useState("cash");
   const [isPaymentComplete, setIsPaymentComplete] = useState(false);
   const [appointmentDetails, setAppointmentDetails] = useState(null);
-  const [orderId, setOrderId] = useState("");
+  const [appointmentId, setAppointmentId] = useState("");
+  const [paymentError, setPaymentError] = useState(false);
+  const [paymentErrorMessage, setPaymentErrorMessage] = useState("");
+  // const [orderId, setOrderId] = useState("");
   const timeSlots = [
     "08:00 - 08:30",
     "08:30 - 09:00",
@@ -93,7 +104,11 @@ const TestAppointmentPage = () => {
     const queryParams = new URLSearchParams(location.search);
     const hashedServiceId = queryParams.get("serviceId");
     const serviceId = hashedServiceId ? unhashServiceId(hashedServiceId) : null;
-
+    const hashedAppointmentId = queryParams.get("appointmentId");
+    const appointmentId = hashedAppointmentId
+      ? unhashAppointmentId(hashedAppointmentId)
+      : null;
+    setAppointmentId(appointmentId);
     const fetchUserInfo = () => {
       const userJson = localStorage.getItem("userProfile");
       if (userJson) {
@@ -143,28 +158,28 @@ const TestAppointmentPage = () => {
     fetchServices();
   }, [location.search]);
 
-  useEffect(() => {
-    if (!userInfo?.user_id || !accessToken) return;
+  // useEffect(() => {
+  //   if (!userInfo?.user_id || !accessToken) return;
 
-    const fetchOrderId = async () => {
-      try {
-        const response = await axiosClient.get(
-          `v1/users/${userInfo.user_id}/services`,
-          {
-            headers: {
-              "x-access-token": accessToken,
-            },
-          }
-        );
-        setOrderId(response.data.user_id); // Đảm bảo rằng res.data.user_id thực sự tồn tại
-        console.log(response, "Response from services API");
-      } catch (error) {
-        console.error("Error fetching services:", error);
-      }
-    };
+  //   const fetchOrderId = async () => {
+  //     try {
+  //       const response = await axiosClient.get(
+  //         `v1/users/${userInfo.user_id}/services`,
+  //         {
+  //           headers: {
+  //             "x-access-token": accessToken,
+  //           },
+  //         }
+  //       );
+  //       setOrderId(response.data.user_id);
+  //       console.log(response, "Response from services API");
+  //     } catch (error) {
+  //       console.error("Error fetching services:", error);
+  //     }
+  //   };
 
-    fetchOrderId();
-  }, [userInfo?.user_id, accessToken]);
+  //   fetchOrderId();
+  // }, [userInfo?.user_id, accessToken]);
 
   const calculateTotalAmount = () => {
     return selectedServices.reduce((total, service) => {
@@ -256,18 +271,17 @@ const TestAppointmentPage = () => {
   };
 
   // Xử lý thanh toán
-  const processPayment = async (appointment_id) => {
+  const processPayment = async () => {
     setLoading(true);
+    setPaymentError(false);
     // Lấy thông tin dịch vụ đã chọn với định dạng cần thiết
     const serviceId = selectedServices.map((ser) => ({
       service_id: ser.service_id,
     }));
     try {
-      // Tạo appointment_id với đúng định dạng "AP" + 6 chữ số (đảm bảo có đủ số 0)
-
       const requestBody = {
         bookingData: {
-          appointment_id: appointment_id || null,
+          appointment_id: appointmentId || null,
           user_id: userInfo.user_id,
           serviceData: serviceId,
           payment_method: paymentMethod,
@@ -276,7 +290,6 @@ const TestAppointmentPage = () => {
 
       console.log("Dữ liệu gửi lên Server:", requestBody);
 
-      // Gọi API với cấu trúc đúng
       const res = await axiosClient.post(
         "/v1/services/bookingService",
         requestBody
@@ -284,7 +297,6 @@ const TestAppointmentPage = () => {
       console.log("Response:", res);
 
       if (res && res.data && res.data.success) {
-        // Tạo appointmentDetails cho màn hình xác nhận
         setAppointmentDetails({
           order_id: "OD00001",
           services: selectedServices,
@@ -300,14 +312,23 @@ const TestAppointmentPage = () => {
         setIsPaymentComplete(true);
         setCurrentStep(4);
       } else {
-        setError("Không thể hoàn tất thanh toán");
+        // setError("Không thể hoàn tất thanh toán");
+        setPaymentError(true);
+        setPaymentErrorMessage(
+          "Không thể hoàn tất thanh toán, Vui lòng thử lại"
+        );
       }
     } catch (err) {
       console.error("Error details:", err);
       if (err.response) {
         console.error("Server response:", err.response.data);
+        setPaymentErrorMessage(
+          `Lỗi khi thanh toán: ${err.response.data.message}`
+        );
+      } else {
+        setError(`Lỗi khi thanh toán: ${err.message}`);
       }
-      setError(`Lỗi khi thanh toán: ${err.message}`);
+      setPaymentError(true);
     } finally {
       setLoading(false);
     }
@@ -1124,7 +1145,7 @@ const TestAppointmentPage = () => {
               <button
                 onClick={handleNextStep}
                 className="inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
-                disabled={loading}
+                disabled={loading || paymentError}
               >
                 {loading ? (
                   <span className="flex items-center">
@@ -1400,6 +1421,45 @@ const TestAppointmentPage = () => {
               >
                 Về trang chủ
               </button>
+            </div>
+          </div>
+        )}
+
+        {paymentError && (
+          <div className="mt-4 mb-6 bg-red-50 border-l-4 border-red-500 p-4 rounded-md">
+            <div className="flex items-center">
+              <div className="flex-shrink-0">
+                <svg
+                  className="h-5 w-5 text-red-500"
+                  xmlns="http://www.w3.org/2000/svg"
+                  viewBox="0 0 20 20"
+                  fill="currentColor"
+                  aria-hidden="true"
+                >
+                  <path
+                    fillRule="evenodd"
+                    d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z"
+                    clipRule="evenodd"
+                  />
+                </svg>
+              </div>
+              <div className="ml-3">
+                <h3 className="text-sm font-medium text-red-800">
+                  Thanh toán không thành công
+                </h3>
+                <div className="mt-2 text-sm text-red-700">
+                  <p>{paymentErrorMessage}</p>
+                </div>
+                <div className="mt-4">
+                  <button
+                    type="button"
+                    onClick={() => setPaymentError(false)}
+                    className="inline-flex items-center px-3 py-1.5 border border-transparent text-xs font-medium rounded-md shadow-sm text-white bg-red-600 hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500"
+                  >
+                    Thử lại
+                  </button>
+                </div>
+              </div>
             </div>
           </div>
         )}

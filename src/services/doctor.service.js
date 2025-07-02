@@ -106,6 +106,107 @@ const fetchAvailableTimeslotsByDoctorId = async (doctorId) => {
   }
 };
 
+// Consultation Result APIs
+const getAppointmentById = async (appointmentId) => {
+  try {
+    const accessToken = localStorage.getItem("accessToken");
+    const result = await axiosClient.get(`/v1/appointments/${appointmentId}`, {
+      headers: {
+        "x-access-token": accessToken,
+      },
+    });
+    return result.data;
+  } catch (error) {
+    console.error("Error fetching appointment details:", error);
+    throw error;
+  }
+};
+
+const saveConsultationResult = async (resultData) => {
+  try {
+    const accessToken = localStorage.getItem("accessToken");
+    const result = await axiosClient.post(
+      `/v1/doctors/consultation-result`,
+      resultData,
+      {
+        headers: {
+          "Content-Type": "application/json",
+          "x-access-token": accessToken,
+          Authorization: `Bearer ${accessToken}`,
+        },
+      }
+    );
+    return result.data;
+  } catch (error) {
+    console.error("Error saving consultation result:", error);
+    throw error;
+  }
+};
+
+const uploadConsultationFile = async (appointmentId, file) => {
+  try {
+    const accessToken = localStorage.getItem("accessToken");
+    const formData = new FormData();
+    formData.append("file", file);
+    formData.append("appointment_id", appointmentId);
+
+    const result = await axiosClient.post(
+      `/v1/doctors/consultation-result/upload`,
+      formData,
+      {
+        headers: {
+          "Content-Type": "multipart/form-data",
+          "x-access-token": accessToken,
+          Authorization: `Bearer ${accessToken}`,
+        },
+      }
+    );
+    return result.data;
+  } catch (error) {
+    console.error("Error uploading consultation file:", error);
+    throw error;
+  }
+};
+
+const getConsultationResult = async (appointmentId) => {
+  try {
+    const accessToken = localStorage.getItem("accessToken");
+    const result = await axiosClient.get(
+      `/v1/doctors/consultation-result/${appointmentId}`,
+      {
+        headers: {
+          "x-access-token": accessToken,
+        },
+      }
+    );
+    return result.data;
+  } catch (error) {
+    console.error("Error fetching consultation result:", error);
+    throw error;
+  }
+};
+
+const updateAppointmentStatus = async (appointmentId, status) => {
+  try {
+    const accessToken = localStorage.getItem("accessToken");
+    const result = await axiosClient.patch(
+      `/v1/appointments/${appointmentId}/status`,
+      { status },
+      {
+        headers: {
+          "Content-Type": "application/json",
+          "x-access-token": accessToken,
+          Authorization: `Bearer ${accessToken}`,
+        },
+      }
+    );
+    return result.data;
+  } catch (error) {
+    console.error("Error updating appointment status:", error);
+    throw error;
+  }
+};
+
 const doctorService = {
   fetchProfileDoctor,
   fetchRegisterDoctorSchedule,
@@ -114,6 +215,11 @@ const doctorService = {
   fetchAllDoctors,
   fetchAvailableTimeslotsByDoctorId,
   fetchDoctorAppointmentsCompleted,
+  getAppointmentById,
+  saveConsultationResult,
+  uploadConsultationFile,
+  getConsultationResult,
+  updateAppointmentStatus,
 };
 
 export default doctorService;
