@@ -1,0 +1,565 @@
+.test-appointments-page {
+  min-height: 100vh;
+  background: #f8fafc;
+  padding: 1rem;
+
+  // TABLE STYLES
+  .table-container {
+    background: white;
+    border-radius: 12px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+    overflow: hidden;
+
+    .table-wrapper {
+      overflow-x: auto;
+      max-width: 100%;
+
+      .appointments-table {
+        width: 100%;
+        border-collapse: collapse;
+        font-size: 0.9rem;
+
+        thead {
+          background: linear-gradient(90deg, #065f46, #047857 100%);
+          color: white;
+
+          th {
+            padding: 1rem 0.75rem;
+            text-align: left;
+            font-weight: 600;
+            font-size: 0.875rem;
+            white-space: nowrap;
+            border-right: 1px solid rgba(255, 255, 255, 0.1);
+
+            &:last-child {
+              border-right: none;
+            }
+          }
+        }
+
+        tbody {
+          .table-row {
+            transition: all 0.2s ease;
+            border-bottom: 1px solid #f1f5f9;
+
+            &:hover {
+              background: #f8fafc;
+            }
+
+            &:last-child {
+              border-bottom: none;
+            }
+
+            td {
+              padding: 1rem 0.75rem;
+              vertical-align: top;
+              border-right: 1px solid #f1f5f9;
+
+              &:last-child {
+                border-right: none;
+              }
+            }
+
+            // STT cell
+            .stt-cell {
+              font-weight: 600;
+              color: #6b7280;
+              text-align: center;
+              width: 60px;
+            }
+
+            // Status cell
+            .status-cell {
+              width: 140px;
+
+              .status-badge {
+                display: inline-flex;
+                align-items: center;
+                gap: 0.5rem;
+                padding: 0.4rem 0.8rem;
+                border-radius: 16px;
+                font-size: 0.8rem;
+                font-weight: 600;
+                white-space: nowrap;
+
+                svg {
+                  font-size: 0.75rem;
+                }
+              }
+            }
+
+            // Customer cell - Mở rộng để chứa thông tin liên hệ
+            .customer-cell {
+              min-width: 200px; // Tăng width để chứa thêm thông tin
+
+              .customer-info {
+                .customer-name {
+                  margin-bottom: 0.5rem;
+
+                  strong {
+                    color: #1f2937;
+                    font-size: 0.95rem;
+                  }
+                }
+
+                .contact-info {
+                  div {
+                    display: flex;
+                    align-items: center;
+                    gap: 0.5rem;
+                    margin-bottom: 0.25rem;
+                    color: #6b7280;
+                    font-size: 0.8rem;
+
+                    &:last-child {
+                      margin-bottom: 0;
+                    }
+
+                    svg {
+                      width: 0.75rem;
+                      color: #9ca3af;
+                    }
+                  }
+                }
+              }
+            }
+
+            // Bỏ contact-cell styles vì đã gộp vào customer-cell
+            // .contact-cell {
+            //   // Remove this entire block
+            // }
+
+            // Test type cell - Có thể giảm width vì bảng gọn hơn
+            .test-type-cell {
+              min-width: 160px; // Giảm từ 180px
+              color: #374151;
+              font-weight: 500;
+            }
+
+            // DateTime cell
+            .datetime-cell {
+              min-width: 130px; // Giảm từ 150px
+
+              .datetime-info {
+                display: flex;
+                flex-direction: column;
+                gap: 0.25rem;
+
+                .date-part {
+                  color: #374151;
+                  font-weight: 500;
+                  font-size: 0.9rem;
+                }
+
+                .time-part {
+                  color: #6b7280;
+                  font-size: 0.8rem;
+                }
+              }
+            }
+
+            // Reference cell
+            .reference-cell {
+              text-align: center;
+              min-width: 100px;
+
+              .reference-id {
+                background: #dbeafe;
+                color: #1e40af;
+                padding: 0.25rem 0.5rem;
+                border-radius: 4px;
+                font-size: 0.8rem;
+                font-weight: 600;
+              }
+
+              .no-reference {
+                color: #9ca3af;
+              }
+            }
+
+            // Created date cell
+            .created-cell {
+              min-width: 110px;
+              color: #6b7280;
+              font-size: 0.85rem;
+            }
+
+            // Actions cell
+            .actions-cell {
+              width: 120px;
+
+              .action-buttons {
+                display: flex;
+                gap: 0.5rem;
+                justify-content: center;
+
+                .action-btn {
+                  width: 32px;
+                  height: 32px;
+                  border: none;
+                  border-radius: 6px;
+                  cursor: pointer;
+                  display: flex;
+                  align-items: center;
+                  justify-content: center;
+                  transition: all 0.2s ease;
+                  font-size: 0.8rem;
+
+                  &:hover {
+                    transform: translateY(-1px);
+                    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+                  }
+
+                  &.view-btn {
+                    background: #6b7280;
+                    color: white;
+
+                    &:hover {
+                      background: #4b5563;
+                    }
+                  }
+
+                  &.progress-btn {
+                    background: #3b82f6;
+                    color: white;
+
+                    &:hover {
+                      background: #2563eb;
+                    }
+                  }
+
+                  &.result-btn {
+                    background: #10b981;
+                    color: white;
+
+                    &:hover {
+                      background: #059669;
+                    }
+                  }
+
+                  &.download-btn {
+                    background: #8b5cf6;
+                    color: white;
+
+                    &:hover {
+                      background: #7c3aed;
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+
+  // Modal Styles
+  .modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.6);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 1000;
+    padding: 2rem;
+
+    .modal-content {
+      background: white;
+      border-radius: 16px;
+      max-width: 600px;
+      width: 100%;
+      max-height: 90vh;
+      overflow-y: auto;
+      box-shadow: 0 20px 25px rgba(0, 0, 0, 0.1);
+
+      &.result-modal {
+        max-width: 800px;
+      }
+
+      .modal-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 1.5rem 2rem;
+        border-bottom: 1px solid #e5e7eb;
+
+        h2 {
+          color: #1f2937;
+          font-size: 1.5rem;
+          font-weight: 600;
+          margin: 0;
+        }
+
+        .close-btn {
+          background: none;
+          border: none;
+          font-size: 1.5rem;
+          color: #9ca3af;
+          cursor: pointer;
+          padding: 0.5rem;
+          border-radius: 4px;
+          transition: all 0.2s ease;
+
+          &:hover {
+            color: #6b7280;
+            background: #f3f4f6;
+          }
+        }
+      }
+
+      .modal-body {
+        padding: 2rem;
+
+        .detail-grid {
+          display: grid;
+          gap: 1rem;
+          margin-bottom: 1.5rem;
+
+          .detail-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0.75rem 0;
+            border-bottom: 1px solid #f3f4f6;
+
+            strong {
+              color: #374151;
+              font-weight: 600;
+            }
+
+            span {
+              color: #6b7280;
+            }
+
+            .status-text {
+              font-weight: 600;
+            }
+          }
+        }
+
+        .notes-info,
+        .result-info {
+          margin-top: 1.5rem;
+          padding: 1.5rem;
+          background: #f9fafb;
+          border-radius: 12px;
+          border-left: 4px solid #3b82f6;
+
+          h3 {
+            color: #1f2937;
+            margin-bottom: 1rem;
+            font-size: 1.25rem;
+          }
+
+          p {
+            color: #6b7280;
+            line-height: 1.6;
+            margin: 0;
+          }
+
+          .result-item {
+            margin-bottom: 1rem;
+
+            strong {
+              display: block;
+              color: #374151;
+              margin-bottom: 0.5rem;
+            }
+
+            p {
+              margin: 0;
+              padding: 0.75rem;
+              background: white;
+              border-radius: 6px;
+              border: 1px solid #e5e7eb;
+            }
+          }
+        }
+
+        .patient-summary {
+          background: #f0f9ff;
+          border: 1px solid #bae6fd;
+          border-radius: 12px;
+          padding: 1.5rem;
+          margin-bottom: 2rem;
+
+          h3 {
+            color: #0c4a6e;
+            margin-bottom: 1rem;
+          }
+
+          p {
+            margin: 0.5rem 0;
+            color: #0369a1;
+
+            strong {
+              color: #0c4a6e;
+            }
+          }
+        }
+
+        .result-form {
+          .form-group {
+            margin-bottom: 1.5rem;
+
+            label {
+              display: block;
+              font-weight: 600;
+              color: #374151;
+              margin-bottom: 0.5rem;
+            }
+
+            textarea,
+            .file-input {
+              width: 100%;
+              padding: 0.75rem;
+              border: 2px solid #e5e7eb;
+              border-radius: 8px;
+              font-size: 0.95rem;
+              transition: all 0.2s ease;
+              resize: vertical;
+
+              &:focus {
+                outline: none;
+                border-color: #3b82f6;
+                box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+              }
+            }
+
+            .file-name {
+              display: flex;
+              align-items: center;
+              gap: 0.5rem;
+              margin-top: 0.5rem;
+              color: #10b981;
+              font-size: 0.9rem;
+              font-weight: 500;
+
+              svg {
+                color: #10b981;
+              }
+            }
+          }
+        }
+
+        .modal-actions {
+          display: flex;
+          gap: 1rem;
+          justify-content: flex-end;
+          margin-top: 2rem;
+          padding-top: 1.5rem;
+          border-top: 1px solid #e5e7eb;
+
+          .cancel-btn,
+          .submit-btn {
+            padding: 0.75rem 1.5rem;
+            border: none;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+          }
+
+          .cancel-btn {
+            background: #f3f4f6;
+            color: #6b7280;
+
+            &:hover {
+              background: #e5e7eb;
+            }
+          }
+
+          .submit-btn {
+            background: #10b981;
+            color: white;
+
+            &:hover:not(:disabled) {
+              background: #059669;
+              transform: translateY(-1px);
+            }
+
+            &:disabled {
+              opacity: 0.6;
+              cursor: not-allowed;
+            }
+          }
+        }
+      }
+    }
+  }
+
+  // Responsive Design
+  @media (max-width: 768px) {
+    padding: 0.5rem;
+
+    .table-wrapper {
+      .appointments-table {
+        font-size: 0.75rem;
+
+        th,
+        td {
+          padding: 0.5rem 0.25rem;
+        }
+
+        // Mobile optimizations
+        .customer-cell {
+          min-width: 200px;
+
+          .contact-info div {
+            font-size: 0.7rem;
+          }
+        }
+
+        .datetime-cell {
+          min-width: 100px;
+
+          .datetime-info {
+            .date-part,
+            .time-part {
+              font-size: 0.75rem;
+            }
+          }
+        }
+
+        .action-buttons {
+          flex-direction: column;
+          gap: 0.25rem;
+
+          .action-btn {
+            width: 28px;
+            height: 28px;
+            font-size: 0.7rem;
+          }
+        }
+      }
+    }
+
+    .modal-overlay {
+      padding: 1rem;
+
+      .modal-content {
+        .modal-header,
+        .modal-body {
+          padding: 1rem;
+        }
+      }
+    }
+
+    .datetime-cell {
+      .datetime-info {
+        .date-part,
+        .time-part {
+          font-size: 0.75rem;
+        }
+      }
+    }
+  }
+}

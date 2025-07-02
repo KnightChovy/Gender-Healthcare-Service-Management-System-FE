@@ -42,7 +42,7 @@ function MyAppointments() {
     'pending': { label: 'Chờ xác nhận', icon: faHourglassHalf, bgColor: '#fff8e1', textColor: '#e65100' },
     'confirmed': { label: 'Đã xác nhận', icon: faCheckCircle, bgColor: '#e8f5e8', textColor: '#2e7d32' },
     'success': { label: 'Đã hoàn thành thanh toán', icon: faCalendarCheck, bgColor: '#e3f2fd', textColor: '#1976d2' },
-    'completed': { label: 'Đã hoàn thành tư vấn', icon: faCheckCircle, bgColor: '#f3e5f5', textColor: '#7b1fa2' }, // Thêm completed
+    'completed': { label: 'Đã hoàn thành tư vấn', icon: faCheckCircle, bgColor: '#f3e5f5', textColor: '#7b1fa2' },
     'rejected': { label: 'Đã hủy', icon: faTimesCircle, bgColor: '#ffebee', textColor: '#d32f2f' }
   };
 
@@ -170,6 +170,18 @@ function MyAppointments() {
     applyFilters();
   }, [filters, appointments]);
 
+  const isConsultationDay = (appointmentDate) => {
+    if (!appointmentDate) return false;
+    
+    const today = new Date();
+    const consultationDate = new Date(appointmentDate);
+
+    today.setHours(0, 0, 0, 0);
+    consultationDate.setHours(0, 0, 0, 0);
+
+    return today.getTime() === consultationDate.getTime();
+  };
+
   if (isLoading) {
     return (
       <div className={cx('appointments-page')}>
@@ -291,11 +303,16 @@ function MyAppointments() {
           <div className={cx('appointments-grid')}>
             {currentAppointments.map((appointment) => {
               const statusInfo = getStatusInfo(appointment.status);
-
+              
               const needsPayment = appointment.status === 'confirmed' &&
                 appointment.booking === 0 &&
                 appointment.price_apm &&
                 appointment.price_apm > 0;
+
+              // Chỉ kiểm tra ngày, không cần kiểm tra giờ
+              const canJoinMeeting = appointment.status === 'confirmed' && 
+                                   appointment.booking === 1 && 
+                                   isConsultationDay(appointment.appointment_date);
 
               return (
                 <div key={appointment.id} className={cx('appointment-card')}>
@@ -373,17 +390,8 @@ function MyAppointments() {
                     )}
                   </div>
 
-                  {/* Actions - Cập nhật với nút đặt lịch xét nghiệm */}
+                  {/* Actions - Sửa lại phần này */}
                   <div className={cx('card-actions')}>
-                    {appointment.status !== 'completed' && (
-                      <button
-                        className={cx('action-btn', 'view-btn')}
-                        onClick={() => viewAppointmentDetails(appointment)}
-                      >
-                        <FontAwesomeIcon icon={faEye} /> Xem chi tiết
-                      </button>
-                    )}
-
                     {/* Payment button - chỉ hiển thị khi confirmed và booking = 0 */}
                     {needsPayment && (
                       <button
@@ -409,13 +417,22 @@ function MyAppointments() {
                         </button>
                       )}
 
-                    {/* Join Meeting button - thay thế Review button cho confirmed với booking = 1 */}
+                    {/* Join Meeting button - chỉ kiểm tra ngày */}
                     {appointment.status === 'confirmed' && appointment.booking === 1 && (
                       <button
-                        className={cx('action-btn', 'meeting-btn')}
-                        onClick={() => handleJoinMeeting(appointment)}
+                        className={cx('action-btn', 'meeting-btn', { 
+                          'disabled': !canJoinMeeting 
+                        })}
+                        onClick={() => canJoinMeeting ? handleJoinMeeting(appointment) : null}
+                        disabled={!canJoinMeeting}
+                        title={
+                          !canJoinMeeting 
+                            ? 'Chỉ có thể tham gia vào ngày tư vấn' 
+                            : 'Tham gia cuộc tư vấn'
+                        }
                       >
-                        <FontAwesomeIcon icon={faVideo} /> Tham gia tư vấn
+                        <FontAwesomeIcon icon={faVideo} />
+                        {canJoinMeeting ? 'Tham gia tư vấn' : 'Chưa tư vấn được'}
                       </button>
                     )}
 
@@ -429,7 +446,7 @@ function MyAppointments() {
                       </button>
                     )}
 
-                    {/* Actions cho completed - Xem chi tiết và Đánh giá cùng hàng, Đặt lịch xét nghiệm riêng */}
+                    {/* Actions cho completed */}
                     {appointment.status === 'completed' && (
                       <div className={cx('completed-actions')}>
                         {/* Hàng đầu: Xem chi tiết + Đánh giá */}
@@ -450,7 +467,9 @@ function MyAppointments() {
                         </div>
 
                         {/* Hàng dưới: Đặt lịch xét nghiệm */}
-                        <span style={{ fontSize: '0.85rem', paddingTop: '10px'}}>Bạn có muốn tiếp tục đặt lịch xét nghiệm?</span>
+                        <span style={{ fontSize: '0.85rem', paddingTop: '10px'}}>
+                          Bạn có muốn tiếp tục đặt lịch xét nghiệm?
+                        </span>
                         <Link
                           to={{
                             pathname: "/services/test",
@@ -465,7 +484,7 @@ function MyAppointments() {
                       </div>
                     )}
 
-                    {/* Đối với status khác, vẫn hiển thị nút Xem chi tiết bình thường */}
+                    {/* View button cho tất cả status khác (không phải completed) */}
                     {appointment.status !== 'completed' && (
                       <button
                         className={cx('action-btn', 'view-btn')}
@@ -473,6 +492,16 @@ function MyAppointments() {
                       >
                         <FontAwesomeIcon icon={faEye} /> Xem chi tiết
                       </button>
+                    )}
+
+                    {/* Hiển thị thông báo ngày tư vấn */}
+                    {appointment.status === 'confirmed' && appointment.booking === 1 && !canJoinMeeting && (
+                      <div className={cx('meeting-info')}>
+                        <FontAwesomeIcon icon={faClock} />
+                        <span>
+                          Có thể tham gia từ ngày {formatDate(appointment.appointment_date)}
+                        </span>
+                      </div>
                     )}
                   </div>
 
@@ -612,7 +641,7 @@ function MyAppointments() {
             {selectedAppointment.status === 'completed' && (
               <div className={cx('modal-actions')}>
                 <h3>Hành động khả dụng</h3>
-                <div className={cx('action-buttons-vertical')}>
+                <div className={cx('action-buttons-horizontal')}>
                   <button
                     className={cx('modal-action-btn', 'feedback-btn')}
                     onClick={() => {
