@@ -11,6 +11,7 @@ import {
 } from "@fortawesome/free-solid-svg-icons";
 import classNames from "classnames/bind";
 import styles from "./ForgetPassword.module.scss";
+import axiosClient from "../../services/axiosClient";
 
 const cx = classNames.bind(styles);
 
@@ -148,8 +149,15 @@ function ForgetPassword() {
     setErrors({});
 
     try {
-      await new Promise((resolve) => setTimeout(resolve, 1500));
-      setStep(2);
+      const data = {
+        email: hasValidEmail ? formData.email : undefined,
+        username: hasValidUsername ? formData.username : undefined,
+      }
+      const response = await axiosClient.post('/v1/emails/forget-password', data);
+
+      if(response.data.status === 'success') {
+        setStep(2);
+      }
     } catch (error) {
       console.log("Error sending OTP:", error);
       setErrors({ general: "Có lỗi xảy ra, vui lòng thử lại." });
@@ -346,10 +354,6 @@ function ForgetPassword() {
                   <span className={cx("error-text")}>{errors.otp}</span>
                 )}
               </div>
-
-              <p className={cx("otp-note")}>
-                💡 Mã OTP demo: <strong>123456</strong>
-              </p>
 
               <button
                 type="submit"
