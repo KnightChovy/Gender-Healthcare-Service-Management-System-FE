@@ -207,6 +207,27 @@ const updateAppointmentStatus = async (appointmentId, status) => {
   }
 };
 
+const fetchEmailRequestAppointmentFeedback = async (appointmentId) => {
+  try {
+    const accessToken = localStorage.getItem("accessToken");
+    const data = { appointment_id: appointmentId };
+    const result = await axiosClient.post(
+      `/v1/emails/appointment-feedback`,
+      data,
+      {
+        headers: {
+          "Content-Type": "application/json",
+          "x-access-token": accessToken,
+        },
+      }
+    );
+    return result.data;
+  } catch (error) {
+    console.error("Error fetching appointment feedback request:", error);
+    throw error;
+  }
+};
+
 const doctorService = {
   fetchProfileDoctor,
   fetchRegisterDoctorSchedule,
@@ -220,6 +241,7 @@ const doctorService = {
   uploadConsultationFile,
   getConsultationResult,
   updateAppointmentStatus,
+  fetchEmailRequestAppointmentFeedback,
 };
 
 export default doctorService;

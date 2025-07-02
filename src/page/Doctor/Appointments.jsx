@@ -164,6 +164,11 @@ const DoctorAppointments = () => {
         );
 
         alert("Đã hoàn thành cuộc hẹn thành công!");
+        const request =
+          await doctorService.fetchEmailRequestAppointmentFeedback(
+            appointmentId
+          );
+        console.log("Email request feedback:", request);
       } else {
         throw new Error(res?.message || "Cập nhật không thành công");
       }
@@ -351,20 +356,9 @@ const DoctorAppointments = () => {
                         {appointment.status === "confirmed" && (
                           <>
                             <button
-                              className="ml-2 text-green-600 hover:text-green-900"
-                              onClick={() =>
-                                navigate(
-                                  `/doctor/consultation-result/${appointment.appointment_id}`
-                                )
-                              }
-                            >
-                              Nhập kết quả
-                            </button>
-
-                            <button
                               className={`ml-2 ${
                                 !isToday(appointment.date)
-                                  ? "opacity-50 cursor-not-allowed"
+                                  ? "opacity-50 "
                                   : "text-green-600 hover:text-green-900"
                               }`}
                               disabled={!isToday(appointment.date)}
@@ -389,8 +383,6 @@ const DoctorAppointments = () => {
                             </a>
                           </>
                         )}
-
-                        
                       </div>
                     </td>
                   </tr>

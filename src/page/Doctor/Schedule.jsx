@@ -3,6 +3,7 @@ import { useSelector } from "react-redux";
 import axiosClient from "../../services/axiosClient";
 import doctorService from "../../services/doctor.service";
 import dayjs from "dayjs";
+import { set } from "date-fns";
 
 const Schedule = () => {
   // 1. Bỏ Chủ nhật - chỉ từ Thứ 2 đến Thứ 7
@@ -20,8 +21,8 @@ const Schedule = () => {
   const [schedule, setSchedule] = useState(initSchedule);
   const [selectedDate, setSelectedDate] = useState(new Date());
   const [isLoading, setIsLoading] = useState(false);
-  const [registeredSlots, setRegisteredSlots] = useState({}); // 3. Lưu các slot đã đăng ký
-
+  const [bookedTimeSlots, setBookedTimeSlots] = useState([]); // Lưu danh sách slot đã book
+  const [slotData, setSlotData] = useState([]);
   // Lấy thông tin user từ Redux
   const { user } = useSelector((state) => state.auth);
 
@@ -61,52 +62,69 @@ const Schedule = () => {
   const weekDates = getWeekDates();
 
   // 3. Function để lấy lịch đã đăng ký từ API
-  const fetchRegisteredSlots = async () => {
+  const loadDoctorSchedule = async () => {
     if (!user?.user_id) return;
 
     try {
-      console.log("Đang lấy lịch đã đăng ký cho doctor:", user.user_id);
+      console.log("🔄 Đang tải lịch đã đăng ký cho doctor:", user.user_id);
+
+      // Lấy doctor_id từ localStorage nếu có
+      let doctorId = user.user_id;
+      try {
+        const doctor = JSON.parse(localStorage.getItem("doctorProfile"));
+        if (doctor && doctor.doctor_id) {
+          doctorId = doctor.doctor_id;
+        }
+      } catch (e) {
+        console.log("Sử dụng user_id từ Redux");
+      }
+
+      console.log("📞 Gọi API với doctor_id:", doctorId);
       const response = await doctorService.fetchAvailableTimeslotsByDoctorId(
-        user.user_id
+        doctorId
       );
 
-      console.log("Dữ liệu từ API:", response);
+      console.log("📥 API Response:", response);
 
-      if (response?.data && Array.isArray(response.data)) {
-        const registered = {};
+      if (response?.data) {
+        const scheduleData = response.data;
+        console.log("📋 Schedule Data:", scheduleData);
 
-        response.data.forEach((slot) => {
-          if (slot.date && slot.time_start && slot.time_end) {
-            const slotDate = slot.date;
-            // Chuyển đổi time từ HH:MM:SS thành HH:MM - HH:MM format
-            const startTime = slot.time_start.substring(0, 5); // 07:30
-            const endTime = slot.time_end.substring(0, 5); // 11:30
-            const timeSlotKey = `${startTime} - ${endTime}`;
+        // Lưu raw data
+        setSlotData(scheduleData);
 
-            if (!registered[slotDate]) {
-              registered[slotDate] = {};
-            }
-            registered[slotDate][timeSlotKey] = true;
+        // Chuyển đổi thành format để check
+        const bookedSlots = scheduleData.map((slot) => ({
+          date: slot.date,
+          timeStart: slot.time_start ? slot.time_start.substring(0, 5) : "",
+          timeEnd: slot.time_end ? slot.time_end.substring(0, 5) : "",
+          timeRange:
+            slot.time_start && slot.time_end
+              ? `${slot.time_start.substring(0, 5)} - ${slot.time_end.substring(
+                  0,
+                  5
+                )}`
+              : "",
+          fullSlot: slot,
+        }));
 
-            console.log(`Đã đăng ký: ${slotDate} - ${timeSlotKey}`);
-          }
-        });
-
-        console.log("Registered slots:", registered);
-        setRegisteredSlots(registered);
+        console.log("✅ Processed booked slots:", bookedSlots);
+        setBookedTimeSlots(bookedSlots);
       } else {
-        console.log("Không có dữ liệu lịch đã đăng ký");
-        setRegisteredSlots({});
+        console.log("❌ Không có dữ liệu schedule");
+        setBookedTimeSlots([]);
+        setSlotData([]);
       }
     } catch (error) {
-      console.error("Lỗi khi lấy lịch đã đăng ký:", error);
-      setRegisteredSlots({});
+      console.error("❌ Lỗi khi tải schedule:", error);
+      setBookedTimeSlots([]);
+      setSlotData([]);
     }
   };
 
-  // Load dữ liệu khi component mount hoặc khi user/selectedDate thay đổi
+  // Load dữ liệu khi component mount hoặc khi thay đổi
   useEffect(() => {
-    fetchRegisteredSlots();
+    loadDoctorSchedule();
   }, [user?.user_id, selectedDate]);
 
   // Function để hiển thị notification
@@ -156,28 +174,47 @@ const Schedule = () => {
       registeredSlots[dateStr] && registeredSlots[dateStr][timeSlot];
 
     if (isRegistered) {
-      console.log(`Slot đã đăng ký: ${dateStr} - ${timeSlot}`);
+      console.log(
+        `🟢 Slot đã đăng ký được phát hiện: ${dateStr} - ${timeSlot}`
+      );
     }
 
     return isRegistered;
   };
 
-  // Kiểm tra xem một ô thời gian có nên vô hiệu hóa không
-  const isTimeSlotDisabled = (dayIndex, timeSlot) => {
+  // Function để kiểm tra slot đã được book chưa
+  const isTimeSlotBooked = (dayIndex, timeSlot) => {
+    const currentDate = weekDates[dayIndex];
+    const dateString = dayjs(currentDate).format("YYYY-MM-DD");
+
+    // Tìm trong danh sách booked slots
+    const isBooked = bookedTimeSlots.some(
+      (slot) => slot.date === dateString && slot.timeRange === timeSlot
+    );
+
+    if (isBooked) {
+      console.log(`🟢 Found booked slot: ${dateString} - ${timeSlot}`);
+    }
+
+    return isBooked;
+  };
+
+  // Function kiểm tra disable
+  const shouldDisableSlot = (dayIndex, timeSlot) => {
     const date = weekDates[dayIndex];
 
-    // 1. Không thể chọn ngày trong quá khứ
+    // 1. Ngày quá khứ
     if (isPastDate(date)) {
       return true;
     }
 
-    // 2. Trong tuần hiện tại không được đặt lịch nữa
+    // 2. Tuần hiện tại
     if (isCurrentWeek()) {
       return true;
     }
 
-    // 3. Slot đã được đăng ký thì không được sửa (QUAN TRỌNG)
-    if (isSlotRegistered(dayIndex, timeSlot)) {
+    // 3. Slot đã được book
+    if (isTimeSlotBooked(dayIndex, timeSlot)) {
       return true;
     }
 
@@ -185,36 +222,44 @@ const Schedule = () => {
   };
 
   // Xử lý khi click vào ô lịch
-  const handleToggleTimeSlot = (day, timeSlot, dayIndex) => {
-    // Kiểm tra nếu slot đã được đăng ký
-    if (isSlotRegistered(dayIndex, timeSlot)) {
+  const handleSlotClick = (day, timeSlot, dayIndex) => {
+    console.log(`👆 Clicked: ${day} - ${timeSlot}`);
+
+    // Kiểm tra slot đã book
+    if (isTimeSlotBooked(dayIndex, timeSlot)) {
+      console.log("🚫 Slot đã được đăng ký");
       showNotification(
         "warning",
-        "Không thể thay đổi",
-        "Lịch này đã được đăng ký và không thể chỉnh sửa."
+        "Slot đã được đăng ký",
+        "Khung giờ này đã được đăng ký trước đó."
       );
       return;
     }
 
-    // Kiểm tra các điều kiện vô hiệu hóa khác
-    if (isTimeSlotDisabled(dayIndex, timeSlot)) {
-      if (isCurrentWeek()) {
-        showNotification(
-          "warning",
-          "Không thể đặt lịch",
-          "Trong tuần hiện tại không được đặt lịch nữa. Vui lòng chọn tuần kế tiếp."
-        );
-      } else if (isPastDate(weekDates[dayIndex])) {
-        showNotification(
-          "warning",
-          "Không thể chọn",
-          "Không thể chọn lịch làm việc trong quá khứ."
-        );
-      }
+    // Kiểm tra tuần hiện tại
+    if (isCurrentWeek()) {
+      console.log("🚫 Tuần hiện tại");
+      showNotification(
+        "warning",
+        "Không thể đặt lịch",
+        "Không thể đăng ký lịch cho tuần hiện tại."
+      );
       return;
     }
 
-    // Nếu không có vấn đề gì, cho phép toggle
+    // Kiểm tra ngày quá khứ
+    if (isPastDate(weekDates[dayIndex])) {
+      console.log("🚫 Ngày quá khứ");
+      showNotification(
+        "warning",
+        "Không thể chọn",
+        "Không thể chọn ngày trong quá khứ."
+      );
+      return;
+    }
+
+    // Cho phép toggle
+    console.log("✅ Toggle slot");
     setSchedule((prev) => ({
       ...prev,
       [day]: {
@@ -268,12 +313,11 @@ const Schedule = () => {
     setIsLoading(true);
 
     try {
-      // 2. Kiểm tra xem có phải đang cố đặt lịch cho tuần hiện tại không
       if (isCurrentWeek()) {
         showNotification(
           "warning",
           "Không thể đặt lịch",
-          "Trong tuần hiện tại không được đặt lịch nữa. Vui lòng chọn tuần kế tiếp."
+          "Không thể đăng ký lịch cho tuần hiện tại."
         );
         setIsLoading(false);
         return;
@@ -286,7 +330,7 @@ const Schedule = () => {
       if (scheduleDaysWithSelectedSlots.length === 0) {
         showNotification(
           "warning",
-          "Vui lòng chọn",
+          "Chưa chọn slot",
           "Vui lòng chọn ít nhất một khung giờ làm việc!"
         );
         setIsLoading(false);
@@ -308,54 +352,37 @@ const Schedule = () => {
           };
         });
 
-      const formattedSchedule = {
+      const schedulePayload = {
         date: formattedDate,
         timeSlots: selectedTimeSlots,
       };
 
-      console.log("Dữ liệu gửi đi:", formattedSchedule);
+      console.log("📤 Sending schedule:", schedulePayload);
 
-      // Gọi API
       const result = await doctorService.fetchRegisterDoctorSchedule(
-        formattedSchedule
+        schedulePayload
       );
-      console.log("Kết quả từ API:", result);
+      console.log("✅ Registration result:", result);
 
       showNotification(
         "success",
-        "Thành công",
-        "Đăng ký lịch làm việc thành công!"
+        "Đăng ký thành công",
+        "Lịch làm việc đã được đăng ký!"
       );
 
-      // Reset lịch và refresh dữ liệu đã đăng ký
-      const allFalse = days.reduce((acc, day) => {
-        acc[day] = timeSlots.reduce((slots, time) => {
-          slots[time] = false;
-          return slots;
-        }, {});
-        return acc;
-      }, {});
-      setSchedule(allFalse);
+      // Reset form
+      setSchedule(initSchedule);
 
-      // 3. Tải lại danh sách lịch đã đăng ký
-      await fetchRegisteredSlots();
+      // Reload schedule data
+      await loadDoctorSchedule();
     } catch (error) {
-      console.error("Error:", error);
-      if (error.response) {
-        const errorMessage =
-          error.response.data?.message ||
-          error.response.data?.error ||
-          `Lỗi ${error.response.status}: ${error.response.statusText}`;
-        showNotification("error", "Lỗi", errorMessage);
-      } else if (error.request) {
-        showNotification(
-          "error",
-          "Lỗi kết nối",
-          "Không thể kết nối đến server."
-        );
-      } else {
-        showNotification("error", "Lỗi", error.message);
-      }
+      console.error("❌ Registration error:", error);
+      const errorMessage =
+        error.response?.data?.message ||
+        error.response?.data?.error ||
+        error.message ||
+        "Có lỗi xảy ra";
+      showNotification("error", "Lỗi đăng ký", errorMessage);
     } finally {
       setIsLoading(false);
     }
@@ -526,9 +553,12 @@ const Schedule = () => {
                       {timeSlot}
                     </td>
                     {days.map((day, dayIndex) => {
-                      const isDisabled = isTimeSlotDisabled(dayIndex, timeSlot);
-                      const isRegistered = isSlotRegistered(dayIndex, timeSlot);
-                      const isSelected = schedule[day][timeSlot];
+                      const isSlotDisabled = shouldDisableSlot(
+                        dayIndex,
+                        timeSlot
+                      );
+                      const isSlotBooked = isTimeSlotBooked(dayIndex, timeSlot);
+                      const isSlotSelected = schedule[day][timeSlot];
 
                       return (
                         <td
@@ -538,36 +568,35 @@ const Schedule = () => {
                           <button
                             type="button"
                             onClick={() =>
-                              handleToggleTimeSlot(day, timeSlot, dayIndex)
+                              handleSlotClick(day, timeSlot, dayIndex)
                             }
-                            disabled={isDisabled}
-                            className={`w-8 h-8 rounded-md transition duration-150 ease-in-out flex items-center justify-center ${
-                              isRegistered
-                                ? "bg-green-500 text-white cursor-not-allowed shadow-md"
-                                : isDisabled
+                            disabled={isSlotDisabled}
+                            className={`w-8 h-8 rounded-md transition duration-150 ease-in-out flex items-center justify-center font-bold ${
+                              isSlotBooked
+                                ? "bg-green-500 text-white cursor-not-allowed shadow-lg border-2 border-green-400"
+                                : isSlotDisabled
                                 ? "bg-gray-100 text-gray-400 cursor-not-allowed opacity-50"
-                                : isSelected
+                                : isSlotSelected
                                 ? "bg-blue-600 text-white hover:bg-blue-700 shadow-sm"
                                 : "bg-gray-200 text-gray-700 hover:bg-gray-300"
                             }`}
                             title={
-                              isRegistered
-                                ? "✅ Đã đăng ký - không thể chỉnh sửa"
+                              isSlotBooked
+                                ? "🟢 ĐÃ ĐĂNG KÝ TRƯỚC ĐÓ"
                                 : isCurrentWeek()
-                                ? "⚠️ Tuần hiện tại không được đặt lịch"
-                                : isDisabled
+                                ? "⚠️ Tuần hiện tại - không thể đặt"
+                                : isSlotDisabled
                                 ? "❌ Không thể chọn"
-                                : isSelected
-                                ? "🔵 Đã chọn - nhấn để bỏ chọn"
-                                : "⚪ Nhấn để chọn"
+                                : isSlotSelected
+                                ? "🔵 Đã chọn - click để bỏ"
+                                : "⚪ Click để chọn"
                             }
-                            aria-label={`Select ${timeSlot} on ${day}`}
                           >
-                            {isRegistered && (
-                              <i className="fas fa-check text-white"></i>
+                            {isSlotBooked && (
+                              <i className="fas fa-check-circle text-white text-sm"></i>
                             )}
-                            {isSelected && !isRegistered && (
-                              <i className="fas fa-check text-white"></i>
+                            {isSlotSelected && !isSlotBooked && (
+                              <i className="fas fa-check text-white text-sm"></i>
                             )}
                           </button>
                         </td>

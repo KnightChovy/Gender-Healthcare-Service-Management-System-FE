@@ -126,6 +126,7 @@ const Profile = () => {
         });
         console.log("Doctor profile response:", response);
         const data = response.data;
+        localStorage.setItem("doctorProfile", JSON.stringify(data.data));
         if (!data.success) {
           throw new Error(data.message || "Failed to fetch doctor profile");
         }
