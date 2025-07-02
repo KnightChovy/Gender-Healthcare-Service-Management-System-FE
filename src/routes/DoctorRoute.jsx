@@ -7,7 +7,7 @@ import Appointments from "../page/Doctor/Appointments";
 import Patients from "../page/Doctor/Patients";
 import Profile from "../page/Doctor/Profile";
 import TestManagement from "../page/Doctor/TestManagement";
-import ConsultationResult from "../page/Doctor/ConsultationResult";
+import { ConsultationResult } from "../page/Doctor/ConsultationResult";
 
 const DoctorRoute = () => [
   <Route key="doctor-route" path="/doctor" element={<DoctorLayout />}>
