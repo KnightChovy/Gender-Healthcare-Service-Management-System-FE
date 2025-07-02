@@ -156,7 +156,7 @@ const TestAppointmentPage = () => {
             },
           }
         );
-        setOrderId(response.data.user_id); // Đảm bảo rằng res.data.user_id thực sự tồn tại
+        setOrderId(response.data.user_id);
         console.log(response, "Response from services API");
       } catch (error) {
         console.error("Error fetching services:", error);
