@@ -462,14 +462,12 @@ function Appointment() {
     setIsSubmitting(true);
 
     try {
-      // Debug localStorage trước khi lấy timeslot_id
-      console.log('🔍 About to get timeslot_id...');
+      console.log('About to get timeslot_id...');
       debugLocalStorage();
       
-      // Lấy timeslot_id từ localStorage
       const timeslotId = getTimeslotIdFromStorage(formData.appointmentDate, formData.appointmentTime);
       
-      console.log('🎯 RESULT: timeslot_id =', timeslotId);
+      console.log('RESULT: timeslot_id =', timeslotId);
 
       if (!timeslotId) {
         console.error('❌ Cannot find timeslot_id for:', {
@@ -477,15 +475,12 @@ function Appointment() {
           time: formData.appointmentTime
         });
         
-        // Hiển thị thông tin debug cho user
         alert(`Không thể xác định khung giờ đã chọn.\n\nThông tin debug:\n- Ngày: ${formData.appointmentDate}\n- Giờ: ${formData.appointmentTime}\n\nVui lòng kiểm tra console và chọn lại thời gian.`);
         setIsSubmitting(false);
         return;
       }
 
-      // Tạo appointment data
       const appointmentData = {
-        // Thông tin bệnh nhân
         user_id: userProfile?.user_id || null,
         fullName: formData.fullName,
         phone: formData.phone,
@@ -494,7 +489,6 @@ function Appointment() {
         gender: formData.gender,
         address: formData.address,
 
-        // Thông tin cuộc hẹn
         consultant_type: formData.consultationType,
         doctor_id: formData.doctor_id,
         doctorName: formData.doctorName,
@@ -502,23 +496,20 @@ function Appointment() {
         appointment_time: formData.appointmentTime,
         timeslot_id: timeslotId,
 
-        // Thông tin y tế
         symptoms: formData.symptoms,
         medicalHistory: formData.medicalHistory,
         notes: formData.notes,
         priority: formData.priority,
 
-        // Thông tin thanh toán
         price_apm: formData.fee,
 
-        // Metadata
         created_at: new Date().toISOString(),
         updated_at: new Date().toISOString(),
         status: "pending",
-        booking: 0 // 0 = chưa thanh toán
+        booking: 0
       };
 
-      console.log('📋 Final appointment data:', appointmentData);
+      console.log('Final appointment data:', appointmentData);
 
       // Validation cuối cùng
       if (!appointmentData.timeslot_id) {
@@ -529,10 +520,8 @@ function Appointment() {
         throw new Error('Missing doctor_id in final data');
       }
 
-      // Lưu vào localStorage
       localStorage.setItem("pendingAppointment", JSON.stringify(appointmentData));
 
-      // Gửi API request
       const res = await fetch("http://52.4.72.106:3000/v1/appointments", {
         method: "POST",
         headers: {
@@ -551,10 +540,8 @@ function Appointment() {
       const responseData = await res.json();
       console.log("✅ Appointment created successfully:", responseData);
 
-      // Success handling
       showSuccessNotification();
 
-      // Clear localStorage
       setTimeout(() => {
         localStorage.removeItem('doctorAvailableTimeslots');
         localStorage.removeItem('selectedDoctorId');
@@ -585,9 +572,7 @@ function Appointment() {
     }
   };
 
-  // Hiển thị thông báo thành công
   const showSuccessNotification = () => {
-    // Tạo element thông báo
     const notification = document.createElement("div");
     notification.className = "appointment-success-notification";
     notification.innerHTML = `
@@ -618,7 +603,6 @@ function Appointment() {
         </div>
     `;
 
-    // CSS đơn giản
     const style = document.createElement("style");
     style.textContent = `
         .appointment-success-notification {
@@ -840,7 +824,6 @@ function Appointment() {
     document.head.appendChild(style);
     document.body.appendChild(notification);
 
-    // Countdown 10 giây
     let countdown = 10;
     const countdownElement = notification.querySelector(".countdown-number");
 
@@ -855,7 +838,6 @@ function Appointment() {
       }
     }, 1000);
 
-    // Cleanup sau 10 giây
     setTimeout(() => {
       if (document.body.contains(notification)) {
         document.body.removeChild(notification);
@@ -867,7 +849,6 @@ function Appointment() {
     }, 10000);
   };
 
-  // Helper function tính phí
   const calculateFee = (consultationType) => {
     const feeMap = {
       "Khám phụ khoa": 300000,
@@ -880,7 +861,6 @@ function Appointment() {
     return feeMap[consultationType] || 200000;
   };
 
-  // Format currency
   const formatCurrency = (amount) => {
     return new Intl.NumberFormat("vi-VN", {
       style: "currency",
@@ -888,7 +868,6 @@ function Appointment() {
     }).format(amount);
   };
 
-  // Check if form is valid
   const isFormValid = () => {
     return (
       formData.fullName &&
@@ -897,7 +876,7 @@ function Appointment() {
       formData.phone &&
       formData.email &&
       formData.consultationType &&
-      formData.doctor_id && // BẮT BUỘC phải chọn bác sĩ
+      formData.doctor_id &&
       formData.appointmentDate &&
       formData.appointmentTime
     );

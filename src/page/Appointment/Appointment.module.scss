@@ -2640,7 +2640,7 @@
 
     @media (max-width: 768px) {
       font-size: 1.1rem;
-      padding: 0.625rem 0.875rem;
+      padding:  0.625rem 0.875rem;
     }
   }
 
@@ -3229,7 +3229,12 @@
     left: -100%;
     width: 100%;
     height: 100%;
-    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+    background: linear-gradient(
+      90deg,
+      transparent,
+      rgba(255, 255, 255, 0.2),
+      transparent
+    );
     transition: left 0.5s;
   }
 
@@ -3299,7 +3304,7 @@
 }
 
 .clear-selection-btn {
-  background: linear-gradient(135deg, var(--warning-color) 0%, #d97706 100%);
+  background: linear-gradient(135deg, #warning-color 0%, #d97706 100%);
   color: white;
   border: none;
   padding: 0.875rem 1.5rem;
@@ -3666,6 +3671,23 @@
 .clear-selection-btn {
   &:focus {
     box-shadow: 0 0 0 3px rgba(245, 158, 11, 0.3);
+  }
+}
+
+.education-list {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  
+  .education-items {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.25rem;
+    
+    .education-item {
+      font-size: 0.9rem;
+      color: #6b7280;
+    }
   }
 }
 

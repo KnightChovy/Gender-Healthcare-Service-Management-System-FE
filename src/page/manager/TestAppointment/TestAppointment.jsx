@@ -16,7 +16,7 @@ const mockTestAppointments = [
     user_name: 'Nguyễn Văn An',
     user_phone: '0901234567',
     user_email: 'nguyenvanan@email.com',
-    test_type: 'Xét nghiệm máu tổng quát',
+    test_type: 'Xét nghiệm HIV',
     test_date: '2024-01-15',
     test_time: '08:30:00',
     status: 'pending',
@@ -33,7 +33,7 @@ const mockTestAppointments = [
     user_name: 'Trần Thị Bình',
     user_phone: '0907654321',
     user_email: 'tranthibinh@email.com',
-    test_type: 'Xét nghiệm nước tiểu',
+    test_type: 'Xét nghiệm giang mai (RPR)',
     test_date: '2024-01-14',
     test_time: '10:00:00',
     status: 'in_progress',
@@ -50,7 +50,7 @@ const mockTestAppointments = [
     user_name: 'Lê Văn Cường',
     user_phone: '0909876543',
     user_email: 'levanc@email.com',
-    test_type: 'Xét nghiệm hormone',
+    test_type: 'Xét nghiệm lậu (PCR)',
     test_date: '2024-01-12',
     test_time: '14:30:00',
     status: 'completed',
@@ -67,7 +67,7 @@ const mockTestAppointments = [
     user_name: 'Phạm Thị Diệu',
     user_phone: '0903456789',
     user_email: 'phamthidieu@email.com',
-    test_type: 'Xét nghiệm gan',
+    test_type: 'Xét nghiệm viêm gan C',
     test_date: '2024-01-16',
     test_time: '09:15:00',
     status: 'pending',
@@ -84,7 +84,7 @@ const mockTestAppointments = [
     user_name: 'Hoàng Văn Em',
     user_phone: '0905678901',
     user_email: 'hoangvanem@email.com',
-    test_type: 'Xét nghiệm tim mạch',
+    test_type: 'Xét nghiệm HIV',
     test_date: '2024-01-11',
     test_time: '15:00:00',
     status: 'completed',
@@ -101,7 +101,7 @@ const mockTestAppointments = [
     user_name: 'Vũ Thị Phương',
     user_phone: '0908765432',
     user_email: 'vuthiphuong@email.com',
-    test_type: 'Xét nghiệm đường huyết',
+    test_type: 'Xét nghiệm HPV',
     test_date: '2024-01-17',
     test_time: '07:45:00',
     status: 'in_progress',
@@ -118,7 +118,7 @@ const mockTestAppointments = [
     user_name: 'Đặng Văn Giang',
     user_phone: '0902345678',
     user_email: 'dangvangiang@email.com',
-    test_type: 'Xét nghiệm ung thư',
+    test_type: 'Xét nghiệm HPV',
     test_date: '2024-01-10',
     test_time: '11:30:00',
     status: 'cancelled',
@@ -135,7 +135,7 @@ const mockTestAppointments = [
     user_name: 'Ngô Thị Hạnh',
     user_phone: '0906543210',
     user_email: 'ngothihanh@email.com',
-    test_type: 'Xét nghiệm phụ khoa',
+    test_type: 'Xét nghiệm giang mai (RPR)',
     test_date: '2024-01-18',
     test_time: '13:15:00',
     status: 'pending',
@@ -156,7 +156,6 @@ export const TestAppointment = () => {
   const [showModal, setShowModal] = useState(false);
   const [showResultModal, setShowResultModal] = useState(false);
   
-  // Form states for test results
   const [testResults, setTestResults] = useState({
     result_summary: '',
     detailed_results: '',
@@ -165,7 +164,6 @@ export const TestAppointment = () => {
     status: 'completed'
   });
 
-  // Get status info
   const getStatusInfo = (status) => {
     const statusMap = {
       pending: {
@@ -196,7 +194,6 @@ export const TestAppointment = () => {
     return statusMap[status] || statusMap.pending;
   };
 
-  // Format date
   const formatDate = (dateString) => {
     if (!dateString) return 'Chưa xác định';
     return new Date(dateString).toLocaleDateString('vi-VN', {
@@ -206,19 +203,16 @@ export const TestAppointment = () => {
     });
   };
 
-  // Format time
   const formatTime = (timeString) => {
     if (!timeString) return 'Chưa xác định';
     return timeString.slice(0, 5);
   };
 
-  // View appointment details
   const viewAppointmentDetails = (appointment) => {
     setSelectedAppointment(appointment);
     setShowModal(true);
   };
 
-  // Handle result input
   const handleResultInputChange = (field, value) => {
     setTestResults(prev => ({
       ...prev,
@@ -226,7 +220,6 @@ export const TestAppointment = () => {
     }));
   };
 
-  // Handle file upload
   const handleFileUpload = (event) => {
     const file = event.target.files[0];
     setTestResults(prev => ({
@@ -235,15 +228,12 @@ export const TestAppointment = () => {
     }));
   };
 
-  // Submit test results (mock)
   const submitTestResults = async () => {
     try {
       setIsLoading(true);
       
-      // Simulate API call
       await new Promise(resolve => setTimeout(resolve, 2000));
 
-      // Update the appointment in mock data
       const updatedAppointments = testAppointments.map(apt => 
         apt.id === selectedAppointment.id 
           ? {
@@ -259,7 +249,6 @@ export const TestAppointment = () => {
 
       setTestAppointments(updatedAppointments);
 
-      // Reset form
       setTestResults({
         result_summary: '',
         detailed_results: '',
@@ -279,10 +268,8 @@ export const TestAppointment = () => {
     }
   };
 
-  // Update appointment status (mock)
   const updateAppointmentStatus = async (appointmentId, newStatus) => {
     try {
-      // Simulate API call
       await new Promise(resolve => setTimeout(resolve, 1000));
       
       const updatedAppointments = testAppointments.map(apt => 
@@ -533,6 +520,17 @@ export const TestAppointment = () => {
 
               <div className={cx('result-form')}>
                 <div className={cx('form-group')}>
+                  <label htmlFor="detailed_results">Chi tiết kết quả</label>
+                  <textarea
+                    id="detailed_results"
+                    value={testResults.detailed_results}
+                    onChange={(e) => handleResultInputChange('detailed_results', e.target.value)}
+                    placeholder="Nhập chi tiết kết quả xét nghiệm..."
+                    rows={5}
+                  />
+                </div>
+
+                <div className={cx('form-group')}>
                   <label htmlFor="result_summary">Tóm tắt kết quả *</label>
                   <textarea
                     id="result_summary"
@@ -541,17 +539,6 @@ export const TestAppointment = () => {
                     placeholder="Nhập tóm tắt kết quả xét nghiệm..."
                     rows={3}
                     required
-                  />
-                </div>
-
-                <div className={cx('form-group')}>
-                  <label htmlFor="detailed_results">Chi tiết kết quả</label>
-                  <textarea
-                    id="detailed_results"
-                    value={testResults.detailed_results}
-                    onChange={(e) => handleResultInputChange('detailed_results', e.target.value)}
-                    placeholder="Nhập chi tiết kết quả xét nghiệm..."
-                    rows={5}
                   />
                 </div>
 
@@ -567,20 +554,18 @@ export const TestAppointment = () => {
                 </div>
 
                 <div className={cx('form-group')}>
-                  <label htmlFor="result_file">File kết quả (PDF, JPG, PNG)</label>
-                  <input
-                    type="file"
-                    id="result_file"
-                    onChange={handleFileUpload}
-                    accept=".pdf,.jpg,.jpeg,.png"
-                    className={cx('file-input')}
-                  />
-                  {testResults.result_file && (
-                    <p className={cx('file-name')}>
-                      <FontAwesomeIcon icon={faFileUpload} />
-                      {testResults.result_file.name}
-                    </p>
-                  )}
+                  <label htmlFor="severity">Mức độ</label>
+                  <select
+                    id="severity"
+                    value={testResults.severity}
+                    onChange={(e) => handleResultInputChange('severity', e.target.value)}
+                    className={cx('severity-select')}
+                  >
+                    <option value="">Chọn mức độ</option>
+                    <option value="light">Nhẹ</option>
+                    <option value="moderate">Vừa</option>
+                    <option value="severe">Nặng</option>
+                  </select>
                 </div>
               </div>
 

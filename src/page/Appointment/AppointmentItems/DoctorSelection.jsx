@@ -29,26 +29,39 @@ function DoctorSelection({ formData, errors, onChange }) {
       try {
         setIsLoading(true);
         setApiError(null);
-        
+
         const response = await axiosClient.get('/v1/doctors');
-        
+
         const apiData = response.data;
-        
+
         if (!apiData.success || !apiData.listAllDoctors) {
           throw new Error('Invalid API response format');
         }
-        
+
         const transformedDoctors = apiData.listAllDoctors.map(doctor => {
-          const specializations = doctor.certificates?.map(cert => cert.specialization) || [];
+          const education = doctor.certificates?.map(cert => cert.certificate) || [];
           
+          // Ensure consultationTypes is always an array
+          let consultationTypes = [];
+          if (doctor.certificates && doctor.certificates.length > 0) {
+            consultationTypes = doctor.certificates
+              .map(cert => cert.specialization)
+              .filter(Boolean);
+          }
+          
+          // If no consultationTypes found, provide default
+          if (consultationTypes.length === 0) {
+            consultationTypes = ['Khám tổng quát'];
+          }
+
           return {
             id: doctor.doctor_id,
             name: `${doctor.last_name} ${doctor.first_name}`.trim(),
-            specialty: specializations.length > 0 ? specializations : ['Tư vấn tổng quát'],
+            specialty: doctor.certificates?.[0]?.specialization || 'Chuyên khoa',
             experience: `${doctor.experience_year} năm kinh nghiệm`,
-            education: doctor.certificates?.[0]?.certificate || 'Bằng cấp y khoa',
+            education: education.length > 0 ? education : ['Bằng cấp y khoa'],
             bio: doctor.bio || 'Bác sĩ chuyên nghiệp với nhiều năm kinh nghiệm',
-            consultationTypes: specializations,
+            consultationTypes: consultationTypes, // Now guaranteed to be an array
             phone: doctor.phone,
             email: doctor.email,
             gender: doctor.gender,
@@ -56,15 +69,15 @@ function DoctorSelection({ formData, errors, onChange }) {
             certificates: doctor.certificates || []
           };
         }).filter(doctor => doctor.status === 1);
-        
+
         setAllDoctors(transformedDoctors);
         console.log('✅ Fetched doctors from API:', transformedDoctors);
-        
+
       } catch (error) {
         console.error('❌ Error fetching doctors:', error);
-        
+
         let errorMessage = 'Không thể tải danh sách bác sĩ';
-        
+
         if (error.response) {
           errorMessage = `Server error: ${error.response.status}`;
           if (error.response.data?.message) {
@@ -75,7 +88,7 @@ function DoctorSelection({ formData, errors, onChange }) {
         } else {
           errorMessage = error.message;
         }
-        
+
         setApiError(errorMessage);
         setAllDoctors([]);
       } finally {
@@ -89,15 +102,23 @@ function DoctorSelection({ formData, errors, onChange }) {
   useEffect(() => {
     if (formData.consultationType && allDoctors.length > 0) {
       const filtered = allDoctors.filter(doctor => {
-        return doctor.specialty.some(spec => 
-          spec.toLowerCase().includes(formData.consultationType.toLowerCase()) ||
-          formData.consultationType.toLowerCase().includes(spec.toLowerCase())
-        ) || doctor.consultationTypes.some(type =>
-          type.toLowerCase().includes(formData.consultationType.toLowerCase()) ||
-          formData.consultationType.toLowerCase().includes(type.toLowerCase())
+        // Ensure consultationTypes is an array
+        const consultationTypes = Array.isArray(doctor.consultationTypes) 
+          ? doctor.consultationTypes 
+          : [doctor.consultationTypes].filter(Boolean);
+        
+        if (consultationTypes.length === 0) {
+          return true; // Include doctor if no consultation types specified
+        }
+        
+        return consultationTypes.some(type =>
+          type && typeof type === 'string' && (
+            type.toLowerCase().includes(formData.consultationType.toLowerCase()) ||
+            formData.consultationType.toLowerCase().includes(type.toLowerCase())
+          )
         );
       });
-      
+
       setFilteredDoctors(filtered.length > 0 ? filtered : allDoctors);
     } else {
       setFilteredDoctors(allDoctors);
@@ -106,18 +127,18 @@ function DoctorSelection({ formData, errors, onChange }) {
 
   const fetchDoctorTimeSlots = async (doctorId) => {
     setIsLoadingTimeslots(true);
-    
+
     try {
       console.log(`🕒 Fetching available time slots for doctor ID: ${doctorId}`);
-      
+
       const accessToken = localStorage.getItem('accessToken');
-      
+
       const response = await axiosClient.get(`/v1/doctors/${doctorId}/available-timeslots`, {
         headers: {
           "x-access-token": accessToken,
         }
       });
-      
+
       if (response.data && response.data.success && response.data.data && response.data.data.schedules) {
         const schedules = response.data.data.schedules;
         console.log('✅ Available schedules:', schedules);
@@ -125,32 +146,32 @@ function DoctorSelection({ formData, errors, onChange }) {
         schedules.sort((a, b) => {
           return new Date(a.date) - new Date(b.date);
         });
-        
+
         localStorage.setItem('doctorAvailableTimeslots', JSON.stringify(schedules));
-        
-        onChange({ 
-          target: { 
-            name: 'availableTimeSlots', 
-            value: schedules 
-          } 
+
+        onChange({
+          target: {
+            name: 'availableTimeSlots',
+            value: schedules
+          }
         });
-        
+
         return schedules;
       } else {
         throw new Error('Invalid response format for time slots');
       }
     } catch (error) {
       console.error('❌ Error fetching doctor time slots:', error);
-      
-      onChange({ 
-        target: { 
-          name: 'availableTimeSlots', 
-          value: [] 
-        } 
+
+      onChange({
+        target: {
+          name: 'availableTimeSlots',
+          value: []
+        }
       });
 
       localStorage.removeItem('doctorAvailableTimeslots');
-      
+
       return [];
     } finally {
       setIsLoadingTimeslots(false);
@@ -161,7 +182,7 @@ function DoctorSelection({ formData, errors, onChange }) {
     onChange({ target: { name: 'doctor_id', value: doctor.id } });
     onChange({ target: { name: 'doctorName', value: doctor.name } });
     onChange({ target: { name: 'preferredTime', value: '' } });
-    
+
     await fetchDoctorTimeSlots(doctor.id);
   };
 
@@ -176,35 +197,35 @@ function DoctorSelection({ formData, errors, onChange }) {
 
   const handleRandomSelection = async () => {
     if (filteredDoctors.length === 0) return;
-    
+
     setIsRandomizing(true);
-    
+
     let cycleCount = 0;
     const maxCycles = 8;
-    
+
     const cycleInterval = setInterval(() => {
       const randomIndex = Math.floor(Math.random() * filteredDoctors.length);
       const randomDoctor = filteredDoctors[randomIndex];
-      
+
       onChange({ target: { name: 'doctor_id', value: randomDoctor.id } });
-      
+
       cycleCount++;
-      
+
       if (cycleCount >= maxCycles) {
         clearInterval(cycleInterval);
-        
+
         setTimeout(async () => {
           const finalRandomIndex = Math.floor(Math.random() * filteredDoctors.length);
           const finalRandomDoctor = filteredDoctors[finalRandomIndex];
-          
+
           onChange({ target: { name: 'doctor_id', value: finalRandomDoctor.id } });
           onChange({ target: { name: 'doctorName', value: finalRandomDoctor.name } });
           onChange({ target: { name: 'preferredTime', value: '' } });
-          
+
           await fetchDoctorTimeSlots(finalRandomDoctor.id);
-          
+
           setIsRandomizing(false);
-          
+
           console.log(`🎲 Đã chọn ngẫu nhiên bác sĩ: ${finalRandomDoctor.name}`);
         }, 300);
       }
@@ -221,7 +242,7 @@ function DoctorSelection({ formData, errors, onChange }) {
             <span className={cx('required-badge')}>Bắt buộc</span>
           </h3>
         </div>
-        
+
         <div className={cx('loading-state')}>
           <FontAwesomeIcon icon={faSpinner} spin className={cx('loading-icon')} />
           <p>Đang tải danh sách bác sĩ...</p>
@@ -240,13 +261,13 @@ function DoctorSelection({ formData, errors, onChange }) {
             <span className={cx('required-badge')}>Bắt buộc</span>
           </h3>
         </div>
-        
+
         <div className={cx('error-state')}>
           <FontAwesomeIcon icon={faExclamationTriangle} className={cx('error-icon')} />
           <p>❌ Không thể tải danh sách bác sĩ: {apiError}</p>
           <p>Vui lòng thử lại để có thể chọn bác sĩ và tiếp tục đặt lịch.</p>
-          <button 
-            type="button" 
+          <button
+            type="button"
             onClick={() => window.location.reload()}
             className={cx('retry-btn')}
           >
@@ -265,7 +286,7 @@ function DoctorSelection({ formData, errors, onChange }) {
           Chọn bác sĩ tư vấn
           <span className={cx('required-badge')}>Bắt buộc</span>
         </h3>
-        
+
         {/* Required notice */}
         <div className={cx('required-info')}>
           <FontAwesomeIcon icon={faExclamationTriangle} className={cx('warning-icon')} />
@@ -286,8 +307,8 @@ function DoctorSelection({ formData, errors, onChange }) {
               disabled={isRandomizing}
               title="Chọn ngẫu nhiên bác sĩ ngay"
             >
-              <FontAwesomeIcon 
-                icon={isRandomizing ? faShuffle : faDice} 
+              <FontAwesomeIcon
+                icon={isRandomizing ? faShuffle : faDice}
                 className={cx('random-icon', {
                   'spinning': isRandomizing
                 })}
@@ -326,7 +347,7 @@ function DoctorSelection({ formData, errors, onChange }) {
             <div className={cx('warning-text')}>
               <p><strong>⚠️ Chưa chọn bác sĩ</strong></p>
               <p>
-                Vui lòng chọn một bác sĩ từ danh sách bên dưới hoặc sử dụng chức năng "Chọn ngẫu nhiên" 
+                Vui lòng chọn một bác sĩ từ danh sách bên dưới hoặc sử dụng chức năng "Chọn ngẫu nhiên"
                 để hệ thống tự động chọn bác sĩ phù hợp cho bạn.
               </p>
             </div>
@@ -350,26 +371,37 @@ function DoctorSelection({ formData, errors, onChange }) {
             >
               <div className={cx('doctor-info')}>
                 <h4>{doctor.name}</h4>
-                
+
                 {/* Display specialties */}
-                {doctor.specialty.map((spec, index) => (
-                  <p className={cx('specialty')} key={index}>
-                    <FontAwesomeIcon icon={faStethoscope} />
-                    <span className={cx('specialty-item')}>
-                      {spec}
-                    </span>
-                  </p>
-                ))}
-                
+                <p className={cx('specialty')}>
+                  <FontAwesomeIcon icon={faStethoscope} />
+                  <span className={cx('specialty-item')}>
+                    {doctor.certificates?.[0]?.specialization || 'Chuyên khoa'}
+                  </span>
+                </p>
+
+
                 {/* Experience */}
                 <p className={cx('experience')}>
                   <FontAwesomeIcon icon={faGraduationCap} />
                   {doctor.experience}
                 </p>
-                
+
                 {/* Education/Certificates */}
-                <p className={cx('education')}>{doctor.education}</p>
-                
+                {doctor.education && doctor.education.length > 0 && (
+                  <div className={cx('education-list')}>
+                    <FontAwesomeIcon icon={faGraduationCap} />
+                    <div className={cx('education-items')}>
+                      {doctor.education.map((edu, index) => (
+                        <span key={index} className={cx('education-item')}>
+                          {edu}
+                          {index < doctor.education.length - 1 && ', '}
+                        </span>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
                 {/* Bio */}
                 {doctor.bio && (
                   <p className={cx('bio')}>{doctor.bio}</p>
@@ -386,8 +418,8 @@ function DoctorSelection({ formData, errors, onChange }) {
             <FontAwesomeIcon icon={faExclamationTriangle} className={cx('no-doctors-icon')} />
             <p><strong>Không có bác sĩ nào có sẵn hiện tại</strong></p>
             <p>Vui lòng thử lại sau hoặc liên hệ với chúng tôi để được hỗ trợ.</p>
-            <button 
-              type="button" 
+            <button
+              type="button"
               onClick={() => window.location.reload()}
               className={cx('retry-btn')}
             >
@@ -435,7 +467,7 @@ function DoctorSelection({ formData, errors, onChange }) {
             </span>
           </div>
         )}
-        
+
         <div className={cx('selection-options')}>
           <div className={cx('option-item')}>
             <span className={cx('option-label')}>🎯 Chọn bác sĩ cụ thể:</span>
