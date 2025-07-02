@@ -7,7 +7,6 @@ import Appointments from "../page/Doctor/Appointments";
 import Patients from "../page/Doctor/Patients";
 import Profile from "../page/Doctor/Profile";
 import TestManagement from "../page/Doctor/TestManagement";
-import ConsultationResult from "../page/Doctor/ConsultationResult";
 
 const DoctorRoute = () => [
   <Route key="doctor-route" path="/doctor" element={<DoctorLayout />}>
@@ -18,10 +17,6 @@ const DoctorRoute = () => [
     <Route path="patients" element={<Patients />} />
     <Route path="profile" element={<Profile />} />
     <Route path="test-management" element={<TestManagement />} />
-    <Route
-      path="consultation-result/:appointmentId?"
-      element={<ConsultationResult />}
-    />
   </Route>,
 ];
 
