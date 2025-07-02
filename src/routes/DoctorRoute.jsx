@@ -7,7 +7,10 @@ import Appointments from "../page/Doctor/Appointments";
 import Patients from "../page/Doctor/Patients";
 import Profile from "../page/Doctor/Profile";
 import TestManagement from "../page/Doctor/TestManagement";
+<<<<<<< HEAD
+=======
 import { ConsultationResult } from "../page/Doctor/ConsultationResult";
+>>>>>>> eb1d3ea9c45de485678eb192a8075ae578989520
 
 const DoctorRoute = () => [
   <Route key="doctor-route" path="/doctor" element={<DoctorLayout />}>
@@ -18,10 +21,6 @@ const DoctorRoute = () => [
     <Route path="patients" element={<Patients />} />
     <Route path="profile" element={<Profile />} />
     <Route path="test-management" element={<TestManagement />} />
-    <Route
-      path="consultation-result/:appointmentId?"
-      element={<ConsultationResult />}
-    />
   </Route>,
 ];
 
