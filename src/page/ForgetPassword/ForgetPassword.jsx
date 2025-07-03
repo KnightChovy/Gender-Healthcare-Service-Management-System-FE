@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { toast } from "react-toastify";
 import {
   faArrowLeft,
   faArrowRight,
@@ -155,7 +156,7 @@ function ForgetPassword() {
       }
       const response = await axiosClient.post('/v1/emails/forget-password', data);
 
-      if(response.data.status === 'success') {
+      if (response.data.status === 'success') {
         setStep(2);
       }
     } catch (error) {
@@ -215,9 +216,22 @@ function ForgetPassword() {
     setErrors({});
 
     try {
-      await new Promise((resolve) => setTimeout(resolve, 1500));
-      alert("Mật khẩu đã được đặt lại thành công!");
-      navigate("/login");
+      const data = {
+        username: formData.username,
+        newPassword: formData.newPassword,
+        confirmPassword: formData.confirmPassword,
+      }
+      const response = await axiosClient.patch('/v1/auth/forget-password', data, {
+        headers: {
+          "Content-Type": "application/json",
+        },
+      });
+      if (response.data.success === true) {
+        toast.success("Mật khẩu đã được đặt lại thành công!");
+        navigate("/login");
+      } else {
+        setErrors({ general: "Có lỗi xảy ra, vui lòng thử lại." });
+      }
     } catch (error) {
       console.log("Error resetting password:", error);
       setErrors({ general: "Có lỗi xảy ra, vui lòng thử lại." });
