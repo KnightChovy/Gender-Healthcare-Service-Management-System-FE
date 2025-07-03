@@ -5,13 +5,16 @@ import {
     faPrescriptionBottle, 
     faCalendarAlt, 
     faUser,
-    faDownload,
     faSpinner,
     faEye,
-    faTimes
+    faTimes,
+    faFilePdf,
+    faPrint
 } from '@fortawesome/free-solid-svg-icons';
 import Navbar from '../../Layouts/LayoutHomePage/Navbar';
 import { Footer } from '../../Layouts/LayoutHomePage/Footer';
+import jsPDF from 'jspdf';
+import html2canvas from 'html2canvas';
 
 const PrescriptionView = () => {
     const [prescriptions, setPrescriptions] = useState([]);
@@ -90,7 +93,7 @@ const PrescriptionView = () => {
                 <body>
                     <div class="header">
                         <h1>PHÒNG KHÁM ĐA KHOA ABC</h1>
-                        <h2>ĐơN THUỐC</h2>
+                        <h2>ĐƠN THUỐC</h2>
                     </div>
                     
                     <div class="patient-info">
@@ -133,6 +136,191 @@ const PrescriptionView = () => {
         printWindow.print();
     };
 
+    const testSimplePDF = async () => {
+        try {
+            console.log('Testing simple PDF generation...');
+            const pdf = new jsPDF('p', 'mm', 'a4');
+            pdf.setFontSize(16);
+            pdf.text('TEST PDF', 20, 20);
+            pdf.save('simple-test.pdf');
+            console.log('Simple PDF test successful');
+            alert('Test PDF generated successfully!');
+        } catch (error) {
+            console.error('Simple PDF test failed:', error);
+            alert('Simple PDF test failed: ' + error.message);
+        }
+    };
+
+    const downloadPrescriptionPDF = async (prescription) => {
+        try {
+            console.log('Starting HTML-to-PDF generation for:', prescription);
+            
+            // Validate prescription data
+            if (!prescription?.medicines?.length) {
+                throw new Error('Dữ liệu đơn thuốc không hợp lệ');
+            }
+            
+            // Tạo HTML content cho PDF (giống như trong PrescriptionModal)
+            const htmlContent = `
+                <div style="font-family: Arial, sans-serif; padding: 20px; max-width: 800px; margin: 0 auto;">
+                    <!-- Header -->
+                    <div style="text-align: center; border-bottom: 2px solid #333; padding-bottom: 20px; margin-bottom: 20px;">
+                        <h1 style="margin: 0; font-size: 24px; color: #333;">PHÒNG KHÁM ĐA KHOA ABC</h1>
+                        <p style="margin: 5px 0; font-size: 14px;">Địa chỉ: 123 Đường ABC, Quận XYZ, TP. Hồ Chí Minh</p>
+                        <p style="margin: 5px 0; font-size: 14px;">Điện thoại: (028) 1234-5678 | Email: info@phongkhamabc.vn</p>
+                        <h2 style="margin: 15px 0 0 0; font-size: 20px; color: #2563eb;">ĐƠN THUỐC</h2>
+                    </div>
+                    
+                    <!-- Patient Info -->
+                    <div style="margin-bottom: 20px;">
+                        <table style="width: 100%; border-collapse: collapse;">
+                            <tr>
+                                <td style="padding: 8px; border: 1px solid #ddd; font-weight: bold; background-color: #f9fafb; width: 30%;">Bệnh nhân:</td>
+                                <td style="padding: 8px; border: 1px solid #ddd;">${prescription.patientName || 'N/A'}</td>
+                            </tr>
+                            <tr>
+                                <td style="padding: 8px; border: 1px solid #ddd; font-weight: bold; background-color: #f9fafb;">Bác sĩ kê đơn:</td>
+                                <td style="padding: 8px; border: 1px solid #ddd;">${prescription.doctorName || 'N/A'}</td>
+                            </tr>
+                            <tr>
+                                <td style="padding: 8px; border: 1px solid #ddd; font-weight: bold; background-color: #f9fafb;">Ngày kê đơn:</td>
+                                <td style="padding: 8px; border: 1px solid #ddd;">${formatDate(prescription.createdAt)}</td>
+                            </tr>
+                            <tr>
+                                <td style="padding: 8px; border: 1px solid #ddd; font-weight: bold; background-color: #f9fafb;">Mã đơn thuốc:</td>
+                                <td style="padding: 8px; border: 1px solid #ddd;">#${prescription.id?.slice(-8) || 'N/A'}</td>
+                            </tr>
+                        </table>
+                    </div>
+                    
+                    <!-- Medicines -->
+                    <div style="margin-bottom: 20px;">
+                        <h3 style="color: #333; margin-bottom: 15px;">DANH SÁCH THUỐC:</h3>
+                        <table style="width: 100%; border-collapse: collapse;">
+                            <thead>
+                                <tr style="background-color: #2563eb; color: white;">
+                                    <th style="padding: 12px; border: 1px solid #ddd; text-align: center; width: 8%;">STT</th>
+                                    <th style="padding: 12px; border: 1px solid #ddd; text-align: left; width: 30%;">Tên thuốc</th>
+                                    <th style="padding: 12px; border: 1px solid #ddd; text-align: left; width: 25%;">Liều dùng</th>
+                                    <th style="padding: 12px; border: 1px solid #ddd; text-align: left; width: 20%;">Thời gian</th>
+                                    <th style="padding: 12px; border: 1px solid #ddd; text-align: left; width: 17%;">Ghi chú</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                ${prescription.medicines.map((medicine, index) => `
+                                    <tr style="background-color: ${index % 2 === 0 ? '#f9fafb' : 'white'};">
+                                        <td style="padding: 10px; border: 1px solid #ddd; text-align: center;">${index + 1}</td>
+                                        <td style="padding: 10px; border: 1px solid #ddd;">
+                                            <strong>${medicine.name || 'N/A'}</strong>
+                                            ${medicine.genericName ? `<br><em style="color: #666; font-size: 12px;">(${medicine.genericName})</em>` : ''}
+                                        </td>
+                                        <td style="padding: 10px; border: 1px solid #ddd;">${medicine.dosage || ''}</td>
+                                        <td style="padding: 10px; border: 1px solid #ddd;">${medicine.duration || ''}</td>
+                                        <td style="padding: 10px; border: 1px solid #ddd;">${medicine.notes || ''}</td>
+                                    </tr>
+                                `).join('')}
+                            </tbody>
+                        </table>
+                    </div>
+                    
+                    ${prescription.generalAdvice ? `
+                        <!-- General Advice -->
+                        <div style="margin-bottom: 30px;">
+                            <h3 style="color: #333; margin-bottom: 10px;">LỜI KHUYÊN TỪ BÁC SĨ:</h3>
+                            <div style="background-color: #dbeafe; padding: 15px; border-radius: 8px; border-left: 4px solid #2563eb;">
+                                <p style="margin: 0; line-height: 1.6;">${prescription.generalAdvice}</p>
+                            </div>
+                        </div>
+                    ` : ''}
+                    
+                    <!-- Doctor Signature -->
+                    <div style="display: flex; justify-content: space-between; margin-top: 40px;">
+                        <div style="flex: 1;"></div>
+                        <div style="text-align: center; flex: 1;">
+                            <p style="margin: 0; font-weight: bold;">Bác sĩ kê đơn</p>
+                            <div style="height: 60px;"></div>
+                            <p style="margin: 0; font-weight: bold;">${prescription.doctorName || 'N/A'}</p>
+                            <p style="margin: 5px 0 0 0; font-size: 12px; font-style: italic;">(Chữ ký và đóng dấu)</p>
+                        </div>
+                    </div>
+                    
+                    <!-- Footer -->
+                    <div style="margin-top: 40px; text-align: center; font-size: 12px; color: #666; font-style: italic;">
+                        <p style="margin: 5px 0;">Lưu ý: Đơn thuốc này chỉ có giá trị khi có chữ ký và con dấu của bác sĩ</p>
+                        <p style="margin: 5px 0;">Hotline tư vấn: (028) 1234-5678 | Website: www.phongkhamabc.vn</p>
+                    </div>
+                </div>
+            `;
+            
+            // Tạo temporary element để render HTML
+            const tempDiv = document.createElement('div');
+            tempDiv.innerHTML = htmlContent;
+            tempDiv.style.position = 'absolute';
+            tempDiv.style.left = '-9999px';
+            tempDiv.style.top = '-9999px';
+            tempDiv.style.width = '800px';
+            document.body.appendChild(tempDiv);
+            
+            console.log('HTML content created and appended');
+            
+            // Convert HTML to canvas
+            const canvas = await html2canvas(tempDiv, {
+                scale: 2,
+                useCORS: true,
+                allowTaint: true,
+                backgroundColor: '#ffffff',
+                width: 800,
+                height: tempDiv.scrollHeight
+            });
+            
+            console.log('Canvas created');
+            
+            // Remove temporary element
+            document.body.removeChild(tempDiv);
+            
+            // Create PDF
+            const imgData = canvas.toDataURL('image/png');
+            const pdf = new jsPDF('p', 'mm', 'a4');
+            
+            const imgWidth = 210; // A4 width in mm
+            const pageHeight = 295; // A4 height in mm
+            const imgHeight = (canvas.height * imgWidth) / canvas.width;
+            let heightLeft = imgHeight;
+            let position = 0;
+            
+            // Add first page
+            pdf.addImage(imgData, 'PNG', 0, position, imgWidth, imgHeight);
+            heightLeft -= pageHeight;
+            
+            // Add additional pages if needed
+            while (heightLeft >= 0) {
+                position = heightLeft - imgHeight;
+                pdf.addPage();
+                pdf.addImage(imgData, 'PNG', 0, position, imgWidth, imgHeight);
+                heightLeft -= pageHeight;
+            }
+            
+            // Save PDF
+            const safeName = (prescription.patientName || 'Unknown').replace(/[^a-zA-Z0-9_]/g, '_');
+            const fileName = `Don_thuoc_${safeName}_${new Date().toISOString().slice(0, 10)}.pdf`;
+            pdf.save(fileName);
+            
+            console.log('PDF saved successfully');
+            
+        } catch (error) {
+            console.error('Error generating PDF:', error);
+            
+            let errorMessage = 'Có lỗi xảy ra khi tạo file PDF. ';
+            if (error.message) {
+                errorMessage += error.message;
+            } else {
+                errorMessage += 'Vui lòng thử lại.';
+            }
+            
+            alert(errorMessage);
+        }
+    };
+
     if (isLoading) {
         return (
             <div className="min-h-screen bg-gradient-to-br from-blue-50 to-pink-50">
@@ -155,12 +343,23 @@ const PrescriptionView = () => {
                 <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                     {/* Header */}
                     <div className="mb-8">
-                        <h1 className="text-3xl font-bold text-gray-900 mb-2">
-                            Đơn thuốc của tôi
-                        </h1>
-                        <p className="text-gray-600">
-                            Xem và quản lý tất cả các đơn thuốc được kê bởi bác sĩ
-                        </p>
+                        <div className="flex justify-between items-center">
+                            <div>
+                                <h1 className="text-3xl font-bold text-gray-900 mb-2">
+                                    Đơn thuốc của tôi
+                                </h1>
+                                <p className="text-gray-600">
+                                    Xem và quản lý tất cả các đơn thuốc được kê bởi bác sĩ
+                                </p>
+                            </div>
+                            {/* Test button for debugging */}
+                            <button
+                                onClick={testSimplePDF}
+                                className="bg-orange-600 text-white px-4 py-2 rounded-lg hover:bg-orange-700 text-sm"
+                            >
+                                Test PDF
+                            </button>
+                        </div>
                     </div>
 
                     {/* Prescription List */}
@@ -246,10 +445,16 @@ const PrescriptionView = () => {
                                                         <FontAwesomeIcon icon={faEye} /> Xem
                                                     </button>
                                                     <button
+                                                        onClick={() => downloadPrescriptionPDF(prescription)}
+                                                        className="text-red-600 hover:text-red-900"
+                                                    >
+                                                        <FontAwesomeIcon icon={faFilePdf} /> PDF
+                                                    </button>
+                                                    <button
                                                         onClick={() => printPrescription(prescription)}
                                                         className="text-green-600 hover:text-green-900"
                                                     >
-                                                        <FontAwesomeIcon icon={faDownload} /> In
+                                                        <FontAwesomeIcon icon={faPrint} /> In
                                                     </button>
                                                 </td>
                                             </tr>
@@ -358,10 +563,17 @@ const PrescriptionView = () => {
                                 Đóng
                             </button>
                             <button
+                                onClick={() => downloadPrescriptionPDF(selectedPrescription)}
+                                className="px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700 flex items-center gap-2"
+                            >
+                                <FontAwesomeIcon icon={faFilePdf} />
+                                Tải PDF
+                            </button>
+                            <button
                                 onClick={() => printPrescription(selectedPrescription)}
                                 className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 flex items-center gap-2"
                             >
-                                <FontAwesomeIcon icon={faDownload} />
+                                <FontAwesomeIcon icon={faPrint} />
                                 In đơn thuốc
                             </button>
                         </div>
