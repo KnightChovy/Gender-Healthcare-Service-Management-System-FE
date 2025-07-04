@@ -87,31 +87,52 @@ const Schedule = () => {
       console.log("📥 API Response:", response);
 
       if (response?.data) {
-        const scheduleData = response.data;
+        const scheduleData = response.data.schedules || [];
         console.log("📋 Schedule Data:", scheduleData);
 
-        // Lưu raw data
+        // Lưu vào state
         setSlotData(scheduleData);
 
-        // Chuyển đổi thành format để check
-        const bookedSlots = scheduleData.map((slot) => ({
-          date: slot.date,
-          timeStart: slot.time_start ? slot.time_start.substring(0, 5) : "",
-          timeEnd: slot.time_end ? slot.time_end.substring(0, 5) : "",
-          timeRange:
-            slot.time_start && slot.time_end
-              ? `${slot.time_start.substring(0, 5)} - ${slot.time_end.substring(
-                  0,
-                  5
-                )}`
-              : "",
-          fullSlot: slot,
-        }));
+        // Xử lý dữ liệu đã book - CẦN SỬA LOGIC NÀY
+        const bookedSlots = [];
 
-        console.log("✅ Processed booked slots:", bookedSlots);
+        scheduleData.forEach((schedule) => {
+          // Kiểm tra nếu có timeslots array
+          if (schedule.timeslots && Array.isArray(schedule.timeslots)) {
+            schedule.timeslots.forEach((timeslot) => {
+              // Chỉ lấy những timeslot đã được book (is_booked = true)
+              if (timeslot) {
+                const bookedSlot = {
+                  date: schedule.date,
+                  timeStart: timeslot.time_start
+                    ? timeslot.time_start.substring(0, 5)
+                    : "",
+                  timeEnd: timeslot.time_end
+                    ? timeslot.time_end.substring(0, 5)
+                    : "",
+                  timeRange:
+                    timeslot.time_start && timeslot.time_end
+                      ? `${timeslot.time_start.substring(
+                          0,
+                          5
+                        )} - ${timeslot.time_end.substring(0, 5)}`
+                      : "",
+                  timeslot_id: timeslot.timeslot_id,
+                  is_booked: timeslot.is_booked,
+                  fullTimeslot: timeslot,
+                };
+                bookedSlots.push(bookedSlot);
+              }
+            });
+          }
+        });
+
         setBookedTimeSlots(bookedSlots);
+        console.log("✅ Processed booked slots:", bookedSlots);
       } else {
-        console.log("❌ Không có dữ liệu schedule");
+        console.log(
+          "❌ Không có dữ liệu schedule hoặc dữ liệu không phải array"
+        );
         setBookedTimeSlots([]);
         setSlotData([]);
       }
