@@ -73,7 +73,7 @@ export const SectionHero = () => {
                 </Link>
 
                 <Link
-                  to={accessToken ? "/service" : "/login"}
+                  to={accessToken ? "/services" : "/login"}
                   className="flex items-center bg-white rounded-lg py-2 px-5 hover:shadow-md transition-shadow max-w-[235px]"
                 >
                   <div className="bg-green-100 p-2 rounded-full mr-3">
