@@ -110,6 +110,13 @@ export const Navbar = () => {
                   >
                     Đặt lịch tư vấn
                   </Link>
+                  <Link
+                    to="/services/menstrual-cycle"
+                    className="block px-4 py-2 hover:bg-blue-50 transition-colors text-[16px]"
+                    onClick={() => setShowService(false)}
+                  >
+                    Theo dõi chu kì kinh nguyệt
+                  </Link>
                 </div>
               )}
             </li>
