@@ -964,6 +964,20 @@
     }
   }
 
+  // Passed time slots (đã qua giờ)
+  &.passed {
+    background: linear-gradient(135deg, #f1f5f9 0%, #e2e8f0 100%);
+    border-color: #94a3b8;
+    color: #64748b;
+    cursor: not-allowed;
+    opacity: 0.7;
+
+    &:hover {
+      transform: none;
+      box-shadow: none;
+    }
+  }
+
   .time-radio {
     position: absolute;
     opacity: 0;
@@ -2725,6 +2739,20 @@
     }
   }
 
+  // Passed time slots (đã qua giờ)
+  &.passed {
+    background: linear-gradient(135deg, #f1f5f9 0%, #e2e8f0 100%);
+    border-color: #94a3b8;
+    color: #64748b;
+    cursor: not-allowed;
+    opacity: 0.7;
+
+    &:hover {
+      transform: none;
+      box-shadow: none;
+    }
+  }
+
   .time-radio {
     display: none;
   }
@@ -2766,6 +2794,11 @@
 
   &.no-schedule-badge {
     background-color: var(--text-muted);
+    color: white;
+  }
+
+  &.passed-badge {
+    background-color: #64748b;
     color: white;
   }
 
@@ -3304,7 +3337,7 @@
 }
 
 .clear-selection-btn {
-  background: linear-gradient(135deg, var(--warning-color) 0%, #d97706 100%);
+  background: linear-gradient(135deg, #6b7280, #4b5563);
   color: white;
   border: none;
   padding: 0.875rem 1.5rem;
