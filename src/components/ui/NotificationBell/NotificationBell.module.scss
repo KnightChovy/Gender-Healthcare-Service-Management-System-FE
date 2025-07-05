@@ -168,6 +168,89 @@
     }
   }
 
+  &.test-notification {
+    border-left: 4px solid #8b5cf6;
+    
+    .icon {
+      color: #8b5cf6;
+    }
+  }
+
+  .test-results-action {
+    margin-top: 0.5rem;
+    padding: 0.5rem;
+    background: #f0f9ff;
+    border-radius: 4px;
+    border-left: 3px solid #0ea5e9;
+
+    .results-available {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      font-weight: 600;
+      color: #0369a1;
+      margin-bottom: 0.25rem;
+
+      .results-icon {
+        font-size: 1.1rem;
+      }
+    }
+
+    .feedback-reminder {
+      .feedback-prompt {
+        font-size: 0.8rem;
+        color: #7c3aed;
+        font-weight: 500;
+      }
+    }
+  }
+
+  .test-status {
+    margin-top: 0.5rem;
+    padding: 0.25rem 0.5rem;
+    border-radius: 4px;
+
+    .progress-indicator {
+      color: #d97706;
+      font-weight: 500;
+      font-size: 0.85rem;
+    }
+
+    .waiting-indicator {
+      color: #0ea5e9;
+      font-weight: 500;
+      font-size: 0.85rem;
+    }
+  }
+
+  // Color variants for test notifications
+  &.test-pending {
+    .icon {
+      color: #3b82f6;
+    }
+  }
+
+  &.test-in-progress {
+    .icon {
+      color: #f59e0b;
+    }
+  }
+
+  &.test-waiting-results {
+    .icon {
+      color: #06b6d4;
+    }
+  }
+
+  &.test-results-available {
+    .icon {
+      color: #10b981;
+    }
+    
+    background: linear-gradient(135deg, #ecfdf5 0%, #f0fdf4 100%);
+    border-left-color: #10b981;
+  }
+
   .dot {
     color: #2c9b95;
     font-size: 0.5rem;

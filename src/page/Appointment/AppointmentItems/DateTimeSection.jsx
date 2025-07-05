@@ -8,12 +8,6 @@ function DateTimeSection({ formData, errors, onChange }) {
     const [availableTimes, setAvailableTimes] = useState([]);
     const [isLoadingTimes, setIsLoadingTimes] = useState(false);
 
-    const availableTimeslots = JSON.parse(localStorage.getItem('doctorAvailableTimeslots')) || [];
-
-    const getScheduleForDate = (date) => {
-        return availableTimeslots.find(sch => sch.date === date);
-    };
-
     useEffect(() => {
         if (!formData.appointmentDate) {
             setAvailableTimes([]);
