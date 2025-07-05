@@ -1,8 +1,7 @@
-import React from 'react'
-import { useState } from 'react';
+import React, { useState } from 'react';
 import PropTypes from 'prop-types';
 
-function CycleInputForm({ cycleData, onDataChange }) {
+function CycleInputForm({ cycleData, onDataChange, onSave }) {
     const [timer, setTimer] = useState(null);
     const [isTimerActive, setIsTimerActive] = useState(false);
     const [selectedDays, setSelectedDays] = useState([]);
@@ -334,6 +333,40 @@ function CycleInputForm({ cycleData, onDataChange }) {
                 <small className="text-gray-500 text-sm block mt-2">
                     Thời gian nên đặt hẹn từ 6:00 sáng đến 11:00 tối
                 </small>
+
+                {/* Email Input for Notifications */}
+                <div className="mt-6 mb-4">
+                    <label htmlFor="email-input" className="block text-sm font-medium text-gray-700 mb-2">
+                        📧 Email nhận thông báo chu kỳ
+                    </label>
+                    <input
+                        id="email-input"
+                        type="email"
+                        name="email"
+                        value={cycleData.email || ''}
+                        onChange={handleInputChange}
+                        placeholder="Nhập địa chỉ email của bạn"
+                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-pink-500 focus:border-transparent"
+                    />
+                    <small className="text-gray-500 text-sm block mt-1">
+                        Chúng tôi sẽ gửi thông báo nhắc nhở về chu kỳ kinh nguyệt và thời gian rụng trứng qua email này
+                    </small>
+                </div>
+
+                {/* Save Button */}
+                <div className="mt-6">
+                    <button
+                        type="button"
+                        onClick={onSave}
+                        className="w-full bg-gradient-to-r from-pink-500 to-purple-600 text-white py-3 px-4 rounded-md font-medium hover:from-pink-600 hover:to-purple-700 transition-all duration-200 shadow-lg hover:shadow-xl transform hover:scale-105"
+                        disabled={!cycleData.lastPeriodDate || !cycleData.email}
+                    >
+                        💾 Lưu & Thiết lập thông báo
+                    </button>
+                    <small className="text-gray-500 text-sm block mt-2 text-center">
+                        Lưu thông tin để nhận thông báo về chu kỳ kinh nguyệt qua email
+                    </small>
+                </div>
             </div>
         </div>
     );
@@ -344,9 +377,11 @@ CycleInputForm.propTypes = {
         lastPeriodDate: PropTypes.string,
         cycleLength: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
         periodLength: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
-        birthControlTime: PropTypes.string
+        birthControlTime: PropTypes.string,
+        email: PropTypes.string
     }).isRequired,
-    onDataChange: PropTypes.func.isRequired
+    onDataChange: PropTypes.func.isRequired,
+    onSave: PropTypes.func.isRequired
 };
 
 export default CycleInputForm;

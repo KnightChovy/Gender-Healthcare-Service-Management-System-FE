@@ -174,9 +174,9 @@ const PrescriptionModal = ({ isOpen, onClose, patient, onSavePrescription }) => 
                 <div style="font-family: Arial, sans-serif; padding: 20px; max-width: 800px; margin: 0 auto;">
                     <!-- Header -->
                     <div style="text-align: center; border-bottom: 2px solid #333; padding-bottom: 20px; margin-bottom: 20px;">
-                        <h1 style="margin: 0; font-size: 24px; color: #333;">PHÒNG KHÁM ĐA KHOA ABC</h1>
-                        <p style="margin: 5px 0; font-size: 14px;">Địa chỉ: 123 Đường ABC, Quận XYZ, TP. Hồ Chí Minh</p>
-                        <p style="margin: 5px 0; font-size: 14px;">Điện thoại: (028) 1234-5678 | Email: info@phongkhamabc.vn</p>
+                        <h1 style="margin: 0; font-size: 24px; color: #333;">PHÒNG KHÁM CHUYÊN KHOA PHỤ NỮ MEDICARE</h1>
+                        <p style="margin: 5px 0; font-size: 14px;">Địa chỉ: 456 Nguyễn Thị Minh Khai, Quận 1, TP. Hồ Chí Minh</p>
+                        <p style="margin: 5px 0; font-size: 14px;">Điện thoại: (028) 3925-7890 | Email: info@medicarewomen.vn</p>
                         <h2 style="margin: 15px 0 0 0; font-size: 20px; color: #2563eb;">ĐƠN THUỐC</h2>
                     </div>
                     
@@ -256,7 +256,7 @@ const PrescriptionModal = ({ isOpen, onClose, patient, onSavePrescription }) => 
                     <!-- Footer -->
                     <div style="margin-top: 40px; text-align: center; font-size: 12px; color: #666; font-style: italic;">
                         <p style="margin: 5px 0;">Lưu ý: Đơn thuốc này chỉ có giá trị khi có chữ ký và con dấu của bác sĩ</p>
-                        <p style="margin: 5px 0;">Hotline tư vấn: (028) 1234-5678 | Website: www.phongkhamabc.vn</p>
+                        <p style="margin: 5px 0;">Hotline tư vấn: (028) 3925-7890 | Website: www.medicarewomen.vn</p>
                     </div>
                 </div>
             `;
@@ -338,12 +338,14 @@ const PrescriptionModal = ({ isOpen, onClose, patient, onSavePrescription }) => 
             return;
         }
 
+        const user = JSON.parse(localStorage.getItem('userData'));
+        
         const prescription = {
             id: `PRESC_${Date.now()}`,
             patientId: patient.id,
             patientName: patient.fullName,
             doctorId: 'DOCTOR_001', // In real app, get from auth
-            doctorName: 'BS. Nguyễn Văn A',
+            doctorName: `${user.last_name} ${user.first_name}`,
             createdAt: new Date().toISOString(),
             medicines: selectedMedicines,
             generalAdvice: generalAdvice,

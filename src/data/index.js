@@ -4,3 +4,4 @@ export { testTypes } from './testTypes';
 export { consultationTypes } from './consultationTypes';
 export { medicines, prescriptionTemplates } from './medicines';
 export { pricing, statusConfig } from './config';
+export { blogPosts, blogCategories, blogStats } from './blogs';

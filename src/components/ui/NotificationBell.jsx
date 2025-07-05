@@ -192,6 +192,7 @@ function NotificationBell() {
                                             </p>
                                             
                                             {/* Google Meet link for payment success */}
+                                            {/* Meet link for consultations */}
                                             {notification.meetLink && (
                                                 <div className="mt-2">
                                                     <a
@@ -202,6 +203,14 @@ function NotificationBell() {
                                                     >
                                                         Tham gia cuộc họp tư vấn
                                                     </a>
+                                                </div>
+                                            )}
+
+                                            {/* Test instructions for test orders */}
+                                            {notification.testInstructions && (
+                                                <div className="mt-2 p-2 bg-blue-50 rounded-lg">
+                                                    <p className="text-xs text-blue-800 font-medium">Lưu ý quan trọng:</p>
+                                                    <p className="text-xs text-blue-700 mt-1">{notification.testInstructions}</p>
                                                 </div>
                                             )}
 

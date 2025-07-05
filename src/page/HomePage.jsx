@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import Navbar from "../Layouts/LayoutHomePage/Navbar";
 import { Footer } from "../Layouts/LayoutHomePage/Footer";
+import BlogSection from "../Layouts/LayoutHomePage/BlogSection";
 
 export const HomePage = () => {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
@@ -158,6 +159,9 @@ export const HomePage = () => {
           </div>
         </div>
       </section>
+
+      {/* Blog Section */}
+      <BlogSection />
 
       {/* Contact Section */}
       <section id="contact" className="py-20 bg-gray-100">

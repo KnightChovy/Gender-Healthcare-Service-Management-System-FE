@@ -6,7 +6,6 @@ import {
     faCalendarAlt, 
     faUser,
     faSpinner,
-    faEye,
     faTimes,
     faFilePdf,
     faPrint
@@ -33,8 +32,8 @@ const PrescriptionView = () => {
             }
 
             try {
-                const user = JSON.parse(storedUserData);
-                loadUserPrescriptions(user.user_id);
+                JSON.parse(storedUserData); // Validate user data
+                loadUserPrescriptions();
             } catch (error) {
                 console.error('Error parsing user data:', error);
                 navigate('/login');
@@ -44,7 +43,7 @@ const PrescriptionView = () => {
         checkAuthAndLoadData();
     }, [navigate]);
 
-    const loadUserPrescriptions = (userId) => {
+    const loadUserPrescriptions = () => {
         try {
             const allPrescriptions = JSON.parse(localStorage.getItem('prescriptions') || '[]');
             // In real app, filter by userId. For demo, show all for current user
@@ -64,10 +63,6 @@ const PrescriptionView = () => {
             hour: '2-digit',
             minute: '2-digit'
         });
-    };
-
-    const handleViewDetails = (prescription) => {
-        setSelectedPrescription(prescription);
     };
 
     const handleCloseDetails = () => {
@@ -92,7 +87,9 @@ const PrescriptionView = () => {
                 </head>
                 <body>
                     <div class="header">
-                        <h1>PHÒNG KHÁM ĐA KHOA ABC</h1>
+                        <h1>PHÒNG KHÁM CHUYÊN KHOA PHỤ NỮ MEDICARE</h1>
+                        <p>Địa chỉ: 456 Nguyễn Thị Minh Khai, Quận 1, TP. Hồ Chí Minh</p>
+                        <p>Điện thoại: (028) 3925-7890 | Email: info@medicarewomen.vn</p>
                         <h2>ĐƠN THUỐC</h2>
                     </div>
                     
@@ -100,6 +97,7 @@ const PrescriptionView = () => {
                         <p><strong>Bệnh nhân:</strong> ${prescription.patientName}</p>
                         <p><strong>Bác sĩ kê đơn:</strong> ${prescription.doctorName}</p>
                         <p><strong>Ngày kê đơn:</strong> ${formatDate(prescription.createdAt)}</p>
+                        <p><strong>Mã đơn thuốc:</strong> #${prescription.id?.slice(-8) || 'N/A'}</p>
                     </div>
                     
                     <div class="medicine-list">
@@ -131,24 +129,11 @@ const PrescriptionView = () => {
             </html>
         `;
         
-        printWindow.document.write(printContent);
+        printWindow.document.open();
+        printWindow.document.body.innerHTML = printContent;
         printWindow.document.close();
+        printWindow.focus();
         printWindow.print();
-    };
-
-    const testSimplePDF = async () => {
-        try {
-            console.log('Testing simple PDF generation...');
-            const pdf = new jsPDF('p', 'mm', 'a4');
-            pdf.setFontSize(16);
-            pdf.text('TEST PDF', 20, 20);
-            pdf.save('simple-test.pdf');
-            console.log('Simple PDF test successful');
-            alert('Test PDF generated successfully!');
-        } catch (error) {
-            console.error('Simple PDF test failed:', error);
-            alert('Simple PDF test failed: ' + error.message);
-        }
     };
 
     const downloadPrescriptionPDF = async (prescription) => {
@@ -165,9 +150,9 @@ const PrescriptionView = () => {
                 <div style="font-family: Arial, sans-serif; padding: 20px; max-width: 800px; margin: 0 auto;">
                     <!-- Header -->
                     <div style="text-align: center; border-bottom: 2px solid #333; padding-bottom: 20px; margin-bottom: 20px;">
-                        <h1 style="margin: 0; font-size: 24px; color: #333;">PHÒNG KHÁM ĐA KHOA ABC</h1>
-                        <p style="margin: 5px 0; font-size: 14px;">Địa chỉ: 123 Đường ABC, Quận XYZ, TP. Hồ Chí Minh</p>
-                        <p style="margin: 5px 0; font-size: 14px;">Điện thoại: (028) 1234-5678 | Email: info@phongkhamabc.vn</p>
+                        <h1 style="margin: 0; font-size: 24px; color: #333;">PHÒNG KHÁM CHUYÊN KHOA PHỤ NỮ MEDICARE</h1>
+                        <p style="margin: 5px 0; font-size: 14px;">Địa chỉ: 456 Nguyễn Thị Minh Khai, Quận 1, TP. Hồ Chí Minh</p>
+                        <p style="margin: 5px 0; font-size: 14px;">Điện thoại: (028) 3925-7890 | Email: info@medicarewomen.vn</p>
                         <h2 style="margin: 15px 0 0 0; font-size: 20px; color: #2563eb;">ĐƠN THUỐC</h2>
                     </div>
                     
@@ -247,7 +232,7 @@ const PrescriptionView = () => {
                     <!-- Footer -->
                     <div style="margin-top: 40px; text-align: center; font-size: 12px; color: #666; font-style: italic;">
                         <p style="margin: 5px 0;">Lưu ý: Đơn thuốc này chỉ có giá trị khi có chữ ký và con dấu của bác sĩ</p>
-                        <p style="margin: 5px 0;">Hotline tư vấn: (028) 1234-5678 | Website: www.phongkhamabc.vn</p>
+                        <p style="margin: 5px 0;">Hotline tư vấn: (028) 3925-7890 | Website: www.medicarewomen.vn</p>
                     </div>
                 </div>
             `;
@@ -352,13 +337,6 @@ const PrescriptionView = () => {
                                     Xem và quản lý tất cả các đơn thuốc được kê bởi bác sĩ
                                 </p>
                             </div>
-                            {/* Test button for debugging */}
-                            <button
-                                onClick={testSimplePDF}
-                                className="bg-orange-600 text-white px-4 py-2 rounded-lg hover:bg-orange-700 text-sm"
-                            >
-                                Test PDF
-                            </button>
                         </div>
                     </div>
 
@@ -438,12 +416,6 @@ const PrescriptionView = () => {
                                                     {prescription.medicines.length} loại thuốc
                                                 </td>
                                                 <td className="px-6 py-4 whitespace-nowrap text-sm font-medium space-x-2">
-                                                    <button
-                                                        onClick={() => handleViewDetails(prescription)}
-                                                        className="text-blue-600 hover:text-blue-900"
-                                                    >
-                                                        <FontAwesomeIcon icon={faEye} /> Xem
-                                                    </button>
                                                     <button
                                                         onClick={() => downloadPrescriptionPDF(prescription)}
                                                         className="text-red-600 hover:text-red-900"

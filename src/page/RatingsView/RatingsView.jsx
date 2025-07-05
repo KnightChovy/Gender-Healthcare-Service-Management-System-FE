@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { 
     faStar, 
@@ -24,7 +24,7 @@ const RatingsView = () => {
 
     useEffect(() => {
         filterRatings();
-    }, [ratings, filterType, filterRating]);
+    }, [ratings, filterType, filterRating, filterRatings]);
 
     const loadRatings = () => {
         try {
@@ -39,7 +39,7 @@ const RatingsView = () => {
         }
     };
 
-    const filterRatings = () => {
+    const filterRatings = useCallback(() => {
         let filtered = ratings;
 
         // Filter by type
@@ -56,7 +56,7 @@ const RatingsView = () => {
         }
 
         setFilteredRatings(filtered);
-    };
+    }, [ratings, filterType, filterRating]);
 
     const renderStars = (rating) => {
         return (

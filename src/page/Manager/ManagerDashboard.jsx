@@ -1,7 +1,6 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { 
-    faUsers, 
     faCalendarAlt, 
     faFlask, 
     faChartBar,
@@ -10,12 +9,13 @@ import {
     faTimes,
     faSearch,
     faDownload,
-    faStar
+    faStar,
+    faNewspaper
 } from '@fortawesome/free-solid-svg-icons';
 import Navbar from '../../Layouts/LayoutHomePage/Navbar';
 import { Footer } from '../../Layouts/LayoutHomePage/Footer';
 import { testResults } from '../../data/testResults';
-import { pricing } from '../../data/config';
+import BlogManagement from './BlogManagement';
 
 function ManagerDashboard() {
     const [activeTab, setActiveTab] = useState('overview');
@@ -30,11 +30,6 @@ function ManagerDashboard() {
     });
     const [searchTerm, setSearchTerm] = useState('');
 
-    useEffect(() => {
-        loadData();
-        calculateStats();
-    }, [appointments, testOrders]); // Update when data changes
-
     const loadData = () => {
         const storedAppointments = JSON.parse(localStorage.getItem('appointments') || '[]');
         const storedTestOrders = JSON.parse(localStorage.getItem('testOrders') || '[]');
@@ -43,7 +38,7 @@ function ManagerDashboard() {
         setTestOrders(storedTestOrders);
     };
 
-    const calculateStats = () => {
+    const calculateStats = useCallback(() => {
         const storedAppointments = JSON.parse(localStorage.getItem('appointments') || '[]');
         const storedTestOrders = JSON.parse(localStorage.getItem('testOrders') || '[]');
         
@@ -78,7 +73,16 @@ function ManagerDashboard() {
             pendingApprovals: pendingAppointments.length + pendingTests.length,
             monthlyRevenue: generateMonthlyRevenue(approvedAppointments, approvedTests, appointmentPrice, testPrices)
         });
-    };
+    }, []);
+
+    useEffect(() => {
+        loadData();
+        calculateStats();
+    }, [calculateStats]);
+
+    useEffect(() => {
+        calculateStats();
+    }, [appointments, testOrders, calculateStats]);
 
     const generateMonthlyRevenue = (appointments, tests, appointmentPrice, testPrices) => {
         const months = ['T1', 'T2', 'T3', 'T4', 'T5', 'T6', 'T7', 'T8', 'T9', 'T10', 'T11', 'T12'];
@@ -148,26 +152,32 @@ function ManagerDashboard() {
     };
 
     const createNotificationForUser = (requestId, status, type) => {
-        const statusText = status === 2 ? 'đã được duyệt' : 'đã bị từ chối';
-        const typeText = type === 'appointment' ? 'lịch hẹn khám' : 'lịch xét nghiệm';
+        let title, message, notification;
         
-        let message = `${typeText.charAt(0).toUpperCase() + typeText.slice(1)} của bạn ${statusText} bởi quản lý.`;
-        
-        // Thêm thông tin thanh toán khi được duyệt
-        if (status === 2) {
-            message += ' Vui lòng tiến hành thanh toán để hoàn tất đặt lịch.';
+        if (type === 'appointment') {
+            // For consultation appointments
+            title = status === 2 ? 'Lịch hẹn khám được duyệt' : 'Lịch hẹn khám bị từ chối';
+            message = status === 2 
+                ? 'Lịch hẹn khám của bạn đã được duyệt. Vui lòng thanh toán để nhận link tư vấn trực tuyến.'
+                : 'Lịch hẹn khám của bạn đã bị từ chối. Vui lòng liên hệ để biết thêm chi tiết.';
+        } else {
+            // For test orders
+            title = status === 2 ? 'Lịch xét nghiệm được duyệt' : 'Lịch xét nghiệm bị từ chối';
+            message = status === 2 
+                ? 'Lịch xét nghiệm của bạn đã được duyệt. Vui lòng thanh toán và đến cơ sở y tế đúng giờ hẹn.'
+                : 'Lịch xét nghiệm của bạn đã bị từ chối. Vui lòng liên hệ để biết thêm chi tiết.';
         }
         
-        const notification = {
+        notification = {
             id: `NOTIF_MGR_${Date.now()}`,
             type: `${type}-update`,
-            title: `Cập nhật ${typeText}`,
+            title: title,
             message: message,
             timestamp: new Date().toISOString(),
             read: false,
             requestId: requestId,
-            requiresPayment: status === 2, // Thêm flag để biết cần thanh toán
-            amount: type === 'appointment' ? 500000 : getTestPrice(requestId) // Thêm số tiền cần thanh toán
+            requiresPayment: status === 2,
+            amount: type === 'appointment' ? 500000 : getTestPrice(requestId)
         };
         
         const existingNotifications = JSON.parse(localStorage.getItem('notifications') || '[]');
@@ -290,8 +300,8 @@ function ManagerDashboard() {
     const tabs = [
         { id: 'overview', label: 'Tổng quan', icon: faChartBar },
         { id: 'approvals', label: 'Xét duyệt yêu cầu', icon: faCheck },
+        { id: 'blogs', label: 'Quản lý Blog', icon: faNewspaper },
         { id: 'revenue', label: 'Doanh thu', icon: faDollarSign },
-        { id: 'users', label: 'Quản lý người dùng', icon: faUsers },
         { id: 'ratings', label: 'Xem đánh giá', icon: faStar, isLink: true, href: '/ratings' },
     ];
 
@@ -691,6 +701,10 @@ function ManagerDashboard() {
                             </div>
                         </div>
                     </div>
+                )}
+
+                {activeTab === 'blogs' && (
+                    <BlogManagement />
                 )}
 
                 {activeTab === 'revenue' && (

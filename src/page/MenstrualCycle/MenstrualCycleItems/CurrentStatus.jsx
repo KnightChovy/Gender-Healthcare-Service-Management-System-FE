@@ -4,7 +4,12 @@ import PropTypes from 'prop-types';
 function CurrentStatus({ predictions, currentPhase }) {
     const formatDate = (date) => {
         if (!date) return '';
-        return date.toLocaleDateString('vi-VN');
+        return date.toLocaleDateString('vi-VN', {
+            weekday: 'long',
+            year: 'numeric',
+            month: 'long',
+            day: 'numeric'
+        });
     };
 
     const getDaysUntil = (targetDate) => {
@@ -68,6 +73,69 @@ function CurrentStatus({ predictions, currentPhase }) {
                     </div>
                 </div>
             )}
+
+            {/* Detailed Cycle Information */}
+            {predictions.detailedInfo && predictions.detailedInfo.length > 0 && (
+                <div className="mt-6">
+                    <h3 className="text-xl font-bold text-gray-800 mb-4">📅 Lịch chu kỳ 6 tháng tới</h3>
+                    <div className="space-y-4">
+                        {predictions.detailedInfo.map((cycle) => (
+                            <div key={`cycle-${cycle.cycleNumber}-${cycle.periodStart.getTime()}`} className="bg-gradient-to-r from-pink-50 to-purple-50 border border-pink-200 rounded-lg p-4">
+                                <div className="flex justify-between items-center mb-3">
+                                    <h4 className="font-semibold text-lg text-gray-800">
+                                        Chu kỳ {cycle.cycleNumber}
+                                    </h4>
+                                    <span className="text-sm text-gray-600">
+                                        {cycle.periodStart.toLocaleDateString('vi-VN', { month: 'long', year: 'numeric' })}
+                                    </span>
+                                </div>
+                                
+                                <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+                                    <div className="bg-red-100 p-3 rounded-lg">
+                                        <h5 className="font-medium text-red-800 text-sm mb-1">🩸 Kỳ kinh nguyệt</h5>
+                                        <p className="text-sm text-red-700 font-semibold">
+                                            {cycle.periodStart.toLocaleDateString('vi-VN')}
+                                        </p>
+                                        <p className="text-xs text-red-600">
+                                            {getDaysUntil(cycle.periodStart)}
+                                        </p>
+                                    </div>
+                                    
+                                    <div className="bg-green-100 p-3 rounded-lg">
+                                        <h5 className="font-medium text-green-800 text-sm mb-1">🥚 Ngày rụng trứng</h5>
+                                        <p className="text-sm text-green-700 font-semibold">
+                                            {cycle.ovulation.toLocaleDateString('vi-VN')}
+                                        </p>
+                                        <p className="text-xs text-green-600">
+                                            {getDaysUntil(cycle.ovulation)}
+                                        </p>
+                                    </div>
+                                    
+                                    <div className="bg-purple-100 p-3 rounded-lg">
+                                        <h5 className="font-medium text-purple-800 text-sm mb-1">⏱️ Thời gian</h5>
+                                        <p className="text-sm text-purple-700">
+                                            {Math.ceil((cycle.periodEnd - cycle.periodStart) / (1000 * 60 * 60 * 24)) + 1} ngày
+                                        </p>
+                                        <p className="text-xs text-purple-600">
+                                            Chu kỳ dài
+                                        </p>
+                                    </div>
+                                </div>
+                            </div>
+                        ))}
+                    </div>
+                    
+                    <div className="mt-4 p-4 bg-blue-50 border border-blue-200 rounded-lg">
+                        <h4 className="font-semibold text-blue-800 mb-2">💡 Lưu ý quan trọng</h4>
+                        <ul className="text-sm text-blue-700 space-y-1">
+                            <li>• Chu kỳ kinh nguyệt có thể thay đổi do căng thẳng, thay đổi cân nặng hoặc tình trạng sức khỏe</li>
+                            <li>• Thời gian rụng trứng có thể dao động ±2 ngày so với dự đoán</li>
+                            <li>• Nếu chu kỳ không đều hoặc có triệu chứng bất thường, hãy tham khảo ý kiến bác sĩ</li>
+                            <li>• Ghi chép chu kỳ hàng ngày sẽ giúp dự đoán chính xác hơn</li>
+                        </ul>
+                    </div>
+                </div>
+            )}
         </div>
      );
 }
@@ -79,7 +147,14 @@ CurrentStatus.propTypes = {
         fertilityWindow: PropTypes.shape({
             start: PropTypes.instanceOf(Date),
             end: PropTypes.instanceOf(Date)
-        })
+        }),
+        detailedInfo: PropTypes.arrayOf(PropTypes.shape({
+            month: PropTypes.number,
+            periodStart: PropTypes.instanceOf(Date),
+            periodEnd: PropTypes.instanceOf(Date),
+            ovulation: PropTypes.instanceOf(Date),
+            cycleNumber: PropTypes.number
+        }))
     }),
     currentPhase: PropTypes.string.isRequired
 };

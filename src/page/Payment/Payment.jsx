@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import Navbar from '../../Layouts/LayoutHomePage/Navbar';
 import { Footer } from '../../Layouts/LayoutHomePage/Footer';
@@ -11,11 +11,7 @@ const Payment = () => {
   const [isProcessing, setIsProcessing] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
 
-  useEffect(() => {
-    loadPaymentData();
-  }, [id]);
-
-  const loadPaymentData = () => {
+  const loadPaymentData = useCallback(() => {
     try {
       // Tìm appointment hoặc test order cần thanh toán
       const appointments = JSON.parse(localStorage.getItem('appointments') || '[]');
@@ -57,7 +53,11 @@ const Payment = () => {
     } finally {
       setIsLoading(false);
     }
-  };
+  }, [id, navigate]);
+
+  useEffect(() => {
+    loadPaymentData();
+  }, [id, loadPaymentData]);
 
   const formatCurrency = (amount) => {
     return new Intl.NumberFormat('vi-VN', {
@@ -88,25 +88,44 @@ const Payment = () => {
         localStorage.setItem('testOrders', JSON.stringify(updatedTestOrders));
       }
       
-      // Create success notification with Google Meet link
-      const meetLink = 'https://meet.google.com/sqm-jpse-ovb';
-      const notification = {
-        id: `PAYMENT_SUCCESS_${Date.now()}`,
-        type: 'payment-success',
-        title: 'Thanh toán thành công',
-        message: `Bạn đã thanh toán thành công ${formatCurrency(paymentData.amount)} cho ${paymentData.serviceName}. Link tư vấn: ${meetLink}`,
-        timestamp: new Date().toISOString(),
-        read: false,
-        meetLink: meetLink
-      };
+      // Create success notification based on service type
+      let notification;
+      if (paymentData.type === 'appointment') {
+        // For consultation appointments
+        const meetLink = 'https://meet.google.com/sqm-jpse-ovb';
+        notification = {
+          id: `PAYMENT_SUCCESS_${Date.now()}`,
+          type: 'payment-success',
+          title: 'Thanh toán thành công - Lịch hẹn khám',
+          message: `Bạn đã thanh toán thành công ${formatCurrency(paymentData.amount)} cho ${paymentData.serviceName}. Link tư vấn: ${meetLink}`,
+          timestamp: new Date().toISOString(),
+          read: false,
+          meetLink: meetLink
+        };
+      } else {
+        // For test orders
+        notification = {
+          id: `PAYMENT_SUCCESS_${Date.now()}`,
+          type: 'payment-success',
+          title: 'Đặt lịch xét nghiệm thành công',
+          message: `Bạn đã đặt lịch xét nghiệm thành công. Phí xét nghiệm: ${formatCurrency(paymentData.amount)}. Vui lòng đến cơ sở y tế đúng giờ hẹn và nhớ mang theo giấy tờ tùy thân.`,
+          timestamp: new Date().toISOString(),
+          read: false,
+          testInstructions: 'Lưu ý: Nhịn ăn 8-12 tiếng trước khi xét nghiệm máu (nếu có). Mang theo CCCD/CMND và giấy chỉ định xét nghiệm.'
+        };
+      }
       
       const notifications = JSON.parse(localStorage.getItem('notifications') || '[]');
       notifications.unshift(notification);
       localStorage.setItem('notifications', JSON.stringify(notifications));
       
-      // Show success message with Meet link
-      if (window.confirm(`Thanh toán thành công! Bạn có muốn tham gia cuộc họp tư vấn ngay bây giờ?`)) {
-        window.open(meetLink, '_blank');
+      // Show success message based on service type
+      if (paymentData.type === 'appointment') {
+        if (window.confirm(`Thanh toán thành công! Bạn có muốn tham gia cuộc họp tư vấn ngay bây giờ?`)) {
+          window.open(notification.meetLink, '_blank');
+        }
+      } else {
+        alert(`Đặt lịch xét nghiệm thành công!\n\nLưu ý quan trọng:\n- Nhịn ăn 8-12 tiếng trước khi xét nghiệm máu (nếu có)\n- Mang theo CCCD/CMND và giấy chỉ định\n- Đến đúng giờ hẹn tại cơ sở y tế\n\nChúc bạn sức khỏe!`);
       }
       navigate('/');
     } catch (error) {
