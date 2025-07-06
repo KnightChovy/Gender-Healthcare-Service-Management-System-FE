@@ -347,9 +347,9 @@ function NotificationBell() {
         axiosClient.get(`/v1/appointments/user/${user.user_id}`, {
           headers: { 'x-access-token': accessToken }
         }),
-        axiosClient.get(`/v1/test-appointments/user/${user.user_id}`, {
-          headers: { 'x-access-token': accessToken }
-        })
+        // axiosClient.get(`/v1/test-appointments/user/${user.user_id}`, {
+        //   headers: { 'x-access-token': accessToken }
+        // })
       ]);
 
       const savedNotifications = JSON.parse(localStorage.getItem('notificationReadStatus') || '{}');
@@ -366,14 +366,14 @@ function NotificationBell() {
         });
       }
 
-      // Xử lý test appointments
-      if (testResponse.data?.success) {
-        const testAppointments = testResponse.data.data || [];
-        testAppointments.forEach(testAppointment => {
-          const testNotifications = createNotificationFromTestAppointment(testAppointment);
-          allNotifications = [...allNotifications, ...testNotifications];
-        });
-      }
+      // // Xử lý test appointments
+      // if (testResponse.data?.success) {
+      //   const testAppointments = testResponse.data.data || [];
+      //   testAppointments.forEach(testAppointment => {
+      //     const testNotifications = createNotificationFromTestAppointment(testAppointment);
+      //     allNotifications = [...allNotifications, ...testNotifications];
+      //   });
+      // }
 
       // Filter deleted notifications
       allNotifications = allNotifications.filter(notif => {

@@ -2,11 +2,6 @@ import React, { useState, useEffect } from 'react';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import {
   faUserMd,
-  faGraduationCap,
-  faStethoscope,
-  faCheckCircle,
-  faDice,
-  faShuffle,
   faExclamationTriangle,
   faSpinner
 } from '@fortawesome/free-solid-svg-icons';
@@ -22,7 +17,6 @@ function DoctorSelection({ formData, errors, onChange }) {
   const [isRandomizing, setIsRandomizing] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [apiError, setApiError] = useState(null);
-  const [isLoadingTimeslots, setIsLoadingTimeslots] = useState(false);
 
   useEffect(() => {
     const fetchDoctors = async () => {
@@ -45,8 +39,7 @@ function DoctorSelection({ formData, errors, onChange }) {
           let consultationTypes = [];
           if (doctor.certificates && doctor.certificates.length > 0) {
             consultationTypes = doctor.certificates
-              .map(cert => cert.specialization)
-              .filter(Boolean);
+              .map(cert => cert.specialization);
           }
           
           // If no consultationTypes found, provide default
@@ -126,8 +119,6 @@ function DoctorSelection({ formData, errors, onChange }) {
   }, [formData.consultationType, allDoctors]);
 
   const fetchDoctorTimeSlots = async (doctorId) => {
-    setIsLoadingTimeslots(true);
-
     try {
       console.log(`🕒 Fetching available time slots for doctor ID: ${doctorId}`);
 
@@ -173,8 +164,6 @@ function DoctorSelection({ formData, errors, onChange }) {
       localStorage.removeItem('doctorAvailableTimeslots');
 
       return [];
-    } finally {
-      setIsLoadingTimeslots(false);
     }
   };
 
@@ -279,205 +268,125 @@ function DoctorSelection({ formData, errors, onChange }) {
   }
 
   return (
-    <div className={cx('form-section', 'doctor-selection-section')}>
+    <div className={cx('form-section', 'doctor-selection')}>
       <div className={cx('section-header')}>
         <h3 className={cx('section-title')}>
-          <FontAwesomeIcon icon={faUserMd} />
-          Chọn bác sĩ tư vấn
-          <span className={cx('required-badge')}>Bắt buộc</span>
+          👨‍⚕️ Chọn bác sĩ tư vấn
         </h3>
-
-        {/* Required notice */}
-        <div className={cx('required-info')}>
-          <FontAwesomeIcon icon={faExclamationTriangle} className={cx('warning-icon')} />
-          <span>
-            Bạn cần chọn một bác sĩ để có thể tiếp tục đặt lịch tư vấn
-          </span>
-        </div>
-
-        {/* Action buttons */}
-        <div className={cx('selection-actions')}>
-          {filteredDoctors.length > 0 && (
-            <button
-              type="button"
-              className={cx('random-selection-btn', {
-                'randomizing': isRandomizing
-              })}
-              onClick={handleRandomSelection}
-              disabled={isRandomizing}
-              title="Chọn ngẫu nhiên bác sĩ ngay"
-            >
-              <FontAwesomeIcon
-                icon={isRandomizing ? faShuffle : faDice}
-                className={cx('random-icon', {
-                  'spinning': isRandomizing
-                })}
-              />
-              {isRandomizing ? 'Đang chọn...' : 'Chọn ngẫu nhiên'}
-            </button>
-          )}
-
-          {formData.doctor_id && (
-            <button
-              type="button"
-              className={cx('clear-selection-btn')}
-              onClick={handleClearSelection}
-              title="Chọn lại bác sĩ khác"
-            >
-              <FontAwesomeIcon icon={faCheckCircle} />
-              Chọn lại
-            </button>
-          )}
-        </div>
+      </div>
+      
+      <div className={cx('doctor-actions')}>
+        <button
+          type="button"
+          onClick={handleRandomSelection}
+          className={cx('action-button', 'random-button')}
+          disabled={isRandomizing}
+        >
+          🎲 Chọn ngẫu nhiên
+        </button>
+        
+        {formData.doctor_id && (
+          <button
+            type="button"
+            onClick={handleClearSelection}
+            className={cx('action-button', 'clear-button')}
+            disabled={isRandomizing}
+          >
+            ✖️ Xóa chọn
+          </button>
+        )}
       </div>
 
-      {/* Validation error message */}
+      {/* Validation Error */}
       {errors.doctor_id && (
-        <div className={cx('doctor-error-message')}>
-          <FontAwesomeIcon icon={faExclamationTriangle} />
-          <span>{errors.doctor_id}</span>
+        <div className={cx('validation-error')}>
+          <span className={cx('error-icon')}>❌</span>
+          <span className={cx('error-text')}>{errors.doctor_id}</span>
         </div>
       )}
 
-      {/* No selection warning */}
-      {!formData.doctor_id && !isRandomizing && filteredDoctors.length > 0 && (
-        <div className={cx('selection-warning')}>
-          <div className={cx('warning-content')}>
-            <FontAwesomeIcon icon={faExclamationTriangle} className={cx('warning-icon')} />
-            <div className={cx('warning-text')}>
-              <p><strong>⚠️ Chưa chọn bác sĩ</strong></p>
-              <p>
-                Vui lòng chọn một bác sĩ từ danh sách bên dưới hoặc sử dụng chức năng "Chọn ngẫu nhiên"
-                để hệ thống tự động chọn bác sĩ phù hợp cho bạn.
-              </p>
-            </div>
-          </div>
+      {/* Randomizing State */}
+      {isRandomizing && (
+        <div className={cx('loading-container')}>
+          <div className={cx('loading-spinner')}></div>
+          <p className={cx('loading-text')}>Đang chọn bác sĩ ngẫu nhiên...</p>
         </div>
       )}
 
-      {/* Doctor Selection Grid */}
-      <div className={cx('doctors-grid')}>
-        {filteredDoctors.length > 0 ? (
-          filteredDoctors.map((doctor) => (
-            <button
-              type="button"
+      {/* Doctors List */}
+      {!isRandomizing && filteredDoctors.length > 0 && (
+        <div className={cx('doctors-list')}>
+          {filteredDoctors.map(doctor => (
+            <div
               key={doctor.id}
               className={cx('doctor-card', {
-                selected: formData.doctor_id === doctor.id,
-                randomizing: isRandomizing && formData.doctor_id === doctor.id
+                'selected': formData.doctor_id === doctor.id
               })}
               onClick={() => handleDoctorSelect(doctor)}
-              disabled={isRandomizing}
             >
               <div className={cx('doctor-info')}>
-                <h4>{doctor.name}</h4>
-
-                {/* Display specialties */}
-                <p className={cx('specialty')}>
-                  <FontAwesomeIcon icon={faStethoscope} />
-                  <span className={cx('specialty-item')}>
-                    {doctor.certificates?.[0]?.specialization || 'Chuyên khoa'}
+                <h4 className={cx('doctor-name')}>
+                  {doctor.name}
+                </h4>
+                <p className={cx('doctor-specialty')}>
+                  {doctor.certificates?.[0]?.specialization || 'Chuyên khoa'}
+                </p>
+                <div className={cx('doctor-meta')}>
+                  <span className={cx('doctor-experience')}>
+                    {doctor.experience}
                   </span>
+                </div>
+                <p className={cx('doctor-education')}>
+                  {doctor.education.join(', ')}
                 </p>
-
-
-                {/* Experience */}
-                <p className={cx('experience')}>
-                  <FontAwesomeIcon icon={faGraduationCap} />
-                  {doctor.experience}
-                </p>
-
-                {/* Education/Certificates */}
-                {doctor.education && doctor.education.length > 0 && (
-                  <div className={cx('education-list')}>
-                    <FontAwesomeIcon icon={faGraduationCap} />
-                    <div className={cx('education-items')}>
-                      {doctor.education.map((edu, index) => (
-                        <span key={index} className={cx('education-item')}>
-                          {edu}
-                          {index < doctor.education.length - 1 && ', '}
-                        </span>
-                      ))}
-                    </div>
-                  </div>
-                )}
-
-                {/* Bio */}
-                {doctor.bio && (
-                  <p className={cx('bio')}>{doctor.bio}</p>
+              </div>
+              
+              <div className={cx('doctor-status')}>
+                {formData.doctor_id === doctor.id ? (
+                  <span className={cx('status-badge', 'selected')}>
+                    ✓ Đã chọn
+                  </span>
+                ) : (
+                  <span className={cx('status-badge', 'available')}>
+                    Có thể tư vấn
+                  </span>
                 )}
               </div>
+            </div>
+          ))}
+        </div>
+      )}
 
-              <div className={cx('selection-indicator')}>
-                <FontAwesomeIcon icon={faCheckCircle} />
-              </div>
-            </button>
-          ))
-        ) : (
-          <div className={cx('no-doctors-message')}>
-            <FontAwesomeIcon icon={faExclamationTriangle} className={cx('no-doctors-icon')} />
-            <p><strong>Không có bác sĩ nào có sẵn hiện tại</strong></p>
-            <p>Vui lòng thử lại sau hoặc liên hệ với chúng tôi để được hỗ trợ.</p>
-            <button
-              type="button"
-              onClick={() => window.location.reload()}
-              className={cx('retry-btn')}
-            >
-              🔄 Tải lại danh sách bác sĩ
-            </button>
-          </div>
-        )}
-      </div>
+      {/* No Doctors Available */}
+      {!isRandomizing && filteredDoctors.length === 0 && (
+        <div className={cx('no-doctors')}>
+          <span className={cx('no-doctors-icon')}>👨‍⚕️</span>
+          <p className={cx('no-doctors-text')}>
+            Hiện tại không có bác sĩ nào có thể tư vấn.
+          </p>
+          <small className={cx('no-doctors-note')}>
+            Vui lòng thử lại sau hoặc liên hệ 1900-1133.
+          </small>
+        </div>
+      )}
 
-      {/* Selected doctor confirmation */}
+      {/* Selection Summary */}
       {formData.doctor_id && !isRandomizing && (
-        <div className={cx('doctor-selected-note')}>
-          <div className={cx('success-content')}>
-            <div className={cx('success-text')}>
-              <p><strong>Đã chọn bác sĩ!</strong></p>
-              <p>
-                Bác sĩ <strong>{formData.doctorName}</strong> sẽ thực hiện buổi tư vấn cho bạn.
-                {isLoadingTimeslots && <span> Đang tải lịch trống...</span>}
-              </p>
+        <div className={cx('selection-summary')}>
+          <div className={cx('summary-card')}>
+            <span className={cx('summary-icon')}>✅</span>
+            <div className={cx('summary-content')}>
+              <strong>Bác sĩ đã chọn:</strong>
+              <span>{formData.doctorName}</span>
             </div>
           </div>
         </div>
       )}
 
-      {/* Randomizing feedback */}
-      {isRandomizing && (
-        <div className={cx('randomizing-feedback')}>
-          <div className={cx('randomizing-content')}>
-            <FontAwesomeIcon icon={faShuffle} className={cx('shuffle-icon')} />
-            <div className={cx('randomizing-text')}>
-              <p><strong>🎲 Đang chọn bác sĩ ngẫu nhiên...</strong></p>
-              <p>Hệ thống đang tìm bác sĩ phù hợp nhất cho bạn</p>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* Statistics and options */}
-      <div className={cx('section-footer')}>
-        {filteredDoctors.length > 0 && (
-          <div className={cx('doctors-stats')}>
-            <span className={cx('stats-text')}>
-              Có <strong>{filteredDoctors.length}</strong> bác sĩ có sẵn
-              {formData.consultationType && ` chuyên về ${formData.consultationType}`}
-            </span>
-          </div>
-        )}
-
-        <div className={cx('selection-options')}>
-          <div className={cx('option-item')}>
-            <span className={cx('option-label')}>🎯 Chọn bác sĩ cụ thể:</span>
-            <span className={cx('option-desc')}>Bạn sẽ được tư vấn bởi bác sĩ đã chọn</span>
-          </div>
-          <div className={cx('option-item')}>
-            <span className={cx('option-label')}>🎲 Chọn ngẫu nhiên:</span>
-            <span className={cx('option-desc')}>Hệ thống tự động chọn bác sĩ phù hợp</span>
-          </div>
-        </div>
+      {/* Quick Note */}
+      <div className={cx('quick-note')}>
+        <span className={cx('note-icon')}>💡</span>
+        <p>Tất cả bác sĩ đều có chuyên môn cao về sức khỏe giới tính</p>
       </div>
     </div>
   );
