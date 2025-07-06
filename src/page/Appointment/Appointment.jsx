@@ -8,10 +8,10 @@ import AdditionalInfoSection from "./AppointmentItems/AdditionalInfoSection";
 
 function Appointment() {
   const navigate = useNavigate();
-  
+
   // State quản lý các bước đặt lịch
   const [currentStep, setCurrentStep] = useState(1);
-  
+
   const [userProfile, setUserProfile] = useState(null);
   const [formData, setFormData] = useState({
     // Thông tin cá nhân
@@ -45,7 +45,7 @@ function Appointment() {
   // Helper function để format ngày từ YYYY-MM-DD sang DD-MM-YYYY
   const formatDateForDisplay = (dateString) => {
     if (!dateString) return '';
-    
+
     try {
       // Nếu đã là định dạng DD-MM-YYYY, return luôn
       if (dateString.includes('-') && dateString.length === 10) {
@@ -54,13 +54,13 @@ function Appointment() {
           return dateString; // Already in DD-MM-YYYY format
         }
       }
-      
+
       // Convert từ YYYY-MM-DD sang DD-MM-YYYY
       const date = new Date(dateString + 'T00:00:00');
       const day = date.getDate().toString().padStart(2, '0');
       const month = (date.getMonth() + 1).toString().padStart(2, '0');
       const year = date.getFullYear();
-      
+
       return `${day}-${month}-${year}`;
     } catch (error) {
       console.error('Error formatting date:', error);
@@ -71,7 +71,7 @@ function Appointment() {
   // Helper function để format ngày từ DD-MM-YYYY sang YYYY-MM-DD (cho input date)
   const formatDateForInput = (dateString) => {
     if (!dateString) return '';
-    
+
     try {
       // Nếu đã là định dạng YYYY-MM-DD, return luôn
       if (dateString.includes('-') && dateString.length === 10) {
@@ -80,14 +80,14 @@ function Appointment() {
           return dateString; // Already in YYYY-MM-DD format
         }
       }
-      
+
       // Convert từ DD-MM-YYYY sang YYYY-MM-DD
       const parts = dateString.split('-');
       if (parts.length === 3) {
         const [day, month, year] = parts;
         return `${year}-${month}-${day}`;
       }
-      
+
       return dateString;
     } catch (error) {
       console.error('Error formatting date for input:', error);
@@ -95,49 +95,10 @@ function Appointment() {
     }
   };
 
-  // Helper function để format ngày với tên thứ (dùng cho hiển thị)
-  const formatDateWithWeekday = (dateString) => {
-    if (!dateString) return '';
-    
-    try {
-      // Convert to proper date format first
-      let date;
-      if (dateString.includes('-')) {
-        const parts = dateString.split('-');
-        if (parts.length === 3) {
-          if (parts[0].length === 4) {
-            // YYYY-MM-DD format
-            date = new Date(dateString + 'T00:00:00');
-          } else {
-            // DD-MM-YYYY format
-            const [day, month, year] = parts;
-            date = new Date(`${year}-${month}-${day}T00:00:00`);
-          }
-        }
-      } else {
-        date = new Date(dateString);
-      }
-      
-      if (isNaN(date.getTime())) {
-        return dateString;
-      }
-      
-      return date.toLocaleDateString('vi-VN', {
-        weekday: 'long',
-        year: 'numeric',
-        month: 'long',
-        day: 'numeric'
-      });
-    } catch (error) {
-      console.error('Error formatting date with weekday:', error);
-      return dateString;
-    }
-  };
-
   // Helper function để format time
   const formatTimeForDisplay = (timeString) => {
     if (!timeString) return '';
-    
+
     try {
       // Remove seconds if present
       if (timeString.includes(':')) {
@@ -146,7 +107,7 @@ function Appointment() {
           return `${parts[0]}:${parts[1]}`;
         }
       }
-      
+
       return timeString;
     } catch (error) {
       console.error('Error formatting time:', error);
@@ -238,7 +199,7 @@ function Appointment() {
         length: data.length,
         firstItem: data[0]
       });
-      
+
       // Log chi tiết structure
       data.forEach((item, index) => {
         console.log(`📅 Item ${index}:`, {
@@ -247,7 +208,7 @@ function Appointment() {
           timeslots: item.timeslots,
           timeslots_count: item.timeslots?.length
         });
-        
+
         if (item.timeslots) {
           item.timeslots.forEach((slot, slotIndex) => {
             console.log(`   ⏰ Timeslot ${slotIndex}:`, slot);
@@ -262,11 +223,11 @@ function Appointment() {
   // Cập nhật getTimeslotIdFromStorage function
   const getTimeslotIdFromStorage = (selectedDate, selectedTime) => {
     console.log('🔍 START: getTimeslotIdFromStorage', { selectedDate, selectedTime });
-    
+
     try {
       // Debug localStorage trước
       debugLocalStorage();
-      
+
       const doctorTimeslots = localStorage.getItem('doctorAvailableTimeslots');
       if (!doctorTimeslots) {
         console.warn('⚠️ No doctor timeslots found in localStorage');
@@ -282,10 +243,10 @@ function Appointment() {
 
       // Tìm ngày phù hợp
       const daySchedule = timeslotsData.find(day => {
-        console.log('🔍 Comparing dates:', { 
-          dayDate: day.date, 
+        console.log('🔍 Comparing dates:', {
+          dayDate: day.date,
           selectedDate: dateForComparison,
-          match: day.date === dateForComparison 
+          match: day.date === dateForComparison
         });
         return day.date === dateForComparison;
       });
@@ -308,12 +269,12 @@ function Appointment() {
 
       // Parse selectedTime để tìm target time
       let targetTime;
-      
+
       if (selectedTime.includes(' - ')) {
         // Format: "08:00 - 09:00" - lấy thời gian bắt đầu
         const [start] = selectedTime.split(' - ');
         targetTime = start.trim();
-        
+
         // Ensure format HH:MM:SS
         if (targetTime.split(':').length === 2) {
           targetTime += ':00'; // "08:00" -> "08:00:00"
@@ -340,14 +301,14 @@ function Appointment() {
           timeslot_id: slot.timeslot_id,
           is_booked: slot.is_booked
         });
-        
+
         // So sánh string time (format HH:MM:SS)
         // Kiểm tra target time có nằm trong khoảng [time_start, time_end) không
         const isInRange = targetTime >= slot.time_start && targetTime < slot.time_end;
-        
+
         // Hoặc có thể kiểm tra exact match với time_start
         const isExactStart = targetTime === slot.time_start;
-        
+
         console.log('🔍 Time range check:', {
           condition_range: `${targetTime} >= ${slot.time_start} && ${targetTime} < ${slot.time_end}`,
           condition_exact: `${targetTime} === ${slot.time_start}`,
@@ -356,7 +317,7 @@ function Appointment() {
           finalMatch: isInRange || isExactStart,
           timeslot_id: slot.timeslot_id
         });
-        
+
         // Return true nếu target time nằm trong range hoặc exact match với start time
         return isInRange || isExactStart;
       });
@@ -379,18 +340,18 @@ function Appointment() {
           time_end: slot.time_end,
           range: `${slot.time_start} - ${slot.time_end}`
         })));
-        
+
         // Thử flexible search với chỉ so sánh giờ:phút (bỏ giây)
         console.log('🔄 Trying flexible search (ignoring seconds)...');
         const targetTimeShort = targetTime.substring(0, 5); // "08:00:00" -> "08:00"
-        
+
         const flexibleMatch = daySchedule.timeslots.find(slot => {
           const slotStartShort = slot.time_start.substring(0, 5);
           const slotEndShort = slot.time_end.substring(0, 5);
-          
+
           const isInRangeFlexible = targetTimeShort >= slotStartShort && targetTimeShort < slotEndShort;
           const isExactStartFlexible = targetTimeShort === slotStartShort;
-          
+
           console.log('🔍 Flexible compare:', {
             slotStartShort,
             slotEndShort,
@@ -400,10 +361,10 @@ function Appointment() {
             match: isInRangeFlexible || isExactStartFlexible,
             timeslot_id: slot.timeslot_id
           });
-          
+
           return isInRangeFlexible || isExactStartFlexible;
         });
-        
+
         if (flexibleMatch) {
           console.log('✅ FOUND with flexible search:', {
             timeslot_id: flexibleMatch.timeslot_id,
@@ -412,7 +373,7 @@ function Appointment() {
           });
           return flexibleMatch.timeslot_id;
         }
-        
+
         return null;
       }
 
@@ -565,9 +526,9 @@ function Appointment() {
     try {
       console.log('About to get timeslot_id...');
       debugLocalStorage();
-      
+
       const timeslotId = getTimeslotIdFromStorage(formData.appointmentDate, formData.appointmentTime);
-      
+
       console.log('RESULT: timeslot_id =', timeslotId);
 
       if (!timeslotId) {
@@ -575,7 +536,7 @@ function Appointment() {
           date: formData.appointmentDate,
           time: formData.appointmentTime
         });
-        
+
         alert(`Không thể xác định khung giờ đã chọn.\n\nThông tin debug:\n- Ngày: ${formatDateForDisplay(formData.appointmentDate)}\n- Giờ: ${formatTimeForDisplay(formData.appointmentTime)}\n\nVui lòng kiểm tra console và chọn lại thời gian.`);
         setIsSubmitting(false);
         return;
@@ -635,7 +596,7 @@ function Appointment() {
         },
         body: JSON.stringify(appointmentData),
       });
-      
+
       if (!res.ok) {
         const errorData = await res.json();
         console.error('❌ API Error:', errorData);
@@ -656,9 +617,9 @@ function Appointment() {
 
     } catch (error) {
       console.error("❌ Error submitting appointment:", error);
-      
+
       let errorMessage = "Có lỗi xảy ra khi đặt lịch hẹn:\n\n";
-      
+
       if (error.message.includes('timeslot_id')) {
         errorMessage += "• Không thể xác định khung giờ\n";
       }
@@ -668,9 +629,9 @@ function Appointment() {
       if (error.message.includes('HTTP error')) {
         errorMessage += "• Lỗi kết nối server\n";
       }
-      
+
       errorMessage += "\nVui lòng kiểm tra console để biết thêm chi tiết và thử lại.";
-      
+
       alert(errorMessage);
     } finally {
       setIsSubmitting(false);
@@ -702,7 +663,12 @@ function Appointment() {
                     <span class="countdown-label">Đang chuyển về trang chủ...</span>
                 </div>
 
-                <button class="home-button" onclick="window.location.href='/'">
+                <button class="home-button" onclick="() => {
+                  localStorage.removeItem('doctorAvailableTimeslots');
+                  localStorage.removeItem('selectedDoctorId');
+                  localStorage.removeItem('pendingAppointment');
+                  window.location.href='/';
+                }">
                     🏠 Về trang chủ ngay
                 </button>
             </div>
@@ -1042,79 +1008,68 @@ function Appointment() {
         <div className="mb-8">
           <div className="flex items-center justify-between">
             <div
-              className={`flex flex-col items-center ${
-                currentStep >= 1 ? "text-blue-600" : "text-gray-400"
-              }`}
+              className={`flex flex-col items-center ${currentStep >= 1 ? "text-blue-600" : "text-gray-400"
+                }`}
             >
               <div
-                className={`w-10 h-10 rounded-full flex items-center justify-center border-2 ${
-                  currentStep >= 1
+                className={`w-10 h-10 rounded-full flex items-center justify-center border-2 ${currentStep >= 1
                     ? "border-blue-600 bg-blue-100"
                     : "border-gray-300"
-                }`}
+                  }`}
               >
                 <span className="font-medium">1</span>
               </div>
               <span className="text-xs mt-1">Thông tin</span>
             </div>
             <div
-              className={`flex-1 h-1 mx-2 ${
-                currentStep >= 2 ? "bg-blue-600" : "bg-gray-300"
-              }`}
+              className={`flex-1 h-1 mx-2 ${currentStep >= 2 ? "bg-blue-600" : "bg-gray-300"
+                }`}
             ></div>
             <div
-              className={`flex flex-col items-center ${
-                currentStep >= 2 ? "text-blue-600" : "text-gray-400"
-              }`}
+              className={`flex flex-col items-center ${currentStep >= 2 ? "text-blue-600" : "text-gray-400"
+                }`}
             >
               <div
-                className={`w-10 h-10 rounded-full flex items-center justify-center border-2 ${
-                  currentStep >= 2
+                className={`w-10 h-10 rounded-full flex items-center justify-center border-2 ${currentStep >= 2
                     ? "border-blue-600 bg-blue-100"
                     : "border-gray-300"
-                }`}
+                  }`}
               >
                 <span className="font-medium">2</span>
               </div>
               <span className="text-xs mt-1">Lịch hẹn</span>
             </div>
             <div
-              className={`flex-1 h-1 mx-2 ${
-                currentStep >= 3 ? "bg-blue-600" : "bg-gray-300"
-              }`}
+              className={`flex-1 h-1 mx-2 ${currentStep >= 3 ? "bg-blue-600" : "bg-gray-300"
+                }`}
             ></div>
             <div
-              className={`flex flex-col items-center ${
-                currentStep >= 3 ? "text-blue-600" : "text-gray-400"
-              }`}
+              className={`flex flex-col items-center ${currentStep >= 3 ? "text-blue-600" : "text-gray-400"
+                }`}
             >
               <div
-                className={`w-10 h-10 rounded-full flex items-center justify-center border-2 ${
-                  currentStep >= 3
+                className={`w-10 h-10 rounded-full flex items-center justify-center border-2 ${currentStep >= 3
                     ? "border-blue-600 bg-blue-100"
                     : "border-gray-300"
-                }`}
+                  }`}
               >
                 <span className="font-medium">3</span>
               </div>
               <span className="text-xs mt-1">Ghi chú</span>
             </div>
             <div
-              className={`flex-1 h-1 mx-2 ${
-                currentStep >= 4 ? "bg-blue-600" : "bg-gray-300"
-              }`}
+              className={`flex-1 h-1 mx-2 ${currentStep >= 4 ? "bg-blue-600" : "bg-gray-300"
+                }`}
             ></div>
             <div
-              className={`flex flex-col items-center ${
-                currentStep >= 4 ? "text-blue-600" : "text-gray-400"
-              }`}
+              className={`flex flex-col items-center ${currentStep >= 4 ? "text-blue-600" : "text-gray-400"
+                }`}
             >
               <div
-                className={`w-10 h-10 rounded-full flex items-center justify-center border-2 ${
-                  currentStep >= 4
+                className={`w-10 h-10 rounded-full flex items-center justify-center border-2 ${currentStep >= 4
                     ? "border-blue-600 bg-blue-100"
                     : "border-gray-300"
-                }`}
+                  }`}
               >
                 <span className="font-medium">4</span>
               </div>
@@ -1141,7 +1096,7 @@ function Appointment() {
                 errors={errors}
                 onChange={handleUserInfoChange}
               />
-              
+
               <ConsultationSection
                 formData={formData}
                 errors={errors}
@@ -1178,7 +1133,7 @@ function Appointment() {
                 errors={errors}
                 onChange={handleUserInfoChange}
               />
-              
+
               <DateTimeSection
                 formData={formData}
                 errors={errors}
@@ -1419,11 +1374,10 @@ function Appointment() {
               <button
                 onClick={handleSubmit}
                 disabled={isSubmitting}
-                className={`inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white ${
-                  isSubmitting
+                className={`inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white ${isSubmitting
                     ? 'bg-gray-400 cursor-not-allowed'
                     : 'bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500'
-                }`}
+                  }`}
               >
                 {isSubmitting ? (
                   <>

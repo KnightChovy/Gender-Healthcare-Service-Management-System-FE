@@ -4,7 +4,8 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import {
   faStethoscope, faFlaskVial, faStar, faComments,
   faCalendarCheck, faClipboardList, faArrowRight,
-  faUserMd, faHospital, faChartLine, faHandHoldingHeart
+  faUserMd, faHospital, faChartLine, faHandHoldingHeart,
+  faEye, faTimes
 } from '@fortawesome/free-solid-svg-icons';
 import classNames from 'classnames/bind';
 import styles from './Feedback.module.scss';
@@ -16,6 +17,8 @@ function Feedback() {
   const navigate = useNavigate();
   const [recentAppointments, setRecentAppointments] = useState([]);
   const [recentTestOrders, setRecentTestOrders] = useState([]);
+  const [showFeedbackModal, setShowFeedbackModal] = useState(false);
+  const [selectedAppointment, setSelectedAppointment] = useState(null);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -69,8 +72,60 @@ function Feedback() {
     navigate(`/feedback/test-service/${testOrderId}`);
   };
 
+  const handleViewFeedback = async (appointmentId) => {
+    try {
+      const accessToken = localStorage.getItem('accessToken');
+      const user = JSON.parse(localStorage.getItem('user'));
+      
+      if (!accessToken || !user) {
+        navigate('/login');
+        return;
+      }
+
+      // Get all appointments and find the specific one
+      const response = await axiosClient.get(`/v1/appointments/user/${user.user_id}`, {
+        headers: {
+          'x-access-token': accessToken
+        }
+      });
+
+      if (response.data.success) {
+        const appointment = response.data.data.find(
+          app => app.appointment_id === appointmentId
+        );
+        
+        if (appointment) {
+          setSelectedAppointment(appointment);
+          setShowFeedbackModal(true);
+        }
+      }
+    } catch (error) {
+      console.error('Error fetching appointment details:', error);
+    }
+  };
+
+  const closeFeedbackModal = () => {
+    setShowFeedbackModal(false);
+    setSelectedAppointment(null);
+  };
+
   const formatDate = (dateString) => {
     return new Date(dateString).toLocaleDateString('vi-VN');
+  };
+
+  // Đổi tên hàm từ renderStars thành renderStars (giữ nguyên vì đây là UI component)
+  const renderStars = (feedback) => {
+    const stars = [];
+    for (let i = 1; i <= 5; i++) {
+      stars.push(
+        <FontAwesomeIcon
+          key={i}
+          icon={faStar}
+          className={cx('star', { 'star-filled': i <= feedback })}
+        />
+      );
+    }
+    return stars;
   };
 
   return (
@@ -150,15 +205,26 @@ function Feedback() {
                               <span>{formatDate(appointment.appointment_date)} - {appointment.appointment_time}</span>
                             </div>
                           </div>
-                          {!appointment.feedback && (
-                            <button
-                              className={cx('feedback-btn')}
-                              onClick={() => handleAppointmentFeedback(appointment.appointment_id)}
-                            >
-                              Đánh giá
-                              <FontAwesomeIcon icon={faArrowRight} />
-                            </button>
-                          )}
+                          <div className={cx('item-actions')}>
+                            {!appointment.feedback && (
+                              <button
+                                className={cx('feedback-btn')}
+                                onClick={() => handleAppointmentFeedback(appointment.appointment_id)}
+                              >
+                                Đánh giá
+                                <FontAwesomeIcon icon={faArrowRight} />
+                              </button>
+                            )}
+                            {appointment.feedback && (
+                              <button
+                                className={cx('view-feedback-btn')}
+                                onClick={() => handleViewFeedback(appointment.appointment_id)}
+                              >
+                                Xem feedback
+                                <FontAwesomeIcon icon={faEye} />
+                              </button>
+                            )}
+                          </div>
                         </>
                       )}
                     </div>
@@ -251,6 +317,67 @@ function Feedback() {
             </div>
           </div>
         </div>
+
+        {/* Feedback Modal */}
+        {showFeedbackModal && selectedAppointment && (
+          <div className={cx('modal-overlay')} onClick={closeFeedbackModal}>
+            <div className={cx('feedback-modal')} onClick={(e) => e.stopPropagation()}>
+              <div className={cx('modal-header')}>
+                <h3>Chi tiết đánh giá</h3>
+                <button className={cx('close-btn')} onClick={closeFeedbackModal}>
+                  <FontAwesomeIcon icon={faTimes} />
+                </button>
+              </div>
+              
+              <div className={cx('modal-content')}>
+                <div className={cx('appointment-info')}>
+                  <h4>Thông tin cuộc hẹn</h4>
+                  <div className={cx('info-row')}>
+                    <span className={cx('label')}>Loại tư vấn:</span>
+                    <span className={cx('value')}>{selectedAppointment.consultant_type}</span>
+                  </div>
+                  <div className={cx('info-row')}>
+                    <span className={cx('label')}>Bác sĩ:</span>
+                    <span className={cx('value')}>{selectedAppointment.doctor_name}</span>
+                  </div>
+                  <div className={cx('info-row')}>
+                    <span className={cx('label')}>Ngày:</span>
+                    <span className={cx('value')}>{formatDate(selectedAppointment.appointment_date)}</span>
+                  </div>
+                  <div className={cx('info-row')}>
+                    <span className={cx('label')}>Giờ:</span>
+                    <span className={cx('value')}>{selectedAppointment.appointment_time}</span>
+                  </div>
+                </div>
+
+                {selectedAppointment.feedback && (
+                  <div className={cx('feedback-details')}>
+                    <h4>Đánh giá của bạn</h4>
+                    
+                    <div className={cx('feedback-section')}>
+                      <span className={cx('feedback-label')}>Đánh giá tổng thể:</span>
+                      <div className={cx('feedback-stars')}>
+                        {renderStars(selectedAppointment.rating)}
+                        <span className={cx('feedback-number')}>
+                          ({selectedAppointment.rating}/5)
+                        </span>
+                      </div>
+                    </div>
+
+                    {selectedAppointment.feedback && (
+                      <div className={cx('comments-section')}>
+                        <span className={cx('comments-label')}>Nhận xét:</span>
+                        <p className={cx('comments-text')}>
+                          {selectedAppointment.feedback}
+                        </p>
+                      </div>
+                    )}
+                  </div>
+                )}
+              </div>
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );

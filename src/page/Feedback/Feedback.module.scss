@@ -599,3 +599,234 @@
     animation-delay: 0.1s;
   }
 }
+
+/* ===== Modal Styles ===== */
+.item-actions {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+}
+
+.view-feedback-btn {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 16px;
+  background: #e3f2fd;
+  color: #1976d2;
+  border: 1px solid #1976d2;
+  border-radius: 6px;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.3s ease;
+
+  &:hover {
+    background: #1976d2;
+    color: white;
+  }
+}
+
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+}
+
+.feedback-modal {
+  background: white;
+  border-radius: 12px;
+  width: 90%;
+  max-width: 600px;
+  max-height: 80vh;
+  overflow-y: auto;
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+}
+
+.modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 20px 24px;
+  border-bottom: 1px solid #e0e0e0;
+
+  h3 {
+    margin: 0;
+    color: #333;
+    font-size: 18px;
+    font-weight: 600;
+  }
+}
+
+.close-btn {
+  background: none;
+  border: none;
+  font-size: 20px;
+  color: #666;
+  cursor: pointer;
+  padding: 4px;
+  border-radius: 50%;
+  transition: background 0.3s ease;
+
+  &:hover {
+    background: #f5f5f5;
+  }
+}
+
+.modal-content {
+  padding: 24px;
+}
+
+.appointment-info {
+  margin-bottom: 24px;
+  padding: 16px;
+  background: #f8f9fa;
+  border-radius: 8px;
+
+  h4 {
+    margin: 0 0 12px 0;
+    color: #333;
+    font-size: 16px;
+    font-weight: 600;
+  }
+}
+
+.info-row {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 8px;
+  
+  &:last-child {
+    margin-bottom: 0;
+  }
+}
+
+.label {
+  font-weight: 500;
+  color: #666;
+}
+
+.value {
+  font-weight: 600;
+  color: #333;
+}
+
+.feedback-details {
+  h4 {
+    margin: 0 0 16px 0;
+    color: #333;
+    font-size: 16px;
+    font-weight: 600;
+  }
+}
+
+/* Đổi tên từ rating-section thành feedback-section */
+.feedback-section {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 16px;
+  padding: 12px;
+  background: #fafafa;
+  border-radius: 6px;
+}
+
+/* Đổi tên từ rating-label thành feedback-label */
+.feedback-label {
+  font-weight: 500;
+  color: #666;
+}
+
+/* Đổi tên từ rating-stars thành feedback-stars */
+.feedback-stars {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.star {
+  color: #ddd;
+  font-size: 16px;
+  
+  &.star-filled {
+    color: #ffc107;
+  }
+}
+
+/* Đổi tên từ rating-number thành feedback-number */
+.feedback-number {
+  margin-left: 8px;
+  font-size: 14px;
+  color: #666;
+}
+
+.comments-section,
+.suggestions-section {
+  margin-bottom: 16px;
+  padding: 12px;
+  background: #fafafa;
+  border-radius: 6px;
+}
+
+.comments-label,
+.suggestions-label {
+  display: block;
+  font-weight: 500;
+  color: #666;
+  margin-bottom: 8px;
+}
+
+.comments-text,
+.suggestions-text {
+  margin: 0;
+  line-height: 1.6;
+  color: #333;
+}
+
+.feedback-date {
+  display: flex;
+  justify-content: space-between;
+  padding-top: 16px;
+  border-top: 1px solid #e0e0e0;
+  font-size: 14px;
+}
+
+.date-label {
+  color: #666;
+  font-weight: 500;
+}
+
+.date-value {
+  color: #333;
+  font-weight: 600;
+}
+
+/* Responsive design */
+@media (max-width: 768px) {
+  .feedback-modal {
+    width: 95%;
+    max-height: 90vh;
+  }
+  
+  .modal-content {
+    padding: 16px;
+  }
+  
+  .feedback-section {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 8px;
+  }
+  
+  .info-row {
+    flex-direction: column;
+    gap: 4px;
+  }
+}
