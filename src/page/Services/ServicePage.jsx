@@ -73,6 +73,46 @@ const consultationServices = [
       "Ghi lại triệu chứng cụ thể, tiền sử bệnh lý nếu có. Buổi tư vấn kéo dài 45 phút.",
     category: "consultation",
   },
+  {
+    service_id: "mc1",
+    name: "Khai báo chu kỳ kinh nguyệt",
+    description:
+      "Công cụ cho phép bạn khai báo kỳ kinh gần nhất, độ dài chu kỳ và số ngày hành kinh để hệ thống theo dõi và dự đoán chính xác hơn.",
+    result_wait_time: "0",
+    preparationGuidelines:
+      "Ghi nhớ ngày bắt đầu kỳ kinh nguyệt gần nhất và số ngày hành kinh trung bình.",
+    category: "cycle",
+  },
+  {
+    service_id: "mc2",
+    name: "Nhắc nhở thời gian rụng trứng",
+    description:
+      "Tự động gửi thông báo đến bạn vào ngày rụng trứng để dễ dàng theo dõi sức khỏe sinh sản hoặc tăng khả năng thụ thai.",
+    result_wait_time: "0",
+    preparationGuidelines:
+      "Cập nhật đầy đủ thông tin chu kỳ để hệ thống tính toán ngày rụng trứng chính xác.",
+    category: "cycle",
+  },
+  {
+    service_id: "mc3",
+    name: "Theo dõi khả năng mang thai",
+    description:
+      "Dự đoán khoảng thời gian có khả năng thụ thai cao dựa trên chu kỳ kinh nguyệt và ngày rụng trứng của bạn.",
+    result_wait_time: "0",
+    preparationGuidelines:
+      "Ghi nhận ngày bắt đầu kỳ kinh gần nhất và theo dõi chu kỳ đều đặn để có kết quả chính xác.",
+    category: "cycle",
+  },
+  {
+    service_id: "mc4",
+    name: "Nhắc nhở thời gian uống thuốc tránh thai",
+    description:
+      "Tạo nhắc nhở hàng ngày vào thời gian bạn chọn để không quên uống thuốc tránh thai đúng giờ.",
+    result_wait_time: "0",
+    preparationGuidelines:
+      "Chọn giờ uống thuốc cố định hàng ngày để hệ thống gửi nhắc nhở chính xác.",
+    category: "cycle",
+  },
 ];
 
 export const ServicePage = () => {
@@ -183,6 +223,7 @@ export const ServicePage = () => {
                 <option value="all">Tất cả dịch vụ</option>
                 <option value="test">Xét nghiệm</option>
                 <option value="consultation">Tư vấn</option>
+                <option value="cycle">Chu kỳ kinh nguyệt</option>
               </select>
             </div>
           </div>
@@ -408,6 +449,102 @@ export const ServicePage = () => {
                               className="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-md transition-colors"
                             >
                               Đặt lịch tư vấn
+                            </Link>
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+                </div>
+              </div>
+            ) : null}
+
+            {selectedCategory === "all" || selectedCategory === "cycle" ? (
+              <div className="mb-12">
+                <h2 className="text-2xl font-bold mb-6 flex items-center">
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    className="h-6 w-6 mr-2 text-blue-600"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    stroke="currentColor"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M19.428 15.428a2 2 0 00-1.022-.547l-2.387-.477a6 6 0 00-3.86.517l-.318.158a6 6 0 01-3.86.517L6.05 15.21a2 2 0 00-1.806.547M8 4h8l-1 1v5.172a2 2 0 00.586 1.414l5 5c1.26 1.26.367 3.414-1.415 3.414H4.828c-1.782 0-2.674-2.154-1.414-3.414l5-5A2 2 0 009 10.172V5L8 4z"
+                    />
+                  </svg>
+                  Theo dõi chu kỳ kinh nguyệt
+                </h2>
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                  {filteredServices
+                    .filter((service) => service.category === "cycle")
+                    .map((service) => (
+                      <div
+                        key={service.service_id}
+                        className="bg-white rounded-lg shadow-md overflow-hidden transition-transform hover:shadow-lg hover:-translate-y-1"
+                      >
+                        <div className="h-36 bg-gradient-to-r from-blue-500 to-blue-700 flex items-center justify-center">
+                          <div className="h-20 w-20 rounded-full bg-white flex items-center justify-center">
+                            <svg
+                              xmlns="http://www.w3.org/2000/svg"
+                              className="h-10 w-10 text-blue-600"
+                              fill="none"
+                              viewBox="0 0 24 24"
+                              stroke="currentColor"
+                            >
+                              <path
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                                strokeWidth={1.5}
+                                d="M19.428 15.428a2 2 0 00-1.022-.547l-2.387-.477a6 6 0 00-3.86.517l-.318.158a6 6 0 01-3.86.517L6.05 15.21a2 2 0 00-1.806.547M8 4h8l-1 1v5.172a2 2 0 00.586 1.414l5 5c1.26 1.26.367 3.414-1.415 3.414H4.828c-1.782 0-2.674-2.154-1.414-3.414l5-5A2 2 0 009 10.172V5L8 4z"
+                              />
+                            </svg>
+                          </div>
+                        </div>
+
+                        <div className="p-6">
+                          <div className="flex justify-between items-start">
+                            <div>
+                              <h3 className="text-xl font-bold">
+                                {service.name}
+                              </h3>
+                            </div>
+                            <div className="font-bold text-blue-600">
+                              {service.price && (
+                                <span>
+                                  {new Intl.NumberFormat("vi-VN", {
+                                    style: "currency",
+                                    currency: "VND",
+                                  }).format(service.price)}
+                                </span>
+                              )}
+                            </div>
+                          </div>
+
+                          <p className="text-gray-600 mt-3">
+                            {service.description || "Không có mô tả chi tiết"}
+                          </p>
+
+                          <div className="mt-4 p-3 bg-gray-50 rounded-md">
+                            <h4 className="font-medium text-gray-700">
+                              Hướng dẫn chuẩn bị:
+                            </h4>
+                            <p className="text-gray-600 mt-1 text-sm">
+                              {service.preparationGuidelines ||
+                                "Không có hướng dẫn cụ thể."}
+                            </p>
+                          </div>
+
+                          <div className="mt-6 flex justify-end">
+                            <Link
+                              to={{
+                                pathname: "/services/menstrual-cycle",
+                              }}
+                              className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-md transition-colors"
+                            >
+                              Bắt đầu theo dõi chu kỳ
                             </Link>
                           </div>
                         </div>
