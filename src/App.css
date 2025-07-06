@@ -1,1 +1,50 @@
 @import "tailwindcss";
+
+/* ====== GRID CỦA CÁC NGÀY TRONG THÁNG ====== */
+.react-calendar__month-view__days {
+    display: grid !important;
+    grid-template-columns: repeat(7, 1fr);
+    gap: 8px;
+    /* khoảng cách giữa các ô ngày */
+    padding: 8px;
+}
+.react-calendar {
+    width: 800px !important;
+}
+/* ====== Ô NGÀY MẶC ĐỊNH ====== */
+.react-calendar__month-view__days__day,
+.react-calendar__tile {
+    width: 44px !important;
+    height: 44px !important;
+    padding: 0 !important;
+    margin: auto;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-size: 14px;
+    border-radius: 9999px;
+    /* mặc định bo tròn nhẹ */
+    transition: background-color 0.2s ease;
+}
+
+/* ====== Ô NGÀY CÓ TRẠNG THÁI (KINH NGUYỆT / RỤNG TRỨNG / THỤ THAI) ====== */
+.react-calendar__tile.custom-period {
+    background-color: #f87171 !important;
+    /* đỏ */
+    color: black !important;
+    font-weight: 600;
+}
+
+.react-calendar__tile.custom-ovulation {
+    background-color: #fde047 !important;
+    /* vàng */
+    color: black !important;
+    font-weight: 600;
+}
+
+.react-calendar__tile.custom-fertile {
+    background-color: #60a5fa !important;
+    /* xanh */
+    color: black !important;
+    font-weight: 600;
+}
