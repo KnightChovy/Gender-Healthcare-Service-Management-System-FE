@@ -3,7 +3,7 @@ import { useNavigate, Link } from 'react-router-dom';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import {
   faCalendarAlt, faClock, faUserMd, faPhone, faEnvelope, faStethoscope,
-  faNotesMedical, faMoneyBillWave, faEye, faEdit, faTrash, faFilter, faSearch,
+  faNotesMedical, faMoneyBillWave, faEye, faTrash, faFilter, faSearch,
   faSpinner, faExclamationTriangle, faCheckCircle, faTimesCircle, faHourglassHalf,
   faCalendarCheck, faRefresh, faCreditCard, faVideo, faStar, faFlaskVial
 } from '@fortawesome/free-solid-svg-icons';
@@ -26,6 +26,7 @@ function MyAppointments() {
   const [error, setError] = useState(null);
   const [selectedAppointment, setSelectedAppointment] = useState(null);
   const [showModal, setShowModal] = useState(false);
+  const [isCancelling, setIsCancelling] = useState(false); // Add loading state for cancel
   const [filters, setFilters] = useState({
     status: 'all',
     dateRange: 'all',
@@ -157,7 +158,7 @@ function MyAppointments() {
     });
   };
 
-  const handleRebook = () => navigate('/appointment');
+  const handleRebook = () => navigate('/services/appointment-consultation');
 
   const viewAppointmentDetails = (appointment) => {
     setSelectedAppointment(appointment);
@@ -205,6 +206,69 @@ function MyAppointments() {
     consultationDate.setHours(0, 0, 0, 0);
 
     return today.getTime() === consultationDate.getTime();
+  };
+
+  // Add handleCancel function
+  const handleCancel = async (appointment) => {
+    const appointmentId = appointment.appointment_id || appointment.id;
+    
+    // Confirmation dialog
+    const confirmCancel = window.confirm(
+      `Bạn có chắc chắn muốn hủy cuộc hẹn ${appointment.consultant_type} vào ngày ${formatDate(appointment.appointment_date)}?\n\nLưu ý: Sau khi hủy, bạn sẽ không thể hoàn tác được.`
+    );
+    
+    if (!confirmCancel) {
+      return;
+    }
+
+    try {
+      setIsCancelling(true);
+
+      const data = {
+        appointment_id: appointmentId
+      }
+
+      const response = await axiosClient.post('/v1/users/cancel-appointment', data, {
+        headers: { 
+          'x-access-token': accessToken,
+        }
+      });
+
+      if (response.data?.success) {
+        // Show success message
+        alert('Hủy cuộc hẹn thành công!');
+        
+        // Update the appointment status locally
+        setAppointments(prevAppointments => 
+          prevAppointments.map(apt => 
+            (apt.appointment_id === appointmentId || apt.id === appointmentId)
+              ? { ...apt, status: 'rejected' }
+              : apt
+          )
+        );
+        
+        // Refresh appointments from server
+        await fetchAppointments();
+        
+      } else {
+        throw new Error(response.data?.message || 'Không thể hủy cuộc hẹn');
+      }
+    } catch (error) {
+      console.error('❌ Error cancelling appointment:', error);
+      
+      // Show specific error messages
+      if (error.response?.status === 400) {
+        alert('Không thể hủy cuộc hẹn này. Vui lòng kiểm tra trạng thái cuộc hẹn.');
+      } else if (error.response?.status === 404) {
+        alert('Không tìm thấy cuộc hẹn để hủy.');
+      } else if (error.response?.status === 403) {
+        alert('Bạn không có quyền hủy cuộc hẹn này.');
+      } else {
+        alert(error.response?.data?.message || 'Có lỗi xảy ra khi hủy cuộc hẹn. Vui lòng thử lại.');
+      }
+    } finally {
+      setIsCancelling(false);
+    }
   };
 
   if (isLoading) {
@@ -339,6 +403,10 @@ function MyAppointments() {
                                    appointment.booking === 1 && 
                                    isConsultationDay(appointment.appointment_date);
 
+              // Check if appointment can be cancelled
+              const canCancel = appointment.status === 'pending' || 
+                               (appointment.status === 'confirmed' && appointment.booking === 0);
+
               return (
                 <div key={appointment.id} className={cx('appointment-card')}>
                   {/* Header */}
@@ -429,27 +497,41 @@ function MyAppointments() {
                       <button
                         className={cx('action-btn', 'payment-btn')}
                         onClick={() => handlePayment(appointment)}
+                        disabled={isCancelling}
                       >
                         <FontAwesomeIcon icon={faCreditCard} /> Thanh toán
                       </button>
                     )}
 
-                    {/* Cancel button */}
-                    {(appointment.status === 'pending' ||
-                      (appointment.status === 'confirmed' && appointment.booking === 0)) && (
-                        <button className={cx('action-btn', 'cancel-btn')}>
-                          <FontAwesomeIcon icon={faTrash} /> Hủy hẹn
-                        </button>
-                      )}
+                    {/* Cancel button - Updated with handleCancel */}
+                    {canCancel && (
+                      <button 
+                        className={cx('action-btn', 'cancel-btn', {
+                          'loading': isCancelling
+                        })}
+                        onClick={() => handleCancel(appointment)}
+                        disabled={isCancelling}
+                      >
+                        {isCancelling ? (
+                          <>
+                            <FontAwesomeIcon icon={faSpinner} spin /> Đang hủy...
+                          </>
+                        ) : (
+                          <>
+                            <FontAwesomeIcon icon={faTrash} /> Hủy hẹn
+                          </>
+                        )}
+                      </button>
+                    )}
 
                     {/* Join Meeting button */}
                     {appointment.status === 'confirmed' && appointment.booking === 1 && (
                       <button
                         className={cx('action-btn', 'meeting-btn', { 
-                          'disabled': !canJoinMeeting 
+                          'disabled': !canJoinMeeting || isCancelling
                         })}
                         onClick={() => canJoinMeeting ? handleJoinMeeting(appointment) : null}
-                        disabled={!canJoinMeeting}
+                        disabled={!canJoinMeeting || isCancelling}
                         title={
                           !canJoinMeeting 
                             ? 'Chỉ có thể tham gia vào ngày tư vấn' 
@@ -466,6 +548,7 @@ function MyAppointments() {
                       <button
                         className={cx('action-btn', 'rebook-btn')}
                         onClick={() => handleRebook(appointment)}
+                        disabled={isCancelling}
                       >
                         <FontAwesomeIcon icon={faCalendarAlt} /> Đặt lại
                       </button>
@@ -478,17 +561,18 @@ function MyAppointments() {
                           <button
                             className={cx('action-btn', 'view-btn')}
                             onClick={() => viewAppointmentDetails(appointment)}
+                            disabled={isCancelling}
                           >
                             <FontAwesomeIcon icon={faEye} /> Xem chi tiết
                           </button>
 
-                          {/* Updated feedback button với logic mới */}
                           <button
                             className={cx('action-btn', 'feedback-btn', { 
                               'has-feedback': hasFeedback 
                             })}
                             onClick={() => handleFeedbackNavigation(appointment)}
                             title={hasFeedback ? 'Xem lại đánh giá' : 'Đánh giá cuộc tư vấn'}
+                            disabled={isCancelling}
                           >
                             <FontAwesomeIcon icon={faStar} />
                             {hasFeedback ? 'Xem đánh giá' : 'Đánh giá'}
@@ -505,7 +589,10 @@ function MyAppointments() {
                               appointment.appointment_id || appointment.id
                             )}`,
                           }}
-                          className={cx('action-btn', 'test-order-btn', 'full-width')}
+                          className={cx('action-btn', 'test-order-btn', 'full-width', {
+                            'disabled': isCancelling
+                          })}
+                          onClick={isCancelling ? (e) => e.preventDefault() : undefined}
                         >
                           <FontAwesomeIcon icon={faFlaskVial} /> Đặt lịch xét nghiệm
                         </Link>
@@ -517,6 +604,7 @@ function MyAppointments() {
                       <button
                         className={cx('action-btn', 'view-btn')}
                         onClick={() => viewAppointmentDetails(appointment)}
+                        disabled={isCancelling}
                       >
                         <FontAwesomeIcon icon={faEye} /> Xem chi tiết
                       </button>
@@ -529,6 +617,14 @@ function MyAppointments() {
                         <span>
                           Có thể tham gia từ ngày {formatDate(appointment.appointment_date)}
                         </span>
+                      </div>
+                    )}
+
+                    {/* Cancel loading indicator */}
+                    {isCancelling && (
+                      <div className={cx('cancel-loading')}>
+                        <FontAwesomeIcon icon={faSpinner} spin />
+                        <span>Đang xử lý hủy cuộc hẹn...</span>
                       </div>
                     )}
                   </div>

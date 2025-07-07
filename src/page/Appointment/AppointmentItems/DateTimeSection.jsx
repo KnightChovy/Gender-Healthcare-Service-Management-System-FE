@@ -22,6 +22,24 @@ function DateTimeSection({ formData, errors, onChange }) {
         return selectedDate.toDateString() === today.toDateString();
     };
 
+    // Function to check if time slot is unavailable due to confirmed/completed appointments
+    const isTimeSlotUnavailable = (timeString, timeslot) => {
+        if (!timeslot || !timeslot.appointment_times) return false;
+        
+        // Find appointments for this specific time
+        const appointmentsAtTime = timeslot.appointments_details?.filter(apt => 
+            apt.appointment_time === timeString
+        ) || [];
+        
+        // Check if any appointment at this time has confirmed or completed status
+        const hasConfirmedOrCompleted = appointmentsAtTime.some(apt => 
+            apt.appointment_time && // Must have appointment_time
+            (apt.status === 'confirmed' || apt.status === 'completed')
+        );
+        
+        return hasConfirmedOrCompleted;
+    };
+
     useEffect(() => {
         if (!formData.appointmentDate) {
             setAvailableTimes([]);
@@ -73,7 +91,9 @@ function DateTimeSection({ formData, errors, onChange }) {
                             
                             if (matchingSlot) {
                                 timeslotId = matchingSlot.timeslot_id;
-                                if (matchingSlot.appointment_times.includes(timeString)) {
+                                
+                                // Updated logic: Check if slot is unavailable due to confirmed/completed appointments
+                                if (isTimeSlotUnavailable(timeString, matchingSlot)) {
                                     isAvailable = false;
                                     reason = 'Đã đặt';
                                 } else {
@@ -134,7 +154,9 @@ function DateTimeSection({ formData, errors, onChange }) {
                                     
                                     if (matchingSlot) {
                                         timeslotId = matchingSlot.timeslot_id;
-                                        if (matchingSlot.appointment_times.includes(timeString)) {
+                                        
+                                        // Updated logic: Check if slot is unavailable due to confirmed/completed appointments
+                                        if (isTimeSlotUnavailable(timeString, matchingSlot)) {
                                             isAvailable = false;
                                             reason = 'Đã đặt';
                                         } else {
@@ -177,7 +199,9 @@ function DateTimeSection({ formData, errors, onChange }) {
                                 
                                 if (matchingSlot) {
                                     timeslotId = matchingSlot.timeslot_id;
-                                    if (matchingSlot.appointment_times.includes(timeString)) {
+                                    
+                                    // Updated logic: Check if slot is unavailable due to confirmed/completed appointments
+                                    if (isTimeSlotUnavailable(timeString, matchingSlot)) {
                                         isAvailable = false;
                                         reason = 'Đã đặt';
                                     } else {
@@ -212,21 +236,17 @@ function DateTimeSection({ formData, errors, onChange }) {
     }, [formData.appointmentDate]);
 
     const getMinDate = () => {
-        // Set default to January 1, 2025 or today if current date is later
         const today = new Date();
         const year2025Start = new Date('2025-01-01');
         
-        // If current date is already in 2025 or later, use current date
         if (today >= year2025Start) {
             return today.toISOString().split('T')[0];
         }
         
-        // Otherwise, use January 1, 2025
         return '2025-01-01';
     };
 
     const getMaxDate = () => {
-        // Set max date to December 31, 2025
         const maxDate = new Date('2025-12-31');
         return maxDate.toISOString().split('T')[0];
     };
@@ -253,7 +273,6 @@ function DateTimeSection({ formData, errors, onChange }) {
         const selectedDate = new Date(dateString + 'T00:00:00');
         const year = selectedDate.getFullYear();
         
-        // Check if year is 2025
         if (year !== 2025) {
             return 'Chỉ có thể đặt lịch trong năm 2025. Vui lòng chọn ngày khác.';
         }
@@ -460,6 +479,7 @@ function DateTimeSection({ formData, errors, onChange }) {
                                                                 'available': slot.isAvailable,
                                                                 'unavailable': !slot.isAvailable
                                                             })}
+                                                            title={!slot.isAvailable ? slot.reason : ''}
                                                         >
                                                             <input
                                                                 type="radio"
@@ -473,6 +493,11 @@ function DateTimeSection({ formData, errors, onChange }) {
                                                             <span className={cx('time-label')}>
                                                                 {slot.label}
                                                             </span>
+                                                            {!slot.isAvailable && slot.reason && (
+                                                                <span className={cx('unavailable-reason')}>
+                                                                    {slot.reason}
+                                                                </span>
+                                                            )}
                                                         </label>
                                                     ))}
                                                 </div>
@@ -494,6 +519,7 @@ function DateTimeSection({ formData, errors, onChange }) {
                                                                 'available': slot.isAvailable,
                                                                 'unavailable': !slot.isAvailable
                                                             })}
+                                                            title={!slot.isAvailable ? slot.reason : ''}
                                                         >
                                                             <input
                                                                 type="radio"
@@ -507,6 +533,11 @@ function DateTimeSection({ formData, errors, onChange }) {
                                                             <span className={cx('time-label')}>
                                                                 {slot.label}
                                                             </span>
+                                                            {!slot.isAvailable && slot.reason && (
+                                                                <span className={cx('unavailable-reason')}>
+                                                                    {slot.reason}
+                                                                </span>
+                                                            )}
                                                         </label>
                                                     ))}
                                                 </div>

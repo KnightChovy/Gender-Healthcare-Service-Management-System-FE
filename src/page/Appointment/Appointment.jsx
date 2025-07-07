@@ -638,6 +638,13 @@ function Appointment() {
     }
   };
 
+  const handleGoHome = () => {
+    localStorage.removeItem('doctorAvailableTimeslots');
+    localStorage.removeItem('selectedDoctorId');
+    localStorage.removeItem('pendingAppointment');
+    navigate('/');
+  };
+
   // ...existing showSuccessNotification function...
   const showSuccessNotification = () => {
     const notification = document.createElement("div");
@@ -663,12 +670,7 @@ function Appointment() {
                     <span class="countdown-label">Đang chuyển về trang chủ...</span>
                 </div>
 
-                <button class="home-button" onclick="() => {
-                  localStorage.removeItem('doctorAvailableTimeslots');
-                  localStorage.removeItem('selectedDoctorId');
-                  localStorage.removeItem('pendingAppointment');
-                  window.location.href='/';
-                }">
+                <button class="home-button" id="homeButton">
                     🏠 Về trang chủ ngay
                 </button>
             </div>
@@ -896,6 +898,11 @@ function Appointment() {
     document.head.appendChild(style);
     document.body.appendChild(notification);
 
+    const homeButton = notification.querySelector('#homeButton');
+    if (homeButton) {
+      homeButton.addEventListener('click', handleGoHome);
+    }
+
     let countdown = 10;
     const countdownElement = notification.querySelector(".countdown-number");
 
@@ -917,7 +924,7 @@ function Appointment() {
       if (document.head.contains(style)) {
         document.head.removeChild(style);
       }
-      window.location.href = "/";
+      handleGoHome();
     }, 10000);
   };
 

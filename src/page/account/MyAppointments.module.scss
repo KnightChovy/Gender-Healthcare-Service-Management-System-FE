@@ -1708,3 +1708,53 @@
     line-height: 1.2;
   }
 }
+
+// ...existing styles...
+
+.cancel-btn {
+  &.loading {
+    opacity: 0.7;
+    cursor: not-allowed;
+    
+    &:hover {
+      background: #ffebee;
+      transform: none;
+    }
+  }
+}
+
+.cancel-loading {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 12px;
+  background: #fff3cd;
+  border: 1px solid #ffeaa7;
+  border-radius: 6px;
+  font-size: 14px;
+  color: #856404;
+  margin-top: 8px;
+  
+  svg {
+    color: #856404;
+  }
+}
+
+.action-btn {
+  &.disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+    pointer-events: none;
+  }
+}
+
+// Add loading animation for cancel button
+@keyframes cancelLoading {
+  0% { opacity: 0.5; }
+  50% { opacity: 1; }
+  100% { opacity: 0.5; }
+}
+
+.cancel-btn.loading {
+  animation: cancelLoading 1.5s ease-in-out infinite;
+}
