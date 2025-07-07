@@ -95,7 +95,7 @@ const TestAppointmentPage = () => {
       });
     }
   }, []);
-  console.log(userInfo);
+  // console.log(userInfo);
 
   useEffect(() => {
     window.scrollTo(0, 0);
@@ -180,7 +180,47 @@ const TestAppointmentPage = () => {
 
   //   fetchOrderId();
   // }, [userInfo?.user_id, accessToken]);
+  const createNewNotification = (appoointmentData) => {
+    const notificationId = `test_success_${Date.now()}`;
 
+    const newNotification = {
+      id: notificationId,
+      type: "appointment_success",
+      title: "Đặt lịch xét nghiệm thành công",
+      message: `Lịch xét nghiệm của bạn đã được đặt thành công.`,
+      timeStamp: new Date().toISOString(),
+      isRead: false,
+      appointmentId: appoointmentData.appointment_id || null,
+      appoointmentData: {
+        ...appoointmentData,
+        consultant_type: "Xét nghiệm",
+        price_apm: calculateTotalAmount(),
+        appointment_date: format(selectedDate, "yyyy-MM-dd"),
+        appointment_time: selectedTimeSlot,
+        created_at: new Date().toISOString(),
+        status: "success",
+      },
+    };
+    const savedNotifications = JSON.parse(
+      localStorage.getItem("notificationReadStatus") || "{}"
+    );
+    savedNotifications[notificationId] = false;
+    localStorage.setItem(
+      "notificationReadStatus",
+      JSON.stringify(savedNotifications)
+    );
+
+    const tempNotifications = JSON.parse(
+      localStorage.getItem("tempNotifications") || "[]"
+    );
+    tempNotifications.push(newNotification);
+    localStorage.setItem(
+      "tempNotifications",
+      JSON.stringify(tempNotifications)
+    );
+
+    return newNotification;
+  };
   const calculateTotalAmount = () => {
     return selectedServices.reduce((total, service) => {
       const price =
@@ -190,7 +230,7 @@ const TestAppointmentPage = () => {
       return total + price;
     }, 0);
   };
-  console.log(selectedServices.price);
+  // console.log(selectedServices.price);
 
   const formatPrice = (price) => {
     return new Intl.NumberFormat("vi-VN", {
@@ -297,8 +337,8 @@ const TestAppointmentPage = () => {
       console.log("Response:", res);
 
       if (res && res.data && res.data.success) {
-        setAppointmentDetails({
-          order_id: "OD00001",
+        // Tạo thông tin lịch hẹn
+        const appointmentDetails = {
           services: selectedServices,
           medicalHistory: medicalHistory,
           appointmentDate: format(selectedDate, "dd-MM-yyyy"),
@@ -308,9 +348,24 @@ const TestAppointmentPage = () => {
           userInfo: userInfo,
           payment_status: "confirmed",
           createdAt: new Date().toLocaleDateString("vi-VN"),
-        });
+        };
+
+        // Tạo và lưu thông báo mới
+        const newNotification = createNewNotification(appointmentDetails);
+
+        // Cập nhật state
+        setAppointmentDetails(appointmentDetails);
         setIsPaymentComplete(true);
         setCurrentStep(4);
+
+        // Hiển thị thông báo thành công (tùy chọn)
+        if (window.dispatchEvent) {
+          // Tạo event để NotificationBell có thể lắng nghe
+          const event = new CustomEvent("newNotification", {
+            detail: newNotification,
+          });
+          window.dispatchEvent(event);
+        }
       } else {
         // setError("Không thể hoàn tất thanh toán");
         setPaymentError(true);
@@ -367,10 +422,7 @@ const TestAppointmentPage = () => {
 
           <View style={styles.infoSection}>
             <Text style={styles.sectionTitle}>Chi tiết lịch hẹn</Text>
-            <View style={styles.infoRow}>
-              <Text style={styles.label}>Mã lịch hẹn:</Text>
-              <Text style={styles.value}>{appointmentDetails.order_id}</Text>
-            </View>
+
             <View style={styles.infoRow}>
               <Text style={styles.label}>Ngày xét nghiệm:</Text>
               <Text style={styles.value}>
@@ -491,7 +543,7 @@ const TestAppointmentPage = () => {
       textAlign: "center",
     },
   });
-  console.log(styles.page);
+  // console.log(styles.page);
 
   // Loading screen
   if (loading && currentStep === 1) {
@@ -1145,7 +1197,7 @@ const TestAppointmentPage = () => {
               <button
                 onClick={handleNextStep}
                 className="inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
-                disabled={loading || paymentError}
+                disabled={loading}
               >
                 {loading ? (
                   <span className="flex items-center">
@@ -1217,14 +1269,6 @@ const TestAppointmentPage = () => {
                 </h3>
                 <div className="bg-blue-50 p-4 rounded-md border border-blue-100">
                   <dl className="grid grid-cols-1 gap-x-4 gap-y-4 sm:grid-cols-2">
-                    <div className="sm:col-span-1">
-                      <dt className="text-sm font-medium text-gray-500">
-                        Mã lịch hẹn
-                      </dt>
-                      <dd className="mt-1 text-sm font-bold text-gray-900">
-                        {appointmentDetails.order_id}
-                      </dd>
-                    </div>
                     <div className="sm:col-span-1">
                       <dt className="text-sm font-medium text-gray-500">
                         Trạng thái thanh toán
@@ -1421,45 +1465,6 @@ const TestAppointmentPage = () => {
               >
                 Về trang chủ
               </button>
-            </div>
-          </div>
-        )}
-
-        {paymentError && (
-          <div className="mt-4 mb-6 bg-red-50 border-l-4 border-red-500 p-4 rounded-md">
-            <div className="flex items-center">
-              <div className="flex-shrink-0">
-                <svg
-                  className="h-5 w-5 text-red-500"
-                  xmlns="http://www.w3.org/2000/svg"
-                  viewBox="0 0 20 20"
-                  fill="currentColor"
-                  aria-hidden="true"
-                >
-                  <path
-                    fillRule="evenodd"
-                    d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z"
-                    clipRule="evenodd"
-                  />
-                </svg>
-              </div>
-              <div className="ml-3">
-                <h3 className="text-sm font-medium text-red-800">
-                  Thanh toán không thành công
-                </h3>
-                <div className="mt-2 text-sm text-red-700">
-                  <p>{paymentErrorMessage}</p>
-                </div>
-                <div className="mt-4">
-                  <button
-                    type="button"
-                    onClick={() => setPaymentError(false)}
-                    className="inline-flex items-center px-3 py-1.5 border border-transparent text-xs font-medium rounded-md shadow-sm text-white bg-red-600 hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500"
-                  >
-                    Thử lại
-                  </button>
-                </div>
-              </div>
             </div>
           </div>
         )}
