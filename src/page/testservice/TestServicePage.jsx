@@ -1,26 +1,25 @@
 import React, { useState, useEffect } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
-import vnpay_ico from "../../assets/VNpay_ico.png";
-import {
-  PDFDownloadLink,
-  Document,
-  Page,
-  Text,
-  View,
-  StyleSheet,
-  Font,
-  Image,
-} from "@react-pdf/renderer";
-import { Buffer } from "buffer";
-import logo from "../../assets/gender_healthcare_logo.png";
-import RobotoRegular from "../../assets/fonts/Roboto-Regular.ttf";
-import axiosClient from "../../services/axiosClient";
 import { format } from "date-fns";
 import { vi } from "date-fns/locale";
-import { DayPicker } from "react-day-picker";
-import "react-day-picker/dist/style.css";
-import { useSelector } from "react-redux";
+import axiosClient from "../../services/axiosClient";
+import { Buffer } from "buffer";
+
+// Components
+import { BookingStepIndicator } from "./components/BookingStep";
+import { PersonalInfoStep } from "./components/PersonalInfo";
+import AppointmentDateStep from "./components/AppointmentDate";
+import ConfirmationStep from "./components/Confirmation";
+import CompletionStep from "./components/CompletionStep";
+import PaymentStatus from "./components/PaymentStatus";
+import AppointmentPDF from "./components/AppointmentPDF";
+import { ServiceCard } from "./components/ServiceCard";
+
+// Hooks
+import usePaymentProcessing from "./hook/usePaymentProcessing"; // Giữ nguyên vì đường dẫn hook/ là đúng
+
 window.Buffer = Buffer;
+
 const unhashServiceId = (hashedId) => {
   try {
     return atob(hashedId);
@@ -29,6 +28,7 @@ const unhashServiceId = (hashedId) => {
     return hashedId;
   }
 };
+
 const unhashAppointmentId = (hashedId) => {
   try {
     return atob(hashedId);
@@ -37,14 +37,11 @@ const unhashAppointmentId = (hashedId) => {
     return hashedId;
   }
 };
-Font.register({
-  family: "Roboto",
-  src: RobotoRegular,
-});
+
 const TestAppointmentPage = () => {
   const location = useLocation();
   const navigate = useNavigate();
-  // const { accessToken, user } = useSelector((state) => state.auth);
+
   // State quản lý các bước đặt lịch
   const [currentStep, setCurrentStep] = useState(1);
 
@@ -68,9 +65,7 @@ const TestAppointmentPage = () => {
   const [isPaymentComplete, setIsPaymentComplete] = useState(false);
   const [appointmentDetails, setAppointmentDetails] = useState(null);
   const [appointmentId, setAppointmentId] = useState("");
-  const [paymentError, setPaymentError] = useState(false);
-  const [paymentErrorMessage, setPaymentErrorMessage] = useState("");
-  // const [orderId, setOrderId] = useState("");
+
   const timeSlots = [
     "08:00 - 08:30",
     "08:30 - 09:00",
@@ -85,6 +80,27 @@ const TestAppointmentPage = () => {
     "15:00 - 15:30",
     "15:30 - 16:00",
   ];
+
+  // Xử lý thanh toán
+  const {
+    paymentError,
+    paymentErrorMessage,
+    paymentProcessing,
+    processPayment,
+    setPaymentError,
+  } = usePaymentProcessing({
+    userInfo,
+    selectedServices,
+    selectedDate,
+    selectedTimeSlot,
+    medicalHistory,
+    paymentMethod,
+    calculateTotalAmount,
+    appointmentId,
+    completeBookingProcess,
+  });
+
+  // Khởi tạo dữ liệu người dùng từ localStorage
   useEffect(() => {
     const storedData = localStorage.getItem("user");
     if (storedData) {
@@ -95,20 +111,62 @@ const TestAppointmentPage = () => {
       });
     }
   }, []);
-  // console.log(userInfo);
 
+  // Xử lý query parameters và lấy dữ liệu dịch vụ
   useEffect(() => {
     window.scrollTo(0, 0);
     document.title = "Đặt lịch xét nghiệm | Healthcare Service";
 
     const queryParams = new URLSearchParams(location.search);
+
+    // Payment return handling from VNPay
+    const paymentStatus = queryParams.get("vnp_ResponseCode");
+    const savedSession = localStorage.getItem("currentPaymentSession");
+
+    if (paymentStatus && savedSession) {
+      try {
+        const session = JSON.parse(savedSession);
+
+        // Process successful payment
+        if (paymentStatus === "00") {
+          // Get appointment details from the saved session
+          const appointmentData = session.appointmentData;
+
+          // Complete the booking process
+          completeBookingProcess({
+            data: {
+              appointment_id: session.appointmentId,
+              // Include other necessary data from the session
+            },
+            success: true,
+          });
+
+          // Clean up the session
+          localStorage.removeItem("currentPaymentSession");
+        }
+        // Handle failed payment
+        else {
+          setPaymentError(true);
+          setPaymentErrorMessage(
+            "Thanh toán không thành công: " +
+              getVNPayErrorMessage(paymentStatus)
+          );
+        }
+      } catch (error) {
+        console.error("Error processing payment return:", error);
+      }
+    }
+
+    // Original code for fetching service and appointment data
     const hashedServiceId = queryParams.get("serviceId");
     const serviceId = hashedServiceId ? unhashServiceId(hashedServiceId) : null;
     const hashedAppointmentId = queryParams.get("appointmentId");
     const appointmentId = hashedAppointmentId
       ? unhashAppointmentId(hashedAppointmentId)
       : null;
+
     setAppointmentId(appointmentId);
+
     const fetchUserInfo = () => {
       const userJson = localStorage.getItem("userProfile");
       if (userJson) {
@@ -158,29 +216,8 @@ const TestAppointmentPage = () => {
     fetchServices();
   }, [location.search]);
 
-  // useEffect(() => {
-  //   if (!userInfo?.user_id || !accessToken) return;
-
-  //   const fetchOrderId = async () => {
-  //     try {
-  //       const response = await axiosClient.get(
-  //         `v1/users/${userInfo.user_id}/services`,
-  //         {
-  //           headers: {
-  //             "x-access-token": accessToken,
-  //           },
-  //         }
-  //       );
-  //       setOrderId(response.data.user_id);
-  //       console.log(response, "Response from services API");
-  //     } catch (error) {
-  //       console.error("Error fetching services:", error);
-  //     }
-  //   };
-
-  //   fetchOrderId();
-  // }, [userInfo?.user_id, accessToken]);
-  const createNewNotification = (appoointmentData) => {
+  // Helper functions
+  const createNewNotification = (appointmentData) => {
     const notificationId = `test_success_${Date.now()}`;
 
     const newNotification = {
@@ -190,9 +227,9 @@ const TestAppointmentPage = () => {
       message: `Lịch xét nghiệm của bạn đã được đặt thành công.`,
       timeStamp: new Date().toISOString(),
       isRead: false,
-      appointmentId: appoointmentData.appointment_id || null,
-      appoointmentData: {
-        ...appoointmentData,
+      appointmentId: appointmentData.appointment_id || null,
+      appointmentData: {
+        ...appointmentData,
         consultant_type: "Xét nghiệm",
         price_apm: calculateTotalAmount(),
         appointment_date: format(selectedDate, "yyyy-MM-dd"),
@@ -201,6 +238,7 @@ const TestAppointmentPage = () => {
         status: "success",
       },
     };
+
     const savedNotifications = JSON.parse(
       localStorage.getItem("notificationReadStatus") || "{}"
     );
@@ -221,7 +259,8 @@ const TestAppointmentPage = () => {
 
     return newNotification;
   };
-  const calculateTotalAmount = () => {
+
+  function calculateTotalAmount() {
     return selectedServices.reduce((total, service) => {
       const price =
         typeof service.price === "string"
@@ -229,17 +268,16 @@ const TestAppointmentPage = () => {
           : service.price;
       return total + price;
     }, 0);
-  };
-  // console.log(selectedServices.price);
+  }
 
-  const formatPrice = (price) => {
+  function formatPrice(price) {
     return new Intl.NumberFormat("vi-VN", {
       style: "currency",
       currency: "VND",
     }).format(price);
-  };
+  }
 
-  // Xử lý khi thay đổi dịch vụ
+  // Các hàm xử lý sự kiện
   const handleServiceChange = (service) => {
     const isSelected = selectedServices.some(
       (s) => s.service_id === service.service_id
@@ -253,22 +291,18 @@ const TestAppointmentPage = () => {
     }
   };
 
-  // Xử lý khi thay đổi thông tin cá nhân
   const handleUserInfoChange = (e) => {
     setUserInfo({ ...userInfo, [e.target.name]: e.target.value });
   };
 
-  // Xử lý khi thay đổi lịch sử bệnh
   const handleMedicalHistoryChange = (e) => {
     setMedicalHistory(e.target.value);
   };
 
-  // Xử lý chọn khung giờ
   const handleTimeSlotSelect = (timeSlot) => {
     setSelectedTimeSlot(timeSlot);
   };
 
-  // Xử lý chọn phương thức thanh toán
   const handlePaymentMethodChange = (e) => {
     setPaymentMethod(e.target.value);
   };
@@ -310,240 +344,54 @@ const TestAppointmentPage = () => {
     window.scrollTo(0, 0);
   };
 
-  // Xử lý thanh toán
-  const processPayment = async () => {
-    setLoading(true);
-    setPaymentError(false);
-    // Lấy thông tin dịch vụ đã chọn với định dạng cần thiết
-    const serviceId = selectedServices.map((ser) => ({
-      service_id: ser.service_id,
-    }));
-    try {
-      const requestBody = {
-        bookingData: {
-          appointment_id: appointmentId || null,
-          user_id: userInfo.user_id,
-          serviceData: serviceId,
-          payment_method: paymentMethod,
-        },
-      };
+  function completeBookingProcess(responseData) {
+    // Tạo thông tin lịch hẹn
+    const appointmentDetails = {
+      services: selectedServices,
+      medicalHistory: medicalHistory,
+      appointmentDate: format(selectedDate, "dd-MM-yyyy"),
+      appointmentTime: selectedTimeSlot,
+      totalAmount: calculateTotalAmount(),
+      payment_method: paymentMethod,
+      userInfo: userInfo,
+      payment_status: "confirmed",
+      createdAt: new Date().toLocaleDateString("vi-VN"),
+      appointment_id: responseData.data?.appointment_id || null,
+    };
 
-      console.log("Dữ liệu gửi lên Server:", requestBody);
+    const newNotification = createNewNotification(appointmentDetails);
 
-      const res = await axiosClient.post(
-        "/v1/services/bookingService",
-        requestBody
-      );
-      console.log("Response:", res);
+    setAppointmentDetails(appointmentDetails);
+    setIsPaymentComplete(true);
+    setCurrentStep(4);
 
-      if (res && res.data && res.data.success) {
-        // Tạo thông tin lịch hẹn
-        const appointmentDetails = {
-          services: selectedServices,
-          medicalHistory: medicalHistory,
-          appointmentDate: format(selectedDate, "dd-MM-yyyy"),
-          appointmentTime: selectedTimeSlot,
-          totalAmount: calculateTotalAmount(),
-          payment_method: paymentMethod,
-          userInfo: userInfo,
-          payment_status: "confirmed",
-          createdAt: new Date().toLocaleDateString("vi-VN"),
-        };
-
-        // Tạo và lưu thông báo mới
-        const newNotification = createNewNotification(appointmentDetails);
-
-        // Cập nhật state
-        setAppointmentDetails(appointmentDetails);
-        setIsPaymentComplete(true);
-        setCurrentStep(4);
-
-        // Hiển thị thông báo thành công (tùy chọn)
-        if (window.dispatchEvent) {
-          // Tạo event để NotificationBell có thể lắng nghe
-          const event = new CustomEvent("newNotification", {
-            detail: newNotification,
-          });
-          window.dispatchEvent(event);
-        }
-      } else {
-        // setError("Không thể hoàn tất thanh toán");
-        setPaymentError(true);
-        setPaymentErrorMessage(
-          "Không thể hoàn tất thanh toán, Vui lòng thử lại"
-        );
-      }
-    } catch (err) {
-      console.error("Error details:", err);
-      if (err.response) {
-        console.error("Server response:", err.response.data);
-        setPaymentErrorMessage(
-          `Lỗi khi thanh toán: ${err.response.data.message}`
-        );
-      } else {
-        setError(`Lỗi khi thanh toán: ${err.message}`);
-      }
-      setPaymentError(true);
-    } finally {
-      setLoading(false);
+    if (window.dispatchEvent) {
+      // Tạo event để NotificationBell có thể lắng nghe
+      const event = new CustomEvent("newNotification", {
+        detail: newNotification,
+      });
+      window.dispatchEvent(event);
     }
+  }
+
+  // Helper function to translate VNPay error codes
+  const getVNPayErrorMessage = (code) => {
+    const errorMessages = {
+      "07": "Trừ tiền thành công, giao dịch bị nghi ngờ",
+      "09": "Giao dịch không thành công do: Thẻ/Tài khoản hết hạn sử dụng",
+      10: "Giao dịch không thành công do: Thẻ chưa đăng ký sử dụng dịch vụ",
+      11: "Giao dịch không thành công do: Thẻ bị khóa",
+      12: "Giao dịch không thành công do: Thẻ/Tài khoản không đủ số dư",
+      13: "Giao dịch không thành công do: Vượt quá hạn mức thanh toán",
+      24: "Giao dịch không thành công do: Khách hàng hủy giao dịch",
+      51: "Giao dịch không thành công do: Tài khoản không đủ số dư",
+      65: "Giao dịch không thành công do: Tài khoản đã vượt quá hạn mức thanh toán",
+      75: "Ngân hàng thanh toán đang bảo trì",
+      99: "Lỗi không xác định",
+    };
+
+    return errorMessages[code] || "Giao dịch không thành công";
   };
-
-  const AppointmentPDF = () => (
-    <Document>
-      <Page size="A4" style={styles.page}>
-        <View style={styles.section}>
-          <View style={styles.headerContainer}>
-            <Image style={styles.logo} src={logo} />
-            <Text style={styles.header}>CHI TIẾT LỊCH HẸN XÉT NGHIỆM</Text>
-          </View>
-
-          <View style={styles.infoSection}>
-            <Text style={styles.sectionTitle}>Thông tin cá nhân</Text>
-            <View style={styles.infoRow}>
-              <Text style={styles.label}>Họ tên:</Text>
-              <Text style={styles.value}>
-                {appointmentDetails.userInfo.fullName}
-              </Text>
-            </View>
-            <View style={styles.infoRow}>
-              <Text style={styles.label}>Email:</Text>
-              <Text style={styles.value}>
-                {appointmentDetails.userInfo.email}
-              </Text>
-            </View>
-            <View style={styles.infoRow}>
-              <Text style={styles.label}>Số điện thoại:</Text>
-              <Text style={styles.value}>
-                {appointmentDetails.userInfo.phone}
-              </Text>
-            </View>
-          </View>
-
-          <View style={styles.infoSection}>
-            <Text style={styles.sectionTitle}>Chi tiết lịch hẹn</Text>
-
-            <View style={styles.infoRow}>
-              <Text style={styles.label}>Ngày xét nghiệm:</Text>
-              <Text style={styles.value}>
-                {appointmentDetails.appointmentDate}
-              </Text>
-            </View>
-            <View style={styles.infoRow}>
-              <Text style={styles.label}>Giờ xét nghiệm:</Text>
-              <Text style={styles.value}>
-                {appointmentDetails.appointmentTime}
-              </Text>
-            </View>
-          </View>
-
-          <View style={styles.infoSection}>
-            <Text style={styles.sectionTitle}>Dịch vụ đã đặt</Text>
-            {appointmentDetails.services.map((service, index) => (
-              <View key={index} style={styles.serviceItem}>
-                <Text>
-                  {index + 1}. {service.name}
-                </Text>
-                <Text>{formatPrice(service.price)}</Text>
-              </View>
-            ))}
-            <View style={styles.totalRow}>
-              <Text style={styles.totalLabel}>Tổng cộng:</Text>
-              <Text style={styles.totalValue}>
-                {formatPrice(appointmentDetails.totalAmount)}
-              </Text>
-            </View>
-          </View>
-
-          <View style={styles.footer}>
-            <Text>Vui lòng đến đúng giờ và mang theo giấy tờ tùy thân.</Text>
-            <Text>Cảm ơn bạn đã sử dụng dịch vụ của chúng tôi!</Text>
-            <Text>Ngày đặt lịch: {appointmentDetails.createdAt}</Text>
-          </View>
-        </View>
-      </Page>
-    </Document>
-  );
-  const styles = StyleSheet.create({
-    page: {
-      padding: 30,
-      backgroundColor: "#ffffff",
-      fontFamily: "Roboto",
-      fontSize: 14,
-    },
-    section: {
-      margin: 10,
-      padding: 10,
-    },
-    headerContainer: {
-      flexDirection: "row",
-      alignItems: "center",
-      justifyContent: "center",
-      marginBottom: 20,
-    },
-    logo: {
-      width: 60,
-      height: 60,
-      position: "absolute",
-      left: 0,
-      bottom: 3,
-    },
-    header: {
-      fontSize: 18,
-      fontWeight: "bold",
-      textAlign: "center",
-      flex: 1,
-    },
-    infoSection: {
-      marginBottom: 20,
-    },
-    sectionTitle: {
-      fontSize: 14,
-      fontWeight: "bold",
-      marginBottom: 10,
-      backgroundColor: "#f0f0f0",
-      padding: 5,
-    },
-    infoRow: {
-      flexDirection: "row",
-      marginBottom: 5,
-    },
-    label: {
-      width: "30%",
-      fontWeight: "bold",
-    },
-    value: {
-      width: "70%",
-    },
-    serviceItem: {
-      flexDirection: "row",
-      justifyContent: "space-between",
-      marginBottom: 5,
-    },
-    totalRow: {
-      flexDirection: "row",
-      justifyContent: "space-between",
-      marginTop: 10,
-      borderTopWidth: 1,
-      borderTopColor: "#cccccc",
-      paddingTop: 5,
-    },
-    totalLabel: {
-      fontWeight: "bold",
-    },
-    totalValue: {
-      fontWeight: "bold",
-    },
-    footer: {
-      marginTop: 30,
-      borderTopWidth: 1,
-      borderTopColor: "#cccccc",
-      paddingTop: 10,
-      fontSize: 10,
-      textAlign: "center",
-    },
-  });
-  // console.log(styles.page);
 
   // Loading screen
   if (loading && currentStep === 1) {
@@ -602,872 +450,74 @@ const TestAppointmentPage = () => {
           </p>
         </div>
 
-        <div className="mb-8">
-          <div className="flex items-center justify-between">
-            <div
-              className={`flex flex-col items-center ${
-                currentStep >= 1 ? "text-blue-600" : "text-gray-400"
-              }`}
-            >
-              <div
-                className={`w-10 h-10 rounded-full flex items-center justify-center border-2 ${
-                  currentStep >= 1
-                    ? "border-blue-600 bg-blue-100"
-                    : "border-gray-300"
-                }`}
-              >
-                <span className="font-medium">1</span>
-              </div>
-              <span className="text-xs mt-1">Thông tin</span>
-            </div>
-            <div
-              className={`flex-1 h-1 mx-2 ${
-                currentStep >= 2 ? "bg-blue-600" : "bg-gray-300"
-              }`}
-            ></div>
-            <div
-              className={`flex flex-col items-center ${
-                currentStep >= 2 ? "text-blue-600" : "text-gray-400"
-              }`}
-            >
-              <div
-                className={`w-10 h-10 rounded-full flex items-center justify-center border-2 ${
-                  currentStep >= 2
-                    ? "border-blue-600 bg-blue-100"
-                    : "border-gray-300"
-                }`}
-              >
-                <span className="font-medium">2</span>
-              </div>
-              <span className="text-xs mt-1">Lịch hẹn</span>
-            </div>
-            <div
-              className={`flex-1 h-1 mx-2 ${
-                currentStep >= 3 ? "bg-blue-600" : "bg-gray-300"
-              }`}
-            ></div>
-            <div
-              className={`flex flex-col items-center ${
-                currentStep >= 3 ? "text-blue-600" : "text-gray-400"
-              }`}
-            >
-              <div
-                className={`w-10 h-10 rounded-full flex items-center justify-center border-2 ${
-                  currentStep >= 3
-                    ? "border-blue-600 bg-blue-100"
-                    : "border-gray-300"
-                }`}
-              >
-                <span className="font-medium">3</span>
-              </div>
-              <span className="text-xs mt-1">Xác nhận</span>
-            </div>
-            <div
-              className={`flex-1 h-1 mx-2 ${
-                currentStep >= 4 ? "bg-blue-600" : "bg-gray-300"
-              }`}
-            ></div>
-            <div
-              className={`flex flex-col items-center ${
-                currentStep >= 4 ? "text-blue-600" : "text-gray-400"
-              }`}
-            >
-              <div
-                className={`w-10 h-10 rounded-full flex items-center justify-center border-2 ${
-                  currentStep >= 4
-                    ? "border-blue-600 bg-blue-100"
-                    : "border-gray-300"
-                }`}
-              >
-                <span className="font-medium">4</span>
-              </div>
-              <span className="text-xs mt-1">Hoàn tất</span>
-            </div>
-          </div>
-        </div>
+        <BookingStepIndicator currentStep={currentStep} />
 
-        {/* Step 1: Thông tin cá nhân và chọn dịch vụ */}
+        {/* Render component theo bước hiện tại */}
         {currentStep === 1 && (
-          <div className="bg-white shadow overflow-hidden sm:rounded-lg">
-            <div className="px-4 py-5 sm:px-6 bg-blue-50">
-              <h2 className="text-lg font-medium text-gray-900">
-                Bước 1: Thông tin cá nhân & dịch vụ
-              </h2>
-              <p className="mt-1 max-w-2xl text-sm text-gray-500">
-                Vui lòng điền thông tin cá nhân và chọn dịch vụ xét nghiệm
-              </p>
-            </div>
-
-            <div className="border-t border-gray-200 px-4 py-5 sm:p-6">
-              <h3 className="text-lg font-medium text-gray-900 mb-4">
-                Thông tin cá nhân
-              </h3>
-
-              <div className="grid grid-cols-1 gap-y-6 gap-x-4 sm:grid-cols-6">
-                <div className="sm:col-span-3">
-                  <label
-                    htmlFor="fullName"
-                    className="block text-sm font-medium text-gray-700"
-                  >
-                    Họ và tên <span className="text-red-500">*</span>
-                  </label>
-                  <input
-                    type="text"
-                    name="fullName"
-                    id="fullName"
-                    value={userInfo.fullName}
-                    onChange={handleUserInfoChange}
-                    className="mt-1 focus:ring-blue-500 focus:border-blue-500 block w-full h-7 p-2 shadow-sm sm:text-sm border-gray-300 rounded-md"
-                    required
-                  />
-                </div>
-
-                <div className="sm:col-span-3">
-                  <label
-                    htmlFor="email"
-                    className="block text-sm font-medium text-gray-700"
-                  >
-                    Email <span className="text-red-500">*</span>
-                  </label>
-                  <input
-                    type="email"
-                    name="email"
-                    id="email"
-                    value={userInfo.email}
-                    onChange={handleUserInfoChange}
-                    className="mt-1 focus:ring-blue-500 focus:border-blue-500 block w-full h-7 p-2 shadow-sm sm:text-sm border-gray-300 rounded-md"
-                    required
-                  />
-                </div>
-
-                <div className="sm:col-span-3">
-                  <label
-                    htmlFor="phone"
-                    className="block text-sm font-medium text-gray-700"
-                  >
-                    Số điện thoại <span className="text-red-500">*</span>
-                  </label>
-                  <input
-                    type="tel"
-                    name="phone"
-                    id="phone"
-                    value={userInfo.phone}
-                    onChange={handleUserInfoChange}
-                    className="mt-1 focus:ring-blue-500 focus:border-blue-500 block w-full h-7 p-2 shadow-sm sm:text-sm border-gray-300 rounded-md"
-                    required
-                  />
-                </div>
-
-                <div className="sm:col-span-3">
-                  <label
-                    htmlFor="dateOfBirth"
-                    className="block text-sm font-medium text-gray-700"
-                  >
-                    Ngày sinh
-                  </label>
-                  <input
-                    type="date"
-                    name="dateOfBirth"
-                    id="dateOfBirth"
-                    value={userInfo.birthday}
-                    onChange={handleUserInfoChange}
-                    className="mt-1 focus:ring-blue-500 focus:border-blue-500 block w-full h-7 p-2 shadow-sm sm:text-sm border-gray-300 rounded-md"
-                  />
-                </div>
-
-                <div className="sm:col-span-3">
-                  <label
-                    htmlFor="gender"
-                    className="block text-sm font-medium text-gray-700"
-                  >
-                    Giới tính
-                  </label>
-                  <select
-                    id="gender"
-                    name="gender"
-                    value={userInfo.gender}
-                    onChange={handleUserInfoChange}
-                    className="mt-1 block w-full py-2 px-3 border border-gray-300 bg-white rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
-                  >
-                    <option value="male">Nam</option>
-                    <option value="female">Nữ</option>
-                    <option value="other">Khác</option>
-                  </select>
-                </div>
-
-                <div className="sm:col-span-6">
-                  <label
-                    htmlFor="medicalHistory"
-                    className="block text-sm font-medium text-gray-700"
-                  >
-                    Lịch sử bệnh (nếu có)
-                  </label>
-                  <textarea
-                    id="medicalHistory"
-                    name="medicalHistory"
-                    rows={3}
-                    placeholder="Vui lòng liệt kê các bệnh lý, tiền sử dị ứng, thông tin thuốc đang sử dụng hoặc các vấn đề sức khỏe khác mà bạn nghĩ rằng chúng tôi nên biết."
-                    value={medicalHistory}
-                    onChange={handleMedicalHistoryChange}
-                    className="mt-1 p-2 focus:ring-blue-500 focus:border-blue-500 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md"
-                  />
-                </div>
-              </div>
-
-              <h3 className="text-lg font-medium text-gray-900 mt-8 mb-4">
-                Dịch vụ xét nghiệm
-              </h3>
-
-              <div className="space-y-4">
-                {allServices.map((service) => (
-                  <div key={service.service_id} className="flex items-start">
-                    <div className="flex items-center h-5">
-                      <input
-                        id={`service-${service.service_id}`}
-                        name={`service-${service.service_id}`}
-                        type="checkbox"
-                        checked={selectedServices.some(
-                          (s) => s.service_id === service.service_id
-                        )}
-                        onChange={() => handleServiceChange(service)}
-                        className="focus:ring-blue-500 h-4 w-4 text-blue-600 border-gray-300 rounded"
-                      />
-                    </div>
-                    <div className="ml-3 text-sm flex-1">
-                      <label
-                        htmlFor={`service-${service.service_id}`}
-                        className="font-medium text-gray-700 flex justify-between"
-                      >
-                        <span>{service.name}</span>
-                        <span className="font-semibold text-blue-600">
-                          {formatPrice(service.price)}
-                        </span>
-                      </label>
-                      <p className="text-gray-500">{service.description}</p>
-                      {selectedServices.some(
-                        (s) => s.service_id === service.service_id
-                      ) && (
-                        <div className="mt-2 text-xs bg-blue-50 border border-blue-100 p-2 rounded">
-                          <p className="font-medium text-gray-700">
-                            Hướng dẫn chuẩn bị:
-                          </p>
-                          <p className="text-gray-600">
-                            {service.preparation_guidelines}
-                          </p>
-                        </div>
-                      )}
-                    </div>
-                  </div>
-                ))}
-              </div>
-
-              {selectedServices.length > 0 && (
-                <div className="mt-6 bg-gray-50 p-4 rounded-md border border-gray-200">
-                  <div className="flex justify-between items-center">
-                    <span className="text-gray-700 font-medium">
-                      Tổng chi phí:
-                    </span>
-                    <span className="text-lg font-bold text-blue-600">
-                      {formatPrice(calculateTotalAmount())}
-                    </span>
-                  </div>
-                </div>
-              )}
-            </div>
-
-            <div className="px-4 py-3 bg-gray-50 text-right sm:px-6">
-              <button
-                onClick={handleNextStep}
-                className="inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
-              >
-                Tiếp tục
-              </button>
-            </div>
-          </div>
+          <PersonalInfoStep
+            userInfo={userInfo}
+            handleUserInfoChange={handleUserInfoChange}
+            medicalHistory={medicalHistory}
+            handleMedicalHistoryChange={handleMedicalHistoryChange}
+            allServices={allServices}
+            selectedServices={selectedServices}
+            handleServiceChange={handleServiceChange}
+            calculateTotalAmount={calculateTotalAmount}
+            formatPrice={formatPrice}
+            handleNextStep={handleNextStep}
+          />
         )}
 
         {currentStep === 2 && (
-          <div className="bg-white shadow overflow-hidden sm:rounded-lg">
-            <div className="px-4 py-5 sm:px-6 bg-blue-50">
-              <h2 className="text-lg font-medium text-gray-900">
-                Bước 2: Chọn lịch xét nghiệm
-              </h2>
-              <p className="mt-1 max-w-2xl text-sm text-gray-500">
-                Vui lòng chọn ngày và khung giờ phù hợp với bạn
-              </p>
-            </div>
-
-            <div className="border-t border-gray-200 px-4 py-5 sm:p-6">
-              <h3 className="text-lg font-medium text-gray-900 mb-4">
-                Chọn ngày xét nghiệm
-              </h3>
-
-              <div className="flex justify-center mb-8">
-                <div className="border border-gray-200 rounded-lg shadow-sm p-4">
-                  <DayPicker
-                    mode="single"
-                    selected={selectedDate}
-                    onSelect={setSelectedDate}
-                    locale={vi}
-                    disabled={[{ before: new Date() }, { dayOfWeek: [0] }]}
-                    modifiersStyles={{
-                      selected: { backgroundColor: "#3b82f6", color: "white" },
-                    }}
-                  />
-                </div>
-              </div>
-
-              {selectedDate && (
-                <>
-                  <h3 className="text-lg font-medium text-gray-900 mb-4">
-                    Chọn khung giờ xét nghiệm cho ngày{" "}
-                    {format(selectedDate, "dd/MM/yyyy")}
-                  </h3>
-
-                  <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
-                    {timeSlots.map((timeSlot) => (
-                      <button
-                        key={timeSlot}
-                        type="button"
-                        onClick={() => handleTimeSlotSelect(timeSlot)}
-                        className={`py-2 px-4 border rounded-md text-center ${
-                          selectedTimeSlot === timeSlot
-                            ? "bg-blue-600 text-white border-blue-600"
-                            : "border-gray-300 hover:bg-gray-50"
-                        }`}
-                      >
-                        {timeSlot}
-                      </button>
-                    ))}
-                  </div>
-                </>
-              )}
-
-              <div className="mt-8 bg-blue-50 p-4 rounded-md border border-blue-100">
-                <h4 className="font-medium text-gray-700 mb-2">
-                  Dịch vụ đã chọn:
-                </h4>
-                <ul className="space-y-1">
-                  {selectedServices.map((service) => (
-                    <li
-                      key={service.service_id}
-                      className="flex justify-between"
-                    >
-                      <span>{service.name}</span>
-                      <span>{formatPrice(service.price)}</span>
-                    </li>
-                  ))}
-                </ul>
-                <div className="mt-3 pt-2 border-t border-blue-100 flex justify-between font-medium">
-                  <span>Tổng chi phí:</span>
-                  <span>{formatPrice(calculateTotalAmount())}</span>
-                </div>
-              </div>
-            </div>
-
-            <div className="px-4 py-3 bg-gray-50 text-right sm:px-6 flex justify-between">
-              <button
-                onClick={handlePreviousStep}
-                className="inline-flex justify-center py-2 px-4 border border-gray-300 shadow-sm text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
-              >
-                Quay lại
-              </button>
-              <button
-                onClick={handleNextStep}
-                className="inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
-              >
-                Tiếp tục
-              </button>
-            </div>
-          </div>
+          <AppointmentDateStep
+            selectedDate={selectedDate}
+            setSelectedDate={setSelectedDate}
+            timeSlots={timeSlots}
+            selectedTimeSlot={selectedTimeSlot}
+            handleTimeSlotSelect={handleTimeSlotSelect}
+            selectedServices={selectedServices}
+            formatPrice={formatPrice}
+            calculateTotalAmount={calculateTotalAmount}
+            handleNextStep={handleNextStep}
+            handlePreviousStep={handlePreviousStep}
+          />
         )}
 
-        {/* Step 3: Xác nhận và thanh toán */}
         {currentStep === 3 && (
-          <div className="bg-white shadow overflow-hidden sm:rounded-lg">
-            <div className="px-4 py-5 sm:px-6 bg-blue-50">
-              <h2 className="text-lg font-medium text-gray-900">
-                Bước 3: Xác nhận và thanh toán
-              </h2>
-              <p className="mt-1 max-w-2xl text-sm text-gray-500">
-                Vui lòng xác nhận thông tin và tiến hành thanh toán
-              </p>
-            </div>
-
-            <div className="border-t border-gray-200 px-4 py-5 sm:p-6">
-              <div className="mb-6">
-                <h3 className="text-lg font-medium text-gray-900 mb-3">
-                  Thông tin cá nhân
-                </h3>
-                <div className="bg-gray-50 p-4 rounded-md">
-                  <dl className="grid grid-cols-1 gap-x-4 gap-y-4 sm:grid-cols-2">
-                    <div className="sm:col-span-1">
-                      <dt className="text-sm font-medium text-gray-500">
-                        Họ tên
-                      </dt>
-                      <dd className="mt-1 text-sm text-gray-900">
-                        {userInfo.fullName}
-                      </dd>
-                    </div>
-                    <div className="sm:col-span-1">
-                      <dt className="text-sm font-medium text-gray-500">
-                        Email
-                      </dt>
-                      <dd className="mt-1 text-sm text-gray-900">
-                        {userInfo.email}
-                      </dd>
-                    </div>
-                    <div className="sm:col-span-1">
-                      <dt className="text-sm font-medium text-gray-500">
-                        Số điện thoại
-                      </dt>
-                      <dd className="mt-1 text-sm text-gray-900">
-                        {userInfo.phone}
-                      </dd>
-                    </div>
-                    <div className="sm:col-span-1">
-                      <dt className="text-sm font-medium text-gray-500">
-                        Giới tính
-                      </dt>
-                      <dd className="mt-1 text-sm text-gray-900">
-                        {userInfo.gender === "male"
-                          ? "Nam"
-                          : userInfo.gender === "female"
-                          ? "Nữ"
-                          : "Khác"}
-                      </dd>
-                    </div>
-                  </dl>
-                </div>
-              </div>
-
-              <div className="mb-6">
-                <h3 className="text-lg font-medium text-gray-900 mb-3">
-                  Thông tin lịch hẹn
-                </h3>
-                <div className="bg-gray-50 p-4 rounded-md">
-                  <dl className="grid grid-cols-1 gap-x-4 gap-y-4 sm:grid-cols-2">
-                    <div className="sm:col-span-1">
-                      <dt className="text-sm font-medium text-gray-500">
-                        Ngày xét nghiệm
-                      </dt>
-                      <dd className="mt-1 text-sm text-gray-900">
-                        {format(selectedDate, "dd/MM/yyyy")}
-                      </dd>
-                    </div>
-                    <div className="sm:col-span-1">
-                      <dt className="text-sm font-medium text-gray-500">
-                        Giờ xét nghiệm
-                      </dt>
-                      <dd className="mt-1 text-sm text-gray-900">
-                        {selectedTimeSlot}
-                      </dd>
-                    </div>
-                  </dl>
-                </div>
-              </div>
-
-              <div className="mb-6">
-                <h3 className="text-lg font-medium text-gray-900 mb-3">
-                  Dịch vụ đã chọn
-                </h3>
-                <div className="bg-gray-50 p-4 rounded-md">
-                  <table className="min-w-full divide-y divide-gray-200">
-                    <thead className="bg-gray-50">
-                      <tr>
-                        <th
-                          scope="col"
-                          className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
-                        >
-                          Tên dịch vụ
-                        </th>
-                        <th
-                          scope="col"
-                          className="px-3 py-2 text-right text-xs font-medium text-gray-500 uppercase tracking-wider"
-                        >
-                          Giá tiền
-                        </th>
-                      </tr>
-                    </thead>
-                    <tbody className="bg-white divide-y divide-gray-200">
-                      {selectedServices.map((service) => (
-                        <tr key={service.service_id}>
-                          <td className="px-3 py-2 whitespace-nowrap text-sm text-gray-900">
-                            {service.name}
-                          </td>
-                          <td className="px-3 py-2 whitespace-nowrap text-sm text-gray-900 text-right">
-                            {formatPrice(service.price)}
-                          </td>
-                        </tr>
-                      ))}
-                      <tr className="bg-gray-50">
-                        <td className="px-3 py-2 whitespace-nowrap text-sm font-medium text-gray-900">
-                          Tổng cộng
-                        </td>
-                        <td className="px-3 py-2 whitespace-nowrap text-sm font-medium text-blue-600 text-right">
-                          {formatPrice(calculateTotalAmount())}
-                        </td>
-                      </tr>
-                    </tbody>
-                  </table>
-                </div>
-              </div>
-
-              {medicalHistory && (
-                <div className="mb-6">
-                  <h3 className="text-lg font-medium text-gray-900 mb-3">
-                    Lịch sử bệnh
-                  </h3>
-                  <div className="bg-gray-50 p-4 rounded-md">
-                    <p className="text-sm text-gray-900">{medicalHistory}</p>
-                  </div>
-                </div>
-              )}
-
-              <div className="mt-6">
-                <h3 className="text-lg font-medium text-gray-900 mb-3">
-                  Phương thức thanh toán
-                </h3>
-                <div className="space-y-4">
-                  <div className="flex items-center">
-                    <input
-                      id="vnpay"
-                      name="paymentMethod"
-                      type="radio"
-                      value="vnpay"
-                      checked={paymentMethod === "vnpay"}
-                      onChange={handlePaymentMethodChange}
-                      className="focus:ring-blue-500 h-4 w-4 text-blue-600 border-gray-300"
-                    />
-                    <label
-                      htmlFor="vnpay"
-                      className="ml-3  text-sm font-medium text-gray-700 flex items-center"
-                    >
-                      <img
-                        src={vnpay_ico}
-                        alt="VNPAY"
-                        className="h-5 w-auto mr-2"
-                      />
-                      VNPAY
-                    </label>
-                  </div>
-                  <div className="flex items-center">
-                    <input
-                      id="cash"
-                      name="paymentMethod"
-                      type="radio"
-                      value="cash"
-                      checked={paymentMethod === "cash"}
-                      onChange={handlePaymentMethodChange}
-                      className="focus:ring-blue-500 h-4 w-4 text-blue-600 border-gray-300"
-                    />
-                    <label
-                      htmlFor="cash"
-                      className="ml-3  text-sm font-medium text-gray-700 flex items-center"
-                    >
-                      <svg
-                        xmlns="http://www.w3.org/2000/svg"
-                        className="h-6 w-6 mr-2 text-green-600"
-                        fill="none"
-                        viewBox="0 0 24 24"
-                        stroke="currentColor"
-                      >
-                        <path
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                          strokeWidth={2}
-                          d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2z"
-                        />
-                      </svg>
-                      Thanh toán khi đến khám
-                    </label>
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            <div className="px-4 py-3 bg-gray-50 text-right sm:px-6 flex justify-between">
-              <button
-                onClick={handlePreviousStep}
-                className="inline-flex justify-center py-2 px-4 border border-gray-300 shadow-sm text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
-                disabled={loading}
-              >
-                Quay lại
-              </button>
-              <button
-                onClick={handleNextStep}
-                className="inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
-                disabled={loading}
-              >
-                {loading ? (
-                  <span className="flex items-center">
-                    <svg
-                      className="animate-spin -ml-1 mr-2 h-4 w-4 text-white"
-                      xmlns="http://www.w3.org/2000/svg"
-                      fill="none"
-                      viewBox="0 0 24 24"
-                    >
-                      <circle
-                        className="opacity-25"
-                        cx="12"
-                        cy="12"
-                        r="10"
-                        stroke="currentColor"
-                        strokeWidth="4"
-                      ></circle>
-                      <path
-                        className="opacity-75"
-                        fill="currentColor"
-                        d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
-                      ></path>
-                    </svg>
-                    Đang xử lý...
-                  </span>
-                ) : (
-                  "Xác nhận và thanh toán"
-                )}
-              </button>
-            </div>
-          </div>
+          <ConfirmationStep
+            userInfo={userInfo}
+            selectedDate={selectedDate}
+            selectedTimeSlot={selectedTimeSlot}
+            selectedServices={selectedServices}
+            medicalHistory={medicalHistory}
+            paymentMethod={paymentMethod}
+            handlePaymentMethodChange={handlePaymentMethodChange}
+            formatPrice={formatPrice}
+            calculateTotalAmount={calculateTotalAmount}
+            handleNextStep={handleNextStep}
+            handlePreviousStep={handlePreviousStep}
+            loading={loading}
+            paymentProcessing={paymentProcessing}
+          />
         )}
 
-        {/* Step 4: Hoàn tất */}
         {currentStep === 4 && isPaymentComplete && appointmentDetails && (
-          <div className="bg-white shadow overflow-hidden sm:rounded-lg">
-            <div className="px-4 py-5 sm:px-6 bg-green-50">
-              <div className="flex items-center">
-                <div className="flex-shrink-0 bg-green-100 rounded-full p-2">
-                  <svg
-                    className="h-8 w-8 text-green-600"
-                    xmlns="http://www.w3.org/2000/svg"
-                    fill="none"
-                    viewBox="0 0 24 24"
-                    stroke="currentColor"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                      d="M5 13l4 4L19 7"
-                    />
-                  </svg>
-                </div>
-                <h2 className="ml-3 text-lg font-medium text-gray-900">
-                  Đặt lịch thành công!
-                </h2>
-              </div>
-              <p className="mt-1 max-w-2xl text-sm text-gray-500">
-                Cảm ơn bạn đã đặt lịch xét nghiệm. Vui lòng đến đúng giờ và mang
-                theo giấy tờ tùy thân.
-              </p>
-            </div>
-
-            <div className="border-t border-gray-200 px-4 py-5 sm:p-6">
-              <div className="mb-6">
-                <h3 className="text-lg font-medium text-gray-900 mb-3">
-                  Chi tiết lịch hẹn
-                </h3>
-                <div className="bg-blue-50 p-4 rounded-md border border-blue-100">
-                  <dl className="grid grid-cols-1 gap-x-4 gap-y-4 sm:grid-cols-2">
-                    <div className="sm:col-span-1">
-                      <dt className="text-sm font-medium text-gray-500">
-                        Trạng thái thanh toán
-                      </dt>
-                      <dd className="mt-1 text-sm">
-                        <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
-                          Đã thanh toán
-                        </span>
-                      </dd>
-                    </div>
-                    <div className="sm:col-span-1">
-                      <dt className="text-sm font-medium text-gray-500">
-                        Ngày xét nghiệm
-                      </dt>
-                      <dd className="mt-1 text-sm text-gray-900">
-                        {appointmentDetails.appointmentDate}
-                      </dd>
-                    </div>
-                    <div className="sm:col-span-1">
-                      <dt className="text-sm font-medium text-gray-500">
-                        Giờ xét nghiệm
-                      </dt>
-                      <dd className="mt-1 text-sm text-gray-900">
-                        {appointmentDetails.appointmentTime}
-                      </dd>
-                    </div>
-                    <div className="sm:col-span-2">
-                      <dt className="text-sm font-medium text-gray-500">
-                        Phương thức thanh toán
-                      </dt>
-                      <dd className="mt-1 text-sm text-gray-900">
-                        {appointmentDetails.payment_method === "vnpay" &&
-                          "VNPAY"}
-                        {appointmentDetails.payment_method === "cash" &&
-                          "Thanh toán khi đến khám"}
-                      </dd>
-                    </div>
-                  </dl>
-                </div>
-              </div>
-
-              <div className="mb-6">
-                <h3 className="text-lg font-medium text-gray-900 mb-3">
-                  Thông tin cá nhân
-                </h3>
-                <div className="bg-gray-50 p-4 rounded-md">
-                  <dl className="grid grid-cols-1 gap-x-4 gap-y-4 sm:grid-cols-2">
-                    <div className="sm:col-span-1">
-                      <dt className="text-sm font-medium text-gray-500">
-                        Họ tên
-                      </dt>
-                      <dd className="mt-1 text-sm text-gray-900">
-                        {appointmentDetails.userInfo.fullName}
-                      </dd>
-                    </div>
-                    <div className="sm:col-span-1">
-                      <dt className="text-sm font-medium text-gray-500">
-                        Email
-                      </dt>
-                      <dd className="mt-1 text-sm text-gray-900">
-                        {appointmentDetails.userInfo.email}
-                      </dd>
-                    </div>
-                    <div className="sm:col-span-1">
-                      <dt className="text-sm font-medium text-gray-500">
-                        Số điện thoại
-                      </dt>
-                      <dd className="mt-1 text-sm text-gray-900">
-                        {appointmentDetails.userInfo.phone}
-                      </dd>
-                    </div>
-                    <div className="sm:col-span-1">
-                      <dt className="text-sm font-medium text-gray-500">
-                        Giới tính
-                      </dt>
-                      <dd className="mt-1 text-sm text-gray-900">
-                        {appointmentDetails.userInfo.gender === "male"
-                          ? "Nam"
-                          : appointmentDetails.userInfo.gender === "female"
-                          ? "Nữ"
-                          : "Khác"}
-                      </dd>
-                    </div>
-                  </dl>
-                </div>
-              </div>
-
-              <div className="mb-6">
-                <h3 className="text-lg font-medium text-gray-900 mb-3">
-                  Dịch vụ đã đặt
-                </h3>
-                <div className="bg-gray-50 p-4 rounded-md">
-                  <table className="min-w-full divide-y divide-gray-200">
-                    <thead className="bg-gray-50">
-                      <tr>
-                        <th
-                          scope="col"
-                          className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
-                        >
-                          Tên dịch vụ
-                        </th>
-                        <th
-                          scope="col"
-                          className="px-3 py-2 text-right text-xs font-medium text-gray-500 uppercase tracking-wider"
-                        >
-                          Giá tiền
-                        </th>
-                      </tr>
-                    </thead>
-                    <tbody className="bg-white divide-y divide-gray-200">
-                      {appointmentDetails.services.map((service) => (
-                        <tr key={service.service_id}>
-                          <td className="px-3 py-2 whitespace-nowrap text-sm text-gray-900">
-                            {service.name}
-                          </td>
-                          <td className="px-3 py-2 whitespace-nowrap text-sm text-gray-900 text-right">
-                            {formatPrice(service.price)}
-                          </td>
-                        </tr>
-                      ))}
-                      <tr className="bg-gray-50">
-                        <td className="px-3 py-2 whitespace-nowrap text-sm font-medium text-gray-900">
-                          Tổng cộng
-                        </td>
-                        <td className="px-3 py-2 whitespace-nowrap text-sm font-medium text-blue-600 text-right">
-                          {formatPrice(appointmentDetails.totalAmount)}
-                        </td>
-                      </tr>
-                    </tbody>
-                  </table>
-                </div>
-              </div>
-
-              <div className="mt-8">
-                <div className="text-center">
-                  <PDFDownloadLink
-                    document={<AppointmentPDF />}
-                    fileName={`lich-hen-xet-nghiem-${appointmentDetails.appointmentId}.pdf`}
-                    className="inline-flex items-center justify-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 mr-4"
-                  >
-                    {({ blob, url, loading, error }) =>
-                      loading ? (
-                        "Đang tạo PDF..."
-                      ) : (
-                        <>
-                          <svg
-                            xmlns="http://www.w3.org/2000/svg"
-                            className="h-5 w-5 mr-2"
-                            fill="none"
-                            viewBox="0 0 24 24"
-                            stroke="currentColor"
-                          >
-                            <path
-                              strokeLinecap="round"
-                              strokeLinejoin="round"
-                              strokeWidth={2}
-                              d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"
-                            />
-                          </svg>
-                          Tải xuống PDF
-                        </>
-                      )
-                    }
-                  </PDFDownloadLink>
-
-                  <button
-                    onClick={() => window.print()}
-                    className="inline-flex items-center justify-center px-4 py-2 border border-gray-300 shadow-sm text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
-                  >
-                    <svg
-                      xmlns="http://www.w3.org/2000/svg"
-                      className="h-5 w-5 mr-2"
-                      fill="none"
-                      viewBox="0 0 24 24"
-                      stroke="currentColor"
-                    >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth={2}
-                        d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"
-                      />
-                    </svg>
-                    In lịch hẹn
-                  </button>
-                </div>
-              </div>
-            </div>
-
-            <div className="px-4 py-3 bg-gray-50 sm:px-6 text-center">
-              <button
-                onClick={() => navigate("/")}
-                className="inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
-              >
-                Về trang chủ
-              </button>
-            </div>
-          </div>
+          <CompletionStep
+            appointmentDetails={appointmentDetails}
+            formatPrice={formatPrice}
+            navigate={navigate}
+          />
         )}
+
+        {/* Hiển thị trạng thái thanh toán */}
+        <PaymentStatus
+          paymentError={paymentError}
+          paymentErrorMessage={paymentErrorMessage}
+          setPaymentError={setPaymentError}
+          paymentMethod={paymentMethod}
+          paymentProcessing={paymentProcessing}
+          isPaymentComplete={isPaymentComplete}
+        />
       </div>
     </div>
   );
