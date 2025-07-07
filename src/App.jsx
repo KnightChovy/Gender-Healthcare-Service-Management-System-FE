@@ -39,6 +39,7 @@ import MyAppointments from "./page/account/MyAppointments";
 import GeminiChatbot from "./components/ui/GeminiChatbot";
 import FeedbackAppointment from "./page/Feedback/FeedbackAppointment";
 import Feedback from "./page/Feedback/Feedback";
+import MenstrualCycle from "./page/MenstrualCycle";
 
 import { useEffect, useState } from "react";
 import { TestAppointment } from "./page/manager/TestAppointment/TestAppointment";
@@ -188,6 +189,14 @@ function App() {
           element={
             <LayoutAccount>
               <Feedback />
+            </LayoutAccount>
+          }
+        ></Route>
+        <Route
+          path="/services/menstrual-cycle"
+          element={
+            <LayoutAccount>
+              <MenstrualCycle />
             </LayoutAccount>
           }
         ></Route>

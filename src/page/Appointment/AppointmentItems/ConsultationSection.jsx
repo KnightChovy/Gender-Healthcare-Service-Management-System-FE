@@ -1,8 +1,4 @@
 import React from 'react'
-import classNames from 'classnames/bind';
-import styles from '../Appointment.module.scss';
-
-const cx = classNames.bind(styles);
 
 function ConsultationSection({ formData, errors, onChange }) {
     const consultationTypes = [
@@ -15,14 +11,19 @@ function ConsultationSection({ formData, errors, onChange }) {
     ];
 
     return (  
-        <div className={cx('form-section')}>
-            <h3>🩺 Loại tư vấn</h3>
-            <div className={cx('consultation-grid')}>
+        <div className="mb-8">
+            <h3 className="text-lg font-medium text-gray-900 mb-4">
+                🩺 Loại tư vấn <span className="text-red-500">*</span>
+            </h3>
+            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
                 {consultationTypes.map(type => (
                     <label
                         key={type.value}
-                        className={cx('consultation-card', { selected: formData.consultationType === type.value })}
-                        aria-label={type.label}
+                        className={`relative rounded-lg border p-4 cursor-pointer focus:outline-none transition-all duration-200 ${
+                            formData.consultationType === type.value
+                                ? 'border-blue-500 ring-2 ring-blue-500 bg-blue-50'
+                                : 'border-gray-300 hover:border-gray-400'
+                        }`}
                     >
                         <input
                             type="radio"
@@ -30,15 +31,26 @@ function ConsultationSection({ formData, errors, onChange }) {
                             value={type.value}
                             checked={formData.consultationType === type.value}
                             onChange={onChange}
+                            className="sr-only"
                         />
-                        <div className={cx('card-content')}>
-                            <span className={cx('card-icon')}>{type.icon}</span>
-                            <span className={cx('card-label')}>{type.label}</span>
+                        <div className="flex items-center">
+                            <div className="flex-shrink-0">
+                                <span className="text-2xl">{type.icon}</span>
+                            </div>
+                            <div className="ml-3">
+                                <span className={`block text-sm font-medium ${
+                                    formData.consultationType === type.value ? 'text-blue-900' : 'text-gray-900'
+                                }`}>
+                                    {type.label}
+                                </span>
+                            </div>
                         </div>
                     </label>
                 ))}
             </div>
-            {errors.consultationType && <span className={cx('error-message')}>{errors.consultationType}</span>}
+            {errors.consultationType && (
+                <p className="mt-2 text-sm text-red-600">{errors.consultationType}</p>
+            )}
         </div>
     );
 }

@@ -5,7 +5,7 @@ import {
   faCalendarAlt, faClock, faUserMd, faPhone, faEnvelope, faStethoscope,
   faNotesMedical, faMoneyBillWave, faEye, faEdit, faTrash, faFilter, faSearch,
   faSpinner, faExclamationTriangle, faCheckCircle, faTimesCircle, faHourglassHalf,
-  faCalendarCheck, faRefresh, faCreditCard, faVideo, faStar, faFlaskVial // Thêm faFlaskVial
+  faCalendarCheck, faRefresh, faCreditCard, faVideo, faStar, faFlaskVial
 } from '@fortawesome/free-solid-svg-icons';
 import axiosClient from '../../services/axiosClient';
 import classNames from 'classnames/bind';
@@ -36,6 +36,33 @@ function MyAppointments() {
   const appointmentsPerPage = 6;
   const user = JSON.parse(localStorage.getItem('user') || '{}');
   const accessToken = localStorage.getItem('accessToken');
+
+  // Helper function to check if appointment has feedback
+  const checkFeedbackStatus = (appointment) => {
+    // Check if appointment has feedback array and valid rating
+    return !!appointment.feedback;
+  };
+
+  // Handle feedback navigation
+  const handleFeedbackNavigation = (appointment) => {
+    const appointmentId = appointment.appointment_id || appointment.id;
+    const hasFeedback = checkFeedbackStatus(appointment);
+
+    if (hasFeedback) {
+      // Đã đánh giá -> đi trang chủ feedback với highlight
+      navigate("/feedback", {
+        state: { 
+          highlightAppointment: appointmentId,
+          message: "Bạn đã đánh giá buổi tư vấn này. Xem lại đánh giá của bạn bên dưới."
+        }
+      });
+    } else {
+      // Chưa đánh giá -> đi trang đánh giá
+      navigate(`/feedback/consultation/${appointmentId}`, {
+        state: { appointmentData: appointment }
+      });
+    }
+  };
 
   // Cập nhật statusConfig để thêm status completed
   const statusConfig = {
@@ -139,9 +166,7 @@ function MyAppointments() {
 
   const handleJoinMeeting = (appointment) => {
     const meetUrl = 'https://meet.google.com/ymf-dwbi-uhy';
-
     window.open(meetUrl, '_blank', 'noopener,noreferrer');
-
     console.log(`User joined meeting for appointment ${appointment.id}`);
   };
 
@@ -215,7 +240,7 @@ function MyAppointments() {
     { label: 'Chờ xác nhận', value: appointments.filter(apt => apt.status === 'pending').length },
     { label: 'Đã xác nhận', value: appointments.filter(apt => apt.status === 'confirmed' && apt.booking === 0).length },
     { label: 'Đã hoàn thành thanh toán', value: appointments.filter(apt => apt.status === 'confirmed' && apt.booking === 1).length },
-    { label: 'Đã hoàn thành tư vấn', value: appointments.filter(apt => apt.status === 'completed').length }, // Thêm completed
+    { label: 'Đã hoàn thành tư vấn', value: appointments.filter(apt => apt.status === 'completed').length },
     { label: 'Đã hủy', value: appointments.filter(apt => apt.status === 'rejected').length }
   ];
 
@@ -270,7 +295,7 @@ function MyAppointments() {
               <option value="pending">Chờ xác nhận</option>
               <option value="confirmed">Đã xác nhận</option>
               <option value="success">Đã hoàn thành thanh toán</option>
-              <option value="completed">Đã hoàn thành tư vấn</option> {/* Thêm completed */}
+              <option value="completed">Đã hoàn thành tư vấn</option>
               <option value="rejected">Đã hủy</option>
             </select>
           </div>
@@ -303,13 +328,13 @@ function MyAppointments() {
           <div className={cx('appointments-grid')}>
             {currentAppointments.map((appointment) => {
               const statusInfo = getStatusInfo(appointment.status);
+              const hasFeedback = checkFeedbackStatus(appointment);
               
               const needsPayment = appointment.status === 'confirmed' &&
                 appointment.booking === 0 &&
                 appointment.price_apm &&
                 appointment.price_apm > 0;
 
-              // Chỉ kiểm tra ngày, không cần kiểm tra giờ
               const canJoinMeeting = appointment.status === 'confirmed' && 
                                    appointment.booking === 1 && 
                                    isConsultationDay(appointment.appointment_date);
@@ -323,10 +348,9 @@ function MyAppointments() {
                       color: statusInfo.textColor
                     }}>
                       <FontAwesomeIcon icon={statusInfo.icon} />
-                      {/* Logic hiển thị label dựa trên booking */}
                       {appointment.status === 'confirmed' && appointment.booking === 0 && 'Chờ thanh toán'}
                       {appointment.status === 'confirmed' && appointment.booking === 1 && 'Đã hoàn thành thanh toán'}
-                      {appointment.status === 'completed' && 'Đã hoàn thành tư vấn'} {/* Thêm completed */}
+                      {appointment.status === 'completed' && 'Đã hoàn thành tư vấn'}
                       {!['confirmed', 'completed'].includes(appointment.status) && statusInfo.label}
                     </div>
 
@@ -336,9 +360,17 @@ function MyAppointments() {
                         <span>Cần thanh toán</span>
                       </div>
                     )}
+
+                    {/* Feedback status indicator */}
+                    {appointment.status === 'completed' && (
+                      <div className={cx('feedback-indicator', { 'has-feedback': hasFeedback })}>
+                        <FontAwesomeIcon icon={faStar} />
+                        <span>{hasFeedback ? 'Đã đánh giá' : 'Chưa đánh giá'}</span>
+                      </div>
+                    )}
                   </div>
 
-                  {/* Content - Price formatting */}
+                  {/* Content */}
                   <div className={cx('card-content')}>
                     <div className={cx('info-section')}>
                       <h3 className={cx('patient-name')}>
@@ -390,9 +422,9 @@ function MyAppointments() {
                     )}
                   </div>
 
-                  {/* Actions - Sửa lại phần này */}
+                  {/* Actions */}
                   <div className={cx('card-actions')}>
-                    {/* Payment button - chỉ hiển thị khi confirmed và booking = 0 */}
+                    {/* Payment button */}
                     {needsPayment && (
                       <button
                         className={cx('action-btn', 'payment-btn')}
@@ -402,14 +434,7 @@ function MyAppointments() {
                       </button>
                     )}
 
-                    {/* Edit button - chỉ cho pending */}
-                    {appointment.status === 'pending' && (
-                      <button className={cx('action-btn', 'edit-btn')}>
-                        <FontAwesomeIcon icon={faEdit} /> Chỉnh sửa
-                      </button>
-                    )}
-
-                    {/* Cancel button - cho pending và confirmed với booking = 0 */}
+                    {/* Cancel button */}
                     {(appointment.status === 'pending' ||
                       (appointment.status === 'confirmed' && appointment.booking === 0)) && (
                         <button className={cx('action-btn', 'cancel-btn')}>
@@ -417,7 +442,7 @@ function MyAppointments() {
                         </button>
                       )}
 
-                    {/* Join Meeting button - chỉ kiểm tra ngày */}
+                    {/* Join Meeting button */}
                     {appointment.status === 'confirmed' && appointment.booking === 1 && (
                       <button
                         className={cx('action-btn', 'meeting-btn', { 
@@ -436,7 +461,7 @@ function MyAppointments() {
                       </button>
                     )}
 
-                    {/* Rebook button - chỉ cho rejected */}
+                    {/* Rebook button */}
                     {appointment.status === 'rejected' && (
                       <button
                         className={cx('action-btn', 'rebook-btn')}
@@ -449,7 +474,6 @@ function MyAppointments() {
                     {/* Actions cho completed */}
                     {appointment.status === 'completed' && (
                       <div className={cx('completed-actions')}>
-                        {/* Hàng đầu: Xem chi tiết + Đánh giá */}
                         <div className={cx('top-actions')}>
                           <button
                             className={cx('action-btn', 'view-btn')}
@@ -458,15 +482,19 @@ function MyAppointments() {
                             <FontAwesomeIcon icon={faEye} /> Xem chi tiết
                           </button>
 
+                          {/* Updated feedback button với logic mới */}
                           <button
-                            className={cx('action-btn', 'feedback-btn')}
-                            onClick={() => navigate(`/feedback/consultation/${appointment.appointment_id || appointment.id}`)}
+                            className={cx('action-btn', 'feedback-btn', { 
+                              'has-feedback': hasFeedback 
+                            })}
+                            onClick={() => handleFeedbackNavigation(appointment)}
+                            title={hasFeedback ? 'Xem lại đánh giá' : 'Đánh giá cuộc tư vấn'}
                           >
-                            <FontAwesomeIcon icon={faStar} /> Đánh giá
+                            <FontAwesomeIcon icon={faStar} />
+                            {hasFeedback ? 'Xem đánh giá' : 'Đánh giá'}
                           </button>
                         </div>
 
-                        {/* Hàng dưới: Đặt lịch xét nghiệm */}
                         <span style={{ fontSize: '0.85rem', paddingTop: '10px'}}>
                           Bạn có muốn tiếp tục đặt lịch xét nghiệm?
                         </span>
@@ -484,7 +512,7 @@ function MyAppointments() {
                       </div>
                     )}
 
-                    {/* View button cho tất cả status khác (không phải completed) */}
+                    {/* View button cho status khác */}
                     {appointment.status !== 'completed' && (
                       <button
                         className={cx('action-btn', 'view-btn')}
@@ -494,7 +522,7 @@ function MyAppointments() {
                       </button>
                     )}
 
-                    {/* Hiển thị thông báo ngày tư vấn */}
+                    {/* Meeting info */}
                     {appointment.status === 'confirmed' && appointment.booking === 1 && !canJoinMeeting && (
                       <div className={cx('meeting-info')}>
                         <FontAwesomeIcon icon={faClock} />
@@ -565,7 +593,7 @@ function MyAppointments() {
         </div>
       )}
 
-      {/* Modal - Thêm nút đặt lịch xét nghiệm trong modal */}
+      {/* Modal */}
       {showModal && selectedAppointment && (
         <div className={cx('modal-overlay')} onClick={() => setShowModal(false)}>
           <div className={cx('modal-content')} onClick={(e) => e.stopPropagation()}>
@@ -624,6 +652,19 @@ function MyAppointments() {
                   <strong>Ngày đặt:</strong>
                   <span>{formatDate(selectedAppointment.created_at)}</span>
                 </div>
+                
+                {/* Feedback status trong modal */}
+                {selectedAppointment.status === 'completed' && (
+                  <div className={cx('detail-row')}>
+                    <strong>Trạng thái đánh giá:</strong>
+                    <span className={cx('feedback-status', { 
+                      'has-feedback': checkFeedbackStatus(selectedAppointment)
+                    })}>
+                      <FontAwesomeIcon icon={faStar} />
+                      {checkFeedbackStatus(selectedAppointment) ? 'Đã đánh giá' : 'Chưa đánh giá'}
+                    </span>
+                  </div>
+                )}
               </div>
 
               {selectedAppointment.symptoms && (
@@ -642,14 +683,18 @@ function MyAppointments() {
               <div className={cx('modal-actions')}>
                 <h3>Hành động khả dụng</h3>
                 <div className={cx('action-buttons-horizontal')}>
+                  {/* Updated feedback button trong modal */}
                   <button
-                    className={cx('modal-action-btn', 'feedback-btn')}
+                    className={cx('modal-action-btn', 'feedback-btn', {
+                      'has-feedback': checkFeedbackStatus(selectedAppointment)
+                    })}
                     onClick={() => {
                       setShowModal(false);
-                      navigate(`/feedback/consultation/${selectedAppointment.appointment_id || selectedAppointment.id}`);
+                      handleFeedbackNavigation(selectedAppointment);
                     }}
                   >
-                    <FontAwesomeIcon icon={faStar} /> Đánh giá cuộc tư vấn
+                    <FontAwesomeIcon icon={faStar} />
+                    {checkFeedbackStatus(selectedAppointment) ? 'Xem đánh giá' : 'Đánh giá cuộc tư vấn'}
                   </button>
 
                   <Link
@@ -667,7 +712,13 @@ function MyAppointments() {
                 </div>
 
                 <div className={cx('action-note')}>
-                  <p>💡 <strong>Gợi ý:</strong> Sau khi tư vấn, bạn có thể đặt lịch xét nghiệm để theo dõi sức khỏe theo chỉ định của bác sĩ.</p>
+                  <p>
+                    💡 <strong>Gợi ý:</strong> 
+                    {checkFeedbackStatus(selectedAppointment) 
+                      ? ' Cảm ơn bạn đã đánh giá! Bạn có thể đặt lịch xét nghiệm để theo dõi sức khỏe theo chỉ định của bác sĩ.'
+                      : ' Sau khi tư vấn, hãy chia sẻ đánh giá của bạn và có thể đặt lịch xét nghiệm theo chỉ định của bác sĩ.'
+                    }
+                  </p>
                 </div>
               </div>
             )}

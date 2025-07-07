@@ -27,7 +27,7 @@ export const MainServiceSection = () => {
           </p>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-3 gap-8">
+        <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 gap-8">
           <div className="bg-white p-6 rounded-xl shadow-md hover:shadow-lg transition-shadow">
             <div className="bg-blue-100 p-3 rounded-full w-16 h-16 flex items-center justify-center mb-4">
               <svg
@@ -149,6 +149,51 @@ export const MainServiceSection = () => {
               onClick={() => handleNavigation("/services/doctor-consultation")}
             >
               Tìm hiểu thêm
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                className="h-5 w-5 ml-1"
+                viewBox="0 0 20 20"
+                fill="currentColor"
+              >
+                <path
+                  fillRule="evenodd"
+                  d="M12.293 5.293a1 1 0 011.414 0l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414-1.414L14.586 11H3a1 1 0 110-2h11.586l-2.293-2.293a1 1 0 010-1.414z"
+                  clipRule="evenodd"
+                />
+              </svg>
+            </button>
+          </div>
+
+          {/* Dịch vụ 4 - Theo dõi chu kì kinh nguyệt */}
+          <div className="bg-white p-6 rounded-xl shadow-md hover:shadow-lg transition-shadow">
+            <div className="bg-pink-100 p-3 rounded-full w-16 h-16 flex items-center justify-center mb-4">
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                className="h-8 w-8 text-pink-600"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"
+                />
+              </svg>
+            </div>
+            <h3 className="text-xl font-semibold text-gray-800 mb-2">
+              Theo dõi chu kì kinh nguyệt
+            </h3>
+            <p className="text-gray-600 mb-4">
+              Quản lý và theo dõi chu kì kinh nguyệt của bạn với các tính năng
+              thông minh và nhắc nhở hữu ích.
+            </p>
+            <button
+              className="text-pink-600 font-medium hover:text-pink-800 flex items-center"
+              onClick={() => handleNavigation("/services/menstrual-cycle")}
+            >
+              Bắt đầu theo dõi
               <svg
                 xmlns="http://www.w3.org/2000/svg"
                 className="h-5 w-5 ml-1"
