@@ -562,7 +562,6 @@ export const TestAppointment = () => {
                     className={cx('severity-select')}
                   >
                     <option value="">Chọn mức độ</option>
-                    <option value="light">Nhẹ</option>
                     <option value="moderate">Vừa</option>
                     <option value="severe">Nặng</option>
                   </select>
