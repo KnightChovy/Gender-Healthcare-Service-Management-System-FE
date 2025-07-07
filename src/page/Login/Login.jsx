@@ -100,34 +100,25 @@ function Login() {
       if (response.success) {
         // Extract tokens and user data with safe access
         const responseData = response.data;
-        console.log('🔍 Full response.data:', responseData);
 
         const tokens = responseData.data?.tokens;
         const userData = responseData.data?.user;
-
-        console.log('🔑 Tokens object:', tokens);
-        console.log('👤 User data:', userData);
         
         // Safely get tokens
         const accessToken = tokens.accessToken;
         const refreshToken = tokens.refreshToken;
-        
-        console.log('✅ Access token:', accessToken ? `Found (${accessToken.length} chars)` : 'NOT FOUND');
-        console.log('🔄 Refresh token:', refreshToken ? `Found (${refreshToken.length} chars)` : 'NOT FOUND');
         
         if (accessToken) {
           const tokenData = {
             accessToken: accessToken,
             refreshToken: refreshToken || ''
           };
-          console.log('💾 Storing tokens:', tokenData);
           localStorage.setItem('authTokens', JSON.stringify(tokenData));
         } else {
-          console.error('❌ No access token to store!');
+          console.error('No access token to store!');
         }
         
         // Store user data in localStorage
-        console.log('💾 Storing user data...');
         localStorage.setItem('userData', JSON.stringify(userData));
         localStorage.setItem('userType', loginType);
         
@@ -143,7 +134,6 @@ function Login() {
         
         // Navigate based on user role
         const userRole = userData?.role || userData?.user_type || 'user';
-        console.log('🔀 Navigating based on role:', userRole);
         
         switch (userRole) {
           case 'doctor':

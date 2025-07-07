@@ -98,11 +98,7 @@ function TestOrder() {
     const handleSubmit = async (e) => {
         e.preventDefault();
 
-        console.log('🚀 Test Order submission started');
-        console.log('📋 Current form data:', formData);
-
         if (!validateForm()) {
-            console.log('❌ Validation failed');
             alert('❌ Vui lòng kiểm tra lại thông tin đã nhập!');
             return;
         }
@@ -121,8 +117,6 @@ function TestOrder() {
                     userId: userProfile.user_id,
                 })
             };
-
-            console.log('💾 Saving test order data:', testOrderData);
 
             // Lưu vào localStorage
             const existingTestOrders = JSON.parse(localStorage.getItem('testOrders') || '[]');
@@ -144,9 +138,6 @@ function TestOrder() {
             const existingNotifications = JSON.parse(localStorage.getItem('notifications') || '[]');
             existingNotifications.unshift(notification); // Thêm vào đầu mảng
             localStorage.setItem('notifications', JSON.stringify(existingNotifications));
-
-            console.log('✅ Test order saved:', testOrderData);
-            console.log('🔔 Notification created:', notification);
 
             // Simulate API call
             await new Promise(resolve => setTimeout(resolve, 1000));

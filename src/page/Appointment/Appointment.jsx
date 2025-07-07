@@ -114,11 +114,7 @@ function Appointment() {
     const handleSubmit = async (e) => {
         e.preventDefault();
 
-        console.log('🚀 Form submission started');
-        console.log('📋 Current form data:', formData);
-
         const newErrors = validateForm();
-        console.log('❌ Validation errors:', newErrors);
 
         if (Object.keys(newErrors).length > 0) {
             setErrors(newErrors);
@@ -140,8 +136,6 @@ function Appointment() {
                 })
             };
 
-            console.log('💾 Saving appointment data:', appointmentData);
-
             // Lưu vào localStorage
             const existingAppointments = JSON.parse(localStorage.getItem('appointments') || '[]');
             existingAppointments.push(appointmentData);
@@ -162,9 +156,6 @@ function Appointment() {
             const existingNotifications = JSON.parse(localStorage.getItem('notifications') || '[]');
             existingNotifications.unshift(notification); // Thêm vào đầu mảng
             localStorage.setItem('notifications', JSON.stringify(existingNotifications));
-
-            console.log('✅ Appointment saved:', appointmentData);
-            console.log('🔔 Notification created:', notification);
 
             // Simulate API call
             await new Promise(resolve => setTimeout(resolve, 1000));

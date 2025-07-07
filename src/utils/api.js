@@ -72,15 +72,33 @@ export const logoutUser = async () => {
 // Auth token management
 export const authUtils = {
   setToken: (token) => {
+    // Consistent with what's used throughout the app
+    const tokenData = {
+      accessToken: token,
+      refreshToken: ''
+    };
+    localStorage.setItem('authTokens', JSON.stringify(tokenData));
+    // Also set the single token for backward compatibility
     localStorage.setItem('authToken', token);
   },
   
   getToken: () => {
+    // Try to get from authTokens first, then fallback to authToken
+    const authTokens = localStorage.getItem('authTokens');
+    if (authTokens) {
+      try {
+        const parsed = JSON.parse(authTokens);
+        return parsed.accessToken;
+      } catch (error) {
+        console.error('Error parsing authTokens:', error);
+      }
+    }
     return localStorage.getItem('authToken');
   },
   
   removeToken: () => {
     localStorage.removeItem('authToken');
+    localStorage.removeItem('authTokens');
   },
   
   setUserData: (userData) => {
@@ -106,12 +124,22 @@ export const authUtils = {
   
   logout: () => {
     localStorage.removeItem('authToken');
+    localStorage.removeItem('authTokens');
     localStorage.removeItem('userData');
     localStorage.removeItem('userType');
+    // Also clear other related data
+    localStorage.removeItem('notifications');
+    localStorage.removeItem('appointments');
+    localStorage.removeItem('testOrders');
+    localStorage.removeItem('prescriptions');
+    localStorage.removeItem('menstrualCycleData');
+    localStorage.removeItem('scheduledEmails');
   },
   
   isAuthenticated: () => {
-    return !!localStorage.getItem('authToken');
+    const authTokens = localStorage.getItem('authTokens');
+    const authToken = localStorage.getItem('authToken');
+    return !!(authTokens || authToken);
   },
 };
 

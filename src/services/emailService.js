@@ -5,8 +5,6 @@ export const EmailService = {
     // Simulate sending email
     sendEmail: async (emailData) => {
         try {
-            console.log('📧 Sending email notification:', emailData);
-            
             // Simulate API call delay
             await new Promise(resolve => setTimeout(resolve, 1000));
             
@@ -18,7 +16,6 @@ export const EmailService = {
                 scheduledDate: emailData.scheduledDate
             };
             
-            console.log('✅ Email sent successfully:', emailPayload);
             return { success: true, data: emailPayload };
             
         } catch (error) {
@@ -41,7 +38,6 @@ export const EmailService = {
         scheduledEmails.push(emailToSchedule);
         localStorage.setItem('scheduledEmails', JSON.stringify(scheduledEmails));
         
-        console.log('📅 Email scheduled:', emailToSchedule);
         return emailToSchedule;
     },
 

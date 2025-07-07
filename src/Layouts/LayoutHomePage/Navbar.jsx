@@ -13,32 +13,26 @@ const Navbar = () => {
 
   // Kiểm tra trạng thái đăng nhập
   useEffect(() => {
-    const authTokens = localStorage.getItem('authTokens');
-    const userData = localStorage.getItem('userData');
+    const isAuthenticated = api.authUtils.isAuthenticated();
+    const userData = api.authUtils.getUserData();
+    const userTypeFromStorage = api.authUtils.getUserType();
     
-    if (authTokens && userData) {
+    if (isAuthenticated && userData) {
       setIsLoggedIn(true);
-      try {
-        const user = JSON.parse(userData);
-        const userTypeFromStorage = localStorage.getItem('userType');
-        setUserRole(user.role || user.user_type || 'user');
-        setUserType(userTypeFromStorage || ''); // Lưu user_type vào state
+      setUserRole(userData.role || userData.user_type || 'user');
+      setUserType(userTypeFromStorage || '');
 
-        // Lấy tên từ first_name và last_name
-        const firstName = user.first_name || user.firstName || '';
-        const lastName = user.last_name || user.lastName || '';
-        const fullName = `${lastName} ${firstName}`.trim();
-        
-        setUserName(fullName || user.fullName || user.full_name || user.name || 'Người dùng');
-      } catch (error) {
-        console.error('Error parsing user data:', error);
-        setUserRole('user');
-        setUserName('Người dùng');
-      }
+      // Lấy tên từ first_name và last_name
+      const firstName = userData.first_name || userData.firstName || '';
+      const lastName = userData.last_name || userData.lastName || '';
+      const fullName = `${lastName} ${firstName}`.trim();
+      
+      setUserName(fullName || userData.fullName || userData.full_name || userData.name || 'Người dùng');
     } else {
       setIsLoggedIn(false);
       setUserRole(null);
       setUserName('');
+      setUserType('');
     }
   }, []);
 
@@ -170,24 +164,26 @@ const Navbar = () => {
                         )}
 
                         <button
-                          onClick={() => {
-                            localStorage.removeItem('authTokens');
-                            localStorage.removeItem('userData');
-                            localStorage.removeItem('userType');
-                            localStorage.removeItem('authToken');
-                            setIsLoggedIn(false);
-                            setUserRole(null);
-                            setUserName('');
-                            setShowDropdown(false);
-                            window.location.href = '/';
-                            const logoutUser = async () => {
-                              try {
-                                await api.logoutUser();
-                              } catch (error) {
-                                console.error('Logout failed:', error);
-                              }
-                            };
-                            logoutUser();
+                          onClick={async () => {
+                            try {
+                              // Use authUtils to clear all data consistently
+                              api.authUtils.logout();
+                              setIsLoggedIn(false);
+                              setUserRole(null);
+                              setUserName('');
+                              setUserType('');
+                              setShowDropdown(false);
+                              
+                              // Call logout API
+                              await api.logoutUser();
+                              
+                              // Redirect to home
+                              window.location.href = '/';
+                            } catch (error) {
+                              console.error('Logout failed:', error);
+                              // Still logout locally even if API fails
+                              window.location.href = '/';
+                            }
                           }}
                           className="w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-red-50 flex items-center space-x-2"
                         >

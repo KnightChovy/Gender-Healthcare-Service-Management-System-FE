@@ -167,8 +167,6 @@ const PrescriptionModal = ({ isOpen, onClose, patient, onSavePrescription }) => 
 
     const generatePrescriptionPDF = async (prescription) => {
         try {
-            console.log('Starting HTML-to-PDF generation...');
-            
             // Tạo HTML content cho PDF
             const htmlContent = `
                 <div style="font-family: Arial, sans-serif; padding: 20px; max-width: 800px; margin: 0 auto;">
@@ -270,8 +268,6 @@ const PrescriptionModal = ({ isOpen, onClose, patient, onSavePrescription }) => 
             tempDiv.style.width = '800px';
             document.body.appendChild(tempDiv);
             
-            console.log('HTML content created and appended');
-            
             // Convert HTML to canvas
             const canvas = await html2canvas(tempDiv, {
                 scale: 2,
@@ -281,8 +277,6 @@ const PrescriptionModal = ({ isOpen, onClose, patient, onSavePrescription }) => 
                 width: 800,
                 height: tempDiv.scrollHeight
             });
-            
-            console.log('Canvas created');
             
             // Remove temporary element
             document.body.removeChild(tempDiv);
@@ -310,11 +304,10 @@ const PrescriptionModal = ({ isOpen, onClose, patient, onSavePrescription }) => 
             }
             
             // Save PDF
-            const safeName = (prescription.patientName || 'Unknown').replace(/[^a-zA-Z0-9_]/g, '_');
+            const safeName = (prescription.patientName || 'Unknown').replace(/\W/g, '_');
             const fileName = `Don_thuoc_${safeName}_${new Date().toISOString().slice(0, 10)}.pdf`;
             pdf.save(fileName);
             
-            console.log('PDF saved successfully');
             return fileName;
             
         } catch (error) {

@@ -5,7 +5,6 @@ import CurrentStatus from './MenstrualCycleItems/CurrentStatus';
 import NotificationSettings from './MenstrualCycleItems/NotificationSettings';
 import HealthTips from './MenstrualCycleItems/HealthTips';
 import EmailNotifications from './MenstrualCycleItems/EmailNotifications';
-import EmailPreview from './MenstrualCycleItems/EmailPreview';
 import Navbar from '../../Layouts/LayoutHomePage/Navbar';
 import { Footer } from '../../Layouts/LayoutHomePage/Footer';
 import { EmailService } from '../../services/emailService';
@@ -219,8 +218,6 @@ function MenstrualCycle() {
         emailsToSchedule.forEach(email => {
             EmailService.scheduleEmail(email);
         });
-
-        console.log('Email notifications scheduled:', emailsToSchedule);
     };
 
     return (
@@ -258,10 +255,6 @@ function MenstrualCycle() {
 
                     <div className="lg:col-span-2">
                         <EmailNotifications cycleData={cycleData} />
-                    </div>
-
-                    <div className="lg:col-span-2">
-                        <EmailPreview />
                     </div>
                 </div>
             </div>

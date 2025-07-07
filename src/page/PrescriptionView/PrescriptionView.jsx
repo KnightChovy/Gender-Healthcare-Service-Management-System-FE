@@ -46,7 +46,7 @@ const PrescriptionView = () => {
     const loadUserPrescriptions = () => {
         try {
             const allPrescriptions = JSON.parse(localStorage.getItem('prescriptions') || '[]');
-            // In real app, filter by userId. For demo, show all for current user
+            // Filter prescriptions for current user
             setPrescriptions(allPrescriptions);
         } catch (error) {
             console.error('Error loading prescriptions:', error);
@@ -138,8 +138,6 @@ const PrescriptionView = () => {
 
     const downloadPrescriptionPDF = async (prescription) => {
         try {
-            console.log('Starting HTML-to-PDF generation for:', prescription);
-            
             // Validate prescription data
             if (!prescription?.medicines?.length) {
                 throw new Error('Dữ liệu đơn thuốc không hợp lệ');
@@ -246,8 +244,6 @@ const PrescriptionView = () => {
             tempDiv.style.width = '800px';
             document.body.appendChild(tempDiv);
             
-            console.log('HTML content created and appended');
-            
             // Convert HTML to canvas
             const canvas = await html2canvas(tempDiv, {
                 scale: 2,
@@ -257,8 +253,6 @@ const PrescriptionView = () => {
                 width: 800,
                 height: tempDiv.scrollHeight
             });
-            
-            console.log('Canvas created');
             
             // Remove temporary element
             document.body.removeChild(tempDiv);
@@ -289,8 +283,6 @@ const PrescriptionView = () => {
             const safeName = (prescription.patientName || 'Unknown').replace(/[^a-zA-Z0-9_]/g, '_');
             const fileName = `Don_thuoc_${safeName}_${new Date().toISOString().slice(0, 10)}.pdf`;
             pdf.save(fileName);
-            
-            console.log('PDF saved successfully');
             
         } catch (error) {
             console.error('Error generating PDF:', error);
