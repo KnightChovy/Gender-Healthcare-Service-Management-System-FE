@@ -1,4 +1,3 @@
-// Danh sách các loại xét nghiệm
 export const testTypes = {
     'blood-test': {
         id: 'blood-test',

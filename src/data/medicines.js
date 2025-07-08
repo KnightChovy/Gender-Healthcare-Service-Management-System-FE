@@ -1,4 +1,3 @@
-// Danh sách thuốc và đơn thuốc mẫu
 export const medicines = {
     // Thuốc giảm đau, hạ sốt
     'paracetamol': {

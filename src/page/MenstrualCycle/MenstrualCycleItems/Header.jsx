@@ -4,7 +4,7 @@ import { faCalendarAlt, faHeart } from '@fortawesome/free-solid-svg-icons';
 
 function Header() {
     return (
-        <header className="bg-gradient-to-r from-pink-500 via-purple-500 to-indigo-500 text-white py-12 px-6">
+        <header className="bg-gradient-to-r from-pink-500 via-purple-500 to-indigo-500 text-white py-12 px-6 rounded-3xl mr-3 ml-3">
             <div className="max-w-4xl mx-auto text-center">
                 {/* Icon Section */}
                 <div className="flex justify-center mb-6">

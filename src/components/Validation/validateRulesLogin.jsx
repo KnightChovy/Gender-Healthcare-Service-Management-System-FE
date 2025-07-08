@@ -1,7 +1,6 @@
 export const validateRulesLogin = (formData) => {
   const errors = {};
 
-  // Username validation
   if (!formData.username?.trim()) {
     errors.username = "Tên đăng nhập là bắt buộc";
   } else if (formData.username.length < 3) {
@@ -10,7 +9,6 @@ export const validateRulesLogin = (formData) => {
     errors.username = "Tên đăng nhập chỉ chứa chữ cái, số và dấu gạch dưới";
   }
 
-  // Password validation
   if (!formData.password?.trim()) {
     errors.password = "Mật khẩu là bắt buộc";
   } else if (formData.password.length < 8) {

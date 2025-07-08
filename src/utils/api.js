@@ -1,14 +1,11 @@
-// API configuration and utility functions
 const API_BASE_URL = 'http://52.4.72.106:3000/v1';
 
-// API endpoints
 export const API_ENDPOINTS = {
   LOGIN: `${API_BASE_URL}/auth/login`,
   LOGOUT: `${API_BASE_URL}/auth/logout`,
   REGISTER: `${API_BASE_URL}/users`,
 };
 
-// Common API request handler
 const apiRequest = async (url, options = {}) => {
   const config = {
     headers: {

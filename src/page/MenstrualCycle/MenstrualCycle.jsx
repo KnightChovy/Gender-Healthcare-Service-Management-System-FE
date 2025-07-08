@@ -34,7 +34,6 @@ function MenstrualCycle() {
     const [currentPhase, setCurrentPhase] = useState('');
     const [showSuccessMessage, setShowSuccessMessage] = useState(false);
 
-    // Load saved data on component mount
     useEffect(() => {
         const savedCycleData = localStorage.getItem('menstrualCycleData');
         if (savedCycleData) {
@@ -43,7 +42,6 @@ function MenstrualCycle() {
         }
     }, []);
 
-    // Move calculatePredictions before useEffect
     const calculatePredictions = useCallback(() => {
         if (!cycleData.lastPeriodDate) return;
         
@@ -62,7 +60,6 @@ function MenstrualCycle() {
         const fertilityEnd = new Date(ovulationDate);
         fertilityEnd.setDate(ovulationDate.getDate() + 1);
 
-        // Calculate detailed monthly info for next 6 cycles
         const detailedInfo = [];
         for (let i = 0; i < 6; i++) {
             const cycleStart = new Date(nextPeriod);
@@ -104,7 +101,6 @@ function MenstrualCycle() {
         }
     }, [cycleData.lastPeriodDate, cycleData.cycleLength, cycleData.periodLength]);
 
-    // Now useEffect can safely use calculatePredictions
     useEffect(() => {
         if (cycleData.lastPeriodDate) {
             calculatePredictions();
@@ -129,7 +125,6 @@ function MenstrualCycle() {
             return;
         }
 
-        // Validate email format
         const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
         if (!emailRegex.test(cycleData.email)) {
             alert('⚠️ Vui lòng nhập địa chỉ email hợp lệ!');
@@ -137,10 +132,8 @@ function MenstrualCycle() {
         }
 
         try {
-            // Save to localStorage
             localStorage.setItem('menstrualCycleData', JSON.stringify(cycleData));
             
-            // Setup email notifications
             setupEmailNotifications();
             
             setShowSuccessMessage(true);
@@ -153,14 +146,12 @@ function MenstrualCycle() {
     };
 
     const setupEmailNotifications = () => {
-        // Create notifications for upcoming periods and ovulation
         const notifications = [];
         const emailsToSchedule = [];
         
         if (predictions.detailedInfo) {
             predictions.detailedInfo.forEach((cycle, index) => {
                 if (cycleData.notifications.period) {
-                    // Period reminder 2 days before
                     const periodReminder = new Date(cycle.periodStart);
                     periodReminder.setDate(periodReminder.getDate() - 2);
                     
@@ -176,7 +167,6 @@ function MenstrualCycle() {
                     
                     notifications.push(periodNotification);
                     
-                    // Schedule email
                     emailsToSchedule.push({
                         ...periodNotification,
                         scheduledDate: periodReminder.toISOString()
@@ -184,7 +174,6 @@ function MenstrualCycle() {
                 }
 
                 if (cycleData.notifications.ovulation) {
-                    // Ovulation reminder 1 day before
                     const ovulationReminder = new Date(cycle.ovulation);
                     ovulationReminder.setDate(ovulationReminder.getDate() - 1);
                     
@@ -200,7 +189,6 @@ function MenstrualCycle() {
                     
                     notifications.push(ovulationNotification);
                     
-                    // Schedule email
                     emailsToSchedule.push({
                         ...ovulationNotification,
                         scheduledDate: ovulationReminder.toISOString()
@@ -209,12 +197,10 @@ function MenstrualCycle() {
             });
         }
 
-        // Save notifications to localStorage
         const existingNotifications = JSON.parse(localStorage.getItem('notifications') || '[]');
         const updatedNotifications = [...existingNotifications, ...notifications];
         localStorage.setItem('notifications', JSON.stringify(updatedNotifications));
 
-        // Schedule emails using EmailService
         emailsToSchedule.forEach(email => {
             EmailService.scheduleEmail(email);
         });
@@ -224,7 +210,6 @@ function MenstrualCycle() {
         <div className="min-h-screen bg-gradient-to-br from-pink-50 to-purple-50">
             <Navbar />
             
-            {/* Success Message */}
             {showSuccessMessage && (
                 <div className="fixed top-4 right-4 bg-green-500 text-white px-6 py-3 rounded-lg shadow-lg z-50 animate-bounce">
                     ✅ Đã lưu thông tin và thiết lập thông báo email thành công!

@@ -1,4 +1,3 @@
-// Kết quả xét nghiệm mẫu cho từng loại
 export const testResults = {
     'blood-test': {
         good: {

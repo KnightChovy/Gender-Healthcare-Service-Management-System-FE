@@ -11,7 +11,6 @@ const Navbar = () => {
   const [userType, setUserType] = useState('');
   const navigate = useNavigate();
 
-  // Kiểm tra trạng thái đăng nhập
   useEffect(() => {
     const isAuthenticated = api.authUtils.isAuthenticated();
     const userData = api.authUtils.getUserData();
@@ -22,7 +21,6 @@ const Navbar = () => {
       setUserRole(userData.role || userData.user_type || 'user');
       setUserType(userTypeFromStorage || '');
 
-      // Lấy tên từ first_name và last_name
       const firstName = userData.first_name || userData.firstName || '';
       const lastName = userData.last_name || userData.lastName || '';
       const fullName = `${lastName} ${firstName}`.trim();
@@ -36,14 +34,12 @@ const Navbar = () => {
     }
   }, []);
 
-  // Determine home path based on user role
   const getHomePath = () => {
     if (isLoggedIn && userRole === 'doctor') return '/doctor-dashboard';
     if (isLoggedIn && userRole === 'manager') return '/manager-dashboard';
     return '/';
   };
 
-  // Get role display name
   const getRoleDisplayName = () => {
     if (userRole === 'doctor') return 'Bác sĩ';
     if (userRole === 'manager') return 'Quản lý';

@@ -1,4 +1,3 @@
-// Danh sách các loại tư vấn
 export const consultationTypes = {
     'general': {
         id: 'general',
