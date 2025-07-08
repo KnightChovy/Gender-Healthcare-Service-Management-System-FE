@@ -7,114 +7,6 @@ const hashServiceId = (serviceId) => {
   return btoa(serviceId.toString()).replace(/=/g, "");
 };
 
-const consultationServices = [
-  {
-    service_id: "c1",
-    name: "Tư vấn Giáo dục Giới tính Cơ bản",
-    description:
-      "Tư vấn riêng tư với chuyên gia về kiến thức cơ bản giới tính, cơ thể và các thay đổi sinh lý.",
-    price: 250000,
-    result_wait_time: "0",
-    preparationGuidelines:
-      "Chuẩn bị câu hỏi hoặc vấn đề quan tâm. Buổi tư vấn kéo dài 45 phút.",
-    category: "consultation",
-  },
-  {
-    service_id: "c2",
-    name: "Tư vấn Tâm lý Giới và Định hướng Tính dục",
-    description:
-      "Giải đáp các thắc mắc về bản dạng giới, xu hướng tính dục và hỗ trợ tâm lý cá nhân.",
-    price: 300000,
-    result_wait_time: "0",
-    preparationGuidelines:
-      "Không cần chuẩn bị đặc biệt. Buổi tư vấn kéo dài 60 phút.",
-    category: "consultation",
-  },
-  {
-    service_id: "c3",
-    name: "Tư vấn Quan hệ An toàn và Kế hoạch hóa",
-    description:
-      "Chia sẻ kiến thức về quan hệ tình dục an toàn, tránh thai và xây dựng mối quan hệ lành mạnh.",
-    price: 200000,
-    result_wait_time: "0",
-    preparationGuidelines:
-      "Mang theo thông tin hoặc câu hỏi cụ thể liên quan nếu có.",
-    category: "consultation",
-  },
-  {
-    service_id: "c4",
-    name: "Tư vấn Phòng tránh STIs & HIV cho Thanh thiếu niên",
-    description:
-      "Tư vấn kiến thức về bệnh lây truyền qua đường tình dục và HIV phù hợp với lứa tuổi học sinh, sinh viên.",
-    price: 350000,
-    result_wait_time: "0",
-    preparationGuidelines: "Buổi tư vấn kín đáo, kéo dài 45-60 phút.",
-    category: "consultation",
-  },
-  {
-    service_id: "c5",
-    name: "Tư vấn Vấn đề Giới tính trong Mối quan hệ",
-    description:
-      "Hướng dẫn giải quyết các vấn đề về giới tính trong tình yêu, giao tiếp và đồng thuận.",
-    price: 280000,
-    result_wait_time: "0",
-    preparationGuidelines:
-      "Chuẩn bị các tình huống cụ thể nếu có. Kéo dài 50 phút.",
-    category: "consultation",
-  },
-  {
-    service_id: "c6",
-    name: "Tư vấn Phụ khoa",
-    description:
-      "Tư vấn về sức khỏe phụ khoa như kinh nguyệt không đều, viêm nhiễm, đau vùng chậu và các vấn đề liên quan.",
-    price: 320000,
-    result_wait_time: "0",
-    preparationGuidelines:
-      "Ghi lại triệu chứng cụ thể, tiền sử bệnh lý nếu có. Buổi tư vấn kéo dài 45 phút.",
-    category: "consultation",
-  },
-  {
-    service_id: "mc1",
-    name: "Khai báo chu kỳ kinh nguyệt",
-    description:
-      "Công cụ cho phép bạn khai báo kỳ kinh gần nhất, độ dài chu kỳ và số ngày hành kinh để hệ thống theo dõi và dự đoán chính xác hơn.",
-    result_wait_time: "0",
-    preparationGuidelines:
-      "Ghi nhớ ngày bắt đầu kỳ kinh nguyệt gần nhất và số ngày hành kinh trung bình.",
-    category: "cycle",
-  },
-  {
-    service_id: "mc2",
-    name: "Nhắc nhở thời gian rụng trứng",
-    description:
-      "Tự động gửi thông báo đến bạn vào ngày rụng trứng để dễ dàng theo dõi sức khỏe sinh sản hoặc tăng khả năng thụ thai.",
-    result_wait_time: "0",
-    preparationGuidelines:
-      "Cập nhật đầy đủ thông tin chu kỳ để hệ thống tính toán ngày rụng trứng chính xác.",
-    category: "cycle",
-  },
-  {
-    service_id: "mc3",
-    name: "Theo dõi khả năng mang thai",
-    description:
-      "Dự đoán khoảng thời gian có khả năng thụ thai cao dựa trên chu kỳ kinh nguyệt và ngày rụng trứng của bạn.",
-    result_wait_time: "0",
-    preparationGuidelines:
-      "Ghi nhận ngày bắt đầu kỳ kinh gần nhất và theo dõi chu kỳ đều đặn để có kết quả chính xác.",
-    category: "cycle",
-  },
-  {
-    service_id: "mc4",
-    name: "Nhắc nhở thời gian uống thuốc tránh thai",
-    description:
-      "Tạo nhắc nhở hàng ngày vào thời gian bạn chọn để không quên uống thuốc tránh thai đúng giờ.",
-    result_wait_time: "0",
-    preparationGuidelines:
-      "Chọn giờ uống thuốc cố định hàng ngày để hệ thống gửi nhắc nhở chính xác.",
-    category: "cycle",
-  },
-];
-
 export const ServicePage = () => {
   const [services, setServices] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -133,9 +25,8 @@ export const ServicePage = () => {
           // Sử dụng đúng cấu trúc API của bạn
           const testServices = (response.data.data || []).map((service) => ({
             ...service,
-            category: "test",
           }));
-          setServices([...testServices, ...consultationServices]);
+          setServices([...testServices]);
         } else {
           setError("Không thể tải dữ liệu dịch vụ");
         }
@@ -157,7 +48,7 @@ export const ServicePage = () => {
       (service.description &&
         service.description.toLowerCase().includes(searchTerm.toLowerCase()));
     const matchesCategory =
-      selectedCategory === "all" || service.category === selectedCategory;
+      selectedCategory === "all" || service.category_id === selectedCategory;
     return matchesSearch && matchesCategory;
   });
 
@@ -221,9 +112,9 @@ export const ServicePage = () => {
                 className="w-full py-3 px-4 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500"
               >
                 <option value="all">Tất cả dịch vụ</option>
-                <option value="test">Xét nghiệm</option>
-                <option value="consultation">Tư vấn</option>
-                <option value="cycle">Chu kỳ kinh nguyệt</option>
+                <option value="CAT001">Xét nghiệm</option>
+                <option value="CAT002">Tư vấn</option>
+                <option value="CAT003">Chu kỳ kinh nguyệt</option>
               </select>
             </div>
           </div>
@@ -249,7 +140,7 @@ export const ServicePage = () => {
           </div>
         ) : (
           <div>
-            {selectedCategory === "all" || selectedCategory === "test" ? (
+            {selectedCategory === "all" || selectedCategory === "CAT001" ? (
               <div className="mb-12">
                 <h2 className="text-2xl font-bold mb-6 flex items-center">
                   <svg
@@ -270,7 +161,7 @@ export const ServicePage = () => {
                 </h2>
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
                   {filteredServices
-                    .filter((service) => service.category === "test")
+                    .filter((service) => service.category_id === "CAT001")
                     .map((service) => (
                       <div
                         key={service.service_id}
@@ -354,7 +245,7 @@ export const ServicePage = () => {
             ) : null}
 
             {selectedCategory === "all" ||
-            selectedCategory === "consultation" ? (
+            selectedCategory === "CAT002" ? (
               <div>
                 <h2 className="text-2xl font-bold mb-6 flex items-center">
                   <svg
@@ -375,7 +266,7 @@ export const ServicePage = () => {
                 </h2>
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
                   {filteredServices
-                    .filter((service) => service.category === "consultation")
+                    .filter((service) => service.category_id === "CAT002")
                     .map((service) => (
                       <div
                         key={service.service_id}
@@ -458,8 +349,8 @@ export const ServicePage = () => {
               </div>
             ) : null}
 
-            {selectedCategory === "all" || selectedCategory === "cycle" ? (
-              <div className="mb-12">
+            {selectedCategory === "all" || selectedCategory === "CAT003" ? (
+              <div className="mb-12 mt-12">
                 <h2 className="text-2xl font-bold mb-6 flex items-center">
                   <svg
                     xmlns="http://www.w3.org/2000/svg"
@@ -479,7 +370,7 @@ export const ServicePage = () => {
                 </h2>
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
                   {filteredServices
-                    .filter((service) => service.category === "cycle")
+                    .filter((service) => service.category_id === "CAT003")
                     .map((service) => (
                       <div
                         key={service.service_id}
