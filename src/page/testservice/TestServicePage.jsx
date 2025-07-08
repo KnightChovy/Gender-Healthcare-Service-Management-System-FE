@@ -94,8 +94,7 @@ const TestAppointmentPage = () => {
     selectedDate,
     selectedTimeSlot,
     medicalHistory,
-    paymentMethod,
-    calculateTotalAmount,
+    calculateTotalAmount, // Không cần truyền paymentMethod nữa
     appointmentId,
     completeBookingProcess,
   });
@@ -118,44 +117,6 @@ const TestAppointmentPage = () => {
     document.title = "Đặt lịch xét nghiệm | Healthcare Service";
 
     const queryParams = new URLSearchParams(location.search);
-
-    // Payment return handling from VNPay
-    const paymentStatus = queryParams.get("vnp_ResponseCode");
-    const savedSession = localStorage.getItem("currentPaymentSession");
-
-    if (paymentStatus && savedSession) {
-      try {
-        const session = JSON.parse(savedSession);
-
-        // Process successful payment
-        if (paymentStatus === "00") {
-          // Get appointment details from the saved session
-          const appointmentData = session.appointmentData;
-
-          // Complete the booking process
-          completeBookingProcess({
-            data: {
-              appointment_id: session.appointmentId,
-              // Include other necessary data from the session
-            },
-            success: true,
-          });
-
-          // Clean up the session
-          localStorage.removeItem("currentPaymentSession");
-        }
-        // Handle failed payment
-        else {
-          setPaymentError(true);
-          setPaymentErrorMessage(
-            "Thanh toán không thành công: " +
-              getVNPayErrorMessage(paymentStatus)
-          );
-        }
-      } catch (error) {
-        console.error("Error processing payment return:", error);
-      }
-    }
 
     // Original code for fetching service and appointment data
     const hashedServiceId = queryParams.get("serviceId");
@@ -308,10 +269,6 @@ const TestAppointmentPage = () => {
     setSelectedTimeSlot(timeSlot);
   };
 
-  const handlePaymentMethodChange = (e) => {
-    setPaymentMethod(e.target.value);
-  };
-
   // Xử lý khi nhấn nút tiếp theo
   const handleNextStep = () => {
     // Validate input trước khi chuyển bước tiếp theo
@@ -380,23 +337,23 @@ const TestAppointmentPage = () => {
   }
 
   // Helper function to translate VNPay error codes
-  const getVNPayErrorMessage = (code) => {
-    const errorMessages = {
-      "07": "Trừ tiền thành công, giao dịch bị nghi ngờ",
-      "09": "Giao dịch không thành công do: Thẻ/Tài khoản hết hạn sử dụng",
-      10: "Giao dịch không thành công do: Thẻ chưa đăng ký sử dụng dịch vụ",
-      11: "Giao dịch không thành công do: Thẻ bị khóa",
-      12: "Giao dịch không thành công do: Thẻ/Tài khoản không đủ số dư",
-      13: "Giao dịch không thành công do: Vượt quá hạn mức thanh toán",
-      24: "Giao dịch không thành công do: Khách hàng hủy giao dịch",
-      51: "Giao dịch không thành công do: Tài khoản không đủ số dư",
-      65: "Giao dịch không thành công do: Tài khoản đã vượt quá hạn mức thanh toán",
-      75: "Ngân hàng thanh toán đang bảo trì",
-      99: "Lỗi không xác định",
-    };
+  // const getVNPayErrorMessage = (code) => {
+  //   const errorMessages = {
+  //     "07": "Trừ tiền thành công, giao dịch bị nghi ngờ",
+  //     "09": "Giao dịch không thành công do: Thẻ/Tài khoản hết hạn sử dụng",
+  //     10: "Giao dịch không thành công do: Thẻ chưa đăng ký sử dụng dịch vụ",
+  //     11: "Giao dịch không thành công do: Thẻ bị khóa",
+  //     12: "Giao dịch không thành công do: Thẻ/Tài khoản không đủ số dư",
+  //     13: "Giao dịch không thành công do: Vượt quá hạn mức thanh toán",
+  //     24: "Giao dịch không thành công do: Khách hàng hủy giao dịch",
+  //     51: "Giao dịch không thành công do: Tài khoản không đủ số dư",
+  //     65: "Giao dịch không thành công do: Tài khoản đã vượt quá hạn mức thanh toán",
+  //     75: "Ngân hàng thanh toán đang bảo trì",
+  //     99: "Lỗi không xác định",
+  //   };
 
-    return errorMessages[code] || "Giao dịch không thành công";
-  };
+  //   return errorMessages[code] || "Giao dịch không thành công";
+  // };
 
   // Loading screen
   if (loading && currentStep === 1) {
@@ -495,8 +452,6 @@ const TestAppointmentPage = () => {
             selectedTimeSlot={selectedTimeSlot}
             selectedServices={selectedServices}
             medicalHistory={medicalHistory}
-            paymentMethod={paymentMethod}
-            handlePaymentMethodChange={handlePaymentMethodChange}
             formatPrice={formatPrice}
             calculateTotalAmount={calculateTotalAmount}
             handleNextStep={handleNextStep}

@@ -1,15 +1,13 @@
 import React from "react";
 import { format } from "date-fns";
 import { vi } from "date-fns/locale";
-import vnpay_ico from "../../../assets/VNpay_ico.png";
+
 const ConfirmationStep = ({
   userInfo,
   selectedDate,
   selectedTimeSlot,
   selectedServices,
   medicalHistory,
-  paymentMethod,
-  handlePaymentMethodChange,
   formatPrice,
   calculateTotalAmount,
   handleNextStep,
@@ -24,7 +22,7 @@ const ConfirmationStep = ({
           Bước 3: Xác nhận thông tin và thanh toán
         </h2>
         <p className="mt-1 max-w-2xl text-sm text-gray-500">
-          Vui lòng kiểm tra lại thông tin và chọn phương thức thanh toán
+          Vui lòng kiểm tra lại thông tin đặt lịch
         </p>
       </div>
 
@@ -142,46 +140,22 @@ const ConfirmationStep = ({
               Phương thức thanh toán
             </dt>
             <dd className="mt-1 text-sm text-gray-900 sm:mt-0">
-              <div className="space-y-4">
-                <div className="flex items-center">
-                  <input
-                    id="payment-cash"
-                    name="payment-method"
-                    type="radio"
-                    value="cash"
-                    checked={paymentMethod === "cash"}
-                    onChange={handlePaymentMethodChange}
-                    className="focus:ring-blue-500 h-4 w-4 text-blue-600 border-gray-300"
-                  />
-                  <label
-                    htmlFor="payment-cash"
-                    className="ml-3 block text-sm font-medium text-gray-700"
-                  >
-                    Thanh toán tiền mặt (tại cơ sở y tế)
-                  </label>
-                </div>
-                <div className="flex items-center">
-                  <input
-                    id="payment-vnpay"
-                    name="payment-method"
-                    type="radio"
-                    value="vnpay"
-                    checked={paymentMethod === "vnpay"}
-                    onChange={handlePaymentMethodChange}
-                    className="focus:ring-blue-500 h-4 w-4 text-blue-600 border-gray-300"
-                  />
-                  <label
-                    htmlFor="payment-vnpay"
-                    className="ml-3 flex items-center text-sm font-medium text-gray-700"
-                  >
-                    <img
-                      src={vnpay_ico}
-                      alt="VNPay Logo"
-                      className="h-6 ml-2 mr-1"
-                    />
-                    <span>Thanh toán qua VNPay</span>
-                  </label>
-                </div>
+              <div className="flex items-center">
+                <input
+                  id="payment-cash"
+                  name="payment-method"
+                  type="radio"
+                  value="cash"
+                  checked={true}
+                  disabled={true}
+                  className="focus:ring-blue-500 h-4 w-4 text-blue-600 border-gray-300"
+                />
+                <label
+                  htmlFor="payment-cash"
+                  className="ml-3 block text-sm font-medium text-gray-700"
+                >
+                  Thanh toán tiền mặt (tại cơ sở y tế)
+                </label>
               </div>
             </dd>
           </div>
@@ -225,7 +199,7 @@ const ConfirmationStep = ({
               {paymentProcessing ? "Đang xử lý thanh toán..." : "Đang xử lý..."}
             </span>
           ) : (
-            "Xác nhận và thanh toán"
+            "Xác nhận đặt lịch"
           )}
         </button>
       </div>

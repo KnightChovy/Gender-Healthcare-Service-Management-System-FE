@@ -36,7 +36,7 @@ export const ServiceCards = ({ service }) => {
       ),
       badge: "Tư vấn trực tiếp",
       badgeColor: "indigo",
-      pathName: "/services/consultation",
+      pathName: "/services/appointment-consultation",
       buttonText: "Đặt lịch tư vấn",
     },
   };
@@ -72,7 +72,7 @@ export const ServiceCards = ({ service }) => {
                 </span>
               </div>
             )}
-            <h3 className="text-xl font-bold h-12">{service.name}</h3>
+            <h3 className="text-[17px] font-bold h-12">{service.name}</h3>
           </div>
           <div className={`font-bold text-${config.color}-600`}>
             {service.price && (

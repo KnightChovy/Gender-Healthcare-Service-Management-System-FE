@@ -8,7 +8,6 @@ export const usePaymentProcessing = ({
   selectedDate,
   selectedTimeSlot,
   medicalHistory,
-  paymentMethod,
   calculateTotalAmount,
   appointmentId,
   completeBookingProcess,
@@ -45,6 +44,7 @@ export const usePaymentProcessing = ({
       }));
 
       const totalAmount = calculateTotalAmount();
+      const paymentMethod = "cash"; // Luôn sử dụng thanh toán tiền mặt
 
       // Lưu session thanh toán vào localStorage
       localStorage.setItem(
@@ -67,61 +67,28 @@ export const usePaymentProcessing = ({
         })
       );
 
-      if (paymentMethod === "cash") {
-        // Thanh toán tiền mặt
-        const requestBody = {
-          bookingData: {
-            appointment_id: appointmentId || null,
-            user_id: userInfo.user_id,
-            serviceData: serviceId,
-            payment_method: paymentMethod,
-            appointment_date: format(selectedDate, "yyyy-MM-dd"),
-            appointment_time: selectedTimeSlot,
-          },
-        };
-
-        const res = await axiosClient.post(
-          "/v1/services/bookingService",
-          requestBody,
-          { timeout: 15000 }
-        );
-
-        if (res && res.data && res.data.success) {
-          completeBookingProcess(res.data);
-        } else {
-          throw new Error("Không thể hoàn tất đặt lịch, vui lòng thử lại");
-        }
-      } else if (paymentMethod === "vnpay") {
-        // Thanh toán VNPay
-        const accessToken = localStorage.getItem("accessToken");
-
-        const paymentData = {
-          user_id: parseInt(userInfo.user_id),
-          price: Math.floor(totalAmount),
+      // Thanh toán tiền mặt
+      const requestBody = {
+        bookingData: {
           appointment_id: appointmentId || null,
+          user_id: userInfo.user_id,
           serviceData: serviceId,
+          payment_method: paymentMethod,
           appointment_date: format(selectedDate, "yyyy-MM-dd"),
           appointment_time: selectedTimeSlot,
-        };
+        },
+      };
 
-        const response = await axiosClient.post(
-          "/v2/payment/create-checkout-session",
-          paymentData,
-          {
-            headers: {
-              "Content-Type": "application/json",
-              "x-access-token": accessToken,
-            },
-          }
-        );
+      const res = await axiosClient.post(
+        "/v1/services/bookingService",
+        requestBody,
+        { timeout: 15000 }
+      );
 
-        if (!response.data || !response.data.url) {
-          throw new Error("Không nhận được URL thanh toán từ máy chủ");
-        }
-
-        // Chuyển hướng đến trang thanh toán
-        window.location.href = response.data.url;
-        return;
+      if (res && res.data && res.data.success) {
+        completeBookingProcess(res.data);
+      } else {
+        throw new Error("Không thể hoàn tất đặt lịch, vui lòng thử lại");
       }
     } catch (err) {
       console.error("❌ Payment error:", err);

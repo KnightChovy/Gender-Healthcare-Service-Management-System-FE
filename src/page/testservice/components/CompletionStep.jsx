@@ -119,12 +119,9 @@ const CompletionStep = ({ appointmentDetails, formatPrice, navigate }) => {
               Phương thức thanh toán
             </dt>
             <dd className="mt-1 text-sm text-gray-900 sm:mt-0 sm:col-span-2 capitalize">
-              {appointmentDetails.payment_method === "cash"
-                ? "Tiền mặt (tại cơ sở y tế)"
-                : "VNPay (Đã thanh toán)"}
+              Tiền mặt (tại cơ sở y tế)
             </dd>
           </div>
-
           {/* Thông tin y tế */}
           {appointmentDetails.medicalHistory && (
             <div className="bg-gray-50 px-4 py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
