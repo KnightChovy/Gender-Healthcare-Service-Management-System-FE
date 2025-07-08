@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import Calendar from "../../components/doctor/Calender";
 import AppointmentList from "../../components/doctor/AppointmentList";
-import { doctorAppointments } from "../../components/Data/Doctor";
+// import { doctorAppointments } from "../../components/Data/Doctor";
 import { useSelector } from "react-redux";
 import doctorService from "../../services/doctor.service";
 
