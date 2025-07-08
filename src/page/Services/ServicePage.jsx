@@ -53,7 +53,7 @@ export const ServicePage = () => {
       (service.description &&
         service.description.toLowerCase().includes(searchTerm.toLowerCase()));
     const matchesCategory =
-      selectedCategory === "all" || service.category === selectedCategory;
+      selectedCategory === "all" || service.category_id === selectedCategory;
     return matchesSearch && matchesCategory;
   });
 
@@ -148,9 +148,9 @@ export const ServicePage = () => {
                 className="w-full py-3 px-4 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500"
               >
                 <option value="all">Tất cả dịch vụ</option>
-                <option value="test">Xét nghiệm</option>
-                <option value="consultation">Tư vấn</option>
-                <option value="cycle">Chu kỳ kinh nguyệt</option>
+                <option value="CAT001">Xét nghiệm</option>
+                <option value="CAT002">Tư vấn</option>
+                <option value="CAT003">Chu kỳ kinh nguyệt</option>
               </select>
             </div>
           </div>

@@ -14,7 +14,6 @@ function Appointment() {
 
   const [userProfile, setUserProfile] = useState(null);
   const [formData, setFormData] = useState({
-    // Thông tin cá nhân
     fullName: "",
     birthDate: "",
     gender: "",
@@ -22,40 +21,35 @@ function Appointment() {
     email: "",
     address: "",
 
-    // Thông tin cuộc hẹn
     consultationType: "",
+    consultationServiceId: "",
     doctor_id: "",
     doctorName: "",
     appointmentDate: "",
     appointmentTime: "",
 
-    // Thông tin bổ sung
     symptoms: "",
     medicalHistory: "",
     notes: "",
     priority: "normal",
 
-    // Thông tin thanh toán
-    fee: 200000,
+    fee: 0,
   });
 
   const [errors, setErrors] = useState({});
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  // Helper function để format ngày từ YYYY-MM-DD sang DD-MM-YYYY
   const formatDateForDisplay = (dateString) => {
     if (!dateString) return '';
 
     try {
-      // Nếu đã là định dạng DD-MM-YYYY, return luôn
       if (dateString.includes('-') && dateString.length === 10) {
         const parts = dateString.split('-');
         if (parts.length === 3 && parts[0].length === 2) {
-          return dateString; // Already in DD-MM-YYYY format
+          return dateString;
         }
       }
 
-      // Convert từ YYYY-MM-DD sang DD-MM-YYYY
       const date = new Date(dateString + 'T00:00:00');
       const day = date.getDate().toString().padStart(2, '0');
       const month = (date.getMonth() + 1).toString().padStart(2, '0');
@@ -68,20 +62,17 @@ function Appointment() {
     }
   };
 
-  // Helper function để format ngày từ DD-MM-YYYY sang YYYY-MM-DD (cho input date)
   const formatDateForInput = (dateString) => {
     if (!dateString) return '';
 
     try {
-      // Nếu đã là định dạng YYYY-MM-DD, return luôn
       if (dateString.includes('-') && dateString.length === 10) {
         const parts = dateString.split('-');
         if (parts.length === 3 && parts[0].length === 4) {
-          return dateString; // Already in YYYY-MM-DD format
+          return dateString;
         }
       }
 
-      // Convert từ DD-MM-YYYY sang YYYY-MM-DD
       const parts = dateString.split('-');
       if (parts.length === 3) {
         const [day, month, year] = parts;
@@ -95,12 +86,10 @@ function Appointment() {
     }
   };
 
-  // Helper function để format time
   const formatTimeForDisplay = (timeString) => {
     if (!timeString) return '';
 
     try {
-      // Remove seconds if present
       if (timeString.includes(':')) {
         const parts = timeString.split(':');
         if (parts.length >= 2) {
@@ -128,7 +117,6 @@ function Appointment() {
         const profile = JSON.parse(userInfo);
         setUserProfile(profile);
 
-        // Auto-fill form với thông tin user
         setFormData((prev) => ({
           ...prev,
           fullName:
@@ -140,31 +128,24 @@ function Appointment() {
           gender: profile.gender || "",
           address: profile.address || "",
         }));
-
-        console.log("✅ User logged in, auto-filled form data");
       } else {
         setUserProfile(null);
-        console.log("ℹ️ User not logged in");
       }
     } catch (error) {
       console.error("❌ Error checking user status:", error);
     }
   };
 
-  // Tính tuổi từ ngày sinh
   const calculateAge = (birthDate) => {
     if (!birthDate) return null;
 
     let date;
-    // Handle different date formats
     if (birthDate.includes('-')) {
       const parts = birthDate.split('-');
       if (parts.length === 3) {
         if (parts[0].length === 4) {
-          // YYYY-MM-DD format
           date = new Date(birthDate + 'T00:00:00');
         } else {
-          // DD-MM-YYYY format
           const [day, month, year] = parts;
           date = new Date(`${year}-${month}-${day}T00:00:00`);
         }
@@ -187,47 +168,10 @@ function Appointment() {
     return age;
   };
 
-  // Thêm helper function để lấy timeslot_id từ localStorage
-  const debugLocalStorage = () => {
-    console.log('🔍 DEBUG: Checking localStorage...');
-    const timeslots = localStorage.getItem('doctorAvailableTimeslots');
-    if (timeslots) {
-      const data = JSON.parse(timeslots);
-      console.log('📋 Raw data from localStorage:', data);
-      console.log('📊 Data structure:', {
-        isArray: Array.isArray(data),
-        length: data.length,
-        firstItem: data[0]
-      });
-
-      // Log chi tiết structure
-      data.forEach((item, index) => {
-        console.log(`📅 Item ${index}:`, {
-          date: item.date,
-          dayOfWeek: item.dayOfWeek,
-          timeslots: item.timeslots,
-          timeslots_count: item.timeslots?.length
-        });
-
-        if (item.timeslots) {
-          item.timeslots.forEach((slot, slotIndex) => {
-            console.log(`   ⏰ Timeslot ${slotIndex}:`, slot);
-          });
-        }
-      });
-    } else {
-      console.log('❌ No doctorAvailableTimeslots found in localStorage');
-    }
-  };
-
-  // Cập nhật getTimeslotIdFromStorage function
   const getTimeslotIdFromStorage = (selectedDate, selectedTime) => {
     console.log('🔍 START: getTimeslotIdFromStorage', { selectedDate, selectedTime });
 
     try {
-      // Debug localStorage trước
-      debugLocalStorage();
-
       const doctorTimeslots = localStorage.getItem('doctorAvailableTimeslots');
       if (!doctorTimeslots) {
         console.warn('⚠️ No doctor timeslots found in localStorage');
@@ -235,115 +179,53 @@ function Appointment() {
       }
 
       const timeslotsData = JSON.parse(doctorTimeslots);
-      console.log('📋 Parsed timeslots data:', timeslotsData);
 
-      // Convert selectedDate to YYYY-MM-DD format for comparison
       const dateForComparison = formatDateForInput(selectedDate);
-      console.log('📅 Date for comparison:', dateForComparison);
 
-      // Tìm ngày phù hợp
       const daySchedule = timeslotsData.find(day => {
-        console.log('🔍 Comparing dates:', {
-          dayDate: day.date,
-          selectedDate: dateForComparison,
-          match: day.date === dateForComparison
-        });
         return day.date === dateForComparison;
       });
 
       if (!daySchedule) {
-        console.warn('⚠️ No schedule found for date:', dateForComparison);
-        console.log('📅 Available dates:', timeslotsData.map(d => d.date));
         return null;
       }
 
-      console.log('✅ Found day schedule:', daySchedule);
-
-      // Kiểm tra structure của timeslots
       if (!daySchedule.timeslots || !Array.isArray(daySchedule.timeslots)) {
-        console.warn('⚠️ Invalid timeslots structure:', daySchedule.timeslots);
         return null;
       }
 
-      console.log('🔍 Available timeslots for this day:', daySchedule.timeslots);
-
-      // Parse selectedTime để tìm target time
       let targetTime;
 
       if (selectedTime.includes(' - ')) {
-        // Format: "08:00 - 09:00" - lấy thời gian bắt đầu
         const [start] = selectedTime.split(' - ');
         targetTime = start.trim();
 
-        // Ensure format HH:MM:SS
         if (targetTime.split(':').length === 2) {
-          targetTime += ':00'; // "08:00" -> "08:00:00"
+          targetTime += ':00';
         }
       } else if (selectedTime.includes(':')) {
-        // Format: "08:00:00" hoặc "08:00"
         targetTime = selectedTime.trim();
         if (targetTime.split(':').length === 2) {
-          targetTime += ':00'; // "08:00" -> "08:00:00"
+          targetTime += ':00';
         }
       } else {
         console.warn('⚠️ Invalid time format:', selectedTime);
         return null;
       }
 
-      console.log('🕐 Target time:', targetTime);
-
-      // Tìm timeslot mà target time nằm trong khoảng [time_start, time_end)
       const matchingTimeslot = daySchedule.timeslots.find(slot => {
-        console.log('🔍 Comparing timeslot:', {
-          slot_time_start: slot.time_start,
-          slot_time_end: slot.time_end,
-          target_time: targetTime,
-          timeslot_id: slot.timeslot_id,
-          is_booked: slot.is_booked
-        });
-
-        // So sánh string time (format HH:MM:SS)
-        // Kiểm tra target time có nằm trong khoảng [time_start, time_end) không
         const isInRange = targetTime >= slot.time_start && targetTime < slot.time_end;
 
-        // Hoặc có thể kiểm tra exact match với time_start
         const isExactStart = targetTime === slot.time_start;
 
-        console.log('🔍 Time range check:', {
-          condition_range: `${targetTime} >= ${slot.time_start} && ${targetTime} < ${slot.time_end}`,
-          condition_exact: `${targetTime} === ${slot.time_start}`,
-          isInRange: isInRange,
-          isExactStart: isExactStart,
-          finalMatch: isInRange || isExactStart,
-          timeslot_id: slot.timeslot_id
-        });
-
-        // Return true nếu target time nằm trong range hoặc exact match với start time
         return isInRange || isExactStart;
       });
 
       if (matchingTimeslot) {
-        console.log('✅ FOUND matching timeslot:', {
-          timeslot_id: matchingTimeslot.timeslot_id,
-          time_start: matchingTimeslot.time_start,
-          time_end: matchingTimeslot.time_end,
-          is_booked: matchingTimeslot.is_booked,
-          target_time: targetTime
-        });
 
         return matchingTimeslot.timeslot_id;
       } else {
-        console.warn('⚠️ NO matching timeslot found for target time:', targetTime);
-        console.log('📝 All available timeslots:', daySchedule.timeslots.map(slot => ({
-          timeslot_id: slot.timeslot_id,
-          time_start: slot.time_start,
-          time_end: slot.time_end,
-          range: `${slot.time_start} - ${slot.time_end}`
-        })));
-
-        // Thử flexible search với chỉ so sánh giờ:phút (bỏ giây)
-        console.log('🔄 Trying flexible search (ignoring seconds)...');
-        const targetTimeShort = targetTime.substring(0, 5); // "08:00:00" -> "08:00"
+        const targetTimeShort = targetTime.substring(0, 5);
 
         const flexibleMatch = daySchedule.timeslots.find(slot => {
           const slotStartShort = slot.time_start.substring(0, 5);
@@ -352,25 +234,10 @@ function Appointment() {
           const isInRangeFlexible = targetTimeShort >= slotStartShort && targetTimeShort < slotEndShort;
           const isExactStartFlexible = targetTimeShort === slotStartShort;
 
-          console.log('🔍 Flexible compare:', {
-            slotStartShort,
-            slotEndShort,
-            targetTimeShort,
-            isInRangeFlexible,
-            isExactStartFlexible,
-            match: isInRangeFlexible || isExactStartFlexible,
-            timeslot_id: slot.timeslot_id
-          });
-
           return isInRangeFlexible || isExactStartFlexible;
         });
 
         if (flexibleMatch) {
-          console.log('✅ FOUND with flexible search:', {
-            timeslot_id: flexibleMatch.timeslot_id,
-            time_start: flexibleMatch.time_start,
-            time_end: flexibleMatch.time_end
-          });
           return flexibleMatch.timeslot_id;
         }
 
@@ -386,7 +253,6 @@ function Appointment() {
   const validateForm = () => {
     const newErrors = {};
 
-    // Validate thông tin cá nhân (bắt buộc cho cả user đã đăng nhập và chưa đăng nhập)
     if (!formData.fullName.trim()) {
       newErrors.fullName = "Vui lòng nhập họ tên";
     } else if (formData.fullName.trim().length < 2) {
@@ -400,15 +266,12 @@ function Appointment() {
       newErrors.birthDate = "Vui lòng chọn ngày sinh";
     } else {
       let birthDate;
-      // Handle different date formats
       if (formData.birthDate.includes('-')) {
         const parts = formData.birthDate.split('-');
         if (parts.length === 3) {
           if (parts[0].length === 4) {
-            // YYYY-MM-DD format
             birthDate = new Date(formData.birthDate + 'T00:00:00');
           } else {
-            // DD-MM-YYYY format
             const [day, month, year] = parts;
             birthDate = new Date(`${year}-${month}-${day}T00:00:00`);
           }
@@ -430,31 +293,34 @@ function Appointment() {
       }
     }
 
-    // Validate giới tính
     if (!formData.gender) {
       newErrors.gender = "Vui lòng chọn giới tính";
     }
 
-    // Validate số điện thoại
     if (!formData.phone.trim()) {
       newErrors.phone = "Vui lòng nhập số điện thoại";
     } else if (!/^\d{10,11}$/.test(formData.phone.replace(/\s+/g, ""))) {
       newErrors.phone = "Số điện thoại không hợp lệ (10-11 chữ số)";
     }
 
-    // Validate email
     if (!formData.email.trim()) {
       newErrors.email = "Vui lòng nhập email";
     } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) {
       newErrors.email = "Email không hợp lệ";
     }
 
-    // Validate thông tin cuộc hẹn
     if (!formData.consultationType) {
       newErrors.consultationType = "Vui lòng chọn loại tư vấn";
     }
 
-    // Validate doctor selection - BẮT BUỘC
+    if (!formData.consultationServiceId) {
+      newErrors.consultationType = "Dữ liệu loại tư vấn không hợp lệ, vui lòng chọn lại";
+    }
+
+    if (!formData.fee || formData.fee <= 0) {
+      newErrors.consultationType = "Không thể xác định phí dịch vụ, vui lòng chọn lại loại tư vấn";
+    }
+
     if (!formData.doctor_id) {
       newErrors.doctor_id = "Vui lòng chọn bác sĩ tư vấn";
     }
@@ -463,15 +329,12 @@ function Appointment() {
       newErrors.appointmentDate = "Vui lòng chọn ngày tư vấn";
     } else {
       let selectedDate;
-      // Handle different date formats
       if (formData.appointmentDate.includes('-')) {
         const parts = formData.appointmentDate.split('-');
         if (parts.length === 3) {
           if (parts[0].length === 4) {
-            // YYYY-MM-DD format
             selectedDate = new Date(formData.appointmentDate + 'T00:00:00');
           } else {
-            // DD-MM-YYYY format
             const [day, month, year] = parts;
             selectedDate = new Date(`${year}-${month}-${day}T00:00:00`);
           }
@@ -507,16 +370,7 @@ function Appointment() {
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    console.log('🚀 SUBMIT: Starting form submission...');
-    console.log('📋 Form data:', {
-      appointmentDate: formData.appointmentDate,
-      appointmentTime: formData.appointmentTime,
-      doctor_id: formData.doctor_id,
-      doctorName: formData.doctorName
-    });
-
     if (!validateForm()) {
-      console.warn("❌ Form validation failed:", errors);
       alert("Vui lòng kiểm tra lại thông tin đã nhập.");
       return;
     }
@@ -524,19 +378,9 @@ function Appointment() {
     setIsSubmitting(true);
 
     try {
-      console.log('About to get timeslot_id...');
-      debugLocalStorage();
-
       const timeslotId = getTimeslotIdFromStorage(formData.appointmentDate, formData.appointmentTime);
 
-      console.log('RESULT: timeslot_id =', timeslotId);
-
       if (!timeslotId) {
-        console.error('❌ Cannot find timeslot_id for:', {
-          date: formData.appointmentDate,
-          time: formData.appointmentTime
-        });
-
         alert(`Không thể xác định khung giờ đã chọn.\n\nThông tin debug:\n- Ngày: ${formatDateForDisplay(formData.appointmentDate)}\n- Giờ: ${formatTimeForDisplay(formData.appointmentTime)}\n\nVui lòng kiểm tra console và chọn lại thời gian.`);
         setIsSubmitting(false);
         return;
@@ -556,6 +400,7 @@ function Appointment() {
         address: formData.address,
 
         consultant_type: formData.consultationType,
+        service_id: formData.consultationServiceId,
         doctor_id: formData.doctor_id,
         doctorName: formData.doctorName,
         appointmentDate: appointmentDateForAPI,
@@ -577,13 +422,20 @@ function Appointment() {
 
       console.log('Final appointment data:', appointmentData);
 
-      // Validation cuối cùng
       if (!appointmentData.timeslot_id) {
         throw new Error('Missing timeslot_id in final data');
       }
 
       if (!appointmentData.doctor_id) {
         throw new Error('Missing doctor_id in final data');
+      }
+
+      if (!appointmentData.service_id) {
+        throw new Error('Missing service_id in final data');
+      }
+
+      if (!appointmentData.price_apm || appointmentData.price_apm <= 0) {
+        throw new Error('Missing or invalid price in final data');
       }
 
       localStorage.setItem("pendingAppointment", JSON.stringify(appointmentData));
@@ -625,6 +477,12 @@ function Appointment() {
       }
       if (error.message.includes('doctor_id')) {
         errorMessage += "• Thiếu thông tin bác sĩ\n";
+      }
+      if (error.message.includes('service_id')) {
+        errorMessage += "• Thiếu thông tin dịch vụ tư vấn\n";
+      }
+      if (error.message.includes('price')) {
+        errorMessage += "• Không thể xác định phí dịch vụ\n";
       }
       if (error.message.includes('HTTP error')) {
         errorMessage += "• Lỗi kết nối server\n";
@@ -804,16 +662,32 @@ function Appointment() {
             cursor: pointer;
             margin-top: 15px;
             width: 100%;
+            transition: all 0.3s ease;
         }
         
         .home-button:hover {
             background: #26a69a;
+            transform: translateY(-1px);
+        }
+
+        .home-button:active {
+            transform: translateY(0);
+        }
+
+        /* Fade out animation for quick exit */
+        .notification-fade-out {
+            animation: fadeOut 0.3s ease forwards;
         }
         
         /* ===== ANIMATIONS ===== */
         @keyframes fadeIn {
             from { opacity: 0; }
             to { opacity: 1; }
+        }
+
+        @keyframes fadeOut {
+            from { opacity: 1; }
+            to { opacity: 0; }
         }
         
         @keyframes slideUp {
@@ -898,46 +772,63 @@ function Appointment() {
     document.head.appendChild(style);
     document.body.appendChild(notification);
 
-    const homeButton = notification.querySelector('#homeButton');
-    if (homeButton) {
-      homeButton.addEventListener('click', handleGoHome);
-    }
-
     let countdown = 10;
     const countdownElement = notification.querySelector(".countdown-number");
+    let countdownInterval;
+    let autoHideTimeout;
 
-    const countdownInterval = setInterval(() => {
+    // Function để cleanup tất cả timers và DOM elements
+    const cleanupNotification = () => {
+        // Clear tất cả intervals và timeouts
+        if (countdownInterval) {
+            clearInterval(countdownInterval);
+            countdownInterval = null;
+        }
+        if (autoHideTimeout) {
+            clearTimeout(autoHideTimeout);
+            autoHideTimeout = null;
+        }
+
+        // Remove DOM elements
+        if (document.body.contains(notification)) {
+            notification.classList.add('notification-fade-out');
+            setTimeout(() => {
+                if (document.body.contains(notification)) {
+                    document.body.removeChild(notification);
+                }
+            }, 300); // Wait for fade out animation
+        }
+        if (document.head.contains(style)) {
+            document.head.removeChild(style);
+        }
+    };
+
+    // Enhanced handleGoHome function với cleanup
+    const handleGoHomeWithCleanup = () => {
+      cleanupNotification();
+      handleGoHome();
+    };
+
+    const homeButton = notification.querySelector('#homeButton');
+    if (homeButton) {
+      homeButton.addEventListener('click', handleGoHomeWithCleanup);
+    }
+
+    countdownInterval = setInterval(() => {
       countdown--;
       if (countdown > 0) {
         countdownElement.textContent = countdown;
       } else {
         countdownElement.textContent = "✓";
         countdownElement.style.background = "#28a745";
-        clearInterval(countdownInterval);
+        cleanupNotification();
       }
     }, 1000);
 
-    setTimeout(() => {
-      if (document.body.contains(notification)) {
-        document.body.removeChild(notification);
-      }
-      if (document.head.contains(style)) {
-        document.head.removeChild(style);
-      }
+    autoHideTimeout = setTimeout(() => {
+      cleanupNotification();
       handleGoHome();
     }, 10000);
-  };
-
-  const calculateFee = (consultationType) => {
-    const feeMap = {
-      "Khám phụ khoa": 300000,
-      "Tư vấn chu kì kinh nguyệt": 200000,
-      "Tư vấn tránh thai": 250000,
-      "Tư vấn thai kỳ": 250000,
-      "Tư vấn sinh sản": 300000,
-      "Tư vấn chung": 200000,
-    };
-    return feeMap[consultationType] || 200000;
   };
 
   // Hàm xử lý chuyển bước
@@ -987,8 +878,35 @@ function Appointment() {
     }));
   };
 
+  // Handler for consultation selection with dynamic pricing
+  const handleConsultationChange = (e, selectedService = null) => {
+    const { name, value } = e.target;
+    
+    if (name === 'consultationType' && selectedService) {
+      // Update form data with consultation type, service_id, and fee
+      setFormData(prev => ({
+        ...prev,
+        consultationType: value,
+        consultationServiceId: selectedService.service_id,
+        fee: selectedService.price || 0
+      }));
+      
+      console.log('✅ Updated consultation selection:', {
+        consultationType: value,
+        service_id: selectedService.service_id,
+        fee: selectedService.price
+      });
+    } else {
+      // Regular field update
+      setFormData(prev => ({
+        ...prev,
+        [name]: value
+      }));
+    }
+  };
+
   const calculateTotalAmount = () => {
-    return calculateFee(formData.consultationType);
+    return formData.fee || 0;
   };
 
   const formatPrice = (price) => {
@@ -1107,7 +1025,7 @@ function Appointment() {
               <ConsultationSection
                 formData={formData}
                 errors={errors}
-                onChange={handleUserInfoChange}
+                onChange={handleConsultationChange}
               />
             </div>
 
