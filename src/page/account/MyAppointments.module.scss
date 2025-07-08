@@ -1709,52 +1709,118 @@
   }
 }
 
-// ...existing styles...
+/* ===== Refund Cancel Button ===== */
+.refund-cancel-btn {
+  background: linear-gradient(135deg, #ff9800, #f57c00);
+  color: white;
+  border: none;
+  padding: 8px 16px;
+  border-radius: 6px;
+  font-size: 0.85rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  display: flex;
+  align-items: center;
+  gap: 6px;
 
-.cancel-btn {
+  &:hover:not(.loading) {
+    background: linear-gradient(135deg, #f57c00, #ef6c00);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(255, 152, 0, 0.3);
+  }
+
+  &:active {
+    transform: translateY(0);
+  }
+
   &.loading {
     opacity: 0.7;
     cursor: not-allowed;
-    
-    &:hover {
-      background: #ffebee;
-      transform: none;
+    pointer-events: none;
+  }
+
+  svg {
+    font-size: 0.9rem;
+  }
+}
+
+/* ===== Refund Status Indicator ===== */
+.refund-status-indicator {
+  background: linear-gradient(135deg, #e8f5e8, #c8e6c9);
+  border: 1px solid #81c784;
+  border-radius: 8px;
+  padding: 12px;
+  margin-top: 8px;
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+
+  svg {
+    color: #2e7d32;
+    font-size: 1.1rem;
+    margin-top: 2px;
+    flex-shrink: 0;
+  }
+
+  .refund-info {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    font-size: 0.85rem;
+
+    .refund-label {
+      font-weight: 600;
+      color: #1b5e20;
+    }
+
+    .refund-amount {
+      color: #2e7d32;
+      font-weight: 500;
+    }
+
+    .refund-status-text {
+      color: #388e3c;
+      font-style: italic;
+    }
+
+    .refund-reference {
+      color: #4caf50;
+      font-size: 0.8rem;
+      font-family: monospace;
+    }
+
+    .refund-note {
+      color: #2e7d32;
+      font-size: 0.8rem;
+      margin-top: 4px;
+      font-style: italic;
     }
   }
 }
 
-.cancel-loading {
+/* ===== Modal Refund Status ===== */
+.refund-status {
   display: flex;
   align-items: center;
-  gap: 8px;
-  padding: 8px 12px;
-  background: #fff3cd;
-  border: 1px solid #ffeaa7;
-  border-radius: 6px;
-  font-size: 14px;
-  color: #856404;
-  margin-top: 8px;
+  gap: 0.5rem;
   
+  &.processing {
+    color: #ff9800;
+  }
+
   svg {
-    color: #856404;
+    font-size: 0.9rem;
   }
 }
 
-.action-btn {
-  &.disabled {
-    opacity: 0.6;
-    cursor: not-allowed;
-    pointer-events: none;
-  }
+.refund-amount-text {
+  color: #2e7d32;
+  font-weight: 600;
 }
 
-// Add loading animation for cancel button
-@keyframes cancelLoading {
-  0% { opacity: 0.5; }
-  50% { opacity: 1; }
-  100% { opacity: 0.5; }
-}
-
-.cancel-btn.loading {
-  animation: cancelLoading 1.5s ease-in-out infinite;
+.refund-reference-text {
+  color: #4caf50;
+  font-family: monospace;
+  font-size: 0.9rem;
 }

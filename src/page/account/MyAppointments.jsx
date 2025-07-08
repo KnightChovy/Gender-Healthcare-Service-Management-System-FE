@@ -208,6 +208,104 @@ function MyAppointments() {
     return today.getTime() === consultationDate.getTime();
   };
 
+  // Add handleCancelPaidAppointment function for refund process
+  const handleCancelPaidAppointment = async (appointment) => {
+    const appointmentId = appointment.appointment_id || appointment.id;
+    
+    // Enhanced confirmation dialog for paid appointments
+    const confirmCancel = window.confirm(
+      `⚠️ HỦY CUỘC HẸN ⚠️\n\n` +
+      `Cuộc hẹn: ${appointment.consultant_type}\n` +
+      `Ngày: ${formatDate(appointment.appointment_date)}\n` +
+      `Phí tư vấn: ${formatCurrency(appointment.price_apm)}\n\n` +
+      `🔄 Sau khi hủy:\n` +
+      `• Số tiền ${formatCurrency(appointment.price_apm)} sẽ được hoàn lại\n` +
+      `• Thông báo hoàn tiền sẽ được gửi qua email: ${user.email}\n` +
+      `• Quá trình hoàn tiền có thể mất 3-5 ngày làm việc\n\n` +
+      `Bạn có chắc chắn muốn hủy và yêu cầu hoàn tiền?`
+    );
+    
+    if (!confirmCancel) {
+      return;
+    }
+
+    try {
+      setIsCancelling(true);
+
+      const data = {
+        appointment_id: appointmentId,
+        refund_request: true,
+        refund_amount: appointment.price_apm,
+        refund_reason: 'Customer cancellation request',
+        customer_email: user.email
+      }
+
+      const response = await axiosClient.post('/v1/users/cancel-paid-appointment', data, {
+        headers: { 
+          'x-access-token': accessToken,
+        }
+      });
+
+      if (response.data?.success) {
+        // Enhanced success message for refund
+        alert(
+          `✅ HỦY CUỘC HẸN VÀ YÊU CẦU HOÀN TIỀN THÀNH CÔNG!\n\n` +
+          `📧 Thông báo chi tiết đã được gửi đến: ${user.email}\n\n` +
+          `💰 Số tiền hoàn: ${formatCurrency(appointment.price_apm)}\n` +
+          `⏰ Thời gian xử lý: 3-5 ngày làm việc\n` +
+          `📋 Mã tham chiếu: ${response.data.refund_reference || appointmentId}\n\n` +
+          `🔍 Vui lòng kiểm tra email để theo dõi tiến trình hoàn tiền.\n` +
+          `💬 Nếu có thắc mắc, hãy liên hệ hotline với mã tham chiếu trên.`
+        );
+        
+        setAppointments(prevAppointments => 
+          prevAppointments.map(apt => 
+            (apt.appointment_id === appointmentId || apt.id === appointmentId)
+              ? { 
+                  ...apt, 
+                  status: 'rejected',
+                  is_refunded: true,
+                  refund_status: 'processing',
+                  refund_amount: appointment.price_apm,
+                  refund_date: new Date().toISOString(),
+                  refund_reference: response.data.refund_reference || appointmentId
+                }
+              : apt
+          )
+        );
+        
+        await fetchAppointments();
+        
+      } else {
+        throw new Error(response.data?.message || 'Không thể hủy cuộc hẹn và hoàn tiền');
+      }
+    } catch (error) {
+      console.error('❌ Error cancelling paid appointment:', error);
+      
+      // Show specific error messages for refund process
+      if (error.response?.status === 400) {
+        alert('❌ Không thể hủy cuộc hẹn này.\n\nLý do có thể:\n• Cuộc hẹn đã quá hạn để hoàn tiền\n• Cuộc hẹn đã được sử dụng\n• Thông tin thanh toán không hợp lệ');
+      } else if (error.response?.status === 404) {
+        alert('❌ Không tìm thấy thông tin thanh toán cho cuộc hẹn này.\n\nVui lòng liên hệ bộ phận hỗ trợ để được giải quyết.');
+      } else if (error.response?.status === 403) {
+        alert('❌ Không thể thực hiện hoàn tiền.\n\nLý do có thể:\n• Bạn không có quyền hủy cuộc hẹn này\n• Đã quá thời hạn hủy theo chính sách\n• Cuộc hẹn đang trong trạng thái xử lý');
+      } else if (error.response?.status === 409) {
+        alert('❌ Cuộc hẹn này đã được xử lý trước đó.\n\n• Đã được hủy và hoàn tiền\n• Đang trong quá trình xử lý hoàn tiền\n\nVui lòng kiểm tra email hoặc liên hệ hỗ trợ.');
+      } else {
+        alert(
+          `❌ Có lỗi xảy ra trong quá trình hủy cuộc hẹn và hoàn tiền.\n\n` +
+          `Lỗi: ${error.response?.data?.message || 'Lỗi hệ thống'}\n\n` +
+          `🔧 Vui lòng:\n` +
+          `• Thử lại sau vài phút\n` +
+          `• Liên hệ bộ phận hỗ trợ nếu vẫn gặp lỗi\n` +
+          `• Cung cấp mã cuộc hẹn: ${appointmentId}`
+        );
+      }
+    } finally {
+      setIsCancelling(false);
+    }
+  };
+
   // Add handleCancel function
   const handleCancel = async (appointment) => {
     const appointmentId = appointment.appointment_id || appointment.id;
@@ -407,6 +505,12 @@ function MyAppointments() {
               const canCancel = appointment.status === 'pending' || 
                                (appointment.status === 'confirmed' && appointment.booking === 0);
 
+              // Check if appointment is paid and can be cancelled for refund
+              const canCancelPaid = appointment.status === 'confirmed' && 
+                                   appointment.booking === 1 && 
+                                   appointment.price_apm && 
+                                   appointment.price_apm > 0;
+
               return (
                 <div key={appointment.id} className={cx('appointment-card')}>
                   {/* Header */}
@@ -419,7 +523,9 @@ function MyAppointments() {
                       {appointment.status === 'confirmed' && appointment.booking === 0 && 'Chờ thanh toán'}
                       {appointment.status === 'confirmed' && appointment.booking === 1 && 'Đã hoàn thành thanh toán'}
                       {appointment.status === 'completed' && 'Đã hoàn thành tư vấn'}
-                      {!['confirmed', 'completed'].includes(appointment.status) && statusInfo.label}
+                      {appointment.status === 'rejected' && appointment.is_refunded && 'Đã hủy (Có hoàn tiền)'}
+                      {appointment.status === 'rejected' && !appointment.is_refunded && 'Đã hủy'}
+                      {!['confirmed', 'completed', 'rejected'].includes(appointment.status) && statusInfo.label}
                     </div>
 
                     {needsPayment && (
@@ -503,7 +609,7 @@ function MyAppointments() {
                       </button>
                     )}
 
-                    {/* Cancel button - Updated with handleCancel */}
+                    {/* Cancel button for unpaid appointments */}
                     {canCancel && (
                       <button 
                         className={cx('action-btn', 'cancel-btn', {
@@ -522,6 +628,52 @@ function MyAppointments() {
                           </>
                         )}
                       </button>
+                    )}
+
+                    {/* Cancel with refund button for paid appointments */}
+                    {canCancelPaid && (
+                      <button 
+                        className={cx('action-btn', 'refund-cancel-btn', {
+                          'loading': isCancelling
+                        })}
+                        onClick={() => handleCancelPaidAppointment(appointment)}
+                        disabled={isCancelling}
+                        title="Hủy cuộc hẹn và yêu cầu hoàn tiền"
+                      >
+                        {isCancelling ? (
+                          <>
+                            <FontAwesomeIcon icon={faSpinner} spin /> Đang xử lý...
+                          </>
+                        ) : (
+                          <>
+                            <FontAwesomeIcon icon={faRefresh} /> Hủy & Hoàn tiền
+                          </>
+                        )}
+                      </button>
+                    )}
+
+                    {/* Refund status indicator for cancelled paid appointments */}
+                    {appointment.status === 'rejected' && appointment.is_refunded && (
+                      <div className={cx('refund-status-indicator')}>
+                        <FontAwesomeIcon icon={faRefresh} />
+                        <div className={cx('refund-info')}>
+                          <span className={cx('refund-label')}>✅ Đã hủy và hoàn tiền</span>
+                          <span className={cx('refund-amount')}>
+                            💰 Số tiền hoàn: {formatCurrency(appointment.refund_amount)}
+                          </span>
+                          <span className={cx('refund-status-text')}>
+                            📋 Trạng thái: {appointment.refund_status === 'processing' ? '🔄 Đang xử lý' : '✅ Hoàn thành'}
+                          </span>
+                          {appointment.refund_reference && (
+                            <span className={cx('refund-reference')}>
+                              🔗 Mã tham chiếu: {appointment.refund_reference}
+                            </span>
+                          )}
+                          <span className={cx('refund-note')}>
+                            📧 Vui lòng kiểm tra email để theo dõi tiến trình hoàn tiền
+                          </span>
+                        </div>
+                      </div>
                     )}
 
                     {/* Join Meeting button */}
@@ -547,7 +699,7 @@ function MyAppointments() {
                     {appointment.status === 'rejected' && (
                       <button
                         className={cx('action-btn', 'rebook-btn')}
-                        onClick={() => handleRebook(appointment)}
+                        onClick={handleRebook}
                         disabled={isCancelling}
                       >
                         <FontAwesomeIcon icon={faCalendarAlt} /> Đặt lại
@@ -707,7 +859,8 @@ function MyAppointments() {
                     {selectedAppointment.status === 'confirmed' && selectedAppointment.booking === 1 && 'Đã hoàn thành thanh toán'}
                     {selectedAppointment.status === 'completed' && 'Đã hoàn thành tư vấn'}
                     {selectedAppointment.status === 'pending' && 'Chờ xác nhận'}
-                    {selectedAppointment.status === 'rejected' && 'Đã hủy'}
+                    {selectedAppointment.status === 'rejected' && selectedAppointment.is_refunded && 'Đã hủy (Có hoàn tiền)'}
+                    {selectedAppointment.status === 'rejected' && !selectedAppointment.is_refunded && 'Đã hủy'}
                   </span>
                 </div>
                 <div className={cx('detail-row')}>
@@ -749,6 +902,43 @@ function MyAppointments() {
                   <span>{formatDate(selectedAppointment.created_at)}</span>
                 </div>
                 
+                {/* Refund status trong modal */}
+                {selectedAppointment.status === 'rejected' && selectedAppointment.is_refunded && (
+                  <>
+                    <div className={cx('detail-row')}>
+                      <strong>Trạng thái hoàn tiền:</strong>
+                      <span className={cx('refund-status', { 
+                        'processing': selectedAppointment.refund_status === 'processing'
+                      })}>
+                        <FontAwesomeIcon icon={faRefresh} />
+                        {selectedAppointment.refund_status === 'processing' ? '🔄 Đang xử lý' : '✅ Hoàn thành'}
+                      </span>
+                    </div>
+                    {selectedAppointment.refund_amount && (
+                      <div className={cx('detail-row')}>
+                        <strong>Số tiền hoàn:</strong>
+                        <span className={cx('refund-amount-text')}>
+                          💰 {formatCurrency(selectedAppointment.refund_amount)}
+                        </span>
+                      </div>
+                    )}
+                    {selectedAppointment.refund_reference && (
+                      <div className={cx('detail-row')}>
+                        <strong>Mã tham chiếu:</strong>
+                        <span className={cx('refund-reference-text')}>
+                          🔗 {selectedAppointment.refund_reference}
+                        </span>
+                      </div>
+                    )}
+                    {selectedAppointment.refund_date && (
+                      <div className={cx('detail-row')}>
+                        <strong>Ngày yêu cầu hoàn tiền:</strong>
+                        <span>{formatDate(selectedAppointment.refund_date)}</span>
+                      </div>
+                    )}
+                  </>
+                )}
+
                 {/* Feedback status trong modal */}
                 {selectedAppointment.status === 'completed' && (
                   <div className={cx('detail-row')}>

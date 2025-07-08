@@ -14,7 +14,6 @@ import {
   faMapMarkerAlt,
   faExclamationTriangle,
 } from "@fortawesome/free-solid-svg-icons";
-// import { specialtyMapping } from '../../components/Data/Doctor';
 import axiosClient from "../../services/axiosClient";
 import classNames from "classnames/bind";
 import styles from "./Payment.module.scss";
@@ -37,18 +36,6 @@ function PaymentAppointment() {
   const accessToken = localStorage.getItem("accessToken");
 
   const paymentMethods = [
-    {
-      id: "zalopay",
-      name: "Ví ZaloPay",
-      icon: faMobileAlt,
-      description: "Thanh toán qua ví điện tử ZaloPay",
-    },
-    {
-      id: "momo",
-      name: "Ví MoMo",
-      icon: faMobileAlt,
-      description: "Thanh toán qua ví điện tử MoMo",
-    },
     {
       id: "vnpay",
       name: "VNPay",
@@ -79,15 +66,6 @@ function PaymentAppointment() {
       day: "numeric",
     });
   };
-
-  //   const getConsultationTypeDisplay = (consultationType) => {
-  //     const specialtyKey = Object.keys(specialtyMapping).find(
-  //       (key) => specialtyMapping[key] === consultationType
-  //     );
-  //     return specialtyKey
-  //       ? specialtyMapping[specialtyKey]
-  //       : specialtyMapping[consultationType] || consultationType;
-  //   };
 
   useEffect(() => {
     const loadAppointmentData = async () => {

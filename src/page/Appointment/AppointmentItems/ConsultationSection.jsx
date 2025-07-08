@@ -1,4 +1,5 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
+import { useLocation } from 'react-router-dom';
 import classNames from 'classnames/bind';
 import styles from '../Appointment.module.scss';
 import axiosClient from '../../../services/axiosClient';
@@ -6,11 +7,34 @@ import axiosClient from '../../../services/axiosClient';
 const cx = classNames.bind(styles);
 
 function ConsultationSection({ formData, errors, onChange }) {
+    const location = useLocation();
     const [consultationTypes, setConsultationTypes] = useState([]);
     const [isLoading, setIsLoading] = useState(true);
     const [error, setError] = useState(null);
+    const [autoSelectedService, setAutoSelectedService] = useState(null);
 
-    // Icon mapping for different consultation types based on service names
+    const unhashServiceId = (hashedId) => {
+        try {
+            return atob(hashedId);
+        } catch (error) {
+            console.error("Error unhashing serviceId:", error);
+            return hashedId;
+        }
+    };
+
+    const getServiceIdFromUrl = useCallback(() => {
+        const urlParams = new URLSearchParams(location.search);
+        const hashedServiceId = urlParams.get('serviceId');
+        
+        if (hashedServiceId) {
+            const serviceId = unhashServiceId(hashedServiceId);
+            console.log('Service ID from URL:', serviceId);
+            return serviceId;
+        }
+        
+        return null;
+    }, [location.search]);
+
     const getIconForService = (serviceName) => {
         const iconMap = {
             'tư vấn giáo dục giới tính cơ bản': '📚',
@@ -34,7 +58,6 @@ function ConsultationSection({ formData, errors, onChange }) {
                 const response = await axiosClient.get('/v1/services');
                 
                 if (response.data?.success && response.data?.data) {
-                    // Filter services with category_id = "CAT002"
                     const consultationServices = response.data.data.filter(
                         service => service.category_id === "CAT002"
                     );
@@ -43,7 +66,6 @@ function ConsultationSection({ formData, errors, onChange }) {
                         throw new Error('Không tìm thấy dịch vụ tư vấn nào');
                     }
 
-                    // Transform API data to component format
                     const formattedTypes = consultationServices.map(service => ({
                         value: service.name,
                         label: service.name,
@@ -56,6 +78,30 @@ function ConsultationSection({ formData, errors, onChange }) {
                     }));
 
                     setConsultationTypes(formattedTypes);
+
+                    const urlServiceId = getServiceIdFromUrl();
+                    if (urlServiceId && !formData.consultationType) {
+                        const matchingService = formattedTypes.find(
+                            service => service.service_id === urlServiceId
+                        );
+                        
+                        if (matchingService) {
+                            console.log('Auto-selecting service:', matchingService.label);
+                            
+                            setAutoSelectedService(matchingService);
+                            
+                            const syntheticEvent = {
+                                target: {
+                                    name: 'consultationType',
+                                    value: matchingService.value
+                                }
+                            };
+                            
+                            onChange(syntheticEvent, matchingService);
+                        } else {
+                            console.warn('Service ID from URL not found in available services:', urlServiceId);
+                        }
+                    }
                 } else {
                     throw new Error('Không thể tải danh sách loại tư vấn');
                 }
@@ -63,8 +109,6 @@ function ConsultationSection({ formData, errors, onChange }) {
                 console.error('Error fetching consultation types:', error);
                 setError('Không thể tải danh sách loại tư vấn từ server. Vui lòng thử lại.');
                 
-                // Don't set fallback data with hardcoded prices
-                // Keep empty array to show error state
                 setConsultationTypes([]);
             } finally {
                 setIsLoading(false);
@@ -74,7 +118,6 @@ function ConsultationSection({ formData, errors, onChange }) {
         fetchConsultationTypes();
     }, []);
 
-    // Retry function to refetch data
     const handleRetry = () => {
         const fetchData = async () => {
             try {
@@ -119,20 +162,12 @@ function ConsultationSection({ formData, errors, onChange }) {
         fetchData();
     };
 
-    // Format price for display
     const formatPrice = (price) => {
         if (!price || price === 0) return 'Liên hệ';
         return new Intl.NumberFormat('vi-VN', {
             style: 'currency',
             currency: 'VND'
         }).format(price);
-    };
-
-    // Truncate description for display
-    const truncateText = (text, maxLength = 80) => {
-        if (!text) return '';
-        if (text.length <= maxLength) return text;
-        return text.substring(0, maxLength) + '...';
     };
 
     if (isLoading) {
@@ -151,7 +186,6 @@ function ConsultationSection({ formData, errors, onChange }) {
         );
     }
 
-    // Show error state if no data and there's an error
     if (error && consultationTypes.length === 0) {
         return (
             <div className={cx('form-section', 'consultation-section')}>
