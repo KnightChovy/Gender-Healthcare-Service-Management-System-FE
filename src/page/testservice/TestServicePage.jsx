@@ -190,12 +190,17 @@ const TestAppointmentPage = () => {
       setLoading(true);
       try {
         const response = await axiosClient.get("v1/services");
-        if (response.data && response.data.success) {
-          const services = response.data.data || [];
-          setAllServices(services);
+        // console.log(response, "du lieu lay xuong");
 
-          if (serviceId) {
-            const selectedService = services.find(
+        if (response.data && response.data.success) {
+          const data = response.data.data;
+
+          const testService = data.filter(
+            (ser) => ser.category_id === "CAT001"
+          );
+          setAllServices(testService);
+          if (serviceId && testService.length > 0) {
+            const selectedService = testService.find(
               (s) => s.service_id.toString() === serviceId.toString()
             );
             if (selectedService) {

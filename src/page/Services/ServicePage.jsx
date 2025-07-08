@@ -1,120 +1,7 @@
-import React, { useState, useEffect } from "react";
+import { useEffect, useState } from "react";
 import axiosClient from "../../services/axiosClient";
 import { Link } from "react-router-dom";
-
-// Hàm hash đơn giản để mã hóa serviceId
-const hashServiceId = (serviceId) => {
-  return btoa(serviceId.toString()).replace(/=/g, "");
-};
-
-const consultationServices = [
-  {
-    service_id: "c1",
-    name: "Tư vấn Giáo dục Giới tính Cơ bản",
-    description:
-      "Tư vấn riêng tư với chuyên gia về kiến thức cơ bản giới tính, cơ thể và các thay đổi sinh lý.",
-    price: 250000,
-    result_wait_time: "0",
-    preparationGuidelines:
-      "Chuẩn bị câu hỏi hoặc vấn đề quan tâm. Buổi tư vấn kéo dài 45 phút.",
-    category: "consultation",
-  },
-  {
-    service_id: "c2",
-    name: "Tư vấn Tâm lý Giới và Định hướng Tính dục",
-    description:
-      "Giải đáp các thắc mắc về bản dạng giới, xu hướng tính dục và hỗ trợ tâm lý cá nhân.",
-    price: 300000,
-    result_wait_time: "0",
-    preparationGuidelines:
-      "Không cần chuẩn bị đặc biệt. Buổi tư vấn kéo dài 60 phút.",
-    category: "consultation",
-  },
-  {
-    service_id: "c3",
-    name: "Tư vấn Quan hệ An toàn và Kế hoạch hóa",
-    description:
-      "Chia sẻ kiến thức về quan hệ tình dục an toàn, tránh thai và xây dựng mối quan hệ lành mạnh.",
-    price: 200000,
-    result_wait_time: "0",
-    preparationGuidelines:
-      "Mang theo thông tin hoặc câu hỏi cụ thể liên quan nếu có.",
-    category: "consultation",
-  },
-  {
-    service_id: "c4",
-    name: "Tư vấn Phòng tránh STIs & HIV cho Thanh thiếu niên",
-    description:
-      "Tư vấn kiến thức về bệnh lây truyền qua đường tình dục và HIV phù hợp với lứa tuổi học sinh, sinh viên.",
-    price: 350000,
-    result_wait_time: "0",
-    preparationGuidelines: "Buổi tư vấn kín đáo, kéo dài 45-60 phút.",
-    category: "consultation",
-  },
-  {
-    service_id: "c5",
-    name: "Tư vấn Vấn đề Giới tính trong Mối quan hệ",
-    description:
-      "Hướng dẫn giải quyết các vấn đề về giới tính trong tình yêu, giao tiếp và đồng thuận.",
-    price: 280000,
-    result_wait_time: "0",
-    preparationGuidelines:
-      "Chuẩn bị các tình huống cụ thể nếu có. Kéo dài 50 phút.",
-    category: "consultation",
-  },
-  {
-    service_id: "c6",
-    name: "Tư vấn Phụ khoa",
-    description:
-      "Tư vấn về sức khỏe phụ khoa như kinh nguyệt không đều, viêm nhiễm, đau vùng chậu và các vấn đề liên quan.",
-    price: 320000,
-    result_wait_time: "0",
-    preparationGuidelines:
-      "Ghi lại triệu chứng cụ thể, tiền sử bệnh lý nếu có. Buổi tư vấn kéo dài 45 phút.",
-    category: "consultation",
-  },
-  {
-    service_id: "mc1",
-    name: "Khai báo chu kỳ kinh nguyệt",
-    description:
-      "Công cụ cho phép bạn khai báo kỳ kinh gần nhất, độ dài chu kỳ và số ngày hành kinh để hệ thống theo dõi và dự đoán chính xác hơn.",
-    result_wait_time: "0",
-    preparationGuidelines:
-      "Ghi nhớ ngày bắt đầu kỳ kinh nguyệt gần nhất và số ngày hành kinh trung bình.",
-    category: "cycle",
-  },
-  {
-    service_id: "mc2",
-    name: "Nhắc nhở thời gian rụng trứng",
-    description:
-      "Tự động gửi thông báo đến bạn vào ngày rụng trứng để dễ dàng theo dõi sức khỏe sinh sản hoặc tăng khả năng thụ thai.",
-    result_wait_time: "0",
-    preparationGuidelines:
-      "Cập nhật đầy đủ thông tin chu kỳ để hệ thống tính toán ngày rụng trứng chính xác.",
-    category: "cycle",
-  },
-  {
-    service_id: "mc3",
-    name: "Theo dõi khả năng mang thai",
-    description:
-      "Dự đoán khoảng thời gian có khả năng thụ thai cao dựa trên chu kỳ kinh nguyệt và ngày rụng trứng của bạn.",
-    result_wait_time: "0",
-    preparationGuidelines:
-      "Ghi nhận ngày bắt đầu kỳ kinh gần nhất và theo dõi chu kỳ đều đặn để có kết quả chính xác.",
-    category: "cycle",
-  },
-  {
-    service_id: "mc4",
-    name: "Nhắc nhở thời gian uống thuốc tránh thai",
-    description:
-      "Tạo nhắc nhở hàng ngày vào thời gian bạn chọn để không quên uống thuốc tránh thai đúng giờ.",
-    result_wait_time: "0",
-    preparationGuidelines:
-      "Chọn giờ uống thuốc cố định hàng ngày để hệ thống gửi nhắc nhở chính xác.",
-    category: "cycle",
-  },
-];
-
+import { ServiceSection } from "./components/ServiceSection";
 export const ServicePage = () => {
   const [services, setServices] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -127,15 +14,24 @@ export const ServicePage = () => {
       setLoading(true);
       try {
         const response = await axiosClient.get("v1/services");
-        console.log("Fetched services:", response.data);
 
         if (response.data && response.data.success) {
-          // Sử dụng đúng cấu trúc API của bạn
-          const testServices = (response.data.data || []).map((service) => ({
-            ...service,
-            category: "test",
-          }));
-          setServices([...testServices, ...consultationServices]);
+          // Phân loại dịch vụ theo đúng category
+          const servicesData = response.data.data || [];
+
+          // Giả lập phân loại dịch vụ - trong thực tế sẽ dựa vào API response
+          const categorizedServices = servicesData.map((service) => {
+            // Phân loại ngẫu nhiên cho demo
+            let category;
+            if (service.category_id === "CAT001") category = "test";
+            else if (service.category_id === "CAT002")
+              category = "consultation";
+            else if (service.category_id === "CAT003") category = "cycle";
+
+            return { ...service, category };
+          });
+
+          setServices(categorizedServices);
         } else {
           setError("Không thể tải dữ liệu dịch vụ");
         }
@@ -150,7 +46,7 @@ export const ServicePage = () => {
     fetchServices();
   }, []);
 
-  // Lọc dịch vụ theo tên hoặc mô tả
+  // Lọc dịch vụ theo tên hoặc mô tả và category
   const filteredServices = services.filter((service) => {
     const matchesSearch =
       service.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -161,13 +57,43 @@ export const ServicePage = () => {
     return matchesSearch && matchesCategory;
   });
 
-  const groupServices = () => {
-    const basicServices = filteredServices.filter((s) => s.price < 300000);
-    const premiumServices = filteredServices.filter((s) => s.price >= 300000);
-    return { basicServices, premiumServices };
-  };
+  // Lọc dịch vụ theo từng loại
+  const testServices = filteredServices.filter(
+    (service) => service.category === "test"
+  );
+  const consultationServices = filteredServices.filter(
+    (service) => service.category === "consultation"
+  );
+  const cycleServices = filteredServices.filter(
+    (service) => service.category === "cycle"
+  );
 
-  const { basicServices, premiumServices } = groupServices();
+  const icons = {
+    test: (
+      <path
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        strokeWidth={2}
+        d="M19.428 15.428a2 2 0 00-1.022-.547l-2.387-.477a6 6 0 00-3.86.517l-.318.158a6 6 0 01-3.86.517L6.05 15.21a2 2 0 00-1.806.547M8 4h8l-1 1v5.172a2 2 0 00.586 1.414l5 5c1.26 1.26.367 3.414-1.415 3.414H4.828c-1.782 0-2.674-2.154-1.414-3.414l5-5A2 2 0 009 10.172V5L8 4z"
+      />
+    ),
+    consultation: (
+      <path
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        strokeWidth={2}
+        d="M17 8h2a2 2 0 012 2v6a2 2 0 01-2 2h-2v4l-4-4H9a1.994 1.994 0 01-1.414-.586m0 0L11 14h4a2 2 0 002-2V6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2v4l.586-.586z"
+      />
+    ),
+    cycle: (
+      <path
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        strokeWidth={2}
+        d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"
+      />
+    ),
+  };
 
   return (
     <div className="bg-gray-50 min-h-screen">
@@ -185,6 +111,7 @@ export const ServicePage = () => {
       </div>
 
       <div className="container mx-auto px-4 py-8">
+        {/* Search and Filter */}
         <div className="bg-white rounded-lg shadow-md p-6 mb-8">
           <div className="flex flex-col md:flex-row items-center justify-between gap-4">
             <div className="w-full">
@@ -229,6 +156,7 @@ export const ServicePage = () => {
           </div>
         </div>
 
+        {/* Loading, Error & Results */}
         {loading ? (
           <div className="flex justify-center items-center py-20">
             <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-600"></div>
@@ -249,314 +177,41 @@ export const ServicePage = () => {
           </div>
         ) : (
           <div>
-            {selectedCategory === "all" || selectedCategory === "test" ? (
-              <div className="mb-12">
-                <h2 className="text-2xl font-bold mb-6 flex items-center">
-                  <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    className="h-6 w-6 mr-2 text-blue-600"
-                    fill="none"
-                    viewBox="0 0 24 24"
-                    stroke="currentColor"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                      d="M19.428 15.428a2 2 0 00-1.022-.547l-2.387-.477a6 6 0 00-3.86.517l-.318.158a6 6 0 01-3.86.517L6.05 15.21a2 2 0 00-1.806.547M8 4h8l-1 1v5.172a2 2 0 00.586 1.414l5 5c1.26 1.26.367 3.414-1.415 3.414H4.828c-1.782 0-2.674-2.154-1.414-3.414l5-5A2 2 0 009 10.172V5L8 4z"
-                    />
-                  </svg>
-                  Dịch vụ Xét nghiệm
-                </h2>
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-                  {filteredServices
-                    .filter((service) => service.category === "test")
-                    .map((service) => (
-                      <div
-                        key={service.service_id}
-                        className="bg-white rounded-lg shadow-md overflow-hidden transition-transform hover:shadow-lg hover:-translate-y-1"
-                      >
-                        <div className="h-36 bg-gradient-to-r from-blue-500 to-blue-700 flex items-center justify-center">
-                          <div className="h-20 w-20 rounded-full bg-white flex items-center justify-center">
-                            <svg
-                              xmlns="http://www.w3.org/2000/svg"
-                              className="h-10 w-10 text-blue-600"
-                              fill="none"
-                              viewBox="0 0 24 24"
-                              stroke="currentColor"
-                            >
-                              <path
-                                strokeLinecap="round"
-                                strokeLinejoin="round"
-                                strokeWidth={1.5}
-                                d="M19.428 15.428a2 2 0 00-1.022-.547l-2.387-.477a6 6 0 00-3.86.517l-.318.158a6 6 0 01-3.86.517L6.05 15.21a2 2 0 00-1.806.547M8 4h8l-1 1v5.172a2 2 0 00.586 1.414l5 5c1.26 1.26.367 3.414-1.415 3.414H4.828c-1.782 0-2.674-2.154-1.414-3.414l5-5A2 2 0 009 10.172V5L8 4z"
-                              />
-                            </svg>
-                          </div>
-                        </div>
+            {/* Test Services */}
+            {(selectedCategory === "all" || selectedCategory === "test") && (
+              <ServiceSection
+                title="Dịch vụ Xét nghiệm"
+                icon={icons.test}
+                services={testServices}
+                category="test"
+              />
+            )}
 
-                        <div className="p-6">
-                          <div className="flex justify-between items-start">
-                            <div>
-                              <div className="flex items-center gap-2 mb-2">
-                                <span className="bg-green-100 text-green-800 text-xs font-medium px-2.5 py-0.5 rounded">
-                                  {service.result_wait_time} ngày có kết quả
-                                </span>
-                              </div>
-                              <h3 className="text-xl font-bold">
-                                {service.name}
-                              </h3>
-                            </div>
-                            <div className="font-bold text-blue-600">
-                              {service.price && (
-                                <span>
-                                  {new Intl.NumberFormat("vi-VN", {
-                                    style: "currency",
-                                    currency: "VND",
-                                  }).format(service.price)}
-                                </span>
-                              )}
-                            </div>
-                          </div>
+            {/* Consultation Services */}
+            {(selectedCategory === "all" ||
+              selectedCategory === "consultation") && (
+              <ServiceSection
+                title="Dịch vụ Tư vấn"
+                icon={icons.consultation}
+                services={consultationServices}
+                category="consultation"
+              />
+            )}
 
-                          <p className="text-gray-600 mt-3">
-                            {service.description || "Không có mô tả chi tiết"}
-                          </p>
-
-                          <div className="mt-4 p-3 bg-gray-50 rounded-md">
-                            <h4 className="font-medium text-gray-700">
-                              Hướng dẫn chuẩn bị:
-                            </h4>
-                            <p className="text-gray-600 mt-1 text-sm">
-                              {service.preparationGuidelines ||
-                                "Không có hướng dẫn cụ thể."}
-                            </p>
-                          </div>
-
-                          <div className="mt-6 flex justify-end">
-                            <Link
-                              to={{
-                                pathname: "/services/test",
-                                search: `?serviceId=${hashServiceId(
-                                  service.service_id
-                                )}`,
-                              }}
-                              className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-md transition-colors"
-                            >
-                              Đặt lịch xét nghiệm
-                            </Link>
-                          </div>
-                        </div>
-                      </div>
-                    ))}
-                </div>
-              </div>
-            ) : null}
-
-            {selectedCategory === "all" ||
-            selectedCategory === "consultation" ? (
-              <div>
-                <h2 className="text-2xl font-bold mb-6 flex items-center">
-                  <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    className="h-6 w-6 mr-2 text-indigo-600"
-                    fill="none"
-                    viewBox="0 0 24 24"
-                    stroke="currentColor"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                      d="M17 8h2a2 2 0 012 2v6a2 2 0 01-2 2h-2v4l-4-4H9a1.994 1.994 0 01-1.414-.586m0 0L11 14h4a2 2 0 002-2V6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2v4l.586-.586z"
-                    />
-                  </svg>
-                  Dịch vụ Tư vấn
-                </h2>
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-                  {filteredServices
-                    .filter((service) => service.category === "consultation")
-                    .map((service) => (
-                      <div
-                        key={service.service_id}
-                        className="bg-white rounded-lg shadow-md overflow-hidden transition-transform hover:shadow-lg hover:-translate-y-1"
-                      >
-                        <div className="h-36 bg-gradient-to-r from-indigo-500 to-indigo-700 flex items-center justify-center">
-                          <div className="h-20 w-20 rounded-full bg-white flex items-center justify-center">
-                            <svg
-                              xmlns="http://www.w3.org/2000/svg"
-                              className="h-10 w-10 text-indigo-600"
-                              fill="none"
-                              viewBox="0 0 24 24"
-                              stroke="currentColor"
-                            >
-                              <path
-                                strokeLinecap="round"
-                                strokeLinejoin="round"
-                                strokeWidth={1.5}
-                                d="M17 8h2a2 2 0 012 2v6a2 2 0 01-2 2h-2v4l-4-4H9a1.994 1.994 0 01-1.414-.586m0 0L11 14h4a2 2 0 002-2V6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2v4l.586-.586z"
-                              />
-                            </svg>
-                          </div>
-                        </div>
-
-                        <div className="p-6">
-                          <div className="flex justify-between items-start">
-                            <div>
-                              <div className="flex items-center gap-2 mb-2">
-                                <span className="bg-indigo-100 text-indigo-800 text-xs font-medium px-2.5 py-0.5 rounded">
-                                  Tư vấn trực tiếp
-                                </span>
-                              </div>
-                              <h3 className="text-xl font-bold">
-                                {service.name}
-                              </h3>
-                            </div>
-                            <div className="font-bold text-indigo-600">
-                              {service.price && (
-                                <span>
-                                  {new Intl.NumberFormat("vi-VN", {
-                                    style: "currency",
-                                    currency: "VND",
-                                  }).format(service.price)}
-                                </span>
-                              )}
-                            </div>
-                          </div>
-
-                          <p className="text-gray-600 mt-3">
-                            {service.description || "Không có mô tả chi tiết"}
-                          </p>
-
-                          <div className="mt-4 p-3 bg-gray-50 rounded-md">
-                            <h4 className="font-medium text-gray-700">
-                              Hướng dẫn chuẩn bị:
-                            </h4>
-                            <p className="text-gray-600 mt-1 text-sm">
-                              {service.preparationGuidelines ||
-                                "Không có hướng dẫn cụ thể."}
-                            </p>
-                          </div>
-
-                          <div className="mt-6 flex justify-end">
-                            <Link
-                              to={{
-                                pathname: "/services/consultation",
-                                search: `?serviceId=${hashServiceId(
-                                  service.service_id
-                                )}`,
-                              }}
-                              className="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-md transition-colors"
-                            >
-                              Đặt lịch tư vấn
-                            </Link>
-                          </div>
-                        </div>
-                      </div>
-                    ))}
-                </div>
-              </div>
-            ) : null}
-
-            {selectedCategory === "all" || selectedCategory === "cycle" ? (
-              <div className="mb-12">
-                <h2 className="text-2xl font-bold mb-6 flex items-center">
-                  <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    className="h-6 w-6 mr-2 text-blue-600"
-                    fill="none"
-                    viewBox="0 0 24 24"
-                    stroke="currentColor"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                      d="M19.428 15.428a2 2 0 00-1.022-.547l-2.387-.477a6 6 0 00-3.86.517l-.318.158a6 6 0 01-3.86.517L6.05 15.21a2 2 0 00-1.806.547M8 4h8l-1 1v5.172a2 2 0 00.586 1.414l5 5c1.26 1.26.367 3.414-1.415 3.414H4.828c-1.782 0-2.674-2.154-1.414-3.414l5-5A2 2 0 009 10.172V5L8 4z"
-                    />
-                  </svg>
-                  Theo dõi chu kỳ kinh nguyệt
-                </h2>
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-                  {filteredServices
-                    .filter((service) => service.category === "cycle")
-                    .map((service) => (
-                      <div
-                        key={service.service_id}
-                        className="bg-white rounded-lg shadow-md overflow-hidden transition-transform hover:shadow-lg hover:-translate-y-1"
-                      >
-                        <div className="h-36 bg-gradient-to-r from-blue-500 to-blue-700 flex items-center justify-center">
-                          <div className="h-20 w-20 rounded-full bg-white flex items-center justify-center">
-                            <svg
-                              xmlns="http://www.w3.org/2000/svg"
-                              className="h-10 w-10 text-blue-600"
-                              fill="none"
-                              viewBox="0 0 24 24"
-                              stroke="currentColor"
-                            >
-                              <path
-                                strokeLinecap="round"
-                                strokeLinejoin="round"
-                                strokeWidth={1.5}
-                                d="M19.428 15.428a2 2 0 00-1.022-.547l-2.387-.477a6 6 0 00-3.86.517l-.318.158a6 6 0 01-3.86.517L6.05 15.21a2 2 0 00-1.806.547M8 4h8l-1 1v5.172a2 2 0 00.586 1.414l5 5c1.26 1.26.367 3.414-1.415 3.414H4.828c-1.782 0-2.674-2.154-1.414-3.414l5-5A2 2 0 009 10.172V5L8 4z"
-                              />
-                            </svg>
-                          </div>
-                        </div>
-
-                        <div className="p-6">
-                          <div className="flex justify-between items-start">
-                            <div>
-                              <h3 className="text-xl font-bold">
-                                {service.name}
-                              </h3>
-                            </div>
-                            <div className="font-bold text-blue-600">
-                              {service.price && (
-                                <span>
-                                  {new Intl.NumberFormat("vi-VN", {
-                                    style: "currency",
-                                    currency: "VND",
-                                  }).format(service.price)}
-                                </span>
-                              )}
-                            </div>
-                          </div>
-
-                          <p className="text-gray-600 mt-3">
-                            {service.description || "Không có mô tả chi tiết"}
-                          </p>
-
-                          <div className="mt-4 p-3 bg-gray-50 rounded-md">
-                            <h4 className="font-medium text-gray-700">
-                              Hướng dẫn chuẩn bị:
-                            </h4>
-                            <p className="text-gray-600 mt-1 text-sm">
-                              {service.preparationGuidelines ||
-                                "Không có hướng dẫn cụ thể."}
-                            </p>
-                          </div>
-
-                          <div className="mt-6 flex justify-end">
-                            <Link
-                              to={{
-                                pathname: "/services/menstrual-cycle",
-                              }}
-                              className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-md transition-colors"
-                            >
-                              Bắt đầu theo dõi chu kỳ
-                            </Link>
-                          </div>
-                        </div>
-                      </div>
-                    ))}
-                </div>
-              </div>
-            ) : null}
+            {/* Cycle Services */}
+            {(selectedCategory === "all" || selectedCategory === "cycle") && (
+              <ServiceSection
+                title="Theo dõi chu kỳ kinh nguyệt"
+                icon={icons.cycle}
+                services={cycleServices}
+                category="cycle"
+              />
+            )}
           </div>
         )}
       </div>
 
+      {/* CTA Section */}
       <div className="bg-blue-900 text-white py-16">
         <div className="container mx-auto px-4 text-center">
           <h2 className="text-3xl font-bold mb-6">

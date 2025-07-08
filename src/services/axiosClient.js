@@ -37,7 +37,8 @@ axiosClient.interceptors.response.use(
     if (
       error.response?.status === 401 &&
       !originalRequest._retry &&
-      !originalRequest.url.includes("/v1/auth/refresh-token")
+      !originalRequest.url.includes("/v1/auth/refresh-token") &&
+      !originalRequest.url.includes("/v1/auth/login")
     ) {
       originalRequest._retry = true;
       try {
@@ -52,10 +53,33 @@ axiosClient.interceptors.response.use(
         };
         return axiosClient(originalRequest);
       } catch (refreshError) {
+        // Xử lý lỗi refresh token bằng tiếng Việt
+        if (originalRequest.url.includes("/v1/auth/login")) {
+          error.response.data = {
+            ...error.response.data,
+            message: "Tên đăng nhập hoặc mật khẩu không đúng",
+          };
+        } else {
+          error.response.data = {
+            ...error.response.data,
+            message: "Phiên đăng nhập đã hết hạn, vui lòng đăng nhập lại",
+          };
+        }
         store.dispatch(logout());
-        return Promise.reject(refreshError);
+        return Promise.reject(error);
       }
     }
+
+    // Xử lý các lỗi khác với thông báo tiếng Việt
+    if (error.response?.status === 401) {
+      if (originalRequest.url.includes("/v1/auth/login")) {
+        error.response.data = {
+          ...error.response.data,
+          message: "Tên đăng nhập hoặc mật khẩu không đúng",
+        };
+      }
+    }
+
     return Promise.reject(error);
   }
 );

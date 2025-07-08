@@ -371,14 +371,14 @@ function NotificationBell() {
       );
 
       // Lấy lịch hẹn xét nghiệm
-      // const testResponse = await axiosClient.get(
-      //   `/v1/test-appointments/user/${user.user_id}`,
-      //   {
-      //     headers: {
-      //       "x-access-token": accessToken,
-      //     },
-      //   }
-      // );
+      const testResponse = await axiosClient.get(
+        `/v1/test-appointments/user/${user.user_id}`,
+        {
+          headers: {
+            "x-access-token": accessToken,
+          },
+        }
+      );
 
       const savedNotifications = JSON.parse(
         localStorage.getItem("notificationReadStatus") || "{}"
