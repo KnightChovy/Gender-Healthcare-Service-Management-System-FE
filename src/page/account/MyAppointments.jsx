@@ -212,64 +212,52 @@ function MyAppointments() {
   const handleCancelPaidAppointment = async (appointment) => {
     const appointmentId = appointment.appointment_id || appointment.id;
     
-    // Enhanced confirmation dialog for paid appointments
     const confirmCancel = window.confirm(
       `⚠️ HỦY CUỘC HẸN ⚠️\n\n` +
       `Cuộc hẹn: ${appointment.consultant_type}\n` +
       `Ngày: ${formatDate(appointment.appointment_date)}\n` +
       `Phí tư vấn: ${formatCurrency(appointment.price_apm)}\n\n` +
-      `🔄 Sau khi hủy:\n` +
-      `• Số tiền ${formatCurrency(appointment.price_apm)} sẽ được hoàn lại\n` +
-      `• Thông báo hoàn tiền sẽ được gửi qua email: ${user.email}\n` +
-      `• Quá trình hoàn tiền có thể mất 3-5 ngày làm việc\n\n` +
       `Bạn có chắc chắn muốn hủy và yêu cầu hoàn tiền?`
     );
     
-    if (!confirmCancel) {
-      return;
-    }
+    if (!confirmCancel) return;
 
     try {
       setIsCancelling(true);
 
-      const data = {
-        appointment_id: appointmentId,
-        refund_request: true,
-        refund_amount: appointment.price_apm,
-        refund_reason: 'Customer cancellation request',
-        customer_email: user.email
+      // Step 1: Send email notification
+      try {
+        await axiosClient.post('/v1/emails/send-appointment-cancellation', {
+          appointment_id: appointmentId,
+          reason: 'Thay đổi lịch trình cá nhân'
+        }, {
+          headers: { 'x-access-token': accessToken }
+        });
+        console.log('✅ Email sent successfully');
+      } catch (emailError) {
+        console.warn('⚠️ Email failed, continuing...', emailError);
       }
 
-      const response = await axiosClient.post('/v1/users/cancel-paid-appointment', data, {
-        headers: { 
-          'x-access-token': accessToken,
-        }
+      // Step 2: Cancel appointment (existing API)
+      const response = await axiosClient.post('/v1/users/cancel-appointment', {
+        appointment_id: appointmentId
+      }, {
+        headers: { 'x-access-token': accessToken }
       });
 
       if (response.data?.success) {
-        // Enhanced success message for refund
         alert(
-          `✅ HỦY CUỘC HẸN VÀ YÊU CẦU HOÀN TIỀN THÀNH CÔNG!\n\n` +
-          `📧 Thông báo chi tiết đã được gửi đến: ${user.email}\n\n` +
-          `💰 Số tiền hoàn: ${formatCurrency(appointment.price_apm)}\n` +
-          `⏰ Thời gian xử lý: 3-5 ngày làm việc\n` +
-          `📋 Mã tham chiếu: ${response.data.refund_reference || appointmentId}\n\n` +
-          `🔍 Vui lòng kiểm tra email để theo dõi tiến trình hoàn tiền.\n` +
-          `💬 Nếu có thắc mắc, hãy liên hệ hotline với mã tham chiếu trên.`
+          `✅ HỦY CUỘC HẸN THÀNH CÔNG!\n\n` +
+          `📧 Email thông báo đã được gửi đến: ${user.email}\n` +
+          `💰 Hoàn tiền sẽ được xử lý trong 3-5 ngày làm việc\n\n` +
+          `Vui lòng kiểm tra email để theo dõi.`
         );
         
+        // Update status
         setAppointments(prevAppointments => 
           prevAppointments.map(apt => 
             (apt.appointment_id === appointmentId || apt.id === appointmentId)
-              ? { 
-                  ...apt, 
-                  status: 'rejected',
-                  is_refunded: true,
-                  refund_status: 'processing',
-                  refund_amount: appointment.price_apm,
-                  refund_date: new Date().toISOString(),
-                  refund_reference: response.data.refund_reference || appointmentId
-                }
+              ? { ...apt, status: 'rejected' }
               : apt
           )
         );
@@ -277,30 +265,14 @@ function MyAppointments() {
         await fetchAppointments();
         
       } else {
-        throw new Error(response.data?.message || 'Không thể hủy cuộc hẹn và hoàn tiền');
+        throw new Error(response.data?.message || 'Không thể hủy cuộc hẹn');
       }
     } catch (error) {
-      console.error('❌ Error cancelling paid appointment:', error);
-      
-      // Show specific error messages for refund process
-      if (error.response?.status === 400) {
-        alert('❌ Không thể hủy cuộc hẹn này.\n\nLý do có thể:\n• Cuộc hẹn đã quá hạn để hoàn tiền\n• Cuộc hẹn đã được sử dụng\n• Thông tin thanh toán không hợp lệ');
-      } else if (error.response?.status === 404) {
-        alert('❌ Không tìm thấy thông tin thanh toán cho cuộc hẹn này.\n\nVui lòng liên hệ bộ phận hỗ trợ để được giải quyết.');
-      } else if (error.response?.status === 403) {
-        alert('❌ Không thể thực hiện hoàn tiền.\n\nLý do có thể:\n• Bạn không có quyền hủy cuộc hẹn này\n• Đã quá thời hạn hủy theo chính sách\n• Cuộc hẹn đang trong trạng thái xử lý');
-      } else if (error.response?.status === 409) {
-        alert('❌ Cuộc hẹn này đã được xử lý trước đó.\n\n• Đã được hủy và hoàn tiền\n• Đang trong quá trình xử lý hoàn tiền\n\nVui lòng kiểm tra email hoặc liên hệ hỗ trợ.');
-      } else {
-        alert(
-          `❌ Có lỗi xảy ra trong quá trình hủy cuộc hẹn và hoàn tiền.\n\n` +
-          `Lỗi: ${error.response?.data?.message || 'Lỗi hệ thống'}\n\n` +
-          `🔧 Vui lòng:\n` +
-          `• Thử lại sau vài phút\n` +
-          `• Liên hệ bộ phận hỗ trợ nếu vẫn gặp lỗi\n` +
-          `• Cung cấp mã cuộc hẹn: ${appointmentId}`
-        );
-      }
+      console.error('❌ Error:', error);
+      alert(
+        error.response?.data?.message || 
+        'Có lỗi xảy ra. Vui lòng liên hệ hỗ trợ.'
+      );
     } finally {
       setIsCancelling(false);
     }
