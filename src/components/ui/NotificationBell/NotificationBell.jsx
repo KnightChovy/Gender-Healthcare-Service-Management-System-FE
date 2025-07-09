@@ -357,88 +357,88 @@ function NotificationBell() {
   const loadNotifications = useCallback(async () => {
     if (!user.user_id || !accessToken) return;
 
-    try {
-      setIsLoading(true);
+    // try {
+    //   setIsLoading(true);
 
-      // Lấy lịch hẹn thông thường
-      const appointmentResponse = await axiosClient.get(
-        `/v1/appointments/user/${user.user_id}`,
-        {
-          headers: {
-            "x-access-token": accessToken,
-          },
-        }
-      );
+    //   // Lấy lịch hẹn thông thường
+    //   const appointmentResponse = await axiosClient.get(
+    //     `/v1/appointments/user/${user.user_id}`,
+    //     {
+    //       headers: {
+    //         "x-access-token": accessToken,
+    //       },
+    //     }
+    //   );
 
-      // Lấy lịch hẹn xét nghiệm
-      const testResponse = await axiosClient.get(
-        `/v1/test-appointments/user/${user.user_id}`,
-        {
-          headers: {
-            "x-access-token": accessToken,
-          },
-        }
-      );
+    //   // Lấy lịch hẹn xét nghiệm
+    //   const testResponse = await axiosClient.get(
+    //     `/v1/test-appointments/user/${user.user_id}`,
+    //     {
+    //       headers: {
+    //         "x-access-token": accessToken,
+    //       },
+    //     }
+    //   );
 
-      const savedNotifications = JSON.parse(
-        localStorage.getItem("notificationReadStatus") || "{}"
-      );
-      const deletedNotifications = cleanupDeletedNotifications();
+    //   const savedNotifications = JSON.parse(
+    //     localStorage.getItem("notificationReadStatus") || "{}"
+    //   );
+    //   const deletedNotifications = cleanupDeletedNotifications();
 
-      let allNotifications = [];
+    //   let allNotifications = [];
 
-      // Xử lý lịch hẹn thông thường
-      if (appointmentResponse.data?.success) {
-        const appointments = appointmentResponse.data.data || [];
-        appointments.forEach((appointment) => {
-          const appointmentNotifications =
-            createNotificationFromAppointment(appointment);
-          allNotifications = [...allNotifications, ...appointmentNotifications];
-        });
-      }
+    //   // Xử lý lịch hẹn thông thường
+    //   if (appointmentResponse.data?.success) {
+    //     const appointments = appointmentResponse.data.data || [];
+    //     appointments.forEach((appointment) => {
+    //       const appointmentNotifications =
+    //         createNotificationFromAppointment(appointment);
+    //       allNotifications = [...allNotifications, ...appointmentNotifications];
+    //     });
+    //   }
 
-      // Xử lý lịch hẹn xét nghiệm
-      if (testResponse.data?.success) {
-        const testAppointments = testResponse.data.data || [];
-        testAppointments.forEach((testAppointment) => {
-          const testNotifications =
-            createNotificationFromTestAppointment(testAppointment);
-          allNotifications = [...allNotifications, ...testNotifications];
-        });
-      }
+    //   // Xử lý lịch hẹn xét nghiệm
+    //   if (testResponse.data?.success) {
+    //     const testAppointments = testResponse.data.data || [];
+    //     testAppointments.forEach((testAppointment) => {
+    //       const testNotifications =
+    //         createNotificationFromTestAppointment(testAppointment);
+    //       allNotifications = [...allNotifications, ...testNotifications];
+    //     });
+    //   }
 
-      // Lọc các thông báo đã xóa
-      allNotifications = allNotifications.filter((notif) => {
-        const isDeleted = deletedNotifications[notif.id];
-        return !isDeleted;
-      });
+    //   // Lọc các thông báo đã xóa
+    //   allNotifications = allNotifications.filter((notif) => {
+    //     const isDeleted = deletedNotifications[notif.id];
+    //     return !isDeleted;
+    //   });
 
-      // Cập nhật trạng thái đã đọc
-      allNotifications = allNotifications.map((notif) => ({
-        ...notif,
-        isRead: savedNotifications[notif.id] || false,
-      }));
+    //   // Cập nhật trạng thái đã đọc
+    //   allNotifications = allNotifications.map((notif) => ({
+    //     ...notif,
+    //     isRead: savedNotifications[notif.id] || false,
+    //   }));
 
-      // Sắp xếp theo thời gian
-      allNotifications.sort(
-        (a, b) => new Date(b.timestamp) - new Date(a.timestamp)
-      );
+    //   // Sắp xếp theo thời gian
+    //   allNotifications.sort(
+    //     (a, b) => new Date(b.timestamp) - new Date(a.timestamp)
+    //   );
 
-      // Lọc thông báo trong 30 ngày gần đây
-      const thirtyDaysAgo = new Date();
-      thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+    //   // Lọc thông báo trong 30 ngày gần đây
+    //   const thirtyDaysAgo = new Date();
+    //   thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
 
-      const recentNotifications = allNotifications.filter(
-        (notif) => new Date(notif.timestamp) >= thirtyDaysAgo
-      );
+    //   const recentNotifications = allNotifications.filter(
+    //     (notif) => new Date(notif.timestamp) >= thirtyDaysAgo
+    //   );
 
-      setNotifications(recentNotifications);
-      setUnreadCount(recentNotifications.filter((n) => !n.isRead).length);
-    } catch (error) {
-      console.error("❌ Error loading notifications:", error);
-    } finally {
-      setIsLoading(false);
-    }
+    //   setNotifications(recentNotifications);
+    //   setUnreadCount(recentNotifications.filter((n) => !n.isRead).length);
+    // } catch (error) {
+    //   console.error("❌ Error loading notifications:", error);
+    // } finally {
+    //   setIsLoading(false);
+    // }
   }, [user.user_id, accessToken]);
 
   useEffect(() => {

@@ -6,21 +6,23 @@ import NotificationSettings from "./MenstrualCycleItems/NotificationSettings";
 import HealthTips from "./MenstrualCycleItems/HealthTips";
 import classNames from "classnames/bind";
 import styles from "./MenstrualCycle.module.scss";
+import menstrualService from "../../services/menstrual.service";
+import { set } from "date-fns/set";
 
 const cx = classNames.bind(styles);
 
 function MenstrualCycle() {
   const [cycleData, setCycleData] = useState({
-    lastPeriodDate: "",
+    lastPeriodDate: "2025-07-06",
     cycleLength: 28,
     periodLength: 5,
-    birthControlTime: "",
-    notifications: {
-      ovulation: true,
-      fertility: true,
-      period: true,
-      birthControl: true,
-    },
+    pillTime: "08:00",
+    // notifications: {
+    //   nextPeriod: true,
+    //   ovulation: true,
+    //   fertilityWindow: true,
+    //   periodStart: true,
+    // },
   });
 
   const [predictions, setPredictions] = useState({
@@ -32,47 +34,35 @@ function MenstrualCycle() {
   const [currentPhase, setCurrentPhase] = useState("");
 
   useEffect(() => {
+    const fetchData = async () => {
+      const data = await menstrualService.getCycleData();
+      console.log("Fetched cycle data:", data.periodRange.end);
+      setCycleData(data);
+    };
+    fetchData();
+    console.log("Predictions:", predictions);
+  }, []);
+
+  useEffect(() => {
     if (cycleData.lastPeriodDate) {
-      calculatePredictions();
+      const nextPeriodDate = new Date(cycleData.lastPeriodDate);
+      nextPeriodDate.setDate(nextPeriodDate.getDate() + cycleData.cycleLength);
+      const ovulationDate = new Date(nextPeriodDate);
+      ovulationDate.setDate(ovulationDate.getDate() - 14);
+      const fertilityStart = new Date(ovulationDate);
+      fertilityStart.setDate(fertilityStart.getDate() - 6);
+      const fertilityEnd = new Date(ovulationDate);
+      fertilityEnd.setDate(fertilityEnd.getDate() + 1);
+      setPredictions({
+        nextPeriod: nextPeriodDate,
+        ovulationDate: ovulationDate,
+        fertilityWindow: {
+          start: fertilityStart,
+          end: fertilityEnd,
+        },
+      });
     }
   }, [cycleData]);
-
-  const calculatePredictions = () => {
-    const lastPeriod = new Date(cycleData.lastPeriodDate);
-    const cycleLength = parseInt(cycleData.cycleLength);
-
-    const nextPeriod = new Date(lastPeriod);
-    nextPeriod.setDate(lastPeriod.getDate() + cycleLength);
-
-    const ovulationDate = new Date(nextPeriod);
-    ovulationDate.setDate(nextPeriod.getDate() - 14);
-
-    const fertilityStart = new Date(ovulationDate);
-    fertilityStart.setDate(ovulationDate.getDate() - 5);
-    const fertilityEnd = new Date(ovulationDate);
-    fertilityEnd.setDate(ovulationDate.getDate() + 1);
-
-    setPredictions({
-      nextPeriod,
-      ovulationDate,
-      fertilityWindow: { start: fertilityStart, end: fertilityEnd },
-    });
-
-    const today = new Date();
-    const daysSinceLastPeriod = Math.floor(
-      (today - lastPeriod) / (1000 * 60 * 60 * 24)
-    );
-
-    if (daysSinceLastPeriod < cycleData.periodLength) {
-      setCurrentPhase("Kì kinh nguyệt");
-    } else if (daysSinceLastPeriod >= 10 && daysSinceLastPeriod < 16) {
-      setCurrentPhase("Kì rụng trứng");
-    } else if (daysSinceLastPeriod >= 16 && daysSinceLastPeriod <= 25) {
-      setCurrentPhase("Kì hoàng thể");
-    } else {
-      setCurrentPhase("Kì nang trứng");
-    }
-  };
 
   const handleCycleDataChange = (newData) => {
     setCycleData((prev) => ({
@@ -93,23 +83,16 @@ function MenstrualCycle() {
 
         <CurrentStatus
           className="col-span-2"
-          predictions={{
-            nextPeriod: new Date("2025-07-11"),
-            ovulationDate: new Date("2025-07-16"),
-            fertilityWindow: {
-              start: new Date("2025-07-14"),
-              end: new Date("2025-07-18"),
-            },
-          }}
-          currentPhase="Kì rụng trứng"
+          predictions={predictions}
+          currentPhase={currentPhase}
         />
 
         <HealthTips currentPhase={currentPhase} />
 
-        <NotificationSettings
+        {/* <NotificationSettings
           notifications={cycleData.notifications}
           onNotificationChange={handleCycleDataChange}
-        />
+        /> */}
       </div>
     </div>
   );
