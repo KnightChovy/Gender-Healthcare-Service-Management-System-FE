@@ -146,7 +146,7 @@ function CycleInputForm({ cycleData, onDataChange }) {
   };
 
   return (
-    <div className={cx("input-section")}>
+    <div className={cx("input-section", "col-span-2")}>
       <h2>Thông tin chu kì</h2>
 
       <div className={cx("form-group")} style={{ display: "block" }}>
@@ -258,57 +258,6 @@ function CycleInputForm({ cycleData, onDataChange }) {
               10:00 CH
             </button>
           </div>
-        </div>
-
-        <div className={cx("day-selection-container")}>
-          <div className={cx("day-selection-header")}>
-            <span className={cx("day-selection-label")}>
-              Chọn ngày trong tuần:
-            </span>
-            <div className={cx("day-selection-actions")}>
-              <button
-                type="button"
-                className={cx("select-all-btn")}
-                onClick={selectAllDays}
-                title="Chọn tất cả ngày"
-              >
-                Cả tuần
-              </button>
-              <button
-                type="button"
-                className={cx("clear-all-btn")}
-                onClick={clearAllDays}
-                title="Bỏ chọn tất cả"
-              >
-                Xóa hết
-              </button>
-            </div>
-          </div>
-
-          <div className={cx("days-grid")}>
-            {daysOfWeek.map((day) => (
-              <label
-                key={day.value}
-                className={cx("day-checkbox", {
-                  selected: selectedDays.includes(day.value),
-                })}
-              >
-                <input
-                  type="checkbox"
-                  checked={selectedDays.includes(day.value)}
-                  onChange={() => handleDaySelection(day.value)}
-                />
-                <span className={cx("day-short")}>{day.short}</span>
-                <span className={cx("day-full")}>{day.label}</span>
-              </label>
-            ))}
-          </div>
-
-          {selectedDays.length > 0 && (
-            <div className={cx("selected-days-info")}>
-              <span>✅ Đã chọn: {selectedDays.length} ngày</span>
-            </div>
-          )}
         </div>
 
         <div className={cx("reminder-section")}>
