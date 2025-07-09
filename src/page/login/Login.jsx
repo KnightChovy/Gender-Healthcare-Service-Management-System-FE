@@ -133,6 +133,9 @@ function Login() {
           case "manager":
             navigate("/manager");
             break;
+          case "staff":
+            navigate("/staff");
+            break;
           case "user":
             navigate("/");
             break;

@@ -6,18 +6,17 @@ import MenuItem from "@mui/material/MenuItem";
 import ListItemIcon from "@mui/material/ListItemIcon";
 import Divider from "@mui/material/Divider";
 import IconButton from "@mui/material/IconButton";
-import Typography from "@mui/material/Typography";
 import Tooltip from "@mui/material/Tooltip";
-import PersonAdd from "@mui/icons-material/PersonAdd";
 import Settings from "@mui/icons-material/Settings";
 import Logout from "@mui/icons-material/Logout";
 import { useDispatch, useSelector } from "react-redux";
 import { Link, useNavigate } from "react-router-dom";
 import { logout } from "../../store/feature/auth/authenSlice";
-import { toast } from "react-toastify"; // Thêm import toast
+import { toast } from "react-toastify";
 import axiosClient from "../../services/axiosClient";
+import { API_LOGOUT } from "../../constants/Apis";
 
-export default function AccountMenu() {
+export default function ToogleStaffMenu() {
   const { user } = useSelector((state) => state.auth);
   const navigate = useNavigate();
   const dispatch = useDispatch();
@@ -27,7 +26,7 @@ export default function AccountMenu() {
       handleClose();
       toast.info("Đang đăng xuất...", { autoClose: 800 });
 
-      const response = await axiosClient.post("/v1/auth/logout");
+      const response = await axiosClient.post(API_LOGOUT);
 
       if (response.data?.success) {
         setTimeout(() => {
@@ -55,16 +54,12 @@ export default function AccountMenu() {
 
   const [anchorEl, setAnchorEl] = React.useState(null);
   const open = Boolean(anchorEl);
-
   const handleClick = (event) => {
     setAnchorEl(event.currentTarget);
   };
-
   const handleClose = () => {
     setAnchorEl(null);
   };
-
-  const userRole = user?.role || "user";
 
   return (
     <React.Fragment>
@@ -82,7 +77,7 @@ export default function AccountMenu() {
               sx={{
                 width: 32,
                 height: 32,
-                bgcolor: "#3b82f6",
+                bgcolor: "#0891b2",
                 fontWeight: "bold",
               }}
             >
@@ -128,75 +123,22 @@ export default function AccountMenu() {
         transformOrigin={{ horizontal: "right", vertical: "top" }}
         anchorOrigin={{ horizontal: "right", vertical: "bottom" }}
       >
-        {(() => {
-          switch (userRole) {
-            case "admin":
-              return (
-                <MenuItem
-                  onClick={() => {
-                    handleClose();
-                    navigate("/admin");
-                  }}
-                >
-                  <Avatar /> Trang quản trị
-                </MenuItem>
-              );
-            case "doctor":
-              return (
-                <MenuItem
-                  onClick={() => {
-                    handleClose();
-                    navigate("/doctor/dashboard");
-                  }}
-                >
-                  <Avatar /> Bảng điều khiển Bác sĩ
-                </MenuItem>
-              );
-            case "manager":
-              return (
-                <MenuItem
-                  onClick={() => {
-                    handleClose();
-                    navigate("/manager");
-                  }}
-                >
-                  <Avatar /> Bảng điều khiển Quản lý
-                </MenuItem>
-              );
-            case "staff":
-              return (
-                <MenuItem
-                  onClick={() => {
-                    handleClose();
-                    navigate("/staff");
-                  }}
-                >
-                  <Avatar /> Bảng điều khiển Nhân viên
-                </MenuItem>
-              );
+        <MenuItem onClick={handleClose}>
+          <Avatar />
+          <Link to="/profile">Hồ sơ</Link>
+        </MenuItem>
 
-            case "user":
-            default:
-              return (
-                <MenuItem
-                  onClick={() => {
-                    handleClose();
-                    navigate("/profile");
-                  }}
-                >
-                  <Avatar /> Hồ sơ của tôi
-                </MenuItem>
-              );
-          }
-        })()}
+        <MenuItem
+          onClick={() => {
+            handleClose();
+            navigate("/staff");
+          }}
+        >
+          <Avatar /> Bảng điều khiển Nhân viên
+        </MenuItem>
 
         <Divider />
-        <MenuItem onClick={handleClose}>
-          <ListItemIcon>
-            <PersonAdd fontSize="small" />
-          </ListItemIcon>
-          Thêm tài khoản khác
-        </MenuItem>
+
         <MenuItem
           onClick={() => {
             handleClose();

@@ -40,6 +40,12 @@ import GeminiChatbot from "./components/ui/GeminiChatbot";
 import FeedbackAppointment from "./page/Feedback/FeedbackAppointment";
 import Feedback from "./page/Feedback/Feedback";
 import MenstrualCycle from "./page/MenstrualCycle";
+// Staff imports
+import StaffRoute from "./routes/StaffRouter";
+import LayoutStaff from "./components/Layouts/LayoutStaff/LayoutStaff";
+import { DashboardStaff } from "./page/staff/DashboardStaff";
+import { TestManagement as StaffTestManagement } from "./page/staff/TestManagement";
+import { PatientRecords } from "./page/staff/PatientRecords";
 
 import { useEffect, useState } from "react";
 import { TestAppointment } from "./page/manager/TestAppointment/TestAppointment";
@@ -250,6 +256,20 @@ function App() {
             path="/manager/test_appointment"
             element={<TestAppointment />}
           />
+        </Route>
+        
+        {/* Staff */}
+        <Route 
+          path="/staff" 
+          element={
+            <StaffRoute>
+              <LayoutStaff />
+            </StaffRoute>
+          }
+        >
+          <Route index element={<DashboardStaff />} />
+          <Route path="test-management" element={<StaffTestManagement />} />
+          <Route path="patient-records" element={<PatientRecords />} />
         </Route>
       </Routes>
 
