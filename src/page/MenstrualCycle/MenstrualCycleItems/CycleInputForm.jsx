@@ -10,6 +10,7 @@ function CycleInputForm({ cycleData, onDataChange }) {
   const [timer, setTimer] = useState(null);
   const [isTimerActive, setIsTimerActive] = useState(false);
   const [selectedDays, setSelectedDays] = useState([]);
+  const [isSaving, setIsSaving] = useState(false);
 
   const daysOfWeek = [
     { value: "monday", label: "Thứ 2", short: "T2" },
@@ -145,6 +146,64 @@ function CycleInputForm({ cycleData, onDataChange }) {
     return dayMap[dayIndex];
   };
 
+  const handleConfirmSave = async () => {
+    try {
+      setIsSaving(true);
+
+      // Kiểm tra dữ liệu hợp lệ
+      if (!cycleData.lastPeriodDate) {
+        alert("⚠️ Vui lòng chọn ngày đầu kì kinh nguyệt gần nhất!");
+        return;
+      }
+
+      if (
+        !cycleData.cycleLength ||
+        cycleData.cycleLength < 21 ||
+        cycleData.cycleLength > 35
+      ) {
+        alert("⚠️ Độ dài chu kì phải từ 21-35 ngày!");
+        return;
+      }
+
+      if (
+        !cycleData.periodLength ||
+        cycleData.periodLength < 3 ||
+        cycleData.periodLength > 8
+      ) {
+        alert("⚠️ Số ngày kinh nguyệt phải từ 3-8 ngày!");
+        return;
+      }
+
+      // Hiển thị xác nhận
+      const isConfirmed = window.confirm(
+        `Xác nhận lưu thông tin chu kì:\n\n` +
+          `📅 Ngày đầu kì kinh nguyệt: ${new Date(
+            cycleData.lastPeriodDate
+          ).toLocaleDateString("vi-VN")}\n` +
+          `🔄 Độ dài chu kì: ${cycleData.cycleLength} ngày\n` +
+          `📊 Số ngày kinh nguyệt: ${cycleData.periodLength} ngày\n\n` +
+          `Bạn có chắc chắn muốn lưu thông tin này không?`
+      );
+
+      if (!isConfirmed) {
+        return;
+      }
+
+      // Lưu dữ liệu
+      await menstrualService.updateCycleData(cycleData);
+
+      // Thông báo thành công
+      alert(
+        "✅ Đã lưu thông tin chu kì thành công!\n\nDữ liệu của bạn đã được cập nhật và các dự đoán sẽ được tính toán lại."
+      );
+    } catch (error) {
+      console.error("Error saving cycle data:", error);
+      alert("❌ Có lỗi xảy ra khi lưu thông tin!\n\nVui lòng thử lại sau.");
+    } finally {
+      setIsSaving(false);
+    }
+  };
+
   return (
     <div className={cx("input-section", "col-span-2")}>
       <h2>Thông tin chu kì</h2>
@@ -185,9 +244,16 @@ function CycleInputForm({ cycleData, onDataChange }) {
           style={{ width: "100%" }}
         />
       </div>
-      <button onClick={() => menstrualService.updateCycleData(cycleData)}>
-        Xác nhận
-      </button>
+
+      <div className={cx("form-group")}>
+        <button
+          className={cx("confirm-btn")}
+          onClick={handleConfirmSave}
+          disabled={isSaving}
+        >
+          {isSaving ? "⏳ Đang lưu..." : "💾 Xác nhận lưu thông tin chu kì"}
+        </button>
+      </div>
 
       <div className={cx("form-group")}>
         <span>Thời gian uống thuốc tránh thai:</span>

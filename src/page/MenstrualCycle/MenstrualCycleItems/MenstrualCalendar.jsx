@@ -47,11 +47,12 @@ function MenstrualCalendar({ predictions }) {
 
       <div className="mt-4 flex flex-wrap gap-4 items-center text-sm">
         <div className="flex items-center gap-2">
-          <span className="w-4 h-4 bg-red-400 rounded"></span> Có kinh nguyệt
+          <span className="w-4 h-4 bg-red-400 rounded"></span> Kì kinh nguyệt
+          tiếp theo
         </div>
         <div className="flex items-center gap-2">
-          <span className="w-4 h-4 bg-yellow-300 rounded"></span> Khoảng thời
-          gian rụng trứng được ước tính
+          <span className="w-4 h-4 bg-yellow-300 rounded"></span> Ngày rụng
+          trứng dự kiến
         </div>
         <div className="flex items-center gap-2">
           <span className="w-4 h-4 bg-blue-400 rounded"></span> Khoảng thời gian
