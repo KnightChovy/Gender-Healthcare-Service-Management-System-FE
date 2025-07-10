@@ -17,7 +17,7 @@ export const API_ADMIN_UPDATESTAFF = "";
 export const API_SERVICES = "/v1/services";
 
 // Send mail
-
+export const API_BOOKING_SERVICE_SUCCESS = "v1/emails/booking-service-success";
 export const API_PAYMENT_REMINDER = "/v1/emails/payment-reminder";
 
 // Consultation Result APIs

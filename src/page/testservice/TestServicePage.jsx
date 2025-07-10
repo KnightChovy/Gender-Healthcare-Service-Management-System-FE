@@ -17,6 +17,7 @@ import { ServiceCard } from "./components/ServiceCard";
 
 // Hooks
 import usePaymentProcessing from "./hook/usePaymentProcessing"; // Giữ nguyên vì đường dẫn hook/ là đúng
+import { API_BOOKING_SERVICE_SUCCESS } from "../../constants/Apis";
 
 window.Buffer = Buffer;
 
@@ -326,9 +327,12 @@ const TestAppointmentPage = () => {
     setAppointmentDetails(appointmentDetails);
     setIsPaymentComplete(true);
     setCurrentStep(4);
-
+    axiosClient
+      .post(API_BOOKING_SERVICE_SUCCESS, {
+        user_id: userInfo.user_id,
+      })
+      .then((res) => console.log(res.data).catch((err) => console.log(err)));
     if (window.dispatchEvent) {
-      // Tạo event để NotificationBell có thể lắng nghe
       const event = new CustomEvent("newNotification", {
         detail: newNotification,
       });
