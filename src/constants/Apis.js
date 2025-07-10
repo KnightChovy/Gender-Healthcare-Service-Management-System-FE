@@ -26,3 +26,6 @@ export const API_CONSULTATION_RESULT_UPLOAD =
   "/v1/doctors/consultation-result/upload";
 export const API_APPOINTMENT_STATUS = "/v1/appointments/:id/status";
 export const API_APPOINTMENT_DETAILS = "/v1/appointments/:id";
+
+// Orders/Test Management APIs
+export const API_GET_ALL_ORDERS = "/v1/managers/getAllOrder";
