@@ -1,9 +1,84 @@
+.access-denied {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 100vh;
+  background: linear-gradient(145deg, #fff0f3, #ffe0e6);
+  padding: 2rem;
+  box-sizing: border-box;
+}
+
+.warning-box {
+  background: white;
+  border-radius: 20px;
+  padding: 2.5rem;
+  max-width: 440px;
+  width: 100%;
+  text-align: center;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.06);
+  animation: fadeIn 0.5s ease-in-out;
+  border: 2px dashed #ff9aa2;
+}
+
+.warning-box h2 {
+  font-size: 1.6rem;
+  margin-bottom: 1rem;
+  font-weight: 700;
+  color: #d63031;
+}
+
+.warning-box p {
+  color: #555;
+  font-size: 1rem;
+  margin-bottom: 1.5rem;
+  line-height: 1.6;
+}
+
+.warning-icon {
+  font-size: 3.5rem;
+  margin-bottom: 1rem; // thêm khoảng cách với tiêu đề
+  display: block;
+  line-height: 1;
+}
+
+.back-home-btn {
+  background: linear-gradient(to right, #ff758c, #ff7eb3);
+  color: white;
+  border: none;
+  font-size: 1rem;
+  font-weight: 600;
+  padding: 0.75rem 1.5rem;
+  border-radius: 12px;
+  cursor: pointer;
+  transition: all 0.25s ease;
+  box-shadow: 0 4px 12px rgba(255, 117, 140, 0.4);
+}
+
+.back-home-btn:hover {
+  transform: translateY(-2px);
+  background: linear-gradient(to right, #ff6a8b, #ff73ac);
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: scale(0.98);
+  }
+
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
 .menstrual-cycle {
   min-height: 100vh;
   background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
   padding: auto;
   font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
 }
+
+
 
 /* Header Styles */
 .header {
