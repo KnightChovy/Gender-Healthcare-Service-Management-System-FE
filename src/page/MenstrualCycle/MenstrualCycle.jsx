@@ -7,7 +7,6 @@ import HealthTips from "./MenstrualCycleItems/HealthTips";
 import classNames from "classnames/bind";
 import styles from "./MenstrualCycle.module.scss";
 import menstrualService from "../../services/menstrual.service";
-import { set } from "date-fns/set";
 
 const cx = classNames.bind(styles);
 
@@ -17,17 +16,12 @@ function MenstrualCycle() {
     cycleLength: 28,
     periodLength: 5,
     pillTime: "08:00",
-    // notifications: {
-    //   nextPeriod: true,
-    //   ovulation: true,
-    //   fertilityWindow: true,
-    //   periodStart: true,
-    // },
+    // notifications: { nextPeriod: true, ovulation: true, fertilityWindow: true, periodStart: true },
   });
 
   const [predictions, setPredictions] = useState({
     nextPeriod: null,
-    ovulationDay: null,
+    ovulationDate: null,
     fertilityWindow: { start: null, end: null },
   });
 
@@ -36,23 +30,31 @@ function MenstrualCycle() {
   useEffect(() => {
     const fetchData = async () => {
       const data = await menstrualService.getCycleData();
-      console.log("Fetched cycle data:", data.periodRange.end);
+      console.log("Fetched cycle data:", data);
       setCycleData(data);
     };
     fetchData();
-    console.log("Predictions:", predictions);
   }, []);
 
   useEffect(() => {
     if (cycleData.lastPeriodDate) {
-      const nextPeriodDate = new Date(cycleData.lastPeriodDate);
+      const startPeriod = new Date(cycleData.lastPeriodDate);
+
+      // Tính ngày bắt đầu kỳ tiếp theo
+      const nextPeriodDate = new Date(startPeriod);
       nextPeriodDate.setDate(nextPeriodDate.getDate() + cycleData.cycleLength);
+
+      // Tính ngày rụng trứng
       const ovulationDate = new Date(nextPeriodDate);
       ovulationDate.setDate(ovulationDate.getDate() - 14);
+
+      // Cửa sổ thụ thai
       const fertilityStart = new Date(ovulationDate);
-      fertilityStart.setDate(fertilityStart.getDate() - 6);
+      fertilityStart.setDate(fertilityStart.getDate() - 5);
+
       const fertilityEnd = new Date(ovulationDate);
       fertilityEnd.setDate(fertilityEnd.getDate() + 1);
+
       setPredictions({
         nextPeriod: nextPeriodDate,
         ovulationDate: ovulationDate,
@@ -61,6 +63,21 @@ function MenstrualCycle() {
           end: fertilityEnd,
         },
       });
+
+      // Tính currentPhase
+      const today = new Date();
+      const endPeriod = new Date(startPeriod);
+      endPeriod.setDate(endPeriod.getDate() + cycleData.periodLength);
+
+      if (today >= startPeriod && today <= endPeriod) {
+        setCurrentPhase("Kì kinh nguyệt");
+      } else if (today >= fertilityStart && today <= fertilityEnd) {
+        setCurrentPhase("Kì rụng trứng");
+      } else if (today > fertilityEnd && today < nextPeriodDate) {
+        setCurrentPhase("Kì hoàng thể");
+      } else {
+        setCurrentPhase("Kì nang trứng");
+      }
     }
   }, [cycleData]);
 

@@ -77,19 +77,7 @@ const Sidebar = () => {
           <span>Bệnh nhân</span>
         </NavLink>
 
-        <NavLink
-          to="/doctor/test-management"
-          className={({ isActive }) =>
-            `flex items-center space-x-2 py-2.5 px-4 rounded transition duration-200 ${
-              isActive ? "bg-blue-700 text-white" : "hover:bg-blue-700"
-            }`
-          }
-        >
-          <span className="text-xl">
-            <i className="fas fa-flask"></i>
-          </span>
-          <span>Quản lý xét nghiệm</span>
-        </NavLink>
+        
 
         <NavLink
           to="/doctor/profile"
