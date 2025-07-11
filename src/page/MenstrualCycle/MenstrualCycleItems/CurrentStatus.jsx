@@ -40,7 +40,7 @@ function CurrentStatus({ predictions, currentPhase }) {
   };
 
   return (
-    <div className={cx("current-status", "col-span-2")}>
+    <div className={cx("current-status", "col-span-1")}>
       <div className={cx("calendar-container")}>
         <MenstrualCalendar predictions={predictions} />
       </div>

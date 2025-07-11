@@ -195,7 +195,7 @@ function CycleInputForm({ cycleData, onDataChange }) {
 
 
   return (
-    <div className={cx("input-section", "col-span-2")}>
+    <div className={cx("input-section", "col-span-1")}>
       <h2>Thông tin chu kì</h2>
 
       <div className={cx("form-group")} style={{ display: "block" }}>
