@@ -31,7 +31,7 @@ export const TestAppointment = () => {
       setIsLoading(true);
       setError(null);
 
-      const response = await axiosClient.get('/v1/managers/getAllOrder', {
+      const response = await axiosClient.get('/v1/staff/getAllOrder', {
         headers: {
           'x-access-token': accessToken,
         }
@@ -86,7 +86,7 @@ export const TestAppointment = () => {
   const mapOrderStatusToTestStatus = (orderStatus) => {
     const statusMap = {
       'pending': 'pending',
-      'confirmed': 'in_progress', 
+      'paid': 'paid', 
       'completed': 'completed',
       'cancelled': 'cancelled'
     };
@@ -111,8 +111,8 @@ export const TestAppointment = () => {
         textColor: '#ffffff',
         icon: faHourglassHalf
       },
-      in_progress: {
-        label: 'Đang xét nghiệm',
+      paid: {
+        label: 'Đã thanh toán, chờ xét nghiệm',
         bgColor: '#3b82f6',
         textColor: '#ffffff',
         icon: faFlaskVial
@@ -176,7 +176,7 @@ export const TestAppointment = () => {
   const stats = {
     total: testAppointments.length,
     pending: testAppointments.filter(apt => apt.status === 'pending').length,
-    in_progress: testAppointments.filter(apt => apt.status === 'in_progress').length,
+    paid: testAppointments.filter(apt => apt.status === 'paid').length,
     completed: testAppointments.filter(apt => apt.status === 'completed').length,
     cancelled: testAppointments.filter(apt => apt.status === 'cancelled').length,
     totalRevenue: testAppointments
@@ -255,8 +255,8 @@ export const TestAppointment = () => {
               <FontAwesomeIcon icon={faFlaskVial} />
             </div>
             <div className={cx('stat-content')}>
-              <span className={cx('stat-value')}>{stats.in_progress}</span>
-              <span className={cx('stat-label')}>Đang xử lý</span>
+              <span className={cx('stat-value')}>{stats.paid}</span>
+              <span className={cx('stat-label')}>Đã thanh toán, chờ xét nghiệm</span>
             </div>
           </div>
           
@@ -303,7 +303,7 @@ export const TestAppointment = () => {
             >
               <option value="all">Tất cả</option>
               <option value="pending">Chờ xử lý</option>
-              <option value="in_progress">Đang xử lý</option>
+              <option value="paid">Đã thanh toán, chờ xét nghiệm</option>
               <option value="completed">Hoàn thành</option>
               <option value="cancelled">Đã hủy</option>
             </select>
@@ -387,8 +387,8 @@ export const TestAppointment = () => {
                       {/* Test Services */}
                       <td className={cx('test-type-cell')}>
                         <div className={cx('services-list')}>
-                          {appointment.services.slice(0, 2).map((service, idx) => (
-                            <div key={idx} className={cx('service-item')}>
+                          {appointment.services.slice(0, 2).map((service, index) => (
+                            <div key={index} className={cx('service-item')}>
                               <span className={cx('service-name')}>{service.name}</span>
                             </div>
                           ))}

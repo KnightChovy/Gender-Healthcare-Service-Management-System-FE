@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import axiosClient from "../../services/axiosClient";
+import { toast } from "react-toastify";
 
 export const TestManagement = () => {
   const [testOrders, setTestOrders] = useState([]);
@@ -20,9 +21,9 @@ export const TestManagement = () => {
     try {
       setLoading(true);
       const accessToken = localStorage.getItem('accessToken');
-      
-      // Use the managers API endpoint to get all orders
-      const response = await axiosClient.get('/v1/managers/getAllOrder', {
+
+      // Use the staff API endpoint to get all orders
+      const response = await axiosClient.get('/v1/staff/getAllOrder', {
         headers: {
           'x-access-token': accessToken,
         }
@@ -95,7 +96,7 @@ export const TestManagement = () => {
   const mapOrderStatusToTestStatus = (orderStatus) => {
     const statusMap = {
       'pending': 'Chờ thanh toán',
-      'confirmed': 'Đã thanh toán', 
+      'paid': 'Đã thanh toán, chờ xét nghiệm', 
       'completed': 'Hoàn thành',
       'cancelled': 'Đã hủy'
     };
@@ -153,38 +154,32 @@ export const TestManagement = () => {
     setSelectedOrder(null);
   };
 
-  const handleUpdateStatus = async (orderId, newStatus) => {
+  const handleUpdateStatus = async (orderId) => {
     try {
       const accessToken = localStorage.getItem('accessToken');
       
-      // Map display status back to API status
-      const statusMap = {
-        'Chờ thanh toán': 'pending',
-        'Đã thanh toán': 'confirmed',
-        'Hoàn thành': 'completed',
-        'Đã hủy': 'cancelled'
-      };
-      
-      const apiStatus = statusMap[newStatus];
-      
+      console.log("Updating status for order ID:", orderId);
+      const data = {
+        "order_id": orderId,
+      }
+
       // API call to update order status
-      const response = await axiosClient.put(`/v1/staff/orders/${orderId}/status`, {
-        status: apiStatus,
-      }, {
+      const response = await axiosClient.patch('/v1/staff/update-order', data, {
         headers: {
+          'Content-Type': 'application/json',
           'x-access-token': accessToken,
         }
       });
 
       if (response.data?.success) {
-        // Update local state
+        const updatedOrder = response.data.data;
         setTestOrders(prev => 
           prev.map(order => 
-            order.id === orderId ? { ...order, status: newStatus } : order
+            order.id === updatedOrder.order_id ? { ...order, status: updatedOrder.order_status } : order
           )
         );
-        
-        alert(`Cập nhật trạng thái thành "${newStatus}" thành công!`);
+
+        alert(`Cập nhật trạng thái thành công!`);
       } else {
         throw new Error(response.data?.message || 'Cập nhật thất bại');
       }
@@ -269,12 +264,12 @@ export const TestManagement = () => {
                 <div className="flex-shrink-0">
                   <div className="w-8 h-8 bg-blue-600 rounded-full flex items-center justify-center">
                     <span className="text-white font-semibold text-sm">
-                      {testOrders.filter(order => order.status === "confirmed").length}
+                      {testOrders.filter(order => order.status === "paid").length}
                     </span>
                   </div>
                 </div>
                 <div className="ml-3">
-                  <p className="text-sm font-medium text-blue-900">Đã thanh toán</p>
+                  <p className="text-sm font-medium text-blue-900">Đã thanh toán, chờ xét nghiệm</p>
                   <p className="text-xs text-blue-600">Sẵn sàng xét nghiệm</p>
                 </div>
               </div>
@@ -314,7 +309,7 @@ export const TestManagement = () => {
             >
               <option value="">Tất cả trạng thái</option>
               <option value="Chờ thanh toán">Chờ thanh toán</option>
-              <option value="Đã thanh toán">Đã thanh toán</option>
+              <option value="Đã thanh toán, chờ xét nghiệm">Đã thanh toán, chờ xét nghiệm</option>
               <option value="Hoàn thành">Hoàn thành</option>
               <option value="Đã hủy">Đã hủy</option>
             </select>
@@ -421,7 +416,7 @@ export const TestManagement = () => {
                           <>
                             {order.status === "Chờ thanh toán" && (
                               <button 
-                                onClick={() => handleUpdateStatus(order.id, "Đã thanh toán")}
+                                onClick={() => handleUpdateStatus(order.id)}
                                 className="text-green-600 hover:text-green-900"
                               >
                                 Xác nhận thanh toán
