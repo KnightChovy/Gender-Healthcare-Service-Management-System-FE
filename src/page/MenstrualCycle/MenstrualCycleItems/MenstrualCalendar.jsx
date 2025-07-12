@@ -4,7 +4,12 @@ import "react-calendar/dist/Calendar.css"; // vẫn cần import để giữ bas
 
 // import file CSS chính của ứng dụng
 function MenstrualCalendar({ predictions }) {
-  const [value, setValue] = useState(new Date());
+  const getTodayAtMidnight = () => {
+    const today = new Date();
+    return new Date(today.getFullYear(), today.getMonth(), today.getDate());
+  };
+
+  const [value, setValue] = useState(getTodayAtMidnight());
 
   const isSameDay = (d1, d2) =>
     d1?.getDate() === d2?.getDate() &&
