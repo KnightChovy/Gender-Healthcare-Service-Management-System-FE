@@ -45,7 +45,7 @@ import StaffRoute from "./routes/StaffRouter";
 import LayoutStaff from "./components/Layouts/LayoutStaff/LayoutStaff";
 import { DashboardStaff } from "./page/staff/DashboardStaff";
 import { TestManagement as StaffTestManagement } from "./page/staff/TestManagement";
-import { PatientRecords } from "./page/staff/PatientRecords";
+import { CreateBlog } from "./page/staff/CreateBlog";
 
 import { useEffect, useState } from "react";
 import { TestAppointment } from "./page/manager/TestAppointment/TestAppointment";
@@ -269,7 +269,7 @@ function App() {
         >
           <Route index element={<DashboardStaff />} />
           <Route path="test-management" element={<StaffTestManagement />} />
-          <Route path="patient-records" element={<PatientRecords />} />
+          <Route path="create-blog" element={<CreateBlog />} />
         </Route>
       </Routes>
 

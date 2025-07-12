@@ -31,12 +31,12 @@ export const TestManagement = () => {
 
       if (response.data?.status === 'success' && response.data?.data?.orders) {
         console.log('Fetched test orders:', response.data.data.orders);
-        
+
         // Transform API data to component format
         const transformedData = response.data.data.orders.map((item) => {
           const order = item.order;
           const services = item.services;
-          
+
           return {
             id: order.order_id,
             order_id: order.order_id,
@@ -45,13 +45,13 @@ export const TestManagement = () => {
             patientName: `${order.user.last_name} ${order.user.first_name}`,
             patientPhone: order.user.phone,
             patientEmail: order.user.email,
-            testType: services && services.length > 0 
+            testType: services && services.length > 0
               ? services.map(service => service.name).join(', ')
               : 'Xét nghiệm tổng quát',
             date: new Date(order.created_at).toLocaleDateString('vi-VN'),
-            time: new Date(order.created_at).toLocaleTimeString('vi-VN', { 
-              hour: '2-digit', 
-              minute: '2-digit' 
+            time: new Date(order.created_at).toLocaleTimeString('vi-VN', {
+              hour: '2-digit',
+              minute: '2-digit'
             }),
             status: mapOrderStatusToTestStatus(order.order_status),
             original_status: order.order_status,
@@ -67,23 +67,40 @@ export const TestManagement = () => {
 
         setTestOrders(transformedData);
         setFilteredOrders(transformedData);
+        toast.success(`Tải thành công ${transformedData.length} đơn xét nghiệm`, {
+          autoClose: 1000,
+          position: "top-right",
+        });
       } else {
         console.error('Invalid API response format:', response.data);
         setTestOrders([]);
         setFilteredOrders([]);
+        toast.error('Định dạng dữ liệu không hợp lệ', {
+          autoClose: 1000,
+          position: "top-right",
+        });
       }
     } catch (error) {
       console.error("Error fetching test orders:", error);
-      
-      // Show user-friendly error message
+
+      // Show user-friendly error message with toast
       if (error.response?.status === 401) {
-        alert("Phiên đăng nhập đã hết hạn. Vui lòng đăng nhập lại.");
+        toast.error("Phiên đăng nhập đã hết hạn. Vui lòng đăng nhập lại.", {
+          autoClose: 1000,
+          position: "top-right",
+        });
       } else if (error.response?.status === 403) {
-        alert("Bạn không có quyền truy cập dữ liệu này.");
+        toast.error("Bạn không có quyền truy cập dữ liệu này.", {
+          autoClose: 1000,
+          position: "top-right",
+        });
       } else {
-        alert("Không thể tải dữ liệu. Vui lòng thử lại sau.");
+        toast.error("Không thể tải dữ liệu. Vui lòng thử lại sau.", {
+          autoClose: 1000,
+          position: "top-right",
+        });
       }
-      
+
       // Set empty arrays on error
       setTestOrders([]);
       setFilteredOrders([]);
@@ -96,7 +113,7 @@ export const TestManagement = () => {
   const mapOrderStatusToTestStatus = (orderStatus) => {
     const statusMap = {
       'pending': 'Chờ thanh toán',
-      'paid': 'Đã thanh toán, chờ xét nghiệm', 
+      'paid': 'Đã thanh toán, chờ xét nghiệm',
       'completed': 'Hoàn thành',
       'cancelled': 'Đã hủy'
     };
@@ -112,7 +129,7 @@ export const TestManagement = () => {
         order.testType.toLowerCase().includes(searchTerm.toLowerCase());
 
       const matchesStatus = statusFilter === "" || order.status === statusFilter;
-      
+
       // Simple date filter - check if order date includes the filter date
       const matchesDate = dateFilter === "" || order.date.includes(dateFilter);
 
@@ -126,7 +143,7 @@ export const TestManagement = () => {
     switch (status) {
       case "Hoàn thành":
         return "bg-green-100 text-green-800";
-      case "Đã thanh toán":
+      case "Đã thanh toán, chờ xét nghiệm":
         return "bg-blue-100 text-blue-800";
       case "Chờ thanh toán":
         return "bg-yellow-100 text-yellow-800";
@@ -157,45 +174,90 @@ export const TestManagement = () => {
   const handleUpdateStatus = async (orderId) => {
     try {
       const accessToken = localStorage.getItem('accessToken');
-      
+
       console.log("Updating status for order ID:", orderId);
+
+      // Show loading toast
+      const toastId = toast.loading("Đang cập nhật trạng thái...");
+
       const data = {
-        "order_id": orderId,
-      }
+        order_id: orderId,
+      };
 
       // API call to update order status
       const response = await axiosClient.patch('/v1/staff/update-order', data, {
         headers: {
-          'Content-Type': 'application/json',
           'x-access-token': accessToken,
         }
       });
 
       if (response.data?.success) {
         const updatedOrder = response.data.data;
-        setTestOrders(prev => 
-          prev.map(order => 
-            order.id === updatedOrder.order_id ? { ...order, status: updatedOrder.order_status } : order
+        const newDisplayStatus = mapOrderStatusToTestStatus(updatedOrder.order_status);
+
+        // Update local state
+        setTestOrders(prev =>
+          prev.map(order =>
+            order.id === updatedOrder.order_id
+              ? { ...order, status: newDisplayStatus, original_status: updatedOrder.order_status }
+              : order
           )
         );
 
-        alert(`Cập nhật trạng thái thành công!`);
+        // Dismiss loading toast and show success
+        toast.dismiss(toastId);
+        toast.success(`Cập nhật trạng thái thành "${newDisplayStatus}" thành công!`, {
+          autoClose: 1000,
+          position: "top-right",
+        });
+
+        // Close modal if it's open
+        if (showModal) {
+          handleCloseModal();
+        }
       } else {
+        toast.dismiss(toastId);
         throw new Error(response.data?.message || 'Cập nhật thất bại');
       }
     } catch (error) {
       console.error("Error updating status:", error);
-      
+
+      // Show specific error messages with toast
       if (error.response?.status === 401) {
-        alert("Phiên đăng nhập đã hết hạn. Vui lòng đăng nhập lại.");
+        toast.error("Phiên đăng nhập đã hết hạn. Vui lòng đăng nhập lại.", {
+          autoClose: 1000,
+          position: "top-right",
+        });
       } else if (error.response?.status === 403) {
-        alert("Bạn không có quyền cập nhật trạng thái đơn này.");
+        toast.error("Bạn không có quyền cập nhật trạng thái đơn này.", {
+          autoClose: 1000,
+          position: "top-right",
+        });
       } else if (error.response?.status === 404) {
-        alert("Không tìm thấy đơn xét nghiệm này.");
+        toast.error("Không tìm thấy đơn xét nghiệm này.", {
+          autoClose: 1000,
+          position: "top-right",
+        });
+      } else if (error.response?.status === 400) {
+        toast.error(error.response.data?.message || "Yêu cầu không hợp lệ.", {
+          autoClose: 1000,
+          position: "top-right",
+        });
       } else {
-        alert("Có lỗi xảy ra khi cập nhật trạng thái. Vui lòng thử lại.");
+        toast.error("Có lỗi xảy ra khi cập nhật trạng thái. Vui lòng thử lại.", {
+          autoClose: 1000,
+          position: "top-right",
+        });
       }
     }
+  };
+
+  const handleRefresh = () => {
+    toast.info("Đang tải lại dữ liệu...", {
+      autoClose: 1000,
+      position: "top-right",
+    });
+    fetchTestOrders();
   };
 
   if (loading) {
@@ -215,8 +277,8 @@ export const TestManagement = () => {
               Quản lý đơn xét nghiệm
             </h2>
             <div className="flex space-x-2">
-              <button 
-                onClick={fetchTestOrders}
+              <button
+                onClick={handleRefresh}
                 className="bg-gray-500 hover:bg-gray-600 text-white font-medium py-2 px-4 rounded transition flex items-center space-x-2"
               >
                 <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -242,13 +304,13 @@ export const TestManagement = () => {
                 </div>
               </div>
             </div>
-            
+
             <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
               <div className="flex items-center">
                 <div className="flex-shrink-0">
                   <div className="w-8 h-8 bg-yellow-500 rounded-full flex items-center justify-center">
                     <span className="text-white font-semibold text-sm">
-                      {testOrders.filter(order => order.status === "pending").length}
+                      {testOrders.filter(order => order.status === "Chờ thanh toán").length}
                     </span>
                   </div>
                 </div>
@@ -258,13 +320,13 @@ export const TestManagement = () => {
                 </div>
               </div>
             </div>
-            
+
             <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
               <div className="flex items-center">
                 <div className="flex-shrink-0">
                   <div className="w-8 h-8 bg-blue-600 rounded-full flex items-center justify-center">
                     <span className="text-white font-semibold text-sm">
-                      {testOrders.filter(order => order.status === "paid").length}
+                      {testOrders.filter(order => order.status === "Đã thanh toán, chờ xét nghiệm").length}
                     </span>
                   </div>
                 </div>
@@ -274,13 +336,13 @@ export const TestManagement = () => {
                 </div>
               </div>
             </div>
-            
+
             <div className="bg-green-50 border border-green-200 rounded-lg p-4">
               <div className="flex items-center">
                 <div className="flex-shrink-0">
                   <div className="w-8 h-8 bg-green-500 rounded-full flex items-center justify-center">
                     <span className="text-white font-semibold text-sm">
-                      {testOrders.filter(order => order.status === "completed").length}
+                      {testOrders.filter(order => order.status === "Hoàn thành").length}
                     </span>
                   </div>
                 </div>
@@ -301,7 +363,7 @@ export const TestManagement = () => {
               onChange={(e) => setSearchTerm(e.target.value)}
               className="px-4 py-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-cyan-500"
             />
-            
+
             <select
               value={statusFilter}
               onChange={(e) => setStatusFilter(e.target.value)}
@@ -326,6 +388,7 @@ export const TestManagement = () => {
                 setSearchTerm("");
                 setStatusFilter("");
                 setDateFilter("");
+                toast.info("Đã đặt lại bộ lọc");
               }}
               className="px-4 py-2 bg-gray-100 text-gray-700 rounded hover:bg-gray-200 transition"
             >
@@ -377,6 +440,7 @@ export const TestManagement = () => {
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                       <div>
                         <div className="font-medium">{order.patientName}</div>
+                        <div className="text-xs text-gray-400">{order.patientPhone}</div>
                       </div>
                     </td>
                     <td className="px-6 py-4 text-sm text-gray-500">
@@ -406,7 +470,7 @@ export const TestManagement = () => {
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
                       <div className="flex space-x-2">
-                        <button 
+                        <button
                           onClick={() => handleViewOrder(order)}
                           className="text-cyan-600 hover:text-cyan-900"
                         >
@@ -415,27 +479,21 @@ export const TestManagement = () => {
                         {order.status !== "Hoàn thành" && order.status !== "Đã hủy" && (
                           <>
                             {order.status === "Chờ thanh toán" && (
-                              <button 
+                              <button
                                 onClick={() => handleUpdateStatus(order.id)}
                                 className="text-green-600 hover:text-green-900"
                               >
                                 Xác nhận thanh toán
                               </button>
                             )}
-                            {order.status === "Đã thanh toán" && (
-                              <button 
-                                onClick={() => handleUpdateStatus(order.id, "Hoàn thành")}
+                            {order.status === "Đã thanh toán, chờ xét nghiệm" && (
+                              <button
+                                onClick={() => handleUpdateStatus(order.id)}
                                 className="text-blue-600 hover:text-blue-900"
                               >
                                 Hoàn thành xét nghiệm
                               </button>
                             )}
-                            <button 
-                              onClick={() => handleUpdateStatus(order.id, "Đã hủy")}
-                              className="text-red-600 hover:text-red-900"
-                            >
-                              Hủy
-                            </button>
                           </>
                         )}
                       </div>
@@ -472,7 +530,7 @@ export const TestManagement = () => {
                   </svg>
                 </button>
               </div>
-              
+
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
                 <div>
                   <h4 className="font-semibold text-gray-700 mb-2">Thông tin bệnh nhân</h4>
@@ -482,7 +540,7 @@ export const TestManagement = () => {
                     <p><span className="font-medium">Email:</span> {selectedOrder.patientEmail}</p>
                   </div>
                 </div>
-                
+
                 <div>
                   <h4 className="font-semibold text-gray-700 mb-2">Thông tin đơn hàng</h4>
                   <div className="space-y-2 text-sm">
@@ -493,7 +551,7 @@ export const TestManagement = () => {
                   </div>
                 </div>
               </div>
-              
+
               <div className="mb-4">
                 <h4 className="font-semibold text-gray-700 mb-2">Dịch vụ xét nghiệm</h4>
                 <div className="bg-gray-50 p-3 rounded">
@@ -518,7 +576,7 @@ export const TestManagement = () => {
                   )}
                 </div>
               </div>
-              
+
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
                 <div>
                   <span className="text-sm font-medium text-gray-500">Trạng thái:</span>
@@ -528,7 +586,7 @@ export const TestManagement = () => {
                     </span>
                   </div>
                 </div>
-                
+
                 <div>
                   <span className="text-sm font-medium text-gray-500">Tổng tiền:</span>
                   <div className="mt-1">
@@ -538,7 +596,7 @@ export const TestManagement = () => {
                   </div>
                 </div>
               </div>
-              
+
               {selectedOrder.notes && (
                 <div className="mb-4">
                   <h4 className="font-semibold text-gray-700 mb-2">Ghi chú</h4>
@@ -547,7 +605,7 @@ export const TestManagement = () => {
                   </div>
                 </div>
               )}
-              
+
               <div className="flex justify-end space-x-2">
                 <button
                   onClick={handleCloseModal}
@@ -558,36 +616,21 @@ export const TestManagement = () => {
                 {selectedOrder.status !== "Hoàn thành" && selectedOrder.status !== "Đã hủy" && (
                   <div className="flex space-x-2">
                     {selectedOrder.status === "Chờ thanh toán" && (
-                      <button 
-                        onClick={() => {
-                          handleUpdateStatus(selectedOrder.id, "Đã thanh toán");
-                          handleCloseModal();
-                        }}
+                      <button
+                        onClick={() => handleUpdateStatus(selectedOrder.id)}
                         className="px-4 py-2 bg-green-500 text-white rounded hover:bg-green-600 transition"
                       >
                         Xác nhận thanh toán
                       </button>
                     )}
-                    {selectedOrder.status === "Đã thanh toán" && (
-                      <button 
-                        onClick={() => {
-                          handleUpdateStatus(selectedOrder.id, "Hoàn thành");
-                          handleCloseModal();
-                        }}
+                    {selectedOrder.status === "Đã thanh toán, chờ xét nghiệm" && (
+                      <button
+                        onClick={() => handleUpdateStatus(selectedOrder.id)}
                         className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 transition"
                       >
                         Hoàn thành xét nghiệm
                       </button>
                     )}
-                    <button 
-                      onClick={() => {
-                        handleUpdateStatus(selectedOrder.id, "Đã hủy");
-                        handleCloseModal();
-                      }}
-                      className="px-4 py-2 bg-red-500 text-white rounded hover:bg-red-600 transition"
-                    >
-                      Hủy đơn
-                    </button>
                   </div>
                 )}
               </div>

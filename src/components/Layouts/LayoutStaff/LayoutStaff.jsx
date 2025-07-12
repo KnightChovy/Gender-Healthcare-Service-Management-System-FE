@@ -18,10 +18,10 @@ import ListItemIcon from "@mui/material/ListItemIcon";
 import ListItemText from "@mui/material/ListItemText";
 import DashboardIcon from "@mui/icons-material/Dashboard";
 import ScienceIcon from "@mui/icons-material/Science";
-import FolderSharedIcon from "@mui/icons-material/FolderShared";
 import LogoutIcon from "@mui/icons-material/Logout";
 import NotificationsNoneIcon from "@mui/icons-material/NotificationsNone";
 import SearchIcon from "@mui/icons-material/Search";
+import ArticleIcon from "@mui/icons-material/Article";
 import InputBase from "@mui/material/InputBase";
 import Badge from "@mui/material/Badge";
 import { Outlet, useNavigate, useLocation } from "react-router-dom";
@@ -158,7 +158,7 @@ export default function LayoutStaff() {
   const handleDrawerClose = () => setOpen(false);
 
   const handleBackHome = () => {
-    navigate("/");
+    navigate("/staff");
   };
 
   const menuItems = [
@@ -173,10 +173,10 @@ export default function LayoutStaff() {
       icon: <ScienceIcon />,
     },
     {
-      text: "Hồ sơ bệnh nhân",
-      path: "/staff/patient-records",
-      icon: <FolderSharedIcon />,
-    },
+      text: "Viết Blog",
+      path: "/staff/create-blog",
+      icon: <ArticleIcon />,
+    }
   ];
 
   return (
