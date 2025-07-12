@@ -247,7 +247,7 @@ const DoctorDashboard = () => {
           </h3>
           <div className="space-y-3 max-h-80 overflow-y-auto">
             {sortedWeeklyAppointments.length > 0 ? (
-              sortedWeeklyAppointments.slice(0, 5).map((appointment) => (
+              sortedWeeklyAppointments.map((appointment) => (
                 <div
                   key={appointment.appointment_id}
                   className="p-3 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors"
@@ -294,11 +294,6 @@ const DoctorDashboard = () => {
             ) : (
               <p className="text-gray-500 text-center py-4">
                 Không có lịch hẹn nào tuần này
-              </p>
-            )}
-            {sortedWeeklyAppointments.length > 5 && (
-              <p className="text-sm text-blue-600 text-center py-2">
-                Và {sortedWeeklyAppointments.length - 5} lịch hẹn khác...
               </p>
             )}
           </div>
