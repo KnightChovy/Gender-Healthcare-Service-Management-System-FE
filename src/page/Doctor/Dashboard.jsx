@@ -10,6 +10,7 @@ const DoctorDashboard = () => {
   const [appointments, setAppointments] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [searchTerm, setSearchTerm] = useState("");
 
   useEffect(() => {
     const fetchAppointments = async () => {
@@ -48,7 +49,22 @@ const DoctorDashboard = () => {
   const tomorrow = new Date(today);
   tomorrow.setDate(tomorrow.getDate() + 1);
 
-  const todayAppointments = appointments.filter((app) => {
+  // Filter appointments based on search term
+  const filteredAppointments = appointments.filter((app) => {
+    if (!searchTerm) return true;
+    const searchLower = searchTerm.toLowerCase();
+    const patientName = `${app.first_name} ${app.last_name}`.toLowerCase();
+    const consultantType = (app.consultant_type || "").toLowerCase();
+    const status = (app.status || "").toLowerCase();
+
+    return (
+      patientName.includes(searchLower) ||
+      consultantType.includes(searchLower) ||
+      status.includes(searchLower)
+    );
+  });
+
+  const todayAppointments = filteredAppointments.filter((app) => {
     const appDate = new Date(app.date);
     return appDate >= today && appDate < tomorrow;
   });
@@ -59,7 +75,7 @@ const DoctorDashboard = () => {
   const endOfWeek = new Date(startOfWeek);
   endOfWeek.setDate(startOfWeek.getDate() + 7);
 
-  const weeklyAppointments = appointments.filter((app) => {
+  const weeklyAppointments = filteredAppointments.filter((app) => {
     const appDate = new Date(app.date);
     return appDate >= startOfWeek && appDate < endOfWeek;
   });
@@ -71,16 +87,16 @@ const DoctorDashboard = () => {
     return dateA - dateB;
   });
 
-  const completedAppointments = appointments.filter(
+  const completedAppointments = filteredAppointments.filter(
     (app) => app.status === "completed" || app.status === "COMPLETED"
   );
-  const pendingAppointments = appointments.filter(
+  const pendingAppointments = filteredAppointments.filter(
     (app) =>
       app.status === "pending" ||
       app.status === "PENDING" ||
       app.status === "confirmed"
   );
-  const inProgressAppointments = appointments.filter(
+  const inProgressAppointments = filteredAppointments.filter(
     (app) => app.status === "in_progress" || app.status === "IN_PROGRESS"
   );
 
@@ -130,6 +146,37 @@ const DoctorDashboard = () => {
       <h1 className="text-2xl text-blue-600 font-medium mb-8">
         Xin chào, Bác sĩ {user?.last_name} {user?.first_name}!
       </h1>
+
+      {/* Search Bar */}
+      <div className="bg-white rounded-lg shadow-md p-6 mb-6">
+        <div className="flex items-center space-x-4">
+          <div className="flex-1 relative">
+            <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+              <i className="fas fa-search text-gray-400"></i>
+            </div>
+            <input
+              type="text"
+              placeholder="Tìm kiếm theo tên bệnh nhân, loại tư vấn hoặc trạng thái..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-colors"
+            />
+          </div>
+          {searchTerm && (
+            <button
+              onClick={() => setSearchTerm("")}
+              className="px-4 py-2 bg-gray-500 text-white rounded-lg hover:bg-gray-600 transition-colors"
+            >
+              Xóa
+            </button>
+          )}
+        </div>
+        {searchTerm && (
+          <p className="mt-2 text-sm text-gray-600">
+            Tìm thấy {filteredAppointments.length} kết quả cho "{searchTerm}"
+          </p>
+        )}
+      </div>
 
       {/* Lịch hôm nay và tuần này */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
@@ -200,7 +247,7 @@ const DoctorDashboard = () => {
           </h3>
           <div className="space-y-3 max-h-80 overflow-y-auto">
             {sortedWeeklyAppointments.length > 0 ? (
-              sortedWeeklyAppointments.slice(0, 5).map((appointment) => (
+              sortedWeeklyAppointments.map((appointment) => (
                 <div
                   key={appointment.appointment_id}
                   className="p-3 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors"
@@ -247,11 +294,6 @@ const DoctorDashboard = () => {
             ) : (
               <p className="text-gray-500 text-center py-4">
                 Không có lịch hẹn nào tuần này
-              </p>
-            )}
-            {sortedWeeklyAppointments.length > 5 && (
-              <p className="text-sm text-blue-600 text-center py-2">
-                Và {sortedWeeklyAppointments.length - 5} lịch hẹn khác...
               </p>
             )}
           </div>

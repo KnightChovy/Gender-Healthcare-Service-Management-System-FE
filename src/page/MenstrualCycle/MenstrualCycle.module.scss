@@ -1,9 +1,172 @@
+.reminder-highlight {
+  display: flex;
+  align-items: flex-start;
+  gap: 16px;
+  background: #fff4f4;
+  border-left: 5px solid #e74c3c;
+  border-radius: 12px;
+  padding: 20px;
+  box-shadow: 0 4px 12px rgba(231, 76, 60, 0.1);
+  margin-top: 24px;
+  transition: all 0.3s ease;
+}
+
+.reminder-icon {
+  font-size: 32px;
+  margin-top: 2px;
+}
+
+.reminder-content {
+  flex: 1;
+
+  h4 {
+    margin: 0;
+    font-size: 18px;
+    color: #c0392b;
+    font-weight: bold;
+  }
+
+  p {
+    margin: 6px 0 14px;
+    font-size: 15px;
+    color: #444;
+  }
+}
+
+.opt-in-buttons {
+  display: flex;
+  gap: 12px;
+}
+
+.opt-btn {
+  padding: 10px 18px;
+  border-radius: 8px;
+  border: 2px solid #ddd;
+  background-color: #fff;
+  font-weight: 600;
+  font-size: 14px;
+  cursor: pointer;
+  transition: all 0.25s ease;
+
+  &:hover {
+    border-color: #e74c3c;
+    color: #e74c3c;
+  }
+
+  &.active {
+    background-color: #e74c3c;
+    color: white;
+    border-color: #e74c3c;
+    box-shadow: 0 2px 8px rgba(231, 76, 60, 0.2);
+  }
+}
+
+.opt-in-buttons {
+  margin-top: 10px;
+  display: flex;
+  gap: 12px;
+
+  button {
+    padding: 6px 14px;
+    border: 1px solid #ccc;
+    background-color: #fff;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: background-color 0.2s;
+
+    &.active {
+      background-color: #d1f2eb;
+      border-color: #16a085;
+      font-weight: bold;
+    }
+
+    &:hover {
+      background-color: #ecf0f1;
+    }
+  }
+}
+
+.access-denied {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 100vh;
+  background: linear-gradient(145deg, #fff0f3, #ffe0e6);
+  padding: 2rem;
+  box-sizing: border-box;
+}
+
+.warning-box {
+  background: white;
+  border-radius: 20px;
+  padding: 2.5rem;
+  max-width: 440px;
+  width: 100%;
+  text-align: center;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.06);
+  animation: fadeIn 0.5s ease-in-out;
+  border: 2px dashed #ff9aa2;
+}
+
+.warning-box h2 {
+  font-size: 1.6rem;
+  margin-bottom: 1rem;
+  font-weight: 700;
+  color: #d63031;
+}
+
+.warning-box p {
+  color: #555;
+  font-size: 1rem;
+  margin-bottom: 1.5rem;
+  line-height: 1.6;
+}
+
+.warning-icon {
+  font-size: 3.5rem;
+  margin-bottom: 1rem; // thêm khoảng cách với tiêu đề
+  display: block;
+  line-height: 1;
+}
+
+.back-home-btn {
+  background: linear-gradient(to right, #ff758c, #ff7eb3);
+  color: white;
+  border: none;
+  font-size: 1rem;
+  font-weight: 600;
+  padding: 0.75rem 1.5rem;
+  border-radius: 12px;
+  cursor: pointer;
+  transition: all 0.25s ease;
+  box-shadow: 0 4px 12px rgba(255, 117, 140, 0.4);
+}
+
+.back-home-btn:hover {
+  transform: translateY(-2px);
+  background: linear-gradient(to right, #ff6a8b, #ff73ac);
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: scale(0.98);
+  }
+
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
 .menstrual-cycle {
   min-height: 100vh;
   background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
   padding: auto;
   font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
 }
+
+
 
 /* Header Styles */
 .header {
@@ -42,7 +205,7 @@
 /* Grid Layout */
 .cycle-grid {
   display: grid;
-  grid-template-columns: repeat(5, 1fr);
+  grid-template-columns: repeat(3, 1fr);
   gap: 25px;
   max-width: 1400px;
   margin: 0 auto;

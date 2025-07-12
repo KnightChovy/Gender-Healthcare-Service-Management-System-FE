@@ -17,7 +17,9 @@ const Sidebar = () => {
   return (
     <div className="bg-blue-800 text-blue-100 w-64 space-y-6 py-7 px-2 absolute inset-y-0 left-0 transform -translate-x-full md:relative md:translate-x-0 transition duration-200 ease-in-out">
       <div className="flex items-center space-x-2 px-4">
-        <span className="text-white text-2xl font-semibold">Doctor Portal</span>
+        <span className="text-white text-2xl font-semibold">
+          Trang dành cho bác sĩ
+        </span>
       </div>
 
       <nav className="mt-6">
@@ -32,7 +34,7 @@ const Sidebar = () => {
           <span className="text-xl">
             <i className="fas fa-columns"></i>
           </span>
-          <span>Dashboard</span>
+          <span>Tổng quan</span>
         </NavLink>
 
         <NavLink
@@ -75,20 +77,6 @@ const Sidebar = () => {
             <i className="fas fa-user-injured"></i>
           </span>
           <span>Bệnh nhân</span>
-        </NavLink>
-
-        <NavLink
-          to="/doctor/test-management"
-          className={({ isActive }) =>
-            `flex items-center space-x-2 py-2.5 px-4 rounded transition duration-200 ${
-              isActive ? "bg-blue-700 text-white" : "hover:bg-blue-700"
-            }`
-          }
-        >
-          <span className="text-xl">
-            <i className="fas fa-flask"></i>
-          </span>
-          <span>Quản lý xét nghiệm</span>
         </NavLink>
 
         <NavLink
@@ -166,29 +154,6 @@ const Header = () => {
               ></path>
             </svg>
           </button>
-
-          <div className="relative mx-4 lg:mx-0">
-            <span className="absolute inset-y-0 left-0 pl-3 flex items-center">
-              <svg
-                className="h-5 w-5 text-gray-500"
-                viewBox="0 0 24 24"
-                fill="none"
-              >
-                <path
-                  d="M21 21L15 15M17 10C17 13.866 13.866 17 10 17C6.13401 17 3 13.866 3 10C3 6.13401 6.13401 3 10 3C13.866 3 17 6.13401 17 10Z"
-                  stroke="currentColor"
-                  strokeWidth="2"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                ></path>
-              </svg>
-            </span>
-            <input
-              className="form-input w-32 sm:w-64 rounded-md pl-10 pr-4 focus:border-blue-600"
-              type="text"
-              placeholder="Tìm kiếm"
-            />
-          </div>
         </div>
 
         <div className="flex items-center">
