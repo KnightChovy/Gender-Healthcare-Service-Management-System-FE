@@ -498,8 +498,8 @@ export const TestManagement = () => {
         );
         
         return {
-          serviceid: matchingService?.id || matchingService?.service_id || testInfo?._id || '',
-          orderid: selectedOrder.order_id,
+          service_id: matchingService?.id || matchingService?.service_id || testInfo?._id || '',
+          order_id: selectedOrder.order_id,
           result: resultData.result === 'good' ? 
             (testInfo?.good_result || 'Kết quả bình thường') : 
             (testInfo?.bad_result || 'Kết quả bất thường'),
