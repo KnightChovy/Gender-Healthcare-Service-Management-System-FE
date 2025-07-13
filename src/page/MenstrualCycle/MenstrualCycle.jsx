@@ -2,7 +2,6 @@ import React, { useState, useEffect } from "react";
 import Header from "./MenstrualCycleItems/Header";
 import CycleInputForm from "./MenstrualCycleItems/CycleInputForm";
 import CurrentStatus from "./MenstrualCycleItems/CurrentStatus";
-import NotificationSettings from "./MenstrualCycleItems/NotificationSettings";
 import HealthTips from "./MenstrualCycleItems/HealthTips";
 import classNames from "classnames/bind";
 import styles from "./MenstrualCycle.module.scss";
@@ -120,23 +119,21 @@ function MenstrualCycle() {
       <Header />
 
       <div className={cx("cycle-grid")}>
-        <CycleInputForm
-          cycleData={cycleData}
-          onDataChange={handleCycleDataChange}
-        />
+        <div className={cx("top-row")}>
+          <CycleInputForm
+            cycleData={cycleData}
+            onDataChange={handleCycleDataChange}
+          />
 
-        <CurrentStatus
-          className="col-span-2"
-          predictions={predictions}
-          currentPhase={currentPhase}
-        />
+          <CurrentStatus
+            predictions={predictions}
+            currentPhase={currentPhase}
+          />
+        </div>
 
-        <HealthTips currentPhase={currentPhase} />
-
-        {/* <NotificationSettings
-          notifications={cycleData.notifications}
-          onNotificationChange={handleCycleDataChange}
-        /> */}
+        <div className={cx("bottom-row")}>
+          <HealthTips currentPhase={currentPhase} />
+        </div>
       </div>
     </div>
   );

@@ -191,16 +191,6 @@ const Profile = () => {
             <p>{doctor?.bio}</p>
             <p className="text-sm text-blue-100"></p>
           </div>
-          <div className="space-x-2">
-            <button
-              onClick={() => setIsEditing(true)}
-              disabled={isEditing}
-              className="px-4 py-2 bg-white text-blue-700 rounded-md shadow-sm hover:bg-blue-50 disabled:opacity-50"
-            >
-              <i className="fas fa-edit mr-2"></i>
-              Chỉnh sửa
-            </button>
-          </div>
         </div>
       </div>
 
@@ -527,10 +517,6 @@ const Profile = () => {
                           ? `${doctor.experience_year} năm`
                           : "Chưa cập nhật"}
                       </p>
-                    </div>
-                    <div className="md:col-span-2">
-                      <span className="text-sm text-gray-500">Học vấn:</span>
-                      <p>{doctor?.education || "Chưa cập nhật"}</p>
                     </div>
                     <div className="md:col-span-2">
                       <span className="text-sm text-gray-500">Giới thiệu:</span>

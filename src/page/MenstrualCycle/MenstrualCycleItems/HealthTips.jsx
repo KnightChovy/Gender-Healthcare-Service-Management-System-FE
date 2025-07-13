@@ -59,6 +59,16 @@ function HealthTips({ currentPhase }) {
   return (
     <div className={cx("health-tips", "col-span-1")}>
       <h2>Lời khuyên sức khỏe</h2>
+      
+      <div className={cx("general-tip")}>
+        <h4>Lưu ý chung:</h4>
+        <p>
+          Hãy theo dõi thường xuyên và ghi chép các triệu chứng để có thông tin
+          chính xác nhất về chu kì của bạn. Nếu có bất thường, hãy tham khảo ý
+          kiến bác sĩ.
+        </p>
+      </div>
+
       <div className={cx("tips-content")}>
         {currentPhase && (
           <div className={cx("tip")}>
@@ -71,19 +81,10 @@ function HealthTips({ currentPhase }) {
           </div>
         )}
 
-        <div className={cx("general-tip")}>
-          <h4>Lưu ý chung:</h4>
-          <p>
-            Hãy theo dõi thường xuyên và ghi chép các triệu chứng để có thông
-            tin chính xác nhất về chu kì của bạn. Nếu có bất thường, hãy tham
-            khảo ý kiến bác sĩ.
-          </p>
-        </div>
-
         <div className={cx("reminder-highlight")}>
           <div className={cx("reminder-icon")}>💊</div>
           <div className={cx("reminder-content")}>
-            <h4>Nhận nhắc nhở uống thuốc?</h4>
+            <h4>Nhận gmail nhắc nhở uống thuốc?</h4>
             <p>
               Bạn có muốn nhận thông báo uống thuốc tránh thai hàng ngày không?
             </p>
