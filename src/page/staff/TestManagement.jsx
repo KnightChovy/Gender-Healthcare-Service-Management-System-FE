@@ -22,7 +22,6 @@ export const TestManagement = () => {
       setLoading(true);
       const accessToken = localStorage.getItem('accessToken');
 
-      // Use the staff API endpoint to get all orders
       const response = await axiosClient.get('/v1/staff/getAllOrder', {
         headers: {
           'x-access-token': accessToken,
@@ -36,6 +35,24 @@ export const TestManagement = () => {
         const transformedData = response.data.data.orders.map((item) => {
           const order = item.order;
           const services = item.services;
+          const details = item.details || [];
+
+          // Get exam date and time from details (first detail or null)
+          const firstDetail = details.length > 0 ? details[0] : null;
+          const examDate = firstDetail?.exam_date;
+          const examTime = firstDetail?.exam_time;
+
+          // Only show exam_date and exam_time if they exist
+          let displayDate = examDate ? new Date(examDate).toLocaleDateString('vi-VN') : null;
+          let displayTime = examTime ? examTime : null;
+          let sortableDate = null;
+
+          if (examDate && examTime) {
+            const examDateTime = new Date(`${examDate}T${examTime}`);
+            sortableDate = examDateTime;
+          } else if (examDate) {
+            sortableDate = new Date(examDate);
+          }
 
           return {
             id: order.order_id,
@@ -48,11 +65,11 @@ export const TestManagement = () => {
             testType: services && services.length > 0
               ? services.map(service => service.name).join(', ')
               : 'Xét nghiệm tổng quát',
-            date: new Date(order.created_at).toLocaleDateString('vi-VN'),
-            time: new Date(order.created_at).toLocaleTimeString('vi-VN', {
-              hour: '2-digit',
-              minute: '2-digit'
-            }),
+            date: displayDate,
+            time: displayTime,
+            sortableDate: sortableDate,
+            examDate: examDate,
+            examTime: examTime,
             status: mapOrderStatusToTestStatus(order.order_status),
             original_status: order.order_status,
             notes: order.notes || '',
@@ -60,6 +77,7 @@ export const TestManagement = () => {
             payment_method: order.payment_method || 'cash',
             order_type: order.order_type || 'online',
             services: services || [],
+            details: details || [],
             created_at: order.created_at,
             updated_at: order.updated_at
           };
@@ -101,7 +119,6 @@ export const TestManagement = () => {
         });
       }
 
-      // Set empty arrays on error
       setTestOrders([]);
       setFilteredOrders([]);
     } finally {
@@ -130,8 +147,13 @@ export const TestManagement = () => {
 
       const matchesStatus = statusFilter === "" || order.status === statusFilter;
 
-      // Simple date filter - check if order date includes the filter date
-      const matchesDate = dateFilter === "" || order.date.includes(dateFilter);
+      // Only filter by exam_date if it exists
+      let matchesDate = true;
+      if (dateFilter !== "" && order.examDate) {
+        const filterDate = new Date(dateFilter);
+        const filterDateString = filterDate.toISOString().split('T')[0];
+        matchesDate = order.examDate === filterDateString;
+      }
 
       return matchesSearch && matchesStatus && matchesDate;
     });
@@ -381,6 +403,7 @@ export const TestManagement = () => {
               value={dateFilter}
               onChange={(e) => setDateFilter(e.target.value)}
               className="px-4 py-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-cyan-500"
+              title="Lọc theo ngày xét nghiệm"
             />
 
             <button
@@ -421,7 +444,7 @@ export const TestManagement = () => {
                     Tổng tiền
                   </th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Ngày/Giờ
+                    Ngày/Giờ xét nghiệm
                   </th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                     Trạng thái
@@ -455,8 +478,12 @@ export const TestManagement = () => {
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                       <div>
-                        <div>{order.date}</div>
-                        <div className="text-xs text-gray-400">{order.time}</div>
+                        <div className="font-medium">
+                          {order.date || 'Chưa xác định'}
+                        </div>
+                        <div className="text-xs text-gray-600">
+                          {order.time || 'Chưa xác định'}
+                        </div>
                       </div>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
@@ -544,8 +571,10 @@ export const TestManagement = () => {
                 <div>
                   <h4 className="font-semibold text-gray-700 mb-2">Thông tin đơn hàng</h4>
                   <div className="space-y-2 text-sm">
-                    <p><span className="font-medium">Ngày đặt:</span> {selectedOrder.date}</p>
-                    <p><span className="font-medium">Giờ đặt:</span> {selectedOrder.time}</p>
+                    <p><span className="font-medium">Ngày đặt:</span> {new Date(selectedOrder.created_at).toLocaleDateString('vi-VN')}</p>
+                    <p><span className="font-medium">Giờ đặt:</span> {new Date(selectedOrder.created_at).toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' })}</p>
+                    <p><span className="font-medium">Ngày xét nghiệm:</span> {selectedOrder.date || 'Chưa xác định'}</p>
+                    <p><span className="font-medium">Giờ xét nghiệm:</span> {selectedOrder.time || 'Chưa xác định'}</p>
                     <p><span className="font-medium">Loại đơn:</span> {selectedOrder.order_type === 'directly' ? 'Trực tiếp' : 'Online'}</p>
                     <p><span className="font-medium">Thanh toán:</span> {selectedOrder.payment_method === 'cash' ? 'Tiền mặt' : 'Chuyển khoản'}</p>
                   </div>
@@ -576,6 +605,39 @@ export const TestManagement = () => {
                   )}
                 </div>
               </div>
+
+              {/* Exam Schedule Details */}
+              {selectedOrder.details && selectedOrder.details.length > 0 && (
+                <div className="mb-4">
+                  <h4 className="font-semibold text-gray-700 mb-2">Lịch xét nghiệm chi tiết</h4>
+                  <div className="bg-blue-50 p-3 rounded">
+                    <div className="space-y-2">
+                      {selectedOrder.details.map((detail, index) => (
+                        <div key={index} className="flex justify-between items-center border-b border-blue-200 pb-2">
+                          <div>
+                            <p className="text-sm font-medium">{detail.service.name}</p>
+                            <div className="text-xs text-gray-600 mt-1">
+                              {detail.exam_date && detail.exam_time ? (
+                                <span className="text-blue-600 font-medium">
+                                  📅 {new Date(detail.exam_date).toLocaleDateString('vi-VN')} 
+                                  ⏰ {detail.exam_time}
+                                </span>
+                              ) : (
+                                <span className="text-orange-500">
+                                  ⏳ Chưa xác định lịch xét nghiệm
+                                </span>
+                              )}
+                            </div>
+                          </div>
+                          <span className="text-sm font-medium text-green-600">
+                            {formatCurrency(parseFloat(detail.service.price))}
+                          </span>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+              )}
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
                 <div>
