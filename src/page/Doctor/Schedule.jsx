@@ -344,6 +344,7 @@ const Schedule = () => {
         return;
       }
 
+      // Lấy tất cả các ngày có slot được chọn
       const scheduleDaysWithSelectedSlots = Object.entries(schedule).filter(
         ([_, slots]) => Object.values(slots).some((isSelected) => isSelected)
       );
@@ -358,24 +359,34 @@ const Schedule = () => {
         return;
       }
 
-      const [firstDay, timeSlotsObj] = scheduleDaysWithSelectedSlots[0];
-      const dayIndex = days.indexOf(firstDay);
-      const dateObject = weekDates[dayIndex];
-      const formattedDate = dayjs(dateObject).format("YYYY-MM-DD");
+      // Tạo schedule array cho tất cả các ngày có slot được chọn
+      const scheduleArray = scheduleDaysWithSelectedSlots.map(
+        ([day, timeSlotsObj]) => {
+          const dayIndex = days.indexOf(day);
+          const dateObject = weekDates[dayIndex];
+          const formattedDate = dayjs(dateObject).format("YYYY-MM-DD");
 
-      const selectedTimeSlots = Object.entries(timeSlotsObj)
-        .filter(([_, isSelected]) => isSelected)
-        .map(([timeSlot]) => {
-          const [startTime, endTime] = timeSlot.split(" - ");
+          const selectedTimeSlots = Object.entries(timeSlotsObj)
+            .filter(([_, isSelected]) => isSelected)
+            .map(([timeSlot]) => {
+              const [startTime, endTime] = timeSlot.split(" - ");
+              return {
+                time_start: `${startTime}:00`,
+                time_end: `${endTime}:00`,
+              };
+            });
+
           return {
-            time_start: `${startTime}:00`,
-            time_end: `${endTime}:00`,
+            date: formattedDate,
+            timeSlots: selectedTimeSlots,
           };
-        });
+        }
+      );
 
+      // Tạo payload theo định dạng mới
       const schedulePayload = {
-        date: formattedDate,
-        timeSlots: selectedTimeSlots,
+        weekStartDate: dayjs(weekDates[0]).format("YYYY-MM-DD"), // Ngày đầu tuần (Thứ 2)
+        schedule: scheduleArray,
       };
 
       console.log("📤 Sending schedule:", schedulePayload);
@@ -650,23 +661,6 @@ const Schedule = () => {
             </div>
           </div>
           <div>
-            <button
-              type="button"
-              onClick={() => {
-                const allFalse = days.reduce((acc, day) => {
-                  acc[day] = timeSlots.reduce((slots, time) => {
-                    slots[time] = false;
-                    return slots;
-                  }, {});
-                  return acc;
-                }, {});
-                setSchedule(allFalse);
-              }}
-              disabled={isLoading || isCurrentWeek()}
-              className="px-4 py-2 bg-gray-200 text-gray-700 rounded-md mr-2 hover:bg-gray-300 transition-colors disabled:opacity-50"
-            >
-              Xóa tất cả
-            </button>
             <button
               type="submit"
               disabled={isLoading || isCurrentWeek()}
