@@ -44,9 +44,8 @@ export const usePaymentProcessing = ({
       }));
 
       const totalAmount = calculateTotalAmount();
-      const paymentMethod = "cash"; // Luôn sử dụng thanh toán tiền mặt
+      const paymentMethod = "cash";
 
-      // Lưu session thanh toán vào localStorage
       localStorage.setItem(
         "currentPaymentSession",
         JSON.stringify({
@@ -74,8 +73,8 @@ export const usePaymentProcessing = ({
           user_id: userInfo.user_id,
           serviceData: serviceId,
           payment_method: paymentMethod,
-          appointment_date: format(selectedDate, "yyyy-MM-dd"),
-          appointment_time: selectedTimeSlot,
+          exam_date: format(selectedDate, "yyyy-MM-dd"),
+          exam_time: selectedTimeSlot,
         },
       };
 
@@ -84,6 +83,7 @@ export const usePaymentProcessing = ({
         requestBody,
         { timeout: 15000 }
       );
+      // console.log(res.data.data.order.order_id);
 
       if (res && res.data && res.data.success) {
         completeBookingProcess(res.data);

@@ -15,8 +15,7 @@ import PaymentStatus from "./components/PaymentStatus";
 import AppointmentPDF from "./components/AppointmentPDF";
 import { ServiceCard } from "./components/ServiceCard";
 
-// Hooks
-import usePaymentProcessing from "./hook/usePaymentProcessing"; // Giữ nguyên vì đường dẫn hook/ là đúng
+import usePaymentProcessing from "./hook/usePaymentProcessing";
 import { API_BOOKING_SERVICE_SUCCESS } from "../../constants/Apis";
 
 window.Buffer = Buffer;
@@ -47,7 +46,6 @@ const TestAppointmentPage = () => {
   const [currentStep, setCurrentStep] = useState(1);
 
   // Dữ liệu đặt lịch
-  const [selectedService, setSelectedService] = useState(null);
   const [allServices, setAllServices] = useState([]);
   const [selectedServices, setSelectedServices] = useState([]);
   const [userInfo, setUserInfo] = useState({
@@ -82,7 +80,6 @@ const TestAppointmentPage = () => {
     "15:30 - 16:00",
   ];
 
-  // Xử lý thanh toán
   const {
     paymentError,
     paymentErrorMessage,
@@ -95,12 +92,11 @@ const TestAppointmentPage = () => {
     selectedDate,
     selectedTimeSlot,
     medicalHistory,
-    calculateTotalAmount, // Không cần truyền paymentMethod nữa
+    calculateTotalAmount,
     appointmentId,
     completeBookingProcess,
   });
 
-  // Khởi tạo dữ liệu người dùng từ localStorage
   useEffect(() => {
     const storedData = localStorage.getItem("user");
     if (storedData) {
@@ -112,14 +108,12 @@ const TestAppointmentPage = () => {
     }
   }, []);
 
-  // Xử lý query parameters và lấy dữ liệu dịch vụ
   useEffect(() => {
     window.scrollTo(0, 0);
     document.title = "Đặt lịch xét nghiệm | Healthcare Service";
 
     const queryParams = new URLSearchParams(location.search);
 
-    // Original code for fetching service and appointment data
     const hashedServiceId = queryParams.get("serviceId");
     const serviceId = hashedServiceId ? unhashServiceId(hashedServiceId) : null;
     const hashedAppointmentId = queryParams.get("appointmentId");
@@ -152,7 +146,6 @@ const TestAppointmentPage = () => {
       setLoading(true);
       try {
         const response = await axiosClient.get("v1/services");
-        // console.log(response, "du lieu lay xuong");
 
         if (response.data && response.data.success) {
           const data = response.data.data;
@@ -244,7 +237,6 @@ const TestAppointmentPage = () => {
     }).format(price);
   }
 
-  // Các hàm xử lý sự kiện
   const handleServiceChange = (service) => {
     const isSelected = selectedServices.some(
       (s) => s.service_id === service.service_id
@@ -270,9 +262,7 @@ const TestAppointmentPage = () => {
     setSelectedTimeSlot(timeSlot);
   };
 
-  // Xử lý khi nhấn nút tiếp theo
   const handleNextStep = () => {
-    // Validate input trước khi chuyển bước tiếp theo
     if (currentStep === 1) {
       if (selectedServices.length === 0) {
         alert("Vui lòng chọn ít nhất một dịch vụ xét nghiệm");
@@ -312,8 +302,8 @@ const TestAppointmentPage = () => {
     const appointmentDetails = {
       services: selectedServices,
       medicalHistory: medicalHistory,
-      appointmentDate: format(selectedDate, "dd-MM-yyyy"),
-      appointmentTime: selectedTimeSlot,
+      exam_date: format(selectedDate, "dd-MM-yyyy"),
+      exam_time: selectedTimeSlot,
       totalAmount: calculateTotalAmount(),
       payment_method: paymentMethod,
       userInfo: userInfo,
@@ -330,8 +320,10 @@ const TestAppointmentPage = () => {
     axiosClient
       .post(API_BOOKING_SERVICE_SUCCESS, {
         user_id: userInfo.user_id,
+        order_id: responseData.data.order.order_id,
       })
-      .then((res) => console.log(res.data).catch((err) => console.log(err)));
+      .then((res) => console.log(res.data))
+      .catch((err) => console.log(err));
     if (window.dispatchEvent) {
       const event = new CustomEvent("newNotification", {
         detail: newNotification,
@@ -340,26 +332,6 @@ const TestAppointmentPage = () => {
     }
   }
 
-  // Helper function to translate VNPay error codes
-  // const getVNPayErrorMessage = (code) => {
-  //   const errorMessages = {
-  //     "07": "Trừ tiền thành công, giao dịch bị nghi ngờ",
-  //     "09": "Giao dịch không thành công do: Thẻ/Tài khoản hết hạn sử dụng",
-  //     10: "Giao dịch không thành công do: Thẻ chưa đăng ký sử dụng dịch vụ",
-  //     11: "Giao dịch không thành công do: Thẻ bị khóa",
-  //     12: "Giao dịch không thành công do: Thẻ/Tài khoản không đủ số dư",
-  //     13: "Giao dịch không thành công do: Vượt quá hạn mức thanh toán",
-  //     24: "Giao dịch không thành công do: Khách hàng hủy giao dịch",
-  //     51: "Giao dịch không thành công do: Tài khoản không đủ số dư",
-  //     65: "Giao dịch không thành công do: Tài khoản đã vượt quá hạn mức thanh toán",
-  //     75: "Ngân hàng thanh toán đang bảo trì",
-  //     99: "Lỗi không xác định",
-  //   };
-
-  //   return errorMessages[code] || "Giao dịch không thành công";
-  // };
-
-  // Loading screen
   if (loading && currentStep === 1) {
     return (
       <div className="flex justify-center items-center min-h-screen">
@@ -368,7 +340,6 @@ const TestAppointmentPage = () => {
     );
   }
 
-  // Error screen
   if (error && currentStep === 1) {
     return (
       <div className="max-w-7xl mx-auto px-4 py-16 sm:px-6 lg:px-8 text-center">
@@ -406,7 +377,6 @@ const TestAppointmentPage = () => {
   return (
     <div className="bg-gray-50 min-h-screen py-8">
       <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8">
-        {/* Tiêu đề trang */}
         <div className="text-center mb-8">
           <h1 className="text-3xl font-bold text-gray-900">
             Đặt lịch xét nghiệm
@@ -473,7 +443,6 @@ const TestAppointmentPage = () => {
           />
         )}
 
-        {/* Hiển thị trạng thái thanh toán */}
         <PaymentStatus
           paymentError={paymentError}
           paymentErrorMessage={paymentErrorMessage}
