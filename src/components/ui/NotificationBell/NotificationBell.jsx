@@ -209,111 +209,100 @@ function NotificationBell() {
     return notifications;
   };
 
-  // Thêm hàm tạo notification cho xét nghiệm
-  const createNotificationFromTestAppointment = (testAppointment) => {
+  // Thêm hàm tạo notification cho đơn xét nghiệm (test order)
+  const createNotificationFromTestOrder = (orderData) => {
     const notifications = [];
-    const testDate = new Date(testAppointment.created_at);
-
-    switch (testAppointment.status) {
+    const orderDate = new Date(orderData.order.created_at);
+    
+    // Create a combined service name for multiple services
+    const serviceNames = orderData.services.map(service => service.name).join(', ');
+    const totalAmount = orderData.order.total_amount;
+    
+    switch (orderData.order.order_status) {
       case "pending":
         notifications.push({
-          id: `test_pending_${testAppointment.id}`,
+          id: `test_pending_${orderData.order.order_id}`,
           type: "test_pending",
-          title: "Lịch xét nghiệm đang chờ xác nhận",
-          message: `Lịch xét nghiệm ${
-            testAppointment.test_name || testAppointment.test_type
-          } vào ${new Date(testAppointment.test_date).toLocaleDateString(
-            "vi-VN"
-          )} đang chờ xác nhận.`,
-          timestamp: testDate.toISOString(),
+          title: "Đơn xét nghiệm đang chờ xử lý",
+          message: `Đơn xét nghiệm ${serviceNames} với tổng tiền ${formatCurrency(totalAmount)} đang chờ xác nhận.`,
+          timestamp: orderDate.toISOString(),
           isRead: false,
-          testAppointmentId: testAppointment.id,
-          testAppointmentData: testAppointment,
+          testOrderId: orderData.order.order_id,
+          testOrderData: orderData,
         });
         break;
 
-      case "confirmed":
+      case "paid":
         notifications.push({
-          id: `test_confirmed_${testAppointment.id}`,
-          type: "test_confirmed",
-          title: "Lịch xét nghiệm đã được xác nhận",
-          message: `Lịch xét nghiệm ${
-            testAppointment.test_name || testAppointment.test_type
-          } vào ngày ${new Date(testAppointment.test_date).toLocaleDateString(
-            "vi-VN"
-          )} đã được xác nhận. Vui lòng đến bệnh viện đúng giờ.`,
-          timestamp: testDate.toISOString(),
+          id: `test_paid_${orderData.order.order_id}`,
+          type: "test_confirmed", 
+          title: "Đơn xét nghiệm đã thanh toán",
+          message: `Đơn xét nghiệm ${serviceNames} đã được thanh toán và đang chờ thực hiện. Vui lòng đến cơ sở y tế theo lịch hẹn.`,
+          timestamp: orderDate.toISOString(),
           isRead: false,
-          testAppointmentId: testAppointment.id,
-          testAppointmentData: testAppointment,
-        });
-        break;
-
-      case "in_progress":
-        notifications.push({
-          id: `test_in_progress_${testAppointment.id}`,
-          type: "test_in_progress",
-          title: "Đang thực hiện xét nghiệm",
-          message: `Xét nghiệm ${
-            testAppointment.test_name || testAppointment.test_type
-          } đang được thực hiện. Kết quả sẽ được cập nhật sau khi hoàn thành.`,
-          timestamp: testDate.toISOString(),
-          isRead: false,
-          testAppointmentId: testAppointment.id,
-          testAppointmentData: testAppointment,
-        });
-        break;
-
-      case "waiting_results":
-        notifications.push({
-          id: `test_waiting_${testAppointment.id}`,
-          type: "test_waiting_results",
-          title: "Chờ kết quả xét nghiệm",
-          message: `Xét nghiệm ${
-            testAppointment.test_name || testAppointment.test_type
-          } đã hoàn thành. Kết quả sẽ được gửi về hệ thống trong thời gian sớm nhất.`,
-          timestamp: testDate.toISOString(),
-          isRead: false,
-          testAppointmentId: testAppointment.id,
-          testAppointmentData: testAppointment,
+          testOrderId: orderData.order.order_id,
+          testOrderData: orderData,
+          amount: totalAmount,
         });
         break;
 
       case "completed":
         notifications.push({
-          id: `test_completed_${testAppointment.id}`,
+          id: `test_completed_${orderData.order.order_id}`,
           type: "test_results_available",
-          title: "🎉 Kết quả xét nghiệm đã có!",
-          message: `Kết quả xét nghiệm ${
-            testAppointment.test_name || testAppointment.test_type
-          } đã sẵn sàng. Bạn có thể xem kết quả chi tiết và đơn thuốc (nếu có).`,
-          timestamp: testDate.toISOString(),
+          title: "✅ Xét nghiệm đã hoàn thành",
+          message: `Xét nghiệm ${serviceNames} đã hoàn thành. Kết quả sẽ được gửi trong thời gian chờ kết quả đã thông báo.`,
+          timestamp: orderDate.toISOString(),
           isRead: false,
-          testAppointmentId: testAppointment.id,
-          testAppointmentData: testAppointment,
-          hasResults: true,
-          canFeedback: !testAppointment.feedback, // Kiểm tra đã đánh giá chưa
+          testOrderId: orderData.order.order_id,
+          testOrderData: orderData,
+          amount: totalAmount,
+          hasResults: false, // Changed to false since results are not available yet
+          waitingForResults: true, // Added flag to indicate waiting for results
         });
         break;
 
       case "cancelled":
         notifications.push({
-          id: `test_cancelled_${testAppointment.id}`,
-          type: "appointment_cancelled", // Sử dụng loại thống nhất với giao diện
-          title: "Lịch xét nghiệm đã bị hủy",
-          message: `Lịch xét nghiệm ${
-            testAppointment.test_name || testAppointment.test_type
-          } đã bị hủy. Vui lòng liên hệ bệnh viện để biết thêm chi tiết.`,
-          timestamp: testDate.toISOString(),
+          id: `test_cancelled_${orderData.order.order_id}`,
+          type: "appointment_cancelled",
+          title: "Đơn xét nghiệm đã bị hủy",
+          message: `Đơn xét nghiệm ${serviceNames} đã bị hủy. Vui lòng liên hệ để biết thêm chi tiết.`,
+          timestamp: orderDate.toISOString(),
           isRead: false,
-          testAppointmentId: testAppointment.id,
-          testAppointmentData: testAppointment,
+          testOrderId: orderData.order.order_id,
+          testOrderData: orderData,
         });
         break;
 
       default:
         break;
     }
+
+    return notifications;
+  };
+
+  // Thêm hàm tạo notification cho kết quả xét nghiệm
+  const createNotificationFromTestResult = (resultData) => {
+    const notifications = [];
+    const resultDate = new Date(resultData.created_at);
+    
+    notifications.push({
+      id: `test_result_${resultData.testresult_id}`,
+      type: "test_results_available",
+      title: "🎉 Kết quả xét nghiệm đã có!",
+      message: `Kết quả xét nghiệm ${resultData.service.name} đã sẵn sàng. Kết luận: ${resultData.result.conclusion}`,
+      timestamp: resultDate.toISOString(),
+      isRead: false,
+      testOrderId: resultData.order_id,
+      testResultId: resultData.testresult_id,
+      serviceInfo: resultData.service,
+      resultData: resultData.result,
+      examDate: resultData.exam_date,
+      examTime: resultData.exam_time,
+      hasResults: true,
+      waitingForResults: false,
+    });
 
     return notifications;
   };
@@ -357,88 +346,106 @@ function NotificationBell() {
   const loadNotifications = useCallback(async () => {
     if (!user.user_id || !accessToken) return;
 
-    // try {
-    //   setIsLoading(true);
+    try {
+      setIsLoading(true);
 
-    //   // Lấy lịch hẹn thông thường
-    //   const appointmentResponse = await axiosClient.get(
-    //     `/v1/appointments/user/${user.user_id}`,
-    //     {
-    //       headers: {
-    //         "x-access-token": accessToken,
-    //       },
-    //     }
-    //   );
+      // Lấy lịch hẹn thông thường
+      const appointmentResponse = await axiosClient.get(
+        `/v1/appointments/user/${user.user_id}`,
+        {
+          headers: {
+            "x-access-token": accessToken,
+          },
+        }
+      );
 
-    //   // Lấy lịch hẹn xét nghiệm
-    //   const testResponse = await axiosClient.get(
-    //     `/v1/test-appointments/user/${user.user_id}`,
-    //     {
-    //       headers: {
-    //         "x-access-token": accessToken,
-    //       },
-    //     }
-    //   );
+      // Lấy lịch hẹn xét nghiệm với cấu trúc mới
+      const testResponse = await axiosClient.get(
+        `/v1/users/test-appointments/user/${user.user_id}`,
+        {
+          headers: {
+            "x-access-token": accessToken,
+          },
+        }
+      );
 
-    //   const savedNotifications = JSON.parse(
-    //     localStorage.getItem("notificationReadStatus") || "{}"
-    //   );
-    //   const deletedNotifications = cleanupDeletedNotifications();
+      // Lấy kết quả xét nghiệm
+      const testResultsResponse = await axiosClient.get(
+        `/v1/users/test-results`,
+        {
+          headers: {
+            "x-access-token": accessToken,
+          },
+        }
+      );
 
-    //   let allNotifications = [];
+      const savedNotifications = JSON.parse(
+        localStorage.getItem("notificationReadStatus") || "{}"
+      );
+      const deletedNotifications = cleanupDeletedNotifications();
 
-    //   // Xử lý lịch hẹn thông thường
-    //   if (appointmentResponse.data?.success) {
-    //     const appointments = appointmentResponse.data.data || [];
-    //     appointments.forEach((appointment) => {
-    //       const appointmentNotifications =
-    //         createNotificationFromAppointment(appointment);
-    //       allNotifications = [...allNotifications, ...appointmentNotifications];
-    //     });
-    //   }
+      let allNotifications = [];
 
-    //   // Xử lý lịch hẹn xét nghiệm
-    //   if (testResponse.data?.success) {
-    //     const testAppointments = testResponse.data.data || [];
-    //     testAppointments.forEach((testAppointment) => {
-    //       const testNotifications =
-    //         createNotificationFromTestAppointment(testAppointment);
-    //       allNotifications = [...allNotifications, ...testNotifications];
-    //     });
-    //   }
+      // Xử lý lịch hẹn thông thường
+      if (appointmentResponse.data?.success) {
+        const appointments = appointmentResponse.data.data || [];
+        appointments.forEach((appointment) => {
+          const appointmentNotifications =
+            createNotificationFromAppointment(appointment);
+          allNotifications = [...allNotifications, ...appointmentNotifications];
+        });
+      }
 
-    //   // Lọc các thông báo đã xóa
-    //   allNotifications = allNotifications.filter((notif) => {
-    //     const isDeleted = deletedNotifications[notif.id];
-    //     return !isDeleted;
-    //   });
+      // Xử lý lịch hẹn xét nghiệm với cấu trúc mới
+      if (testResponse.data?.status === "success") {
+        const testOrders = testResponse.data.data?.orders || [];
+        testOrders.forEach((orderData) => {
+          const testNotifications = createNotificationFromTestOrder(orderData);
+          allNotifications = [...allNotifications, ...testNotifications];
+        });
+      }
 
-    //   // Cập nhật trạng thái đã đọc
-    //   allNotifications = allNotifications.map((notif) => ({
-    //     ...notif,
-    //     isRead: savedNotifications[notif.id] || false,
-    //   }));
+      // Xử lý kết quả xét nghiệm
+      if (testResultsResponse.data?.status === "success") {
+        const testResults = testResultsResponse.data.data?.results || [];
+        testResults.forEach((resultData) => {
+          const resultNotifications = createNotificationFromTestResult(resultData);
+          allNotifications = [...allNotifications, ...resultNotifications];
+        });
+      }
 
-    //   // Sắp xếp theo thời gian
-    //   allNotifications.sort(
-    //     (a, b) => new Date(b.timestamp) - new Date(a.timestamp)
-    //   );
+      // Lọc các thông báo đã xóa
+      allNotifications = allNotifications.filter((notif) => {
+        const isDeleted = deletedNotifications[notif.id];
+        return !isDeleted;
+      });
 
-    //   // Lọc thông báo trong 30 ngày gần đây
-    //   const thirtyDaysAgo = new Date();
-    //   thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+      // Cập nhật trạng thái đã đọc
+      allNotifications = allNotifications.map((notif) => ({
+        ...notif,
+        isRead: savedNotifications[notif.id] || false,
+      }));
 
-    //   const recentNotifications = allNotifications.filter(
-    //     (notif) => new Date(notif.timestamp) >= thirtyDaysAgo
-    //   );
+      // Sắp xếp theo thời gian
+      allNotifications.sort(
+        (a, b) => new Date(b.timestamp) - new Date(a.timestamp)
+      );
 
-    //   setNotifications(recentNotifications);
-    //   setUnreadCount(recentNotifications.filter((n) => !n.isRead).length);
-    // } catch (error) {
-    //   console.error("❌ Error loading notifications:", error);
-    // } finally {
-    //   setIsLoading(false);
-    // }
+      // Lọc thông báo trong 30 ngày gần đây
+      const thirtyDaysAgo = new Date();
+      thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+
+      const recentNotifications = allNotifications.filter(
+        (notif) => new Date(notif.timestamp) >= thirtyDaysAgo
+      );
+
+      setNotifications(recentNotifications);
+      setUnreadCount(recentNotifications.filter((n) => !n.isRead).length);
+    } catch (error) {
+      console.error("❌ Error loading notifications:", error);
+    } finally {
+      setIsLoading(false);
+    }
   }, [user.user_id, accessToken]);
 
   useEffect(() => {
@@ -537,8 +544,7 @@ function NotificationBell() {
       case "appointment_success":
         navigate("/my-appointments");
         break;
-      case "appointment_completed": // Thêm case completed
-        // Dẫn đến trang feedback cho appointment cụ thể
+      case "appointment_completed":
         navigate(`/feedback/consultation/${notification.appointmentId}`, {
           state: { appointmentData: notification.appointmentData },
         });
@@ -548,24 +554,34 @@ function NotificationBell() {
       case "appointment_cancelled":
         navigate("/my-appointments");
         break;
-      // Thêm các case cho xét nghiệm
+      // Handle test order notifications - all navigate to my-appointments
       case "test_pending":
-      case "test_in_progress":
-      case "test_waiting_results":
-      case "test_cancelled":
+      case "test_confirmed":
         navigate("/my-appointments", {
-          state: { tab: "test-appointments" },
+          state: { 
+            highlightOrderId: notification.testOrderId,
+            orderData: notification.testOrderData,
+            tab: 'test-orders'
+          },
         });
         break;
       case "test_results_available":
         navigate("/my-appointments", {
           state: {
-            tab: "test-appointments",
-            viewResults: notification.testAppointmentId,
+            highlightOrderId: notification.testOrderId,
+            orderData: notification.testOrderData || null,
+            testResultId: notification.testResultId,
+            resultData: notification.resultData,
+            serviceInfo: notification.serviceInfo,
+            examDate: notification.examDate,
+            examTime: notification.examTime,
+            tab: 'test-results',
+            viewResults: true
           },
         });
         break;
       default:
+        navigate("/my-appointments");
         break;
     }
 
@@ -700,6 +716,66 @@ function NotificationBell() {
                           )}
                         </div>
                       )}
+
+                      {/* Hiển thị cho xét nghiệm (test order) */}
+                      {notification.amount &&
+                        (notification.type === "test_confirmed" ||
+                          notification.type === "test_results_available") && (
+                          <div className={cx("amount", "test-amount")}>
+                            <strong>
+                              Tổng tiền: {formatCurrency(notification.amount)}
+                            </strong>
+                            {notification.type === "test_confirmed" && (
+                              <span className={cx("test-status")}>
+                                ✅ Đã thanh toán
+                              </span>
+                            )}
+                            {notification.type === "test_results_available" && (
+                              <span className={cx("test-status")}>
+                                {notification.waitingForResults ? (
+                                  <>⏳ Chờ kết quả</>
+                                ) : (
+                                  <>📋 Kết quả đã có</>
+                                )}
+                              </span>
+                            )}
+                          </div>
+                        )}
+
+                      {/* Hiển thị thông tin kết quả xét nghiệm chi tiết */}
+                      {notification.type === "test_results_available" && 
+                        notification.hasResults && 
+                        notification.resultData && (
+                          <div className={cx("test-result-preview")}>
+                            <div className={cx("result-info")}>
+                              <div className={cx("result-item")}>
+                                <span className={cx("label")}>Kết quả:</span>
+                                <span className={cx("value")}>{notification.resultData.result}</span>
+                              </div>
+                              <div className={cx("result-item")}>
+                                <span className={cx("label")}>Kết luận:</span>
+                                <span className={cx("value", "conclusion")}>{notification.resultData.conclusion}</span>
+                              </div>
+                              {notification.resultData.normal_range && (
+                                <div className={cx("result-item")}>
+                                  <span className={cx("label")}>Chỉ số bình thường:</span>
+                                  <span className={cx("value")}>{notification.resultData.normal_range}</span>
+                                </div>
+                              )}
+                              {notification.examDate && notification.examTime && (
+                                <div className={cx("result-item")}>
+                                  <span className={cx("label")}>Ngày xét nghiệm:</span>
+                                  <span className={cx("value")}>
+                                    {new Date(notification.examDate).toLocaleDateString('vi-VN')} lúc {notification.examTime}
+                                  </span>
+                                </div>
+                              )}
+                            </div>
+                            <div className={cx("view-full-result")}>
+                              <span>📄 Nhấn để xem kết quả đầy đủ</span>
+                            </div>
+                          </div>
+                        )}
 
                       <span className={cx("time")}>
                         {formatTime(notification.timestamp)}
