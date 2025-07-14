@@ -87,7 +87,7 @@ function DateOfBirth({ onChange, showErrors }) {
   }, [showErrors, birthDate.day, birthDate.month, birthDate.year]);
 
   const getDaysInMonth = (month, year) => {
-    if (!month || !year) return 31; // Default to 31 days if month or year is not selected
+    if (!month || !year) return 31;
     return new Date(year, month, 0).getDate();
   };
 

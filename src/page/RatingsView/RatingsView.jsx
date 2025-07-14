@@ -24,7 +24,7 @@ const RatingsView = () => {
 
     useEffect(() => {
         filterRatings();
-    }, [ratings, filterType, filterRating, filterRatings]);
+    }, []);
 
     const loadRatings = () => {
         try {

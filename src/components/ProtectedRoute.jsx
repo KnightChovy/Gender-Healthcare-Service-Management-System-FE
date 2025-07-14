@@ -5,7 +5,6 @@ import AccessDenied from '../page/AccessDenied/AccessDenied';
 import { authUtils } from '../utils/api';
 
 const ProtectedRoute = ({ children, requiredRole }) => {
-  // Use authUtils for consistent authentication check
   const isAuthenticated = authUtils.isAuthenticated();
   const userData = authUtils.getUserData();
   
@@ -13,13 +12,11 @@ const ProtectedRoute = ({ children, requiredRole }) => {
     return <Navigate to="/login" replace />;
   }
   
-  // Nếu có yêu cầu role cụ thể
   if (requiredRole) {
     try {
-      const userRole = userData.role || userData.user_type || 'user'; // Có thể là role hoặc user_type
+      const userRole = userData.role || userData.user_type || 'user';
       
       if (userRole !== requiredRole) {
-        // Hiển thị trang Access Denied thay vì redirect
         return <AccessDenied />;
       }
     } catch (error) {

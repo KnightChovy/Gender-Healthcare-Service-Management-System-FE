@@ -3,7 +3,6 @@ import { Link } from 'react-router-dom';
 import { blogPosts } from '../../data/blogs';
 
 const BlogSection = () => {
-    // Lấy 3 bài blog mới nhất
     const latestPosts = blogPosts
         .filter(post => post.status === 'published')
         .sort((a, b) => new Date(b.publishedAt) - new Date(a.publishedAt))

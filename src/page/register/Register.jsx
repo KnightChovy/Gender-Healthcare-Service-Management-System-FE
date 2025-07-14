@@ -69,7 +69,6 @@ function Register() {
       }
     }
 
-    // Check birthDate
     const { day, month, year } = formData.birthDate;
     if (!day || !month || !year) {
       const birthDateElement = document.querySelector(".date-of-birth");

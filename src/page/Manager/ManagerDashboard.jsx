@@ -4,29 +4,29 @@ import {
     faCalendarAlt, 
     faFlask, 
     faChartBar,
-    faDollarSign,
     faCheck,
     faTimes,
     faSearch,
     faDownload,
     faStar,
-    faNewspaper
+    faNewspaper,
+    faChartLine
 } from '@fortawesome/free-solid-svg-icons';
 import Navbar from '../../Layouts/LayoutHomePage/Navbar';
 import { Footer } from '../../Layouts/LayoutHomePage/Footer';
 import { testResults } from '../../data/testResults';
 import BlogManagement from './BlogManagement';
+import StatisticsCharts from '../../components/StatisticsCharts';
+import DashboardOverview from '../../components/DashboardOverview';
 
 function ManagerDashboard() {
     const [activeTab, setActiveTab] = useState('overview');
     const [appointments, setAppointments] = useState([]);
     const [testOrders, setTestOrders] = useState([]);
     const [stats, setStats] = useState({
-        totalRevenue: 0,
         totalAppointments: 0,
         totalTests: 0,
-        pendingApprovals: 0,
-        monthlyRevenue: []
+        pendingApprovals: 0
     });
     const [searchTerm, setSearchTerm] = useState('');
 
@@ -42,36 +42,13 @@ function ManagerDashboard() {
         const storedAppointments = JSON.parse(localStorage.getItem('appointments') || '[]');
         const storedTestOrders = JSON.parse(localStorage.getItem('testOrders') || '[]');
         
-        // Giá dịch vụ mẫu
-        const appointmentPrice = 500000; // 500k VND
-        const testPrices = {
-            'blood-test': 300000,
-            'urine-test': 200000,
-            'hormone-test': 800000,
-            'pregnancy-test': 150000,
-            'std-test': 600000,
-            'fertility-test': 1000000,
-            'genetic-test': 2000000,
-            'cancer-screening': 1500000,
-            'other': 400000
-        };
-
-        const approvedAppointments = storedAppointments.filter(apt => apt.status === 2);
-        const approvedTests = storedTestOrders.filter(test => test.status === 2);
         const pendingAppointments = storedAppointments.filter(apt => apt.status === 1);
         const pendingTests = storedTestOrders.filter(test => test.status === 1);
 
-        const appointmentRevenue = approvedAppointments.length * appointmentPrice;
-        const testRevenue = approvedTests.reduce((total, test) => {
-            return total + (testPrices[test.testType] || testPrices.other);
-        }, 0);
-
         setStats({
-            totalRevenue: appointmentRevenue + testRevenue,
             totalAppointments: storedAppointments.length,
             totalTests: storedTestOrders.length,
-            pendingApprovals: pendingAppointments.length + pendingTests.length,
-            monthlyRevenue: generateMonthlyRevenue(approvedAppointments, approvedTests, appointmentPrice, testPrices)
+            pendingApprovals: pendingAppointments.length + pendingTests.length
         });
     }, []);
 
@@ -83,35 +60,6 @@ function ManagerDashboard() {
     useEffect(() => {
         calculateStats();
     }, [appointments, testOrders, calculateStats]);
-
-    const generateMonthlyRevenue = (appointments, tests, appointmentPrice, testPrices) => {
-        const months = ['T1', 'T2', 'T3', 'T4', 'T5', 'T6', 'T7', 'T8', 'T9', 'T10', 'T11', 'T12'];
-        const currentYear = new Date().getFullYear();
-        
-        return months.map((month, index) => {
-            const monthlyAppointments = appointments.filter(apt => {
-                const aptDate = new Date(apt.timestamp);
-                return aptDate.getFullYear() === currentYear && aptDate.getMonth() === index;
-            });
-            
-            const monthlyTests = tests.filter(test => {
-                const testDate = new Date(test.timestamp);
-                return testDate.getFullYear() === currentYear && testDate.getMonth() === index;
-            });
-            
-            const aptRevenue = monthlyAppointments.length * appointmentPrice;
-            const testRevenue = monthlyTests.reduce((total, test) => {
-                return total + (testPrices[test.testType] || testPrices.other);
-            }, 0);
-            
-            return {
-                month,
-                revenue: aptRevenue + testRevenue,
-                appointments: monthlyAppointments.length,
-                tests: monthlyTests.length
-            };
-        });
-    };
 
     const updateStatus = (id, newStatus, type) => {
         if (type === 'appointment') {
@@ -185,13 +133,6 @@ function ManagerDashboard() {
         localStorage.setItem('notifications', JSON.stringify(existingNotifications));
     };
 
-    const formatCurrency = (amount) => {
-        return new Intl.NumberFormat('vi-VN', {
-            style: 'currency',
-            currency: 'VND'
-        }).format(amount);
-    };
-
     const formatDate = (dateString) => {
         return new Date(dateString).toLocaleDateString('vi-VN', {
             year: 'numeric',
@@ -200,41 +141,6 @@ function ManagerDashboard() {
             hour: '2-digit',
             minute: '2-digit'
         });
-    };
-
-    const getStatusColor = (status) => {
-        switch (status) {
-            case 0: return 'text-red-600 bg-red-100';        // Rejected
-            case 1: return 'text-yellow-600 bg-yellow-100';  // Pending
-            case 2: return 'text-blue-600 bg-blue-100';      // Confirmed
-            case 3: return 'text-green-600 bg-green-100';    // Confirmed & Paid
-            case 4: return 'text-purple-600 bg-purple-100';  // Test Completed / Service Completed
-            case 5: return 'text-indigo-600 bg-indigo-100';  // Doctor Reviewed
-            default: return 'text-gray-600 bg-gray-100';
-        }
-    };
-
-    const getStatusText = (status, type) => {
-        if (type === 'test') {
-            switch (status) {
-                case 0: return 'Đã từ chối';
-                case 1: return 'Chờ duyệt';
-                case 2: return 'Đã duyệt';
-                case 3: return 'Chờ xét nghiệm';
-                case 4: return 'Chờ bác sĩ xem xét';
-                case 5: return 'Hoàn thành';
-                default: return 'Không xác định';
-            }
-        } else {
-            switch (status) {
-                case 0: return 'Đã từ chối';
-                case 1: return 'Chờ duyệt';
-                case 2: return 'Đã duyệt';
-                case 3: return 'Đã thanh toán';
-                case 4: return 'Hoàn thành';
-                default: return 'Không xác định';
-            }
-        }
     };
 
     const exportReport = () => {
@@ -299,9 +205,9 @@ function ManagerDashboard() {
 
     const tabs = [
         { id: 'overview', label: 'Tổng quan', icon: faChartBar },
+        { id: 'statistics', label: 'Thống kê & Báo cáo', icon: faChartLine },
         { id: 'approvals', label: 'Xét duyệt yêu cầu', icon: faCheck },
         { id: 'blogs', label: 'Quản lý Blog', icon: faNewspaper },
-        { id: 'revenue', label: 'Doanh thu', icon: faDollarSign },
         { id: 'ratings', label: 'Xem đánh giá', icon: faStar, isLink: true, href: '/ratings' },
     ];
 
@@ -330,19 +236,7 @@ function ManagerDashboard() {
                 </div>
 
                 {/* Stats Cards */}
-                <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
-                    <div className="bg-white p-6 rounded-lg shadow">
-                        <div className="flex items-center justify-between">
-                            <div>
-                                <p className="text-sm font-medium text-gray-600">Tổng doanh thu</p>
-                                <p className="text-2xl font-bold text-green-600">
-                                    {formatCurrency(stats.totalRevenue)}
-                                </p>
-                            </div>
-                            <FontAwesomeIcon icon={faDollarSign} className="text-3xl text-green-500" />
-                        </div>
-                    </div>
-                    
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
                     <div className="bg-white p-6 rounded-lg shadow">
                         <div className="flex items-center justify-between">
                             <div>
@@ -409,63 +303,7 @@ function ManagerDashboard() {
 
                 {/* Content */}
                 {activeTab === 'overview' && (
-                    <div className="space-y-6">
-                        {/* Monthly Revenue Chart */}
-                        <div className="bg-white p-6 rounded-lg shadow">
-                            <h3 className="text-lg font-semibold text-gray-900 mb-4">
-                                Doanh thu theo tháng
-                            </h3>
-                            <div className="overflow-x-auto">
-                                <div className="flex items-end space-x-2 h-64">
-                                    {stats.monthlyRevenue.map((data, index) => (
-                                        <div key={index} className="flex flex-col items-center flex-1">
-                                            <div 
-                                                className="bg-blue-500 w-full rounded-t"
-                                                style={{ 
-                                                    height: `${Math.max((data.revenue / Math.max(...stats.monthlyRevenue.map(d => d.revenue))) * 200, 10)}px` 
-                                                }}
-                                                title={`${data.month}: ${formatCurrency(data.revenue)}`}
-                                            />
-                                            <span className="text-xs text-gray-600 mt-2">{data.month}</span>
-                                        </div>
-                                    ))}
-                                </div>
-                            </div>
-                        </div>
-
-                        {/* Recent Activities */}
-                        <div className="bg-white p-6 rounded-lg shadow">
-                            <h3 className="text-lg font-semibold text-gray-900 mb-4">
-                                Hoạt động gần đây
-                            </h3>
-                            <div className="space-y-3">
-                                {[...appointments, ...testOrders]
-                                    .sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp))
-                                    .slice(0, 5)
-                                    .map((item, index) => (
-                                        <div key={index} className="flex items-center justify-between p-3 bg-gray-50 rounded">
-                                            <div className="flex items-center space-x-3">
-                                                <FontAwesomeIcon 
-                                                    icon={item.testType ? faFlask : faCalendarAlt} 
-                                                    className="text-gray-500" 
-                                                />
-                                                <div>
-                                                    <p className="text-sm font-medium text-gray-900">
-                                                        {item.fullName} - {item.testType ? 'Xét nghiệm' : 'Khám bệnh'}
-                                                    </p>
-                                                    <p className="text-xs text-gray-500">
-                                                        {formatDate(item.timestamp)}
-                                                    </p>
-                                                </div>
-                                            </div>
-                                            <span className={`px-2 py-1 text-xs font-medium rounded-full ${getStatusColor(item.status)}`}>
-                                                {getStatusText(item.status, item.testType ? 'test' : 'appointment')}
-                                            </span>
-                                        </div>
-                                    ))}
-                            </div>
-                        </div>
-                    </div>
+                    <DashboardOverview />
                 )}
 
                 {activeTab === 'approvals' && (
@@ -707,50 +545,8 @@ function ManagerDashboard() {
                     <BlogManagement />
                 )}
 
-                {activeTab === 'revenue' && (
-                    <div className="bg-white p-6 rounded-lg shadow">
-                        <h3 className="text-lg font-semibold text-gray-900 mb-6">
-                            Báo cáo doanh thu chi tiết
-                        </h3>
-                        <div className="overflow-x-auto">
-                            <table className="min-w-full divide-y divide-gray-200">
-                                <thead className="bg-gray-50">
-                                    <tr>
-                                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                            Tháng
-                                        </th>
-                                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                            Lịch hẹn
-                                        </th>
-                                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                            Xét nghiệm
-                                        </th>
-                                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                            Tổng doanh thu
-                                        </th>
-                                    </tr>
-                                </thead>
-                                <tbody className="bg-white divide-y divide-gray-200">
-                                    {stats.monthlyRevenue.map((data, index) => (
-                                        <tr key={index} className="hover:bg-gray-50">
-                                            <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
-                                                {data.month} 2025
-                                            </td>
-                                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                                                {data.appointments} lịch hẹn
-                                            </td>
-                                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                                                {data.tests} xét nghiệm
-                                            </td>
-                                            <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-green-600">
-                                                {formatCurrency(data.revenue)}
-                                            </td>
-                                        </tr>
-                                    ))}
-                                </tbody>
-                            </table>
-                        </div>
-                    </div>
+                {activeTab === 'statistics' && (
+                    <StatisticsCharts />
                 )}
             </div>
             

@@ -20,7 +20,7 @@ function Appointment() {
         gender: '',
         phone: '',
         email: '',
-        consultationType: '', // Sửa từ 'consultantionType' thành 'consultationType'
+        consultationType: '',
         preferredDate: '',
         preferredTime: '',
         symptoms: '',
@@ -98,8 +98,7 @@ function Appointment() {
         else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email))
             newErrors.email = 'Email không hợp lệ';
 
-        // Validate thông tin đặt lịch - SỬA TÊN FIELD
-        if (!formData.consultationType) // Sửa từ 'consultantionType' thành 'consultationType'
+        if (!formData.consultationType)
             newErrors.consultationType = 'Vui lòng chọn loại tư vấn';
 
         if (!formData.preferredDate)

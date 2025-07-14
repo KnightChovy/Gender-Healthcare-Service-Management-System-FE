@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useNavigate, useLocation } from "react-router-dom";
 import Navbar from "../Layouts/LayoutHomePage/Navbar";
 import { Footer } from "../Layouts/LayoutHomePage/Footer";
 import BlogSection from "../Layouts/LayoutHomePage/BlogSection";
@@ -8,14 +8,28 @@ export const HomePage = () => {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [showLoginModal, setShowLoginModal] = useState(false);
   const navigate = useNavigate();
+  const location = useLocation();
 
-  // Kiểm tra trạng thái đăng nhập
   useEffect(() => {
     const authTokens = localStorage.getItem('authTokens');
     setIsLoggedIn(!!authTokens);
   }, []);
 
-  // Xử lý khi click vào dịch vụ cần đăng nhập
+  useEffect(() => {
+    if (location.state?.scrollTo) {
+      const timer = setTimeout(() => {
+        const element = document.getElementById(location.state.scrollTo);
+        if (element) {
+          element.scrollIntoView({ behavior: 'smooth' });
+        }
+      }, 100);
+      
+      navigate(location.pathname, { replace: true, state: {} });
+      
+      return () => clearTimeout(timer);
+    }
+  }, [location.state, navigate, location.pathname]);
+
   const handleServiceClick = (servicePath) => {
     if (isLoggedIn) {
       navigate(servicePath);
@@ -53,10 +67,8 @@ export const HomePage = () => {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-pink-50">
-      {/* Navbar */}
       <Navbar />
 
-      {/* Hero Section */}
       <section className="relative py-20 lg:py-32">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center">
@@ -89,7 +101,7 @@ export const HomePage = () => {
         </div>
       </section>
 
-      {/* Services Section */}
+      
       <section id="services" className="py-20 bg-white">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-16">
@@ -132,7 +144,6 @@ export const HomePage = () => {
         </div>
       </section>
 
-      {/* About Section */}
       <section id="about" className="py-20 bg-gradient-to-r from-blue-600 to-pink-600">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center text-white">
@@ -160,10 +171,8 @@ export const HomePage = () => {
         </div>
       </section>
 
-      {/* Blog Section */}
       <BlogSection />
 
-      {/* Contact Section */}
       <section id="contact" className="py-20 bg-gray-100">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-16">
@@ -205,10 +214,8 @@ export const HomePage = () => {
         </div>
       </section>
 
-      {/* Footer */}
       <Footer />
 
-      {/* Login Modal */}
       {showLoginModal && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
           <div className="bg-white rounded-2xl p-8 max-w-md w-full mx-4 transform transition-all duration-300 scale-100">

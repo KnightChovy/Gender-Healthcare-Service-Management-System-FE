@@ -59,7 +59,6 @@ function TestOrder() {
             const userData = JSON.parse(savedUserData);
             setUserProfile(userData);
 
-            // Pre-fill form with user data directly from API response
             setFormData(prev => ({
                 ...prev,
                 fullName: `${userData.first_name} ${userData.last_name}`,

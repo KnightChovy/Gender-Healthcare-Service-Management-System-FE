@@ -125,7 +125,7 @@ const generateEmailHTML = (emailData) => {
                     </ul>
                     
                     <div style="text-align: center; margin: 30px 0;">
-                        <a href="http://localhost:5174/menstrual-cycle" class="btn">
+                        <a href="http://localhost:5173/menstrual-cycle" class="btn">
                             Mở ứng dụng GenCare
                         </a>
                     </div>

@@ -135,7 +135,7 @@ function DoctorDashboard() {
 
     const reviewTestResult = (testId) => {
         const test = testOrders.find(t => t.id === testId);
-        if (!test || !test.testResultData) return;
+        if (!test?.testResultData) return;
 
         setSelectedTestForReview(test);
         setShowReviewModal(true);

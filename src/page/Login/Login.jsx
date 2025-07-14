@@ -27,7 +27,7 @@ function Login() {
   const [showErrors, setShowErrors] = useState(false);
   const [touchedFields, setTouchedFields] = useState({});
   const [isLoading, setIsLoading] = useState(false);
-  const [loginType, setLoginType] = useState("customer"); // customer | staff
+  const [loginType, setLoginType] = useState("customer");
   const [apiError, setApiError] = useState("");
   const navigate = useNavigate();
 
@@ -56,7 +56,6 @@ function Login() {
       setShowErrors(false);
     }
     
-    // Clear API error when user starts typing
     if (apiError) {
       setApiError("");
     }
@@ -88,23 +87,19 @@ function Login() {
     setApiError("");
 
     try {
-      // Prepare login credentials
       const credentials = {
         username: formData.username,
         password: formData.password,
       };
 
-      // Call the login API
       const response = await loginUser(credentials);
 
       if (response.success) {
-        // Extract tokens and user data with safe access
         const responseData = response.data;
 
         const tokens = responseData.data?.tokens;
         const userData = responseData.data?.user;
         
-        // Safely get tokens
         const accessToken = tokens.accessToken;
         const refreshToken = tokens.refreshToken;
         

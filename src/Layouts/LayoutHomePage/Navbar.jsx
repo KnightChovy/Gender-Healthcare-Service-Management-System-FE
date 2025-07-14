@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useNavigate, useLocation } from "react-router-dom";
 import NotificationBell from "../../components/ui/NotificationBell";
 import api from "../../utils/api";
 
@@ -10,6 +10,7 @@ const Navbar = () => {
   const [userName, setUserName] = useState('');
   const [userType, setUserType] = useState('');
   const navigate = useNavigate();
+  const location = useLocation();
 
   useEffect(() => {
     const isAuthenticated = api.authUtils.isAuthenticated();
@@ -46,12 +47,22 @@ const Navbar = () => {
     return 'Người dùng';
   };
 
+  const handleSectionClick = (sectionId) => {
+    if (location.pathname === '/') {
+      const element = document.getElementById(sectionId);
+      if (element) {
+        element.scrollIntoView({ behavior: 'smooth' });
+      }
+    } else {
+      navigate('/', { state: { scrollTo: sectionId } });
+    }
+  };
+
   return (
     <div>
       <header className="bg-white shadow-lg sticky top-0 z-50">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center py-4">
-            {/* Logo - Click to go to appropriate home */}
             <Link 
               to={getHomePath()} 
               className="flex items-center hover:opacity-80 transition-opacity"
@@ -62,21 +73,32 @@ const Navbar = () => {
               <span className="ml-3 text-2xl font-bold text-gray-900">GenCare Center</span>
             </Link>
 
-            {/* Navigation Menu */}
             <nav className="hidden md:flex space-x-8">
-              {/* Navigation links cho tất cả người dùng */}
               <Link to="/blog" className="text-gray-700 hover:text-blue-600 transition-colors">Blog</Link>
               
-              {/* Chỉ hiển thị navigation links cho user bình thường */}
               {(!isLoggedIn || userRole === 'user') && (
                 <>
-                  <a href="#about" className="text-gray-700 hover:text-blue-600 transition-colors">Về chúng tôi</a>
-                  <a href="#services" className="text-gray-700 hover:text-blue-600 transition-colors">Dịch vụ</a>
-                  <a href="#contact" className="text-gray-700 hover:text-blue-600 transition-colors">Liên hệ</a>
+                  <button 
+                    onClick={() => handleSectionClick('about')} 
+                    className="text-gray-700 hover:text-blue-600 transition-colors bg-transparent border-none cursor-pointer p-0 m-0 font-normal"
+                  >
+                    Về chúng tôi
+                  </button>
+                  <button 
+                    onClick={() => handleSectionClick('services')} 
+                    className="text-gray-700 hover:text-blue-600 transition-colors bg-transparent border-none cursor-pointer p-0 m-0 font-normal"
+                  >
+                    Dịch vụ
+                  </button>
+                  <button 
+                    onClick={() => handleSectionClick('contact')} 
+                    className="text-gray-700 hover:text-blue-600 transition-colors bg-transparent border-none cursor-pointer p-0 m-0 font-normal"
+                  >
+                    Liên hệ
+                  </button>
                 </>
               )}
               
-              {/* Dashboard Links for staff */}
               {isLoggedIn && userRole === 'doctor' && (
                 <span className="text-gray-700 font-medium">
                   Bảng điều khiển Bác sĩ
@@ -89,21 +111,17 @@ const Navbar = () => {
               )}
             </nav>
 
-            {/* Auth Buttons */}
             <div className="flex items-center space-x-4">
               {isLoggedIn ? (
                 <div className="flex items-center space-x-4">
-                  {/* Only show NotificationBell for regular users, not doctors or managers */}
                   {(!userRole || userRole === 'user') && <NotificationBell />}
                   
-                  {/* Avatar Dropdown */}
                   <div className="relative">
                     <button
                       onClick={() => setShowDropdown(!showDropdown)}
                       onBlur={() => setTimeout(() => setShowDropdown(false), 150)}
                       className="flex items-center space-x-2 p-2 rounded-lg hover:bg-gray-100 transition-colors focus:outline-none"
                     >
-                      {/* Avatar */}
                       <div className="w-8 h-8 bg-gradient-to-r from-blue-600 to-pink-600 rounded-full flex items-center justify-center">
                         <span className="text-white font-semibold text-sm">
                           {userName.charAt(0).toUpperCase()}
@@ -120,7 +138,6 @@ const Navbar = () => {
                       </svg>
                     </button>
 
-                    {/* Dropdown Menu */}
                     {showDropdown && (
                       <div className="absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-lg border border-gray-200 py-2 z-50">
                         <div className="px-4 py-2 border-b border-gray-100">
@@ -162,7 +179,6 @@ const Navbar = () => {
                         <button
                           onClick={async () => {
                             try {
-                              // Use authUtils to clear all data consistently
                               api.authUtils.logout();
                               setIsLoggedIn(false);
                               setUserRole(null);
@@ -170,14 +186,11 @@ const Navbar = () => {
                               setUserType('');
                               setShowDropdown(false);
                               
-                              // Call logout API
                               await api.logoutUser();
                               
-                              // Redirect to home
                               window.location.href = '/';
                             } catch (error) {
                               console.error('Logout failed:', error);
-                              // Still logout locally even if API fails
                               window.location.href = '/';
                             }
                           }}
