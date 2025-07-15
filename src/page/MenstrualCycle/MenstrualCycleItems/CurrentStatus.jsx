@@ -54,13 +54,13 @@ function CurrentStatus({ predictions, currentPhase }) {
 
       {predictions.nextPeriod && (
         <div className={cx("status-grid")}>
-          <div className={cx("status-item")}>
+          <div className={cx("status-item", "fertility")}>
             <h4>Kì kinh nguyệt tiếp theo</h4>
             <p className={cx("date")}>{formatDate(predictions.nextPeriod)}</p>
             <p className={cx("days")}>{getDaysUntil(predictions.nextPeriod)}</p>
           </div>
 
-          <div className={cx("status-item")}>
+          <div className={cx("status-egg")}>
             <h4>Ngày rụng trứng dự kiến</h4>
             <p className={cx("date")}>
               {formatDate(predictions.ovulationDate)}
@@ -70,7 +70,7 @@ function CurrentStatus({ predictions, currentPhase }) {
             </p>
           </div>
 
-          <div className={cx("status-item", "fertility")}>
+          <div className={cx("status-fertility")}>
             <h4>Khoảng thời gian thụ thai được ước tính</h4>
             <p className={cx("date")}>
               {formatDate(predictions.fertilityWindow.start)} -{" "}

@@ -422,6 +422,90 @@
   gap: 24px;
 }
 
+.status-egg {
+  padding: 24px;
+  background: linear-gradient(135deg, oklab(98.678% -0.00176 0.0021) 0%, #FFFF00 100%);
+  border-radius: 16px;
+  text-align: center;
+  border-left: 6px solid #FFFF00;
+  transition: all 0.3s ease;
+  position: relative;
+
+  &:hover {
+    transform: scale(1.02);
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.1);
+  }
+
+  &.fertility {
+    border-left-color: #e74c3c;
+    background: linear-gradient(135deg, #ccd38a 0%, #d4e026 100%);
+  }
+
+  h4 {
+    margin: 0 0 16px 0;
+    color: #2c3e50;
+    font-size: 1rem;
+    font-weight: 600;
+  }
+
+  .date {
+    font-size: 1.2rem;
+    font-weight: 700;
+    color: #34495e;
+    margin: 12px 0;
+  }
+
+  .days {
+    color: #7f8c8d;
+    font-size: 0.9rem;
+    margin: 0;
+    font-style: italic;
+  }
+}
+
+.status-fertility {
+  padding: 24px;
+  background: linear-gradient(135deg, #d0dae3 0%, #8cbae9 100%);
+  border-radius: 16px;
+  text-align: center;
+  border-left: 6px solid #2d77a8;
+  transition: all 0.3s ease;
+  position: relative;
+
+  &:hover {
+    transform: scale(1.02);
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.1);
+  }
+
+  &.fertility {
+    border-left-color: #e74c3c;
+    background: linear-gradient(135deg, #fff5f5 0%, #ffe6e6 100%);
+  }
+
+  h4 {
+    margin: 0 0 16px 0;
+    color: #2c3e50;
+    font-size: 1rem;
+    font-weight: 600;
+  }
+
+  .date {
+    font-size: 1.2rem;
+    font-weight: 700;
+    color: #34495e;
+    margin: 12px 0;
+  }
+
+  .days {
+    color: #7f8c8d;
+    font-size: 0.9rem;
+    margin: 0;
+    font-style: italic;
+  }
+}
+
+
+
 .status-item {
   padding: 24px;
   background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
