@@ -18,6 +18,21 @@ export const usePaymentProcessing = ({
   const [paymentProcessing, setPaymentProcessing] = useState(false);
   const [webhookStatus, setWebhookStatus] = useState(null);
 
+  // Hàm format thời gian từ "13:30 - 14:00" thành "13:30:00"
+  const formatExamTime = (timeSlot) => {
+    if (!timeSlot) return "";
+    
+    // Tách lấy phần thời gian bắt đầu (trước dấu " - ")
+    const startTime = timeSlot.split(" - ")[0];
+    
+    // Thêm :00 nếu chưa có giây
+    if (startTime.split(":").length === 2) {
+      return `${startTime}:00`;
+    }
+    
+    return startTime;
+  };
+
   // Hàm xử lý thanh toán
   const processPayment = async () => {
     setLoading(true);
@@ -45,6 +60,7 @@ export const usePaymentProcessing = ({
 
       const totalAmount = calculateTotalAmount();
       const paymentMethod = "cash";
+      const formattedExamTime = formatExamTime(selectedTimeSlot);
 
       localStorage.setItem(
         "currentPaymentSession",
@@ -58,7 +74,7 @@ export const usePaymentProcessing = ({
           appointmentData: {
             user_id: userInfo.user_id,
             appointment_date: format(selectedDate, "yyyy-MM-dd"),
-            appointment_time: selectedTimeSlot,
+            appointment_time: formattedExamTime,
             services: selectedServices,
             medical_history: medicalHistory,
             price_apm: Math.floor(totalAmount),
@@ -74,7 +90,7 @@ export const usePaymentProcessing = ({
           serviceData: serviceId,
           payment_method: paymentMethod,
           exam_date: format(selectedDate, "yyyy-MM-dd"),
-          exam_time: selectedTimeSlot,
+          exam_time: formattedExamTime,
         },
       };
 
