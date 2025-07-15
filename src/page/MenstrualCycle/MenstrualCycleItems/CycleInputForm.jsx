@@ -313,7 +313,6 @@ function CycleInputForm({ cycleData, onDataChange, onSaveSuccess }) {
       }
 
       const result = await menstrualService.updateCycleData(saveData);
-      console.log("Save result:", result); // Debug log
 
       // Simplified success handling
       alert("✅ Đã lưu thông tin chu kỳ thành công!");

@@ -38,15 +38,27 @@ function MenstrualCycle() {
       const existingData = await menstrualService.getCycleData();
 
       if (existingData) {
-        // Có dữ liệu cũ, sử dụng nó
+        // API trả về cycle data
+
+        // Format ngày từ ISO string sang YYYY-MM-DD
+        let formattedDate = "";
+        if (existingData.lastPeriodDate) {
+          const date = new Date(existingData.lastPeriodDate);
+          formattedDate = date.toISOString().split("T")[0];
+        }
+
         setCycleData({
-          lastPeriodDate: existingData.lastPeriodDate || "",
-          cycleLength: String(existingData.cycleLength || ""),
-          periodLength: String(existingData.periodLength || ""),
+          lastPeriodDate: formattedDate,
+          cycleLength: existingData.cycleLength
+            ? String(existingData.cycleLength)
+            : "",
+          periodLength: existingData.periodLength
+            ? String(existingData.periodLength)
+            : "",
           birthControlTime: existingData.pillTime || "",
         });
       } else {
-        // Không có dữ liệu cũ, set dữ liệu trống
+        // Không có dữ liệu, set dữ liệu trống
         setCycleData({
           lastPeriodDate: "",
           cycleLength: "",
