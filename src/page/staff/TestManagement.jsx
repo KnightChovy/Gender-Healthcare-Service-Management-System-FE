@@ -514,13 +514,15 @@ export const TestManagement = () => {
 
       console.log("Test results to save:", testResultsToSave);
 
-      const response = await axiosClient.post('/v1/staff/save-test-results', {
+      const data = {
         order_id: selectedOrder.order_id,
         test_results: testResultsToSave
-      }, {
+      }
+
+      console.log("Dữ liệu gửi xuống: ", data);
+      const response = await axiosClient.post('/v1/test-results/create-testResult', data, {
         headers: {
           'x-access-token': accessToken,
-          'Content-Type': 'application/json'
         }
       });
 

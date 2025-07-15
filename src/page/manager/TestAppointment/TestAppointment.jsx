@@ -38,12 +38,34 @@ export const TestAppointment = () => {
       });
 
       if (response.data?.status === 'success' && response.data?.data?.orders) {
-        console.log('Fetched test appointments:', response.data.data.orders);
         // Transform API data to component format
         const transformedData = response.data.data.orders.map((item) => {
           const order = item.order;
           const services = item.services;
-          
+          const details = item.details || [];
+
+          // Gắn exam_date, exam_time vào từng service
+          const servicesWithDetails = services.map(service => {
+            // Tìm detail tương ứng với service_id
+            const detail = details.find(d => d.service.service_id === service.service_id);
+            return {
+              ...service,
+              exam_date: detail?.exam_date ?? null,
+              exam_time: detail?.exam_time ?? null,
+              // Có thể bổ sung các trường khác của detail nếu muốn
+              order_detail_id: detail?.order_detail_id ?? null,
+              detail_description: detail?.service?.description ?? service.description,
+              result_wait_time: detail?.service?.result_wait_time ?? service.result_wait_time,
+            };
+          });
+
+          // Nếu muốn tổng hợp ngày/giờ xét nghiệm chung (nếu chỉ có 1 dịch vụ)
+          let test_date = null, test_time = null;
+          if (details.length === 1) {
+            test_date = details[0].exam_date;
+            test_time = details[0].exam_time;
+          }
+
           return {
             id: order.order_id,
             order_id: order.order_id,
@@ -52,16 +74,16 @@ export const TestAppointment = () => {
             user_phone: order.user.phone,
             user_email: order.user.email,
             test_type: services.map(service => service.name).join(', '),
-            services: services,
+            services: servicesWithDetails, // sử dụng service đã gắn detail
             total_amount: order.total_amount,
             order_type: order.order_type,
             payment_method: order.payment_method,
             status: mapOrderStatusToTestStatus(order.order_status),
             original_status: order.order_status,
             created_at: order.created_at,
-            // Default values for test-specific fields
-            test_date: null,
-            test_time: null,
+            // Thông tin test cụ thể (nếu muốn show ngoài bảng)
+            test_date,
+            test_time,
             notes: null,
             result_summary: null,
             detailed_results: null,
@@ -86,7 +108,7 @@ export const TestAppointment = () => {
   const mapOrderStatusToTestStatus = (orderStatus) => {
     const statusMap = {
       'pending': 'pending',
-      'paid': 'paid', 
+      'paid': 'paid',
       'completed': 'completed',
       'cancelled': 'cancelled'
     };
@@ -157,11 +179,11 @@ export const TestAppointment = () => {
   // Filter appointments based on filters
   const filteredAppointments = testAppointments.filter(appointment => {
     const matchesStatus = filters.status === 'all' || appointment.status === filters.status;
-    const matchesSearch = filters.searchTerm === '' || 
+    const matchesSearch = filters.searchTerm === '' ||
       appointment.user_name.toLowerCase().includes(filters.searchTerm.toLowerCase()) ||
       appointment.order_id.toLowerCase().includes(filters.searchTerm.toLowerCase()) ||
       appointment.test_type.toLowerCase().includes(filters.searchTerm.toLowerCase());
-    
+
     return matchesStatus && matchesSearch;
   });
 
@@ -228,7 +250,7 @@ export const TestAppointment = () => {
             </button>
           </div>
         </div>
-        
+
         <div className={cx('stats-grid')}>
           <div className={cx('stat-card', 'total')}>
             <div className={cx('stat-icon')}>
@@ -239,7 +261,7 @@ export const TestAppointment = () => {
               <span className={cx('stat-label')}>Tổng đơn hàng</span>
             </div>
           </div>
-          
+
           <div className={cx('stat-card', 'pending')}>
             <div className={cx('stat-icon')}>
               <FontAwesomeIcon icon={faHourglassHalf} />
@@ -249,7 +271,7 @@ export const TestAppointment = () => {
               <span className={cx('stat-label')}>Chờ xử lý</span>
             </div>
           </div>
-          
+
           <div className={cx('stat-card', 'progress')}>
             <div className={cx('stat-icon')}>
               <FontAwesomeIcon icon={faFlaskVial} />
@@ -259,7 +281,7 @@ export const TestAppointment = () => {
               <span className={cx('stat-label')}>Đã thanh toán, chờ xét nghiệm</span>
             </div>
           </div>
-          
+
           <div className={cx('stat-card', 'completed')}>
             <div className={cx('stat-icon')}>
               <FontAwesomeIcon icon={faCheckCircle} />
@@ -269,7 +291,7 @@ export const TestAppointment = () => {
               <span className={cx('stat-label')}>Hoàn thành</span>
             </div>
           </div>
-          
+
           <div className={cx('stat-card', 'revenue')}>
             <div className={cx('stat-icon')}>💰</div>
             <div className={cx('stat-content')}>
@@ -293,7 +315,7 @@ export const TestAppointment = () => {
               className={cx('search-input')}
             />
           </div>
-          
+
           <div className={cx('filter-group')}>
             <label>Trạng thái:</label>
             <select
@@ -309,7 +331,7 @@ export const TestAppointment = () => {
             </select>
           </div>
         </div>
-        
+
         <div className={cx('filter-summary')}>
           Hiển thị {filteredAppointments.length} / {testAppointments.length} đơn hàng
         </div>
@@ -336,7 +358,7 @@ export const TestAppointment = () => {
               {filteredAppointments.length === 0 ? (
                 <tr>
                   <td colSpan="9" className={cx('no-data')}>
-                    {filters.searchTerm || filters.status !== 'all' 
+                    {filters.searchTerm || filters.status !== 'all'
                       ? 'Không tìm thấy đơn hàng phù hợp với bộ lọc'
                       : 'Không có đơn hàng xét nghiệm nào'
                     }
@@ -358,8 +380,8 @@ export const TestAppointment = () => {
 
                       {/* Status */}
                       <td className={cx('status-cell')}>
-                        <span 
-                          className={cx('status-badge')} 
+                        <span
+                          className={cx('status-badge')}
                           style={{
                             backgroundColor: statusInfo.bgColor,
                             color: statusInfo.textColor
@@ -467,10 +489,10 @@ export const TestAppointment = () => {
               {/* Status Overview */}
               <div className={cx('status-overview')}>
                 <div className={cx('status-card')}>
-                  <FontAwesomeIcon 
-                    icon={getStatusInfo(selectedAppointment.status).icon} 
+                  <FontAwesomeIcon
+                    icon={getStatusInfo(selectedAppointment.status).icon}
                     className={cx('status-icon')}
-                    style={{color: getStatusInfo(selectedAppointment.status).bgColor}}
+                    style={{ color: getStatusInfo(selectedAppointment.status).bgColor }}
                   />
                   <div className={cx('status-info')}>
                     <h4>Trạng thái hiện tại</h4>
@@ -549,7 +571,18 @@ export const TestAppointment = () => {
                         </div>
                       </div>
                       <div className={cx('service-description')}>
-                        {service.description}
+                        {service.detail_description}
+                      </div>
+                      <div className={cx('service-test-info')}>
+                        <div>
+                          <strong>Ngày xét nghiệm:</strong> {service.exam_date ? formatDate(service.exam_date) : 'Chưa xác định'}
+                        </div>
+                        <div>
+                          <strong>Giờ xét nghiệm:</strong> {service.exam_time ?? 'Chưa xác định'}
+                        </div>
+                        <div>
+                          <strong>Thời gian trả kết quả:</strong> {service.result_wait_time ?? 'Không rõ'}
+                        </div>
                       </div>
                     </div>
                   ))}
@@ -568,7 +601,7 @@ export const TestAppointment = () => {
                     {selectedAppointment.detailed_results && (
                       <div className={cx('result-item')}>
                         <strong>Chi tiết kết quả:</strong>
-                        <p className={cx('result-text')} style={{whiteSpace: 'pre-line'}}>
+                        <p className={cx('result-text')} style={{ whiteSpace: 'pre-line' }}>
                           {selectedAppointment.detailed_results}
                         </p>
                       </div>
@@ -592,14 +625,14 @@ export const TestAppointment = () => {
             </div>
 
             <div className={cx('modal-footer')}>
-              <button 
-                className={cx('close-modal-btn')} 
+              <button
+                className={cx('close-modal-btn')}
                 onClick={() => setShowModal(false)}
               >
                 Đóng
               </button>
               {selectedAppointment.result_file && (
-                <button 
+                <button
                   className={cx('download-result-btn')}
                   onClick={() => window.open(selectedAppointment.result_file, '_blank')}
                 >
