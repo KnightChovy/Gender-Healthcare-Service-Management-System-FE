@@ -7,6 +7,7 @@ import Register from "./page/Register";
 import ForgetPassword from "./page/ForgetPassword";
 import LayoutAdmin from "./components/Layouts/LayoutAdmin/LayoutAdmin";
 import Blog from "./page/blog/Blog";
+import BlogDetail from "./page/blog/BlogDetail";
 import Appointment from "./page/Appointment";
 import PaymentAppointment from "./page/Payment/PaymentAppointment";
 import PaymentSuccess from "./page/Payment/PaymentSuccess";
@@ -107,6 +108,14 @@ function App() {
           element={
             <LayoutAccount>
               <Blog />
+            </LayoutAccount>
+          }
+        ></Route>
+        <Route
+          path="/blog/:id"
+          element={
+            <LayoutAccount>
+              <BlogDetail />
             </LayoutAccount>
           }
         ></Route>
@@ -257,10 +266,9 @@ function App() {
             element={<TestAppointment />}
           />
         </Route>
-        
         {/* Staff */}
-        <Route 
-          path="/staff" 
+        <Route
+          path="/staff"
           element={
             <StaffRoute>
               <LayoutStaff />
