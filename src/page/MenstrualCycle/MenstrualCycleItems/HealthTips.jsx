@@ -81,29 +81,6 @@ function HealthTips({ currentPhase }) {
           </div>
         )}
 
-        <div className={cx("reminder-highlight")}>
-          <div className={cx("reminder-icon")}>💊</div>
-          <div className={cx("reminder-content")}>
-            <h4>Nhận gmail nhắc nhở uống thuốc?</h4>
-            <p>
-              Bạn có muốn nhận thông báo uống thuốc tránh thai hàng ngày không?
-            </p>
-            <div className={cx("opt-in-buttons")}>
-              <button
-                className={cx("opt-btn", { active: wantsReminder === true })}
-                onClick={() => setWantsReminder(true)}
-              >
-                ✅ Có
-              </button>
-              <button
-                className={cx("opt-btn", { active: wantsReminder === false })}
-                onClick={() => setWantsReminder(false)}
-              >
-                ❌ Không
-              </button>
-            </div>
-          </div>
-        </div>
       </div>
     </div>
   );
