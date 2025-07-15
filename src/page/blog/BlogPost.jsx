@@ -31,7 +31,8 @@ function BlogPost() {
             authorBio:
               "Bác sĩ chuyên khoa sản phụ khoa với hơn 15 năm kinh nghiệm.",
             date: "2025-05-15",
-            image: "https://placehold.co/1200x600/png?text=Post+1",
+            image:
+              "https://watermark.lovepik.com/photo/20211126/large/lovepik-youth-education-teachers-counseling-homework-picture_501115811.jpg",
             readTime: "8 phút đọc",
           },
           {
@@ -53,7 +54,8 @@ function BlogPost() {
             authorAvatar: "https://placehold.co/100x100/png",
             authorBio: "Chuyên gia dinh dưỡng, tốt nghiệp ĐH Y Hà Nội.",
             date: "2025-04-20",
-            image: "https://placehold.co/1200x600/png?text=Post+2",
+            image:
+              "https://cdn.nhathuoclongchau.com.vn/unsafe/https://cms-prod.s3-sgn09.fptcloud.com/cac_bien_phap_tranh_thai_an_toan_va_hieu_qua_ma_cac_cap_doi_can_biet_5_87e67eff32.jpg",
             readTime: "5 phút đọc",
           },
           {
@@ -76,7 +78,7 @@ function BlogPost() {
             authorBio:
               "Tiến sĩ tâm lý học, 10 năm nghiên cứu hành vi giới trẻ.",
             date: "2025-03-30",
-            image: "https://placehold.co/1200x600/png?text=Post+3",
+            image: "https://medlatec.vn/media/29903/file/benh-lau.jpg",
             readTime: "7 phút đọc",
           },
           {
@@ -98,7 +100,8 @@ function BlogPost() {
             authorAvatar: "https://placehold.co/100x100/png",
             authorBio: "Bác sĩ tâm thần học, công tác tại BV Tâm thần TW.",
             date: "2025-05-05",
-            image: "https://placehold.co/1200x600/png?text=Post+4",
+            image:
+              "https://sihospital.com.vn/wp-content/uploads/2023/08/tinh-ngay-rung-trung-01.png",
             readTime: "6 phút đọc",
           },
           {
@@ -120,7 +123,8 @@ function BlogPost() {
             authorAvatar: "https://placehold.co/100x100/png",
             authorBio: "Huấn luyện viên thể hình có chứng chỉ quốc tế.",
             date: "2025-04-10",
-            image: "https://placehold.co/1200x600/png?text=Post+5",
+            image:
+              "https://s7ap1.scene7.com/is/image/aia/cach-xay-dung-thoi-quen-tot-1?qlt=85&wid=1024&ts=1682650262128&dpr=off",
             readTime: "4 phút đọc",
           },
           {
@@ -150,7 +154,8 @@ function BlogPost() {
             authorAvatar: "https://placehold.co/100x100/png",
             authorBio: "Bác sĩ bệnh viện da liễu trung ương.",
             date: "2025-02-28",
-            image: "https://placehold.co/1200x600/png?text=Post+6",
+            image:
+              "https://suckhoedoisong.qltns.mediacdn.vn/324455921873985536/2024/8/8/edit-tuoi-day-thi-17231027212801213683997.pnghttps://placehold.co/1200x600/png?text=Post+6",
             readTime: "9 phút đọc",
           },
           {
@@ -172,7 +177,8 @@ function BlogPost() {
             authorAvatar: "https://placehold.co/100x100/png",
             authorBio: "Chuyên gia y tế dự phòng.",
             date: "2025-05-01",
-            image: "https://placehold.co/1200x600/png?text=Post+7",
+            image:
+              "https://aih.com.vn/storage/posts/70270ee93f6e785fbf10aea41cab6a3a.jpg",
             readTime: "5 phút đọc",
           },
           {
@@ -194,7 +200,8 @@ function BlogPost() {
             authorAvatar: "https://placehold.co/100x100/png",
             authorBio: "Chuyên gia tư vấn nam khoa.",
             date: "2025-03-15",
-            image: "https://placehold.co/1200x600/png?text=Post+8",
+            image:
+              "https://production-cdn.pharmacity.io/digital/original/plain/blog/efd86b0a2a8a00599ccb2078c54662931741536822.jpg?X-Amz-Content-Sha256=UNSIGNED-PAYLOAD&X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=AKIAUYXZVMJM5QUYWSVO%2F20250502%2Fap-southeast-1%2Fs3%2Faws4_request&X-Amz-Date=20250502T025309Z&X-Amz-SignedHeaders=host&X-Amz-Expires=600&X-Amz-Signature=3535ac24ba6479736a0857bdccc83b1f75353cd706bb646bcc34d2b3a9ff51e3",
             readTime: "6 phút đọc",
           },
           {
@@ -216,7 +223,8 @@ function BlogPost() {
             authorAvatar: "https://placehold.co/100x100/png",
             authorBio: "Tiến sĩ môi trường và sức khỏe cộng đồng.",
             date: "2025-04-25",
-            image: "https://placehold.co/1200x600/png?text=Post+9",
+            image:
+              "https://trungtamthuoc.com/images/news/vaccine-hpv-phong-ngua-ung-thu-co-tu-cung-0111.jpg",
             readTime: "7 phút đọc",
           },
         ];

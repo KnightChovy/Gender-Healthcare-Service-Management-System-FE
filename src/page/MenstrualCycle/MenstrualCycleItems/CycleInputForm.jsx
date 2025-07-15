@@ -1,12 +1,12 @@
 import React from "react";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import classNames from "classnames/bind";
 import styles from "../MenstrualCycle.module.scss";
 import menstrualService from "../../../services/menstrual.service";
 
 const cx = classNames.bind(styles);
 
-function CycleInputForm({ cycleData, onDataChange }) {
+function CycleInputForm({ cycleData, onDataChange, onSaveSuccess }) {
   const [timer, setTimer] = useState(null);
   const [isTimerActive, setIsTimerActive] = useState(false);
   const [selectedDays, setSelectedDays] = useState([]);
@@ -24,18 +24,37 @@ function CycleInputForm({ cycleData, onDataChange }) {
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
+    console.log(`Input changed: ${name} = ${value}`); // Debug log
 
     // Validate ngày đầu kỳ kinh nguyệt
     if (name === "lastPeriodDate") {
-      const selectedDate = new Date(value);
-      const today = new Date();
-      today.setHours(23, 59, 59, 999); // Đặt về cuối ngày hôm nay
+      if (value) {
+        // Chỉ validate khi có giá trị
+        const selectedDate = new Date(value);
+        const today = new Date();
+        today.setHours(23, 59, 59, 999); // Đặt về cuối ngày hôm nay
 
-      if (selectedDate > today) {
-        alert(
-          "⚠️ Không thể chọn ngày trong tương lai!\nVui lòng chọn ngày hôm nay hoặc trước đó."
-        );
-        return; // Không cập nhật state nếu ngày không hợp lệ
+        if (selectedDate > today) {
+          alert(
+            "⚠️ Không thể chọn ngày trong tương lai!\nVui lòng chọn ngày hôm nay hoặc trước đó."
+          );
+          return; // Không cập nhật state nếu ngày không hợp lệ
+        }
+      }
+    }
+
+    // Validate số với giá trị min/max
+    if (name === "cycleLength") {
+      if (value && (parseInt(value) < 21 || parseInt(value) > 35)) {
+        // Cho phép nhập nhưng hiển thị cảnh báo
+        console.warn("Chu kỳ nên từ 21-35 ngày");
+      }
+    }
+
+    if (name === "periodLength") {
+      if (value && (parseInt(value) < 3 || parseInt(value) > 8)) {
+        // Cho phép nhập nhưng hiển thị cảnh báo
+        console.warn("Số ngày kinh nguyệt nên từ 3-8 ngày");
       }
     }
 
@@ -73,7 +92,7 @@ function CycleInputForm({ cycleData, onDataChange }) {
   };
 
   const setReminder = () => {
-    if (!cycleData.birthControlTime) {
+    if (!cycleData?.birthControlTime) {
       alert("⚠️ Vui lòng chọn thời gian uống thuốc trước!");
       return;
     }
@@ -96,6 +115,8 @@ function CycleInputForm({ cycleData, onDataChange }) {
   };
 
   const setupMultipleReminders = () => {
+    if (!cycleData?.birthControlTime) return;
+
     const [hours, minutes] = cycleData.birthControlTime.split(":");
     const now = new Date();
     let nextReminderTime = null;
@@ -160,24 +181,80 @@ function CycleInputForm({ cycleData, onDataChange }) {
     };
     return dayMap[dayIndex];
   };
+  const sendAllEmail = async () => {
+    try {
+      const result = await menstrualService.sendAllEmail();
+      console.log("Email sent successfully:", result);
+    } catch (error) {
+      console.error("Error sending email reminders:", error);
+    }
+  };
 
   const handleConfirmSave = async () => {
-    try {
-      setIsSaving(true);
+    if (isSaving) return; // Prevent double submission
 
-      // Kiểm tra dữ liệu hợp lệ
-      if (!cycleData.lastPeriodDate) {
-        alert("⚠️ Vui lòng chọn ngày đầu kì kinh nguyệt gần nhất!");
+    setIsSaving(true);
+    console.log("=== STARTING SAVE PROCESS ===");
+    console.log("Current cycleData:", cycleData);
+
+    try {
+      // Check authentication first
+      const accessToken = localStorage.getItem("accessToken");
+      console.log("Access token exists:", !!accessToken);
+      if (!accessToken) {
+        alert("❌ Bạn cần đăng nhập để lưu dữ liệu!");
+        setIsSaving(false); // Reset saving state
         return;
       }
+
+      // Kiểm tra dữ liệu hợp lệ
+      if (
+        !cycleData?.lastPeriodDate ||
+        cycleData.lastPeriodDate.trim() === ""
+      ) {
+        alert("⚠️ Vui lòng chọn ngày đầu kì kinh nguyệt gần nhất!");
+        setIsSaving(false); // Reset saving state
+        return;
+      }
+
+      if (
+        !cycleData?.cycleLength ||
+        cycleData.cycleLength === "" ||
+        isNaN(cycleData.cycleLength)
+      ) {
+        alert("⚠️ Vui lòng nhập độ dài chu kì hợp lệ!");
+        setIsSaving(false); // Reset saving state
+        return;
+      }
+
+      if (
+        !cycleData?.periodLength ||
+        cycleData.periodLength === "" ||
+        isNaN(cycleData.periodLength)
+      ) {
+        alert("⚠️ Vui lòng nhập số ngày kinh nguyệt hợp lệ!");
+        setIsSaving(false); // Reset saving state
+        return;
+      }
+
+      // Convert to numbers
+      const cycleLength = parseInt(cycleData.cycleLength);
+      const periodLength = parseInt(cycleData.periodLength);
 
       // Validate ngày không được là tương lai
       const selectedDate = new Date(cycleData.lastPeriodDate);
       const today = new Date();
       today.setHours(23, 59, 59, 999);
 
+      if (isNaN(selectedDate.getTime())) {
+        alert("⚠️ Ngày đầu kỳ kinh nguyệt không hợp lệ!");
+        setIsSaving(false); // Reset saving state
+        return;
+      }
+
       if (selectedDate > today) {
         alert("⚠️ Ngày đầu kỳ kinh nguyệt không thể là ngày trong tương lai!");
+        setIsSaving(false); // Reset saving state
         return;
       }
 
@@ -189,24 +266,21 @@ function CycleInputForm({ cycleData, onDataChange }) {
         const confirmOldDate = window.confirm(
           "⚠️ Ngày bạn chọn đã lâu hơn 6 tháng.\nDữ liệu dự đoán có thể không chính xác.\n\nBạn có muốn tiếp tục không?"
         );
-        if (!confirmOldDate) return;
+        if (!confirmOldDate) {
+          setIsSaving(false); // Reset saving state
+          return;
+        }
       }
 
-      if (
-        !cycleData.cycleLength ||
-        cycleData.cycleLength < 21 ||
-        cycleData.cycleLength > 35
-      ) {
+      if (cycleLength < 21 || cycleLength > 35) {
         alert("⚠️ Độ dài chu kì phải từ 21–35 ngày!");
+        setIsSaving(false); // Reset saving state
         return;
       }
 
-      if (
-        !cycleData.periodLength ||
-        cycleData.periodLength < 3 ||
-        cycleData.periodLength > 8
-      ) {
+      if (periodLength < 3 || periodLength > 8) {
         alert("⚠️ Số ngày kinh nguyệt phải từ 3–8 ngày!");
+        setIsSaving(false); // Reset saving state
         return;
       }
 
@@ -217,23 +291,81 @@ function CycleInputForm({ cycleData, onDataChange }) {
         `📅 Ngày bắt đầu: ${new Date(
           cycleData.lastPeriodDate
         ).toLocaleDateString("vi-VN")}`,
-        `🔄 Chu kỳ dài: ${cycleData.cycleLength} ngày`,
-        `📊 Số ngày hành kinh: ${cycleData.periodLength} ngày`,
+        `🔄 Chu kỳ dài: ${cycleLength} ngày`,
+        `📊 Số ngày hành kinh: ${periodLength} ngày`,
         "",
         "✅ Bạn có muốn lưu thông tin này không?",
       ].join("\n");
 
-      const isConfirmed = window.confirm(confirmText);
-      if (!isConfirmed) return;
+      const confirmSave = window.confirm(confirmText);
+      if (!confirmSave) {
+        setIsSaving(false); // Reset saving state
+        return;
+      }
 
-      // Gọi API lưu lại
-      await menstrualService.updateCycleData(cycleData);
+      // Gọi API để lưu dữ liệu
+      const saveData = {
+        lastPeriodDate: cycleData.lastPeriodDate,
+        cycleLength: cycleLength,
+        periodLength: periodLength,
+        pillTime: cycleData.birthControlTime || "", // Changed from birthControlTime to pillTime
+      };
 
-      // Hiển thị alert thành công ngắn gọn
-      alert("✅ Đã lưu thành công!\nDự đoán chu kỳ sẽ được cập nhật.");
+      // Validate data format before sending
+      if (
+        !saveData.lastPeriodDate ||
+        !saveData.cycleLength ||
+        !saveData.periodLength
+      ) {
+        throw new Error("Missing required fields in saveData");
+      }
+
+      const result = await menstrualService.updateCycleData(saveData);
+
+      // Simplified success handling
+      alert("✅ Đã lưu thông tin chu kỳ thành công!");
+
+      // Call the refresh callback if provided
+      if (onSaveSuccess) {
+        onSaveSuccess();
+      }
     } catch (error) {
       console.error("Error saving cycle data:", error);
-      alert("❌ Có lỗi xảy ra khi lưu thông tin!\nVui lòng thử lại sau.");
+
+      // Detailed error logging
+      if (error.response) {
+        // Handle specific error codes
+        switch (error.response.status) {
+          case 401:
+            alert("❌ Phiên đăng nhập đã hết hạn. Vui lòng đăng nhập lại!");
+            break;
+          case 400:
+            const errorMsg =
+              error.response.data?.message || "Dữ liệu không hợp lệ";
+            alert(`❌ Lỗi dữ liệu: ${errorMsg}`);
+            break;
+          case 403:
+            alert("❌ Bạn không có quyền thực hiện thao tác này!");
+            break;
+          case 500:
+            alert("❌ Lỗi server. Vui lòng thử lại sau!");
+            break;
+          default:
+            alert(
+              `❌ Lỗi từ server (${error.response.status}): ${
+                error.response.data?.message || "Không xác định"
+              }`
+            );
+        }
+      } else if (error.request) {
+        console.error("No response received:", error.request);
+        alert(
+          "❌ Không thể kết nối đến server. Vui lòng kiểm tra kết nối mạng!"
+        );
+      } else {
+        console.error("Error:", error.message);
+        alert(`❌ Có lỗi xảy ra: ${error.message}`);
+      }
     } finally {
       setIsSaving(false);
     }
@@ -245,6 +377,15 @@ function CycleInputForm({ cycleData, onDataChange }) {
     return today.toISOString().split("T")[0];
   };
 
+  // Cleanup timer on unmount
+  useEffect(() => {
+    return () => {
+      if (timer) {
+        clearTimeout(timer);
+      }
+    };
+  }, [timer]);
+
   return (
     <div className={cx("input-section", "col-span-1")}>
       <h2>Thông tin chu kì</h2>
@@ -254,9 +395,9 @@ function CycleInputForm({ cycleData, onDataChange }) {
         <input
           type="date"
           name="lastPeriodDate"
-          value={cycleData.lastPeriodDate}
+          value={cycleData?.lastPeriodDate || ""}
           onChange={handleInputChange}
-          max={getTodayString()} // Thêm thuộc tính max để ngăn chọn ngày tương lai
+          max={getTodayString()}
           style={{ width: "100%" }}
         />
         <small
@@ -267,7 +408,7 @@ function CycleInputForm({ cycleData, onDataChange }) {
             display: "block",
           }}
         >
-          * Không thể chọn ngày trong tương lai
+          * Chọn ngày bắt đầu chu kỳ kinh nguyệt gần nhất
         </small>
       </div>
 
@@ -276,12 +417,23 @@ function CycleInputForm({ cycleData, onDataChange }) {
         <input
           type="number"
           name="cycleLength"
-          value={cycleData.cycleLength}
+          value={cycleData?.cycleLength || ""}
           onChange={handleInputChange}
           min="21"
           max="35"
           style={{ width: "100%" }}
+          placeholder="Nhập số từ 21-35"
         />
+        <small
+          style={{
+            color: "#666",
+            fontSize: "0.8rem",
+            marginTop: "4px",
+            display: "block",
+          }}
+        >
+          * Nhập độ dài chu kỳ kinh nguyệt (21-35 ngày)
+        </small>
       </div>
 
       <div className={cx("form-group")} style={{ display: "block" }}>
@@ -289,18 +441,32 @@ function CycleInputForm({ cycleData, onDataChange }) {
         <input
           type="number"
           name="periodLength"
-          value={cycleData.periodLength}
+          value={cycleData?.periodLength || ""}
           onChange={handleInputChange}
           min="3"
           max="8"
           style={{ width: "100%" }}
+          placeholder="Nhập số từ 3-8"
         />
+        <small
+          style={{
+            color: "#666",
+            fontSize: "0.8rem",
+            marginTop: "4px",
+            display: "block",
+          }}
+        >
+          * Nhập số ngày hành kinh (3-8 ngày)
+        </small>
       </div>
 
       <div className={cx("form-group")}>
         <button
           className={cx("confirm-btn")}
-          onClick={handleConfirmSave}
+          onClick={() => {
+            handleConfirmSave();
+            // sendAllEmail();
+          }}
           disabled={isSaving}
         >
           {isSaving ? "⏳ Đang lưu..." : "💾 Xác nhận lưu thông tin chu kì"}
@@ -313,7 +479,7 @@ function CycleInputForm({ cycleData, onDataChange }) {
           <input
             type="time"
             name="birthControlTime"
-            value={cycleData.birthControlTime}
+            value={cycleData?.birthControlTime || ""}
             onChange={handleInputChange}
             min="06:00"
             max="23:00"
@@ -438,7 +604,7 @@ function CycleInputForm({ cycleData, onDataChange }) {
             className={cx("reminder-btn", { active: isTimerActive })}
             onClick={setReminder}
             title={isTimerActive ? "Hủy hẹn giờ" : "Đặt hẹn giờ"}
-            disabled={!cycleData.birthControlTime || selectedDays.length === 0}
+            disabled={!cycleData?.birthControlTime || selectedDays.length === 0}
           >
             {isTimerActive ? "🔕 Hủy hẹn giờ" : "⏰ Đặt hẹn giờ"}
           </button>
