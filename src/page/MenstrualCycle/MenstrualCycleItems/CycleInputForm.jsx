@@ -181,6 +181,14 @@ function CycleInputForm({ cycleData, onDataChange, onSaveSuccess }) {
     };
     return dayMap[dayIndex];
   };
+  const sendAllEmail = async () => {
+    try {
+      const result = await menstrualService.sendAllEmail();
+      console.log("Email sent successfully:", result);
+    } catch (error) {
+      console.error("Error sending email reminders:", error);
+    }
+  };
 
   const handleConfirmSave = async () => {
     if (isSaving) return; // Prevent double submission
@@ -455,7 +463,10 @@ function CycleInputForm({ cycleData, onDataChange, onSaveSuccess }) {
       <div className={cx("form-group")}>
         <button
           className={cx("confirm-btn")}
-          onClick={handleConfirmSave}
+          onClick={() => {
+            handleConfirmSave();
+            // sendAllEmail();
+          }}
           disabled={isSaving}
         >
           {isSaving ? "⏳ Đang lưu..." : "💾 Xác nhận lưu thông tin chu kì"}

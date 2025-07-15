@@ -31,6 +31,25 @@ const menstrualService = {
       throw error;
     }
   },
+  sendAllEmail: async () => {
+    try {
+      const accessToken = localStorage.getItem("accessToken");
+      const result = await axiosClient.post(
+        `/v1/emails/send-all-pill-reminders`,
+        {},
+        {
+          headers: {
+            "x-access-token": accessToken,
+          },
+        }
+      );
+      console.log("data cycle:", result.data);
+      return result.data.data;
+    } catch (error) {
+      console.error("Error updating cycle data:", error);
+      throw error;
+    }
+  },
 };
 
 export default menstrualService;

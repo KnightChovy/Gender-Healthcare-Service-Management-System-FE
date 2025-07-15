@@ -52,7 +52,8 @@ function Blog() {
             category: "Giáo dục giới tính",
             author: "BS. Nguyễn Văn A",
             date: "2025-05-15",
-            image: "https://placehold.co/600x400/png",
+            image:
+              "https://watermark.lovepik.com/photo/20211126/large/lovepik-youth-education-teachers-counseling-homework-picture_501115811.jpg",
             featured: true,
           },
           {
@@ -63,7 +64,8 @@ function Blog() {
             category: "Sức khỏe sinh sản",
             author: "BS. Trần Thị B",
             date: "2025-05-10",
-            image: "https://placehold.co/600x400/png",
+            image:
+              "https://cdn.nhathuoclongchau.com.vn/unsafe/https://cms-prod.s3-sgn09.fptcloud.com/cac_bien_phap_tranh_thai_an_toan_va_hieu_qua_ma_cac_cap_doi_can_biet_5_87e67eff32.jpg",
             featured: true,
           },
           {
@@ -75,7 +77,7 @@ function Blog() {
             category: "STIs",
             author: "BS. Lê Văn C",
             date: "2025-05-05",
-            image: "https://placehold.co/600x400/png",
+            image: "https://medlatec.vn/media/29903/file/benh-lau.jpg",
             featured: false,
           },
           {
@@ -86,7 +88,8 @@ function Blog() {
             category: "Sức khỏe sinh sản",
             author: "BS. Phạm Thị D",
             date: "2025-04-28",
-            image: "https://placehold.co/600x400/png",
+            image:
+              "https://sihospital.com.vn/wp-content/uploads/2023/08/tinh-ngay-rung-trung-01.png",
             featured: false,
           },
           {
@@ -97,7 +100,8 @@ function Blog() {
             category: "Giáo dục giới tính",
             author: "ThS. Hoàng Văn E",
             date: "2025-04-20",
-            image: "https://placehold.co/600x400/png",
+            image:
+              "https://s7ap1.scene7.com/is/image/aia/cach-xay-dung-thoi-quen-tot-1?qlt=85&wid=1024&ts=1682650262128&dpr=off",
             featured: false,
           },
 
@@ -110,7 +114,8 @@ function Blog() {
             category: "Sức khỏe tinh thần",
             author: "TS. Phan Thị F",
             date: "2025-05-12",
-            image: "https://placehold.co/600x400/EEF/png",
+            image:
+              "https://suckhoedoisong.qltns.mediacdn.vn/324455921873985536/2024/8/8/edit-tuoi-day-thi-17231027212801213683997.png",
             featured: true,
           },
           {
@@ -121,7 +126,8 @@ function Blog() {
             category: "Nội tiết học",
             author: "PGS.TS. Trịnh Văn G",
             date: "2025-05-08",
-            image: "https://placehold.co/600x400/FEE/png",
+            image:
+              "https://aih.com.vn/storage/posts/70270ee93f6e785fbf10aea41cab6a3a.jpg",
             featured: true,
           },
           {
@@ -132,7 +138,8 @@ function Blog() {
             category: "Dinh dưỡng",
             author: "BS. Ngô Thị H",
             date: "2025-05-05",
-            image: "https://placehold.co/600x400/EFE/png",
+            image:
+              "https://production-cdn.pharmacity.io/digital/original/plain/blog/efd86b0a2a8a00599ccb2078c54662931741536822.jpg?X-Amz-Content-Sha256=UNSIGNED-PAYLOAD&X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=AKIAUYXZVMJM5QUYWSVO%2F20250502%2Fap-southeast-1%2Fs3%2Faws4_request&X-Amz-Date=20250502T025309Z&X-Amz-SignedHeaders=host&X-Amz-Expires=600&X-Amz-Signature=3535ac24ba6479736a0857bdccc83b1f75353cd706bb646bcc34d2b3a9ff51e3",
             featured: true,
           },
           {
@@ -143,7 +150,8 @@ function Blog() {
             category: "Giáo dục giới tính",
             author: "BS. Đinh Văn I",
             date: "2025-05-02",
-            image: "https://placehold.co/600x400/FFE/png",
+            image:
+              "https://icpc1hn.work/NHATHUOC/WEB/DownloadImageDes?ImageName=d49317c7-a3c2-414e-b51a-bd28a9989611.png",
             featured: true,
           },
           {
@@ -154,7 +162,8 @@ function Blog() {
             category: "Phòng ngừa",
             author: "GS. Đỗ Văn K",
             date: "2025-04-30",
-            image: "https://placehold.co/600x400/EFF/png",
+            image:
+              "https://trungtamthuoc.com/images/news/vaccine-hpv-phong-ngua-ung-thu-co-tu-cung-0111.jpg",
             featured: true,
           },
           {
@@ -166,7 +175,8 @@ function Blog() {
             category: "STIs",
             author: "BS. Lương Thị L",
             date: "2025-04-25",
-            image: "https://placehold.co/600x400/FEF/png",
+            image:
+              "https://benhvienquoctehoanmy.vn/wp-content/uploads/2019/06/image002.png",
             featured: true,
           },
           {
@@ -177,7 +187,8 @@ function Blog() {
             category: "Tâm lý học",
             author: "PGS. Nguyễn Thị M",
             date: "2025-04-22",
-            image: "https://placehold.co/600x400/FFF/png",
+            image:
+              "https://vinuni.edu.vn/wp-content/uploads/2024/08/tam-ly-hoc-gioi-tinh-va-giao-duc-hoc-gioi-tinh-khai-niem-va-tam-quan-trong-so-2.jpg",
             featured: true,
           },
           {
@@ -188,7 +199,8 @@ function Blog() {
             category: "Sức khỏe sinh sản",
             author: "TS. Vũ Thị N",
             date: "2025-04-18",
-            image: "https://placehold.co/600x400/FFD/png",
+            image:
+              "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQsnMRjdTL4CNS2g9Uk160RRvXEEYR22KYXBQ&s",
             featured: true,
           },
         ];
