@@ -1,12 +1,13 @@
 import React from "react";
 import { Document, Page, Text, View, StyleSheet } from "@react-pdf/renderer";
-
+import roboto from "../../../assets/fonts/Roboto-Regular.ttf";
 // Tạo styles cho PDF
 const styles = StyleSheet.create({
   page: {
     flexDirection: "column",
     backgroundColor: "#FFFFFF",
     padding: 30,
+    fontFamily: roboto,
   },
   header: {
     fontSize: 24,

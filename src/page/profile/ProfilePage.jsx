@@ -18,12 +18,8 @@ import {
   faIdCard,
   faCalendarCheck,
   faFileText,
-  faStethoscope,
   faCalendarAlt,
   faUserMd,
-  faClipboardList,
-  faNotesMedical,
-  faEye,
   faClock,
   faDownload,
   faVial,
@@ -81,7 +77,7 @@ const ProfilePage = () => {
           id: result.testresult_id || `record_${index}`,
           visitDate: result.exam_date,
           visitTime: result.exam_time,
-          doctor: "BS. GenCare",
+          doctor: "Trung tâm GenCare",
           consultationType: result.service.name,
           chiefComplaint: result.service.description,
           orderInfo: {
@@ -1115,7 +1111,6 @@ const ProfilePage = () => {
                   </div>
                 </div>
 
-                {/* Recommendations */}
                 <div className="mb-7 bg-white rounded-lg border border-gray-200 overflow-hidden shadow-sm">
                   <div className="p-4 bg-gray-50 border-b border-gray-200">
                     <h3 className="m-0 text-lg text-gray-700 font-semibold flex items-center gap-3">
