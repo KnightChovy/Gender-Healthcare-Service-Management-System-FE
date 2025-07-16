@@ -15,8 +15,6 @@ import {
   faSearch,
   faSortAmountDown,
   faTimesCircle,
-  faPrint,
-  faFilePdf,
   faInfoCircle,
 } from "@fortawesome/free-solid-svg-icons";
 import axiosClient from "../../services/axiosClient";
@@ -358,17 +356,6 @@ export const MedicalRecord = ({
                     <FontAwesomeIcon icon={faEye} />
                     Xem chi tiết
                   </button>
-
-                  <div className="flex gap-2">
-                    <button className="flex items-center gap-2 px-3 py-2 bg-gray-100 text-gray-700 rounded-md hover:bg-gray-200 transition-colors">
-                      <FontAwesomeIcon icon={faPrint} />
-                      In
-                    </button>
-                    <button className="flex items-center gap-2 px-3 py-2 bg-gray-100 text-gray-700 rounded-md hover:bg-gray-200 transition-colors">
-                      <FontAwesomeIcon icon={faFilePdf} />
-                      PDF
-                    </button>
-                  </div>
                 </div>
               </div>
             ))}
