@@ -461,19 +461,6 @@ function CycleInputForm({ cycleData, onDataChange, onSaveSuccess }) {
       </div>
 
       <div className={cx("form-group")}>
-        <button
-          className={cx("confirm-btn")}
-          onClick={() => {
-            handleConfirmSave();
-            // sendAllEmail();
-          }}
-          disabled={isSaving}
-        >
-          {isSaving ? "⏳ Đang lưu..." : "💾 Xác nhận lưu thông tin chu kì"}
-        </button>
-      </div>
-
-      <div className={cx("form-group")}>
         <span>Thời gian uống thuốc tránh thai:</span>
         <div className={cx("time-input-container")}>
           <input
@@ -544,78 +531,17 @@ function CycleInputForm({ cycleData, onDataChange, onSaveSuccess }) {
           </div>
         </div>
 
-        <div className="mb-4">
-          <div className="flex justify-between items-center mb-3">
-            <span className="text-sm font-medium text-gray-700">
-              Chọn ngày trong tuần:
-            </span>
-            <div className="flex gap-2">
-              <button
-                type="button"
-                className="px-3 py-1 bg-green-100 text-green-700 rounded-md hover:bg-green-200 transition-colors text-sm"
-                onClick={selectAllDays}
-                title="Chọn tất cả ngày"
-              >
-                Cả tuần
-              </button>
-              <button
-                type="button"
-                className="px-3 py-1 bg-red-100 text-red-700 rounded-md hover:bg-red-200 transition-colors text-sm"
-                onClick={clearAllDays}
-                title="Bỏ chọn tất cả"
-              >
-                Xóa hết
-              </button>
-            </div>
-          </div>
-
-          <div className="grid grid-cols-7 gap-2">
-            {daysOfWeek.map((day) => (
-              <label
-                key={day.value}
-                className={`flex flex-col items-center p-3 border rounded-md cursor-pointer transition-colors ${
-                  selectedDays.includes(day.value)
-                    ? "bg-pink-100 border-pink-500 text-pink-700"
-                    : "bg-gray-50 border-gray-300 text-gray-700 hover:bg-gray-100"
-                }`}
-              >
-                <input
-                  type="checkbox"
-                  checked={selectedDays.includes(day.value)}
-                  onChange={() => handleDaySelection(day.value)}
-                  className="sr-only"
-                />
-                <span className="font-bold text-lg">{day.short}</span>
-                <span className="text-xs mt-1">{day.label}</span>
-              </label>
-            ))}
-          </div>
-
-          {selectedDays.length > 0 && (
-            <div className="mt-3 p-2 bg-green-100 text-green-700 rounded-md text-sm">
-              <span>✅ Đã chọn: {selectedDays.length} ngày</span>
-            </div>
-          )}
-        </div>
-
-        <div className={cx("reminder-section")}>
+        <div className={cx("form-group")}>
           <button
-            type="button"
-            className={cx("reminder-btn", { active: isTimerActive })}
-            onClick={setReminder}
-            title={isTimerActive ? "Hủy hẹn giờ" : "Đặt hẹn giờ"}
-            disabled={!cycleData?.birthControlTime || selectedDays.length === 0}
+            className={cx("confirm-btn")}
+            onClick={() => {
+              handleConfirmSave();
+              // sendAllEmail();
+            }}
+            disabled={isSaving}
           >
-            {isTimerActive ? "🔕 Hủy hẹn giờ" : "⏰ Đặt hẹn giờ"}
+            {isSaving ? "⏳ Đang lưu..." : "💾 Xác nhận lưu và nhận thông báo"}
           </button>
-
-          {isTimerActive && (
-            <div className={cx("reminder-status")}>
-              <span className={cx("status-text")}>
-                🔔 Đang hoạt động cho {selectedDays.length} ngày/tuần
-              </span>
-            </div>
-          )}
         </div>
 
         <small
@@ -626,7 +552,8 @@ function CycleInputForm({ cycleData, onDataChange, onSaveSuccess }) {
             display: "block",
           }}
         >
-          Thời gian nên đặt hẹn từ 6:00 sáng đến 11:00 tối
+          Khi bạn lưu thông tin, hệ thống sẽ gửi thông báo nhắc nhở uống thuốc
+          tránh thai qua email cho bạn.
         </small>
       </div>
     </div>
