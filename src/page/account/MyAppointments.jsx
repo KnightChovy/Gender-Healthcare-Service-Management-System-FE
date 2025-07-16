@@ -279,7 +279,7 @@ function MyAppointments() {
 
   // Tham gia cuộc họp
   const handleJoinMeeting = (appointment) => {
-    const meetUrl = 'https://meet.google.com/ymf-dwbi-uhy';
+    const meetUrl = 'https://meet.google.com/gzq-fqau-uix';
     window.open(meetUrl, '_blank', 'noopener,noreferrer');
     console.log(`Người dùng tham gia cuộc họp cho cuộc hẹn ${appointment.id}`);
   };

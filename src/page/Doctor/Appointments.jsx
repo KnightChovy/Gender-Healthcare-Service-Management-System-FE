@@ -370,7 +370,7 @@ const DoctorAppointments = () => {
                             </button>
 
                             <a
-                              href="https://meet.google.com/ymf-dwbi-uhy"
+                              href="https://meet.google.com/gzq-fqau-uix"
                               target="_blank"
                               rel="noopener noreferrer"
                               className={`ml-4 ${
