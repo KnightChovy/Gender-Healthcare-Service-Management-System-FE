@@ -132,16 +132,15 @@ const Profile = () => {
         }
 
         setDoctor(data.data);
-
         // Khởi tạo editedDoctor với cấu trúc phù hợp để chỉnh sửa
         setEditedDoctor({
           first_name: data.data.first_name || "",
           last_name: data.data.last_name || "",
           bio: data.data.bio || "",
-          specialty: data.data.specialty || "",
           experience_year: data.data.experience_year || "",
           education: data.data.education || "",
           certificates: data.data.certificates || [],
+          specialization: data.data.certificates[0]?.specialization || "",
           user: {
             email: data.data.user?.email || "",
             phone: data.data.user?.phone || "",
@@ -506,7 +505,10 @@ const Profile = () => {
                       <span className="text-sm text-gray-500">
                         Chuyên khoa:
                       </span>
-                      <p>{doctor?.specialty || "Chưa cập nhật"}</p>
+                      <p>
+                        {doctor?.certificates[0]?.specialization ||
+                          "Chưa cập nhật"}
+                      </p>
                     </div>
                     <div>
                       <span className="text-sm text-gray-500">
@@ -530,7 +532,7 @@ const Profile = () => {
                         <ul className="mt-1 list-disc list-inside">
                           {doctor.certificates.map((cert, index) => (
                             <li key={index} className="text-gray-700">
-                              {cert}
+                              {cert.specialization}
                             </li>
                           ))}
                         </ul>
