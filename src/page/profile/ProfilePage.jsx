@@ -77,7 +77,7 @@ const ProfilePage = () => {
           id: result.testresult_id || `record_${index}`,
           visitDate: result.exam_date,
           visitTime: result.exam_time,
-          doctor: "BS. GenCare",
+          doctor: "Trung tâm GenCare",
           consultationType: result.service.name,
           chiefComplaint: result.service.description,
           orderInfo: {
