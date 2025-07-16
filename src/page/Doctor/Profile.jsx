@@ -532,7 +532,7 @@ const Profile = () => {
                         <ul className="mt-1 list-disc list-inside">
                           {doctor.certificates.map((cert, index) => (
                             <li key={index} className="text-gray-700">
-                              {cert.specialization}
+                              {cert.certificate}
                             </li>
                           ))}
                         </ul>
