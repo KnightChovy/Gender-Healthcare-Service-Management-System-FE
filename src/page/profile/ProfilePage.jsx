@@ -872,7 +872,7 @@ const ProfilePage = () => {
                       icon={faUserMd}
                       className="text-blue-500 text-sm"
                     />
-                    BS. GenCare
+                    Trung tâm GenCare
                   </span>
                 </div>
               </div>
