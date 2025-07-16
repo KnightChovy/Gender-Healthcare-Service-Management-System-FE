@@ -3,7 +3,7 @@ import React, { useEffect, useState } from "react";
 import doctorService from "../../services/doctor.service";
 import { useSelector } from "react-redux";
 
-const days = ["Thứ 2", "Thứ 3", "Thứ 4", "Thứ 5", "Thứ 6", "Thứ 7", "Chủ nhật"];
+const days = ["Chủ nhật", "Thứ 2", "Thứ 3", "Thứ 4", "Thứ 5", "Thứ 6", "Thứ 7"];
 const getWeekDates = (selectedDate) => {
   const today = dayjs(selectedDate);
   const startOfWeek = today.startOf("week");
@@ -131,8 +131,6 @@ const Calendar = ({ appointments: propAppointments }) => {
 
   return (
     <div>
-      
-
       <div className="flex items-center justify-between mb-4">
         {/* Week Navigation */}
         <div className="flex items-center justify-between mb-6 w-full">
