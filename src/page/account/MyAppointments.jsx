@@ -8,6 +8,7 @@ import {
   faCalendarCheck, faRefresh, faCreditCard, faVideo, faStar, faFlaskVial, faFileAlt, faDownload
 } from '@fortawesome/free-solid-svg-icons';
 import axiosClient from '../../services/axiosClient';
+import { toast } from 'react-toastify';
 import classNames from 'classnames/bind';
 import styles from './MyAppointments.module.scss';
 
@@ -57,7 +58,7 @@ function MyAppointments() {
   });
   const [selectedResult, setSelectedResult] = useState(null);
   const [showResultModal, setShowResultModal] = useState(false);
-  
+
   const user = JSON.parse(localStorage.getItem('user') || '{}');
   const accessToken = localStorage.getItem('accessToken');
 
@@ -73,7 +74,7 @@ function MyAppointments() {
 
     if (hasFeedback) {
       navigate("/feedback", {
-        state: { 
+        state: {
           highlightAppointment: appointmentId,
           message: "Bạn đã đánh giá buổi tư vấn này. Xem lại đánh giá của bạn bên dưới."
         }
@@ -220,7 +221,7 @@ function MyAppointments() {
     if (testFilters.searchTerm.trim()) {
       const searchTerm = testFilters.searchTerm.toLowerCase();
       filtered = filtered.filter(order =>
-        order.services.some(service => 
+        order.services.some(service =>
           service.name.toLowerCase().includes(searchTerm) ||
           service.description.toLowerCase().includes(searchTerm)
         )
@@ -307,8 +308,59 @@ function MyAppointments() {
 
   // Xử lý tải xuống kết quả
   const handleDownloadResult = (result) => {
-    // Thêm logic tải xuống kết quả ở đây
-    console.log('Tải xuống kết quả:', result.testresult_id);
+    try {
+      const user = JSON.parse(localStorage.getItem('user') || '{}');
+
+      // Create text content
+      const textContent = `
+KẾT QUẢ XÉT NGHIỆM
+==================
+
+THÔNG TIN BỆNH NHÂN:
+- Họ và tên: ${user.last_name} ${user.first_name}
+- Số điện thoại: ${user.phone}
+- Email: ${user.email}
+- Mã kết quả: ${result.testresult_id}
+
+THÔNG TIN XÉT NGHIỆM:
+- Tên xét nghiệm: ${result.service.name}
+- Mô tả: ${result.service.description}
+- Ngày xét nghiệm: ${new Date(result.exam_date).toLocaleDateString('vi-VN')} ${result.exam_time}
+
+KẾT QUẢ:
+- Kết quả: ${result.result.result}
+- Kết luận: ${result.result.conclusion}
+- Chỉ số tham chiếu: ${result.result.normal_range || 'Không có'}
+- Ghi chú bác sĩ: ${result.result.recommendation || 'Không có'}
+
+---
+Tạo lúc: ${new Date().toLocaleString('vi-VN')}
+    `;
+
+      // Download as text file
+      const blob = new Blob([textContent], { type: 'text/plain;charset=utf-8' });
+      const url = window.URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = `KetQua_${result.testresult_id}.txt`;
+
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      window.URL.revokeObjectURL(url);
+
+      toast.success('Tải xuống thành công!', {
+        position: "top-right",
+        autoClose: 3000,
+      });
+
+    } catch (error) {
+      console.error('Error downloading result:', error);
+      toast.error('Có lỗi xảy ra khi tải xuống', {
+        position: "top-right",
+        autoClose: 4000,
+      });
+    }
   };
 
   // Hàm tiện ích
@@ -344,7 +396,7 @@ function MyAppointments() {
   // Kiểm tra ngày tư vấn
   const isConsultationDay = (appointmentDate) => {
     if (!appointmentDate) return false;
-    
+
     const today = new Date();
     const consultationDate = new Date(appointmentDate);
 
@@ -357,7 +409,7 @@ function MyAppointments() {
   // Xử lý hủy cuộc hẹn có hoàn tiền
   const handleCancelPaidAppointment = async (appointment) => {
     const appointmentId = appointment.appointment_id || appointment.id;
-    
+
     const confirmCancel = window.confirm(
       `⚠️ HỦY CUỘC HẸN ⚠️\n\n` +
       `Cuộc hẹn: ${appointment.consultant_type}\n` +
@@ -365,7 +417,7 @@ function MyAppointments() {
       `Phí tư vấn: ${formatCurrency(appointment.price_apm)}\n\n` +
       `Bạn có chắc chắn muốn hủy và yêu cầu hoàn tiền?`
     );
-    
+
     if (!confirmCancel) return;
 
     try {
@@ -398,25 +450,25 @@ function MyAppointments() {
           `💰 Hoàn tiền sẽ được xử lý trong 3-5 ngày làm việc\n\n` +
           `Vui lòng kiểm tra email để theo dõi.`
         );
-        
+
         // Cập nhật trạng thái
-        setAppointments(prevAppointments => 
-          prevAppointments.map(apt => 
+        setAppointments(prevAppointments =>
+          prevAppointments.map(apt =>
             (apt.appointment_id === appointmentId || apt.id === appointmentId)
               ? { ...apt, status: 'rejected' }
               : apt
           )
         );
-        
+
         await fetchAppointments();
-        
+
       } else {
         throw new Error(response.data?.message || 'Không thể hủy cuộc hẹn');
       }
     } catch (error) {
       console.error('❌ Lỗi:', error);
       alert(
-        error.response?.data?.message || 
+        error.response?.data?.message ||
         'Có lỗi xảy ra. Vui lòng liên hệ hỗ trợ.'
       );
     } finally {
@@ -427,11 +479,11 @@ function MyAppointments() {
   // Xử lý hủy cuộc hẹn
   const handleCancel = async (appointment) => {
     const appointmentId = appointment.appointment_id || appointment.id;
-    
+
     const confirmCancel = window.confirm(
       `Bạn có chắc chắn muốn hủy cuộc hẹn ${appointment.consultant_type} vào ngày ${formatDate(appointment.appointment_date)}?\n\nLưu ý: Sau khi hủy, bạn sẽ không thể hoàn tác được.`
     );
-    
+
     if (!confirmCancel) return;
 
     try {
@@ -445,22 +497,22 @@ function MyAppointments() {
 
       if (response.data?.success) {
         alert('Hủy cuộc hẹn thành công!');
-        
-        setAppointments(prevAppointments => 
-          prevAppointments.map(apt => 
+
+        setAppointments(prevAppointments =>
+          prevAppointments.map(apt =>
             (apt.appointment_id === appointmentId || apt.id === appointmentId)
               ? { ...apt, status: 'rejected' }
               : apt
           )
         );
-        
+
         await fetchAppointments();
       } else {
         throw new Error(response.data?.message || 'Không thể hủy cuộc hẹn');
       }
     } catch (error) {
       console.error('❌ Lỗi khi hủy cuộc hẹn:', error);
-      
+
       if (error.response?.status === 400) {
         alert('Không thể hủy cuộc hẹn này. Vui lòng kiểm tra trạng thái cuộc hẹn.');
       } else if (error.response?.status === 404) {
@@ -576,19 +628,19 @@ function MyAppointments() {
 
         {/* Phần thống kê */}
         <div className={cx('header-stats')}>
-          {activeTab === 'appointments' 
+          {activeTab === 'appointments'
             ? stats.map((stat, index) => (
-                <div key={index} className={cx('stat-item')}>
-                  <span className={cx('stat-number')}>{stat.value}</span>
-                  <span className={cx('stat-label')}>{stat.label}</span>
-                </div>
-              ))
+              <div key={index} className={cx('stat-item')}>
+                <span className={cx('stat-number')}>{stat.value}</span>
+                <span className={cx('stat-label')}>{stat.label}</span>
+              </div>
+            ))
             : testStats.map((stat, index) => (
-                <div key={index} className={cx('stat-item')}>
-                  <span className={cx('stat-number')}>{stat.value}</span>
-                  <span className={cx('stat-label')}>{stat.label}</span>
-                </div>
-              ))
+              <div key={index} className={cx('stat-item')}>
+                <span className={cx('stat-number')}>{stat.value}</span>
+                <span className={cx('stat-label')}>{stat.label}</span>
+              </div>
+            ))
           }
         </div>
       </div>
@@ -601,13 +653,13 @@ function MyAppointments() {
             <input
               type="text"
               placeholder={
-                activeTab === 'appointments' 
+                activeTab === 'appointments'
                   ? "Tìm kiếm theo tên, bác sĩ, loại tư vấn..."
                   : "Tìm kiếm theo tên xét nghiệm, mô tả..."
               }
               value={activeTab === 'appointments' ? filters.searchTerm : testFilters.searchTerm}
-              onChange={(e) => 
-                activeTab === 'appointments' 
+              onChange={(e) =>
+                activeTab === 'appointments'
                   ? handleFilterChange('searchTerm', e.target.value)
                   : handleTestFilterChange('searchTerm', e.target.value)
               }
@@ -621,8 +673,8 @@ function MyAppointments() {
             </label>
             <select
               value={activeTab === 'appointments' ? filters.status : testFilters.status}
-              onChange={(e) => 
-                activeTab === 'appointments' 
+              onChange={(e) =>
+                activeTab === 'appointments'
                   ? handleFilterChange('status', e.target.value)
                   : handleTestFilterChange('status', e.target.value)
               }
@@ -654,8 +706,8 @@ function MyAppointments() {
             </label>
             <select
               value={activeTab === 'appointments' ? filters.dateRange : testFilters.dateRange}
-              onChange={(e) => 
-                activeTab === 'appointments' 
+              onChange={(e) =>
+                activeTab === 'appointments'
                   ? handleFilterChange('dateRange', e.target.value)
                   : handleTestFilterChange('dateRange', e.target.value)
               }
@@ -669,7 +721,7 @@ function MyAppointments() {
           </div>
 
           <div className={cx('results-count')}>
-            Hiển thị {activeTab === 'appointments' ? filteredAppointments.length : filteredTestOrders.length} 
+            Hiển thị {activeTab === 'appointments' ? filteredAppointments.length : filteredTestOrders.length}
             {activeTab === 'appointments' ? ' cuộc hẹn' : ' đơn xét nghiệm'}
           </div>
         </div>
@@ -684,23 +736,23 @@ function MyAppointments() {
               {currentAppointments.map((appointment) => {
                 const statusInfo = getStatusInfo(appointment.status);
                 const hasFeedback = checkFeedbackStatus(appointment);
-                
+
                 const needsPayment = appointment.status === 'confirmed' &&
                   appointment.booking === 0 &&
                   appointment.price_apm &&
                   appointment.price_apm > 0;
 
-                const canJoinMeeting = appointment.status === 'confirmed' && 
-                                     appointment.booking === 1 && 
-                                     isConsultationDay(appointment.appointment_date);
+                const canJoinMeeting = appointment.status === 'confirmed' &&
+                  appointment.booking === 1 &&
+                  isConsultationDay(appointment.appointment_date);
 
-                const canCancel = appointment.status === 'pending' || 
-                                 (appointment.status === 'confirmed' && appointment.booking === 0);
+                const canCancel = appointment.status === 'pending' ||
+                  (appointment.status === 'confirmed' && appointment.booking === 0);
 
-                const canCancelPaid = appointment.status === 'confirmed' && 
-                                     appointment.booking === 1 && 
-                                     appointment.price_apm && 
-                                     appointment.price_apm > 0;
+                const canCancelPaid = appointment.status === 'confirmed' &&
+                  appointment.booking === 1 &&
+                  appointment.price_apm &&
+                  appointment.price_apm > 0;
 
                 return (
                   <div key={appointment.id} className={cx('appointment-card')}>
@@ -802,7 +854,7 @@ function MyAppointments() {
 
                       {/* Cancel button for unpaid appointments */}
                       {canCancel && (
-                        <button 
+                        <button
                           className={cx('action-btn', 'cancel-btn', {
                             'loading': isCancelling
                           })}
@@ -823,7 +875,7 @@ function MyAppointments() {
 
                       {/* Cancel with refund button for paid appointments */}
                       {canCancelPaid && (
-                        <button 
+                        <button
                           className={cx('action-btn', 'refund-cancel-btn', {
                             'loading': isCancelling
                           })}
@@ -870,14 +922,14 @@ function MyAppointments() {
                       {/* Join Meeting button */}
                       {appointment.status === 'confirmed' && appointment.booking === 1 && (
                         <button
-                          className={cx('action-btn', 'meeting-btn', { 
+                          className={cx('action-btn', 'meeting-btn', {
                             'disabled': !canJoinMeeting || isCancelling
                           })}
                           onClick={() => canJoinMeeting ? handleJoinMeeting(appointment) : null}
                           disabled={!canJoinMeeting || isCancelling}
                           title={
-                            !canJoinMeeting 
-                              ? 'Chỉ có thể tham gia vào ngày tư vấn' 
+                            !canJoinMeeting
+                              ? 'Chỉ có thể tham gia vào ngày tư vấn'
                               : 'Tham gia cuộc tư vấn'
                           }
                         >
@@ -910,8 +962,8 @@ function MyAppointments() {
                             </button>
 
                             <button
-                              className={cx('action-btn', 'feedback-btn', { 
-                                'has-feedback': hasFeedback 
+                              className={cx('action-btn', 'feedback-btn', {
+                                'has-feedback': hasFeedback
                               })}
                               onClick={() => handleFeedbackNavigation(appointment)}
                               title={hasFeedback ? 'Xem lại đánh giá' : 'Đánh giá cuộc tư vấn'}
@@ -922,7 +974,7 @@ function MyAppointments() {
                             </button>
                           </div>
 
-                          <span style={{ fontSize: '0.85rem', paddingTop: '10px'}}>
+                          <span style={{ fontSize: '0.85rem', paddingTop: '10px' }}>
                             Bạn có muốn tiếp tục đặt lịch xét nghiệm?
                           </span>
                           <Link
@@ -1008,7 +1060,7 @@ function MyAppointments() {
               {currentTestOrders.map((order) => {
                 const statusInfo = getTestStatusInfo(order.order.order_status);
                 const hasResults = testResults.some(r => r.order_id === order.order.order_id);
-                
+
                 return (
                   <div key={order.order.order_id} className={cx('test-order-card')}>
                     <div className={cx('card-header')}>
@@ -1038,7 +1090,7 @@ function MyAppointments() {
                             <FontAwesomeIcon icon={faCalendarAlt} />
                             <span><strong>Ngày đặt:</strong> {formatDate(order.order.created_at)}</span>
                           </div>
-                          
+
                           {/* Add exam date and time information */}
                           {order.order.exam_date && (
                             <div className={cx('detail-item')}>
@@ -1046,14 +1098,14 @@ function MyAppointments() {
                               <span><strong>Ngày xét nghiệm:</strong> {formatDate(order.order.exam_date)}</span>
                             </div>
                           )}
-                          
+
                           {order.order.exam_time && (
                             <div className={cx('detail-item')}>
                               <FontAwesomeIcon icon={faClock} />
                               <span><strong>Giờ xét nghiệm:</strong> {order.order.exam_time}</span>
                             </div>
                           )}
-                          
+
                           <div className={cx('detail-item')}>
                             <FontAwesomeIcon icon={faMoneyBillWave} />
                             <span><strong>Tổng tiền:</strong> {formatCurrency(order.order.total_amount)}</span>
@@ -1064,7 +1116,7 @@ function MyAppointments() {
                               order.order.payment_method === 'cash' ? 'Tiền mặt' : 'Thẻ'
                             }</span>
                           </div>
-                          
+
                           {/* Add appointment type if available */}
                           <div className={cx('detail-item')}>
                             <FontAwesomeIcon icon={faStethoscope} />
@@ -1287,7 +1339,7 @@ function MyAppointments() {
                       <strong>Ngày đặt:</strong>
                       <span>{formatDate(selectedTestOrder.order.created_at)}</span>
                     </div>
-                    
+
                     {/* Add exam date and time to modal */}
                     {selectedTestOrder.order.exam_date && (
                       <div className={cx('detail-row')}>
@@ -1295,7 +1347,7 @@ function MyAppointments() {
                         <span>{formatDate(selectedTestOrder.order.exam_date)}</span>
                       </div>
                     )}
-                    
+
                     {selectedTestOrder.order.exam_time && (
                       <div className={cx('detail-row')}>
                         <strong>Giờ xét nghiệm:</strong>
@@ -1389,7 +1441,7 @@ function MyAppointments() {
                     <label>Kết quả:</label>
                     <div className={cx('result-value')}>{selectedResult.result.result}</div>
                   </div>
-                  
+
                   <div className={cx('result-item')}>
                     <label>Kết luận:</label>
                     <div className={cx('result-conclusion', {
@@ -1496,13 +1548,13 @@ function MyAppointments() {
                   <strong>Ngày đặt:</strong>
                   <span>{formatDate(selectedAppointment.created_at)}</span>
                 </div>
-                
+
                 {/* Refund status trong modal */}
                 {selectedAppointment.status === 'rejected' && selectedAppointment.is_refunded && (
                   <>
                     <div className={cx('detail-row')}>
                       <strong>Trạng thái hoàn tiền:</strong>
-                      <span className={cx('refund-status', { 
+                      <span className={cx('refund-status', {
                         'processing': selectedAppointment.refund_status === 'processing'
                       })}>
                         <FontAwesomeIcon icon={faRefresh} />
@@ -1538,7 +1590,7 @@ function MyAppointments() {
                 {selectedAppointment.status === 'completed' && (
                   <div className={cx('detail-row')}>
                     <strong>Trạng thái đánh giá:</strong>
-                    <span className={cx('feedback-status', { 
+                    <span className={cx('feedback-status', {
                       'has-feedback': checkFeedbackStatus(selectedAppointment)
                     })}>
                       <FontAwesomeIcon icon={faStar} />
@@ -1594,8 +1646,8 @@ function MyAppointments() {
 
                 <div className={cx('action-note')}>
                   <p>
-                    💡 <strong>Gợi ý:</strong> 
-                    {checkFeedbackStatus(selectedAppointment) 
+                    💡 <strong>Gợi ý:</strong>
+                    {checkFeedbackStatus(selectedAppointment)
                       ? ' Cảm ơn bạn đã đánh giá! Bạn có thể đặt lịch xét nghiệm để theo dõi sức khỏe theo chỉ định của bác sĩ.'
                       : ' Sau khi tư vấn, hãy chia sẻ đánh giá của bạn và có thể đặt lịch xét nghiệm theo chỉ định của bác sĩ.'
                     }

@@ -28,7 +28,6 @@ import {
   faHeartbeat,
   faLightbulb,
   faStickyNote,
-  faShareAlt,
   faPrint,
   faClipboardCheck,
   faFileAlt,
@@ -1204,10 +1203,6 @@ const ProfilePage = () => {
                 </div>
               </div>
               <div className="flex gap-3">
-                <button className="inline-flex items-center gap-2 py-2.5 px-5 rounded-md font-medium cursor-pointer transition-all border border-gray-200 bg-gray-100 text-gray-600 hover:bg-gray-200 text-sm">
-                  <FontAwesomeIcon icon={faShareAlt} className="text-sm" /> Chia
-                  sẻ
-                </button>
                 <button className="inline-flex items-center gap-2 py-2.5 px-5 rounded-md font-medium cursor-pointer transition-all border border-gray-200 bg-gray-100 text-gray-600 hover:bg-gray-200 text-sm">
                   <FontAwesomeIcon icon={faDownload} className="text-sm" /> Tải
                   PDF

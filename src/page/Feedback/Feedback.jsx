@@ -174,7 +174,7 @@ function Feedback() {
                                 className={cx('view-feedback-btn')}
                                 onClick={() => handleViewFeedback(appointment.appointment_id)}
                               >
-                                Xem feedback
+                                Xem đánh giá
                                 <FontAwesomeIcon icon={faEye} />
                               </button>
                             )}
