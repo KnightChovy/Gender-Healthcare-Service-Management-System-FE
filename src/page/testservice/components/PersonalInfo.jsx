@@ -144,6 +144,31 @@ export const PersonalInfoStep = (props) => {
           Dịch vụ xét nghiệm
         </h3>
 
+        <div className="flex items-center mb-4">
+          <input
+            type="checkbox"
+            id="selectAll"
+            checked={
+              selectedServices.length === allServices.length &&
+              allServices.length > 0
+            }
+            onChange={(e) => {
+              if (e.target.checked) {
+                handleServiceChange("selectAll", allServices);
+              } else {
+                handleServiceChange("deselectAll", []);
+              }
+            }}
+            className="h-4 w-4 text-blue-600 border-gray-300 rounded"
+          />
+          <label
+            htmlFor="selectAll"
+            className="ml-2 text-sm font-medium text-gray-700"
+          >
+            Chọn tất cả dịch vụ
+          </label>
+        </div>
+
         <div className="space-y-4">
           {allServices.map((service) => (
             <ServiceCard

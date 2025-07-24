@@ -9,6 +9,7 @@ import axiosClient from "../../services/axiosClient";
 import classNames from "classnames/bind";
 import styles from "./Register.module.scss";
 import { API_REGISTER } from "../../constants/Apis";
+import { toast } from "react-toastify";
 
 const cx = classNames.bind(styles);
 
@@ -156,7 +157,10 @@ function Register() {
 
       console.log("Registration successful:", response.data);
 
-      alert("Đăng ký thành công! Vui lòng đăng nhập để tiếp tục.");
+      toast.success("Đăng ký thành công", {
+        autoClose: 1000,
+        position: "top-right",
+      });
       navigate("/login");
     } catch (error) {
       console.error("Error during registration:", error);
@@ -178,7 +182,10 @@ function Register() {
           "Đã xảy ra lỗi trong quá trình đăng ký. Vui lòng thử lại sau.";
       }
 
-      alert(errorMessage);
+      toast.error(errorMessage, {
+        autoClose: 1000,
+        position: "top-right",
+      });
     } finally {
       setIsLoading(false);
     }

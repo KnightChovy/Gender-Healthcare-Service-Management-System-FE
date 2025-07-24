@@ -99,10 +99,10 @@ const AppointmentPDF = ({ appointmentDetails }) => (
       <View style={styles.section}>
         <Text style={styles.title}>Thông tin lịch hẹn:</Text>
         <Text style={styles.content}>
-          Ngày khám: {appointmentDetails.appointmentDate}
+          Ngày khám: {appointmentDetails.exam_date}
         </Text>
         <Text style={styles.content}>
-          Giờ khám: {appointmentDetails.appointmentTime}
+          Giờ khám: {appointmentDetails.exam_time}
         </Text>
         <Text style={styles.content}>
           Phương thức thanh toán:{" "}

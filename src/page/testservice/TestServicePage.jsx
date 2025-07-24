@@ -237,16 +237,27 @@ const TestAppointmentPage = () => {
     }).format(price);
   }
 
-  const handleServiceChange = (service) => {
+  const handleServiceChange = (serviceOrAction, services = []) => {
+    if (serviceOrAction === "selectAll") {
+      setSelectedServices(services);
+      return;
+    }
+    if (serviceOrAction === "deselectAll") {
+      setSelectedServices([]);
+      return;
+    }
+
     const isSelected = selectedServices.some(
-      (s) => s.service_id === service.service_id
+      (s) => s.service_id === serviceOrAction.service_id
     );
     if (isSelected) {
       setSelectedServices(
-        selectedServices.filter((s) => s.service_id !== service.service_id)
+        selectedServices.filter(
+          (s) => s.service_id !== serviceOrAction.service_id
+        )
       );
     } else {
-      setSelectedServices([...selectedServices, service]);
+      setSelectedServices([...selectedServices, serviceOrAction]);
     }
   };
 
