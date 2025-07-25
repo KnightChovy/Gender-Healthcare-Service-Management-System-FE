@@ -187,7 +187,7 @@ const TestAppointmentPage = () => {
       message: `Lịch xét nghiệm của bạn đã được đặt thành công.`,
       timeStamp: new Date().toISOString(),
       isRead: false,
-      appointmentId: appointmentData.appointment_id || null,
+      order_id: appointmentData.order_id || null,
       appointmentData: {
         ...appointmentData,
         consultant_type: "Xét nghiệm",
@@ -309,7 +309,6 @@ const TestAppointmentPage = () => {
   };
 
   function completeBookingProcess(responseData) {
-    // Tạo thông tin lịch hẹn
     const appointmentDetails = {
       services: selectedServices,
       medicalHistory: medicalHistory,
@@ -320,7 +319,7 @@ const TestAppointmentPage = () => {
       userInfo: userInfo,
       payment_status: "confirmed",
       createdAt: new Date().toLocaleDateString("vi-VN"),
-      appointment_id: responseData.data?.appointment_id || null,
+      order_id: responseData.data.order.order_id,
     };
 
     const newNotification = createNewNotification(appointmentDetails);

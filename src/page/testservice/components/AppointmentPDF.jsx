@@ -1,13 +1,24 @@
 import React from "react";
-import { Document, Page, Text, View, StyleSheet } from "@react-pdf/renderer";
+import {
+  Document,
+  Page,
+  Text,
+  View,
+  StyleSheet,
+  Font,
+} from "@react-pdf/renderer";
 import roboto from "../../../assets/fonts/Roboto-Regular.ttf";
 // Tạo styles cho PDF
+Font.register({
+  family: "Roboto",
+  src: roboto,
+});
 const styles = StyleSheet.create({
   page: {
     flexDirection: "column",
     backgroundColor: "#FFFFFF",
     padding: 30,
-    fontFamily: roboto,
+    fontFamily: "Roboto",
   },
   header: {
     fontSize: 24,
@@ -79,7 +90,7 @@ const AppointmentPDF = ({ appointmentDetails }) => (
       <View style={styles.section}>
         <Text style={styles.title}>Mã lịch hẹn:</Text>
         <Text style={styles.content}>
-          {appointmentDetails.appointment_id || "Đang cập nhật"}
+          {appointmentDetails.order_id || "Đang cập nhật"}
         </Text>
       </View>
 
@@ -175,8 +186,8 @@ const AppointmentPDF = ({ appointmentDetails }) => (
       </View>
 
       <Text style={styles.footer}>
-        Ngày tạo: {appointmentDetails.createdAt} | Mã phiếu:{" "}
-        {appointmentDetails.appointment_id || "Đang cập nhật"}
+        Ngày tạo: {appointmentDetails.createdAt} | Mã phiếu:
+        {appointmentDetails.order_id || "Đang cập nhật"}
       </Text>
     </Page>
   </Document>

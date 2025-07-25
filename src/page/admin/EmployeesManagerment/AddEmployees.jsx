@@ -76,10 +76,10 @@ const AddEmployees = () => {
     }),
   });
 
-  // Thiết lập giá trị ban đầu dựa trên dữ liệu nhân viên (nếu có)
+
   const initialValues = {
     username: staffData?.username || "",
-    password: "", // Không điền sẵn mật khẩu vì lý do bảo mật
+    password: "", 
     confirm_password: "",
     first_name: staffData?.first_name || "",
     last_name: staffData?.last_name || "",

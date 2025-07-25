@@ -12,7 +12,6 @@ const PaymentStatus = ({
 
   return (
     <div className="mt-6">
-      {/* Hiển thị lỗi thanh toán */}
       {paymentError && (
         <div className="rounded-md bg-red-50 p-4 mb-4 border border-red-200">
           <div className="flex">
@@ -54,7 +53,7 @@ const PaymentStatus = ({
         </div>
       )}
 
-      {/* Hiển thị trạng thái xử lý thanh toán VNPay */}
+
       {paymentMethod === "vnpay" && paymentProcessing && !isPaymentComplete && (
         <div className="rounded-md bg-blue-50 p-4 mb-4 border border-blue-200">
           <div className="flex">
