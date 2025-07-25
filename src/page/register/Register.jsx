@@ -182,7 +182,10 @@ function Register() {
           "Đã xảy ra lỗi trong quá trình đăng ký. Vui lòng thử lại sau.";
       }
 
-      toast.error(errorMessage);
+      toast.error(errorMessage, {
+        autoClose: 1000,
+        position: "top-right",
+      });
     } finally {
       setIsLoading(false);
     }
