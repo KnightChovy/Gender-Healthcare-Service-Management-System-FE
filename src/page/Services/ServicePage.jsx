@@ -16,12 +16,9 @@ export const ServicePage = () => {
         const response = await axiosClient.get("v1/services");
 
         if (response.data && response.data.success) {
-          // Phân loại dịch vụ theo đúng category
           const servicesData = response.data.data || [];
 
-          // Giả lập phân loại dịch vụ - trong thực tế sẽ dựa vào API response
           const categorizedServices = servicesData.map((service) => {
-            // Phân loại ngẫu nhiên cho demo
             let category;
             if (service.category_id === "CAT001") category = "test";
             else if (service.category_id === "CAT002")
@@ -57,7 +54,6 @@ export const ServicePage = () => {
     return matchesSearch && matchesCategory;
   });
 
-  // Lọc dịch vụ theo từng loại
   const testServices = filteredServices.filter(
     (service) => service.category === "test"
   );
@@ -97,7 +93,6 @@ export const ServicePage = () => {
 
   return (
     <div className="bg-gray-50 min-h-screen">
-      {/* Hero Section */}
       <div className="bg-gradient-to-r from-blue-600 to-blue-800 text-white py-16">
         <div className="container mx-auto px-4">
           <h1 className="text-4xl font-bold mb-4 text-center">
@@ -156,7 +151,6 @@ export const ServicePage = () => {
           </div>
         </div>
 
-        {/* Loading, Error & Results */}
         {loading ? (
           <div className="flex justify-center items-center py-20">
             <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-600"></div>
@@ -177,7 +171,6 @@ export const ServicePage = () => {
           </div>
         ) : (
           <div>
-            {/* Test Services */}
             {(selectedCategory === "all" || selectedCategory === "test") && (
               <ServiceSection
                 title="Dịch vụ Xét nghiệm"
@@ -187,7 +180,6 @@ export const ServicePage = () => {
               />
             )}
 
-            {/* Consultation Services */}
             {(selectedCategory === "all" ||
               selectedCategory === "consultation") && (
               <ServiceSection

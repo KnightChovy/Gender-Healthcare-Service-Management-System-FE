@@ -31,7 +31,9 @@ export const EmployeesManagerment = () => {
 
   const roleStaff = staff.filter(
     (staff) =>
-      (staff.role === "manager" || staff.role === "doctor") &&
+      (staff.role === "manager" ||
+        staff.role === "doctor" ||
+        staff.role === "staff") &&
       staff.status !== 0
   );
 
@@ -49,7 +51,6 @@ export const EmployeesManagerment = () => {
   };
 
   const handleRemove = (id) => {
-    // Xác nhận trước khi xóa
     if (window.confirm("Bạn có chắc chắn muốn xóa nhân viên này?")) {
       setStaff((prevStaff) =>
         prevStaff.map((staffMember) =>

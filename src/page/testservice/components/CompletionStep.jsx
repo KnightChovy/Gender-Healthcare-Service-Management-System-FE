@@ -4,30 +4,23 @@ import { PDFDownloadLink } from "@react-pdf/renderer";
 import AppointmentPDF from "./AppointmentPDF";
 
 const CompletionStep = ({ appointmentDetails, formatPrice, navigate }) => {
+  // Lấy order_id từ appointmentDetails
+  const orderID = appointmentDetails?.order_id || "Chưa có mã";
+
   return (
     <div className="bg-white shadow overflow-hidden sm:rounded-lg">
-      <div className="px-4 py-5 sm:px-6 bg-green-50">
-        <div className="flex items-center">
-          <svg
-            className="h-8 w-8 text-green-500 mr-3"
-            fill="none"
-            viewBox="0 0 24 24"
-            stroke="currentColor"
-          >
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              strokeWidth={2}
-              d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"
-            />
-          </svg>
-          <h2 className="text-xl font-bold text-gray-900">
-            Đặt lịch xét nghiệm thành công!
-          </h2>
+      <div className="px-4 py-5 sm:px-6">
+        <div className="flex items-center justify-between">
+          <h3 className="text-lg leading-6 font-medium text-gray-900">
+            Đặt lịch thành công
+          </h3>
+          <span className="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">
+            Hoàn tất
+          </span>
         </div>
-        <p className="mt-2 text-sm text-gray-600">
-          Cảm ơn bạn đã sử dụng dịch vụ của chúng tôi. Dưới đây là thông tin chi
-          tiết lịch hẹn của bạn.
+        <p className="mt-1 max-w-2xl text-sm text-gray-500">
+          Mã lịch hẹn:{" "}
+          <span className="font-medium text-blue-600">{orderID}</span>
         </p>
       </div>
 
@@ -37,7 +30,7 @@ const CompletionStep = ({ appointmentDetails, formatPrice, navigate }) => {
           <div className="bg-gray-50 px-4 py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
             <dt className="text-sm font-medium text-gray-500">Mã lịch hẹn</dt>
             <dd className="mt-1 text-sm font-medium text-blue-600 sm:mt-0 sm:col-span-2">
-              {appointmentDetails.appointment_id || "Đang cập nhật..."}
+              {appointmentDetails.order_id || "Đang cập nhật..."}
             </dd>
           </div>
 
@@ -67,7 +60,7 @@ const CompletionStep = ({ appointmentDetails, formatPrice, navigate }) => {
               Ngày xét nghiệm
             </dt>
             <dd className="mt-1 text-sm text-gray-900 sm:mt-0 sm:col-span-2">
-              {appointmentDetails.appointmentDate}
+              {appointmentDetails.exam_date}
             </dd>
           </div>
           <div className="bg-white px-4 py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
@@ -75,7 +68,7 @@ const CompletionStep = ({ appointmentDetails, formatPrice, navigate }) => {
               Giờ xét nghiệm
             </dt>
             <dd className="mt-1 text-sm text-gray-900 sm:mt-0 sm:col-span-2">
-              {appointmentDetails.appointmentTime}
+              {appointmentDetails.exam_time}
             </dd>
           </div>
 
@@ -163,11 +156,14 @@ const CompletionStep = ({ appointmentDetails, formatPrice, navigate }) => {
         <div>
           <PDFDownloadLink
             document={
-              <AppointmentPDF appointmentDetails={appointmentDetails} />
+              <AppointmentPDF
+                appointmentDetails={{
+                  ...appointmentDetails,
+                  order_id: orderID,
+                }}
+              />
             }
-            fileName={`Appointment-${
-              appointmentDetails.appointment_id || "details"
-            }.pdf`}
+            fileName={`Appointment-${orderID || "details"}.pdf`}
             className="inline-flex items-center px-4 py-2 border border-gray-300 shadow-sm text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
           >
             {({ loading }) =>
