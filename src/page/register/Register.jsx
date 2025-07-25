@@ -157,7 +157,10 @@ function Register() {
 
       console.log("Registration successful:", response.data);
 
-      toast.success("Đăng ký thành công! Vui lòng đăng nhập để tiếp tục.");
+      toast.success("Đăng ký thành công", {
+        autoClose: 1000,
+        position: "top-right",
+      });
       navigate("/login");
     } catch (error) {
       console.error("Error during registration:", error);

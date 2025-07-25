@@ -187,7 +187,7 @@ const TestAppointmentPage = () => {
       message: `Lịch xét nghiệm của bạn đã được đặt thành công.`,
       timeStamp: new Date().toISOString(),
       isRead: false,
-      appointmentId: appointmentData.appointment_id || null,
+      order_id: appointmentData.order_id || null,
       appointmentData: {
         ...appointmentData,
         consultant_type: "Xét nghiệm",
@@ -237,16 +237,27 @@ const TestAppointmentPage = () => {
     }).format(price);
   }
 
-  const handleServiceChange = (service) => {
+  const handleServiceChange = (serviceOrAction, services = []) => {
+    if (serviceOrAction === "selectAll") {
+      setSelectedServices(services);
+      return;
+    }
+    if (serviceOrAction === "deselectAll") {
+      setSelectedServices([]);
+      return;
+    }
+
     const isSelected = selectedServices.some(
-      (s) => s.service_id === service.service_id
+      (s) => s.service_id === serviceOrAction.service_id
     );
     if (isSelected) {
       setSelectedServices(
-        selectedServices.filter((s) => s.service_id !== service.service_id)
+        selectedServices.filter(
+          (s) => s.service_id !== serviceOrAction.service_id
+        )
       );
     } else {
-      setSelectedServices([...selectedServices, service]);
+      setSelectedServices([...selectedServices, serviceOrAction]);
     }
   };
 
@@ -298,7 +309,6 @@ const TestAppointmentPage = () => {
   };
 
   function completeBookingProcess(responseData) {
-    // Tạo thông tin lịch hẹn
     const appointmentDetails = {
       services: selectedServices,
       medicalHistory: medicalHistory,
@@ -309,7 +319,7 @@ const TestAppointmentPage = () => {
       userInfo: userInfo,
       payment_status: "confirmed",
       createdAt: new Date().toLocaleDateString("vi-VN"),
-      appointment_id: responseData.data?.appointment_id || null,
+      order_id: responseData.data.order.order_id,
     };
 
     const newNotification = createNewNotification(appointmentDetails);
