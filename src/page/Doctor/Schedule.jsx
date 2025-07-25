@@ -18,6 +18,8 @@ const Schedule = () => {
   }, {});
 
   // State cho lịch làm việc
+
+  const [doctor, setDoctor] = useState(null);
   const [schedule, setSchedule] = useState(initSchedule);
   const [selectedDate, setSelectedDate] = useState(new Date());
   const [isLoading, setIsLoading] = useState(false);
@@ -33,6 +35,35 @@ const Schedule = () => {
     title: "",
     message: "",
   });
+
+  useEffect(() => {
+    const fetchProfileDoctor = async () => {
+      try {
+        setIsLoading(true);
+        const response = await axiosClient.get(`/v1/doctors/profile`, {
+          headers: {
+            "x-access-token": localStorage.getItem("accessToken"),
+          },
+        });
+        console.log("Doctor profile response:", response);
+        const data = response.data;
+        localStorage.setItem("doctorProfile", JSON.stringify(data.data));
+        if (!data.success) {
+          throw new Error(data.message || "Failed to fetch doctor profile");
+        }
+
+        setDoctor(data.data);
+        console.log("Doctor profile data:", data.data);
+        setIsLoading(false);
+      } catch (error) {
+        console.error("Error fetching doctor profile:", error);
+        setIsLoading(false);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+    fetchProfileDoctor();
+  }, []);
 
   // Lấy ngày hiện tại đầu ngày (00:00:00) để so sánh chính xác
   const today = new Date();
@@ -63,21 +94,8 @@ const Schedule = () => {
 
   // 3. Function để lấy lịch đã đăng ký từ API
   const loadDoctorSchedule = async () => {
-    if (!user?.user_id) return;
-
     try {
-      console.log("🔄 Đang tải lịch đã đăng ký cho doctor:", user.user_id);
-
-      // Lấy doctor_id từ localStorage nếu có
-      let doctorId = user.user_id;
-      try {
-        const doctor = JSON.parse(localStorage.getItem("doctorProfile"));
-        if (doctor && doctor.doctor_id) {
-          doctorId = doctor.doctor_id;
-        }
-      } catch (e) {
-        console.log("Sử dụng user_id từ Redux");
-      }
+      const doctorId = doctor.doctor_id;
 
       console.log("📞 Gọi API với doctor_id:", doctorId);
       const response = await doctorService.fetchAvailableTimeslotsByDoctorId(
