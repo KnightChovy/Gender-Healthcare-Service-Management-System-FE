@@ -638,6 +638,62 @@
     }
   }
 
+  /* Available Dates Info */
+  .available-dates-info {
+    margin: var(--spacing-sm) 0;
+    padding: var(--spacing-sm);
+    background: var(--bg-blue);
+    border-radius: var(--radius-md);
+    border: 1px solid var(--primary-light);
+  }
+
+  .available-dates-label {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-xs);
+    margin-bottom: var(--spacing-xs);
+    font-size: 0.875rem;
+    font-weight: 500;
+    color: var(--primary-color);
+
+    .info-icon {
+      font-size: 1rem;
+    }
+  }
+
+  .available-dates-list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--spacing-xs);
+  }
+
+  .available-date-item {
+    display: inline-block;
+    padding: 2px 6px;
+    background: var(--bg-primary);
+    border: 1px solid var(--primary-color);
+    border-radius: var(--radius-sm);
+    font-size: 0.75rem;
+    font-weight: 500;
+    color: var(--primary-color);
+    cursor: default;
+
+    &.unavailable {
+      background: var(--bg-gray);
+      border-color: var(--border-dark);
+      color: var(--text-muted);
+      opacity: 0.6;
+    }
+
+    &.past {
+      text-decoration: line-through;
+    }
+
+    &.sunday {
+      border-style: dashed;
+    }
+  }
+
   .time-selection {
     .time-placeholder,
     .no-times {

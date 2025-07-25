@@ -40,6 +40,14 @@ function DateTimeSection({ formData, errors, onChange }) {
         return hasConfirmedOrCompleted;
     };
 
+    // Function to get available dates from localStorage (calculated directly)
+    const getAvailableDates = () => {
+        if (!formData.doctor_id) return [];
+        
+        const availableTimeslots = JSON.parse(localStorage.getItem('doctorAvailableTimeslots')) || [];
+        return availableTimeslots.map(schedule => schedule.date).sort();
+    };
+
     useEffect(() => {
         if (!formData.appointmentDate) {
             setAvailableTimes([]);
@@ -233,7 +241,7 @@ function DateTimeSection({ formData, errors, onChange }) {
             setAvailableTimes(timeSlots);
             setIsLoadingTimes(false);
         }, 300);
-    }, [formData.appointmentDate]);
+    }, [formData.doctor_id , formData.appointmentDate]);
 
     const getMinDate = () => {
         const today = new Date();
@@ -352,6 +360,43 @@ function DateTimeSection({ formData, errors, onChange }) {
                         <label className={cx('form-label', 'required')}>
                             Ngày tư vấn (Năm 2025)
                         </label>
+                        
+                        {/* Show available dates if doctor is selected */}
+                        {formData.doctor_id && getAvailableDates().length > 0 && (
+                            <div className={cx('available-dates-info')}>
+                                <div className={cx('available-dates-label')}>
+                                    <span className={cx('info-icon')}>📅</span>
+                                    <span>Các ngày bác sĩ có lịch:</span>
+                                </div>
+                                <div className={cx('available-dates-list')}>
+                                    {getAvailableDates().map(date => {
+                                        const dateObj = new Date(date + 'T00:00:00');
+                                        const isPast = isPastDate(date);
+                                        const isSun = isSunday(date);
+                                        const isUnavailable = isPast || isSun;
+                                        
+                                        return (
+                                            <span
+                                                key={date}
+                                                className={cx('available-date-item', {
+                                                    'past': isPast,
+                                                    'sunday': isSun,
+                                                    'unavailable': isUnavailable
+                                                })}
+                                                title={
+                                                    isPast ? 'Ngày đã qua' :
+                                                    isSun ? 'Chủ nhật không làm việc' :
+                                                    'Ngày có thể đặt lịch'
+                                                }
+                                            >
+                                                {dateObj.getDate()}/{dateObj.getMonth() + 1}
+                                            </span>
+                                        );
+                                    })}
+                                </div>
+                            </div>
+                        )}
+                        
                         <input
                             type="date"
                             name="appointmentDate"

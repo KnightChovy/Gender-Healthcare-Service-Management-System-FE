@@ -172,11 +172,6 @@ export default function LayoutStaff() {
       path: "/staff/test-management",
       icon: <ScienceIcon />,
     },
-    {
-      text: "Viết Blog",
-      path: "/staff/create-blog",
-      icon: <ArticleIcon />,
-    }
   ];
 
   return (

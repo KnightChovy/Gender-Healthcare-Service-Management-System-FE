@@ -14,11 +14,153 @@ export const TestManagement = () => {
   const [showResultModal, setShowResultModal] = useState(false);
   const [testResultsData, setTestResultsData] = useState([]);
   const [resultLoading, setResultLoading] = useState(false);
+  const [expandedRows, setExpandedRows] = useState(new Set()); // Track expanded rows
+
+  // Toggle row expansion
+  const toggleRowExpansion = (orderId) => {
+    const newExpandedRows = new Set(expandedRows);
+    if (newExpandedRows.has(orderId)) {
+      newExpandedRows.delete(orderId);
+    } else {
+      newExpandedRows.add(orderId);
+    }
+    setExpandedRows(newExpandedRows);
+  };
+
+  // Component for displaying services with show more functionality
+  const ServicesList = ({ services, isInModal = false }) => {
+    const [showAll, setShowAll] = useState(false);
+    const maxDisplayItems = 3;
+    
+    if (!services || services.length === 0) {
+      return <span className="text-gray-500 text-xs">Không có dịch vụ</span>;
+    }
+
+    const displayServices = showAll ? services : services.slice(0, maxDisplayItems);
+    const hasMore = services.length > maxDisplayItems;
+
+    if (isInModal) {
+      // In modal, show all services in a more detailed format
+      return (
+        <div className="space-y-2">
+          {services.map((service, index) => (
+            <div key={index} className="bg-white p-3 rounded-md border border-gray-200 shadow-sm">
+              <div className="flex justify-between items-start">
+                <div className="flex-1">
+                  <div className="flex items-center mb-1">
+                    <h5 className="font-medium text-gray-800 text-sm">{service.name}</h5>
+                    <span className="ml-2 text-xs text-gray-500 bg-gray-100 px-2 py-0.5 rounded">
+                      ID: {service.id || service.service_id || 'N/A'}
+                    </span>
+                  </div>
+                  {service.description && (
+                    <p className="text-xs text-gray-600 mb-2">{service.description}</p>
+                  )}
+                  <div className="flex items-center text-xs">
+                    <div className="flex items-center text-orange-600">
+                      <svg className="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                      </svg>
+                      <span className="font-medium">Thời gian chờ:</span>
+                      <span className="ml-1 bg-orange-100 text-orange-800 px-2 py-0.5 rounded font-medium">
+                        {service.result_wait_time || 'Không xác định'}
+                      </span>
+                    </div>
+                  </div>
+                </div>
+                <div className="text-right ml-3">
+                  <span className="text-xs font-medium text-green-700 bg-green-100 px-2 py-1 rounded-full">
+                    {formatCurrency(parseFloat(service.price))}
+                  </span>
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
+      );
+    }
+
+    // In table, show compact format with show more functionality
+    return (
+      <div className="max-w-xs">
+        <div className="space-y-1">
+          {displayServices.map((service, index) => (
+            <div key={index} className="text-xs bg-blue-50 text-blue-800 px-2 py-1 rounded border">
+              <div className="font-medium truncate" title={service.name}>
+                {service.name}
+              </div>
+            </div>
+          ))}
+        </div>
+        
+        {hasMore && (
+          <button
+            onClick={(e) => {
+              e.stopPropagation();
+              setShowAll(!showAll);
+            }}
+            className="mt-1 text-xs text-blue-600 hover:text-blue-800 font-medium underline focus:outline-none"
+          >
+            {showAll ? `Ẩn bớt` : `Xem thêm (${services.length - maxDisplayItems})`}
+          </button>
+        )}
+      </div>
+    );
+  };
+
+  // Component for displaying wait times
+  const WaitTimesList = ({ waitTimes, services }) => {
+    const [showAll, setShowAll] = useState(false);
+    const maxDisplayItems = 3;
+    
+    if (!waitTimes || waitTimes.length === 0) {
+      return <span className="text-gray-500 text-xs">Không xác định</span>;
+    }
+
+    // If we have services, use their wait times instead
+    const actualWaitTimes = services && services.length > 0 
+      ? services.map(service => service.result_wait_time || "Không xác định")
+      : waitTimes;
+
+    const displayWaitTimes = showAll ? actualWaitTimes : actualWaitTimes.slice(0, maxDisplayItems);
+    const hasMore = actualWaitTimes.length > maxDisplayItems;
+
+    return (
+      <div className="max-w-xs">
+        <div className="space-y-1">
+          {displayWaitTimes.map((time, index) => (
+            <div key={index} className="text-xs bg-orange-50 text-orange-800 px-2 py-1 rounded border">
+              <div className="flex items-center">
+                <svg className="w-3 h-3 mr-1 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+                <span className="truncate" title={time}>
+                  {time}
+                </span>
+              </div>
+            </div>
+          ))}
+        </div>
+        
+        {hasMore && (
+          <button
+            onClick={(e) => {
+              e.stopPropagation();
+              setShowAll(!showAll);
+            }}
+            className="mt-1 text-xs text-orange-600 hover:text-orange-800 font-medium underline focus:outline-none"
+          >
+            {showAll ? `Ẩn bớt` : `Xem thêm (${actualWaitTimes.length - maxDisplayItems})`}
+          </button>
+        )}
+      </div>
+    );
+  };
 
   // Fetch test orders from API
   useEffect(() => {
     fetchTestOrders();
-  }, []);
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   const fetchTestOrders = async () => {
     try {
@@ -643,7 +785,7 @@ export const TestManagement = () => {
 
       // Filter out empty results
       const filteredResults = Object.entries(results)
-        .filter(([testId, resultData]) => resultData.result && resultData.result.trim())
+        .filter(([, resultData]) => resultData.result && resultData.result.trim())
         .reduce((acc, [testId, resultData]) => {
           acc[testId] = resultData;
           return acc;
@@ -657,7 +799,7 @@ export const TestManagement = () => {
       // Show confirmation dialog with service details
       const resultCount = Object.keys(filteredResults).length;
       const serviceNames = Object.entries(filteredResults)
-        .map(([testId, resultData]) => {
+        .map(([testId]) => {
           const testInfo = testResultsData.find(test => test._id === testId);
           return testInfo?.name || 'Unknown';
         })
@@ -949,9 +1091,9 @@ export const TestManagement = () => {
             </div>
           </div>
 
-          {/* Statistics Cards */}
-          <div className="grid grid-cols-1 md:grid-cols-5 gap-4 mb-6">
-            <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+          {/* Statistics Cards with adjusted spacing */}
+          <div className="grid grid-cols-1 md:grid-cols-5 gap-3 mb-4">
+            <div className="bg-blue-50 border border-blue-200 rounded-lg p-3">
               <div className="flex items-center">
                 <div className="flex-shrink-0">
                   <div className="w-8 h-8 bg-blue-500 rounded-full flex items-center justify-center">
@@ -965,7 +1107,7 @@ export const TestManagement = () => {
               </div>
             </div>
 
-            <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
+            <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-3">
               <div className="flex items-center">
                 <div className="flex-shrink-0">
                   <div className="w-8 h-8 bg-yellow-500 rounded-full flex items-center justify-center">
@@ -981,7 +1123,7 @@ export const TestManagement = () => {
               </div>
             </div>
 
-            <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+            <div className="bg-blue-50 border border-blue-200 rounded-lg p-3">
               <div className="flex items-center">
                 <div className="flex-shrink-0">
                   <div className="w-8 h-8 bg-blue-600 rounded-full flex items-center justify-center">
@@ -997,7 +1139,7 @@ export const TestManagement = () => {
               </div>
             </div>
 
-            <div className="bg-green-50 border border-green-200 rounded-lg p-4">
+            <div className="bg-green-50 border border-green-200 rounded-lg p-3">
               <div className="flex items-center">
                 <div className="flex-shrink-0">
                   <div className="w-8 h-8 bg-green-500 rounded-full flex items-center justify-center">
@@ -1013,7 +1155,7 @@ export const TestManagement = () => {
               </div>
             </div>
 
-            <div className="bg-red-50 border border-red-200 rounded-lg p-4">
+            <div className="bg-red-50 border border-red-200 rounded-lg p-3">
               <div className="flex items-center">
                 <div className="flex-shrink-0">
                   <div className="w-8 h-8 bg-red-500 rounded-full flex items-center justify-center">
@@ -1030,8 +1172,8 @@ export const TestManagement = () => {
             </div>
           </div>
 
-          {/* Filters */}
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
+          {/* Filters with adjusted spacing */}
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-3 mb-4">
             <input
               type="text"
               placeholder="Tìm theo tên, mã đơn..."
@@ -1085,28 +1227,28 @@ export const TestManagement = () => {
             <table className="min-w-full bg-white">
               <thead className="bg-gray-50">
                 <tr>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                     Mã đơn
                   </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                     Bệnh nhân
                   </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                     Loại xét nghiệm
                   </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                     Thời gian chờ kết quả
                   </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                     Tổng tiền
                   </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                     Ngày/Giờ xét nghiệm
                   </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                     Trạng thái
                   </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                     Thao tác
                   </th>
                 </tr>
@@ -1114,51 +1256,53 @@ export const TestManagement = () => {
               <tbody className="divide-y divide-gray-200">
                 {filteredOrders.map((order) => (
                   <tr key={order.id} className="hover:bg-gray-50">
-                    <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                    <td className="px-4 py-3 whitespace-nowrap text-sm font-medium text-gray-900">
                       {order.order_id}
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                    <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-500">
                       <div>
                         <div className="font-medium">{order.patientName}</div>
                         <div className="text-xs text-gray-400">{order.patientPhone}</div>
                       </div>
                     </td>
-                    <td className="px-6 py-4 text-sm text-gray-500">
-                      <div className="max-w-xs">
-                        {Array.isArray(order.testType) ? (
-                          <div className="space-y-1">
-                            {order.testType.map((test, index) => (
-                              <div key={index} className="text-xs bg-blue-50 text-blue-800 px-2 py-1 rounded">
-                                {test}
-                              </div>
-                            ))}
-                          </div>
-                        ) : (
-                          order.testType
-                        )}
-                      </div>
+                    <td className="px-4 py-3 text-sm text-gray-500">
+                      {order.services && order.services.length > 0 ? (
+                        <ServicesList 
+                          services={order.services}
+                        />
+                      ) : (
+                        <div className="max-w-xs">
+                          {Array.isArray(order.testType) ? (
+                            <div className="space-y-1">
+                              {order.testType.slice(0, 3).map((test, index) => (
+                                <div key={index} className="text-xs bg-blue-50 text-blue-800 px-2 py-1 rounded">
+                                  {test}
+                                </div>
+                              ))}
+                              {order.testType.length > 3 && (
+                                <div className="text-xs text-blue-600 font-medium">
+                                  +{order.testType.length - 3} khác
+                                </div>
+                              )}
+                            </div>
+                          ) : (
+                            order.testType
+                          )}
+                        </div>
+                      )}
                     </td>
-                    <td className="px-6 py-4 text-sm text-gray-500">
-                      <div className="max-w-xs">
-                        {Array.isArray(order.testResultWaitTime) ? (
-                          <div className="space-y-1">
-                            {order.testResultWaitTime.map((time, index) => (
-                              <div key={index} className="text-xs bg-orange-50 text-orange-800 px-2 py-1 rounded">
-                                {time}
-                              </div>
-                            ))}
-                          </div>
-                        ) : (
-                          order.testResultWaitTime
-                        )}
-                      </div>
+                    <td className="px-4 py-3 text-sm text-gray-500">
+                      <WaitTimesList 
+                        waitTimes={order.testResultWaitTime}
+                        services={order.services}
+                      />
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                    <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-500">
                       <span className="font-medium text-green-600">
                         {formatCurrency(order.total_amount)}
                       </span>
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                    <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-500">
                       <div>
                         <div className="font-medium">
                           {order.date || 'Chưa xác định'}
@@ -1168,7 +1312,7 @@ export const TestManagement = () => {
                         </div>
                       </div>
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
+                    <td className="px-4 py-3 whitespace-nowrap">
                       <span
                         className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${getStatusColor(
                           order.status
@@ -1177,7 +1321,7 @@ export const TestManagement = () => {
                         {order.status}
                       </span>
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                    <td className="px-4 py-3 whitespace-nowrap text-sm font-medium">
                       <div className="flex space-x-2">
                         <button
                           onClick={() => handleViewOrder(order)}
@@ -1273,27 +1417,13 @@ export const TestManagement = () => {
                   </div>
 
                   <div className="mb-4">
-                    <h4 className="font-semibold text-gray-700 mb-2">Dịch vụ xét nghiệm</h4>
+                    <h4 className="font-semibold text-gray-700 mb-3">Dịch vụ xét nghiệm</h4>
                     <div className="bg-gray-50 p-3 rounded">
                       {selectedOrder.services && selectedOrder.services.length > 0 ? (
-                        <div className="space-y-2">
-                          {selectedOrder.services.map((service, index) => (
-                            <div key={index} className="flex justify-between items-center border-b border-gray-200 pb-2">
-                              <div>
-                                <p className="text-sm font-medium">{service.name}</p>
-                                {service.description && (
-                                  <p className="text-xs text-gray-600">{service.description}</p>
-                                )}
-                              </div>
-                              <div className="text-xs text-gray-500">
-                                <p className="text-xs text-gray-500">Thời gian chờ: {service.result_wait_time || 'Không xác định'}</p>
-                              </div>
-                              <span className="text-sm font-medium text-green-600">
-                                {formatCurrency(parseFloat(service.price))}
-                              </span>
-                            </div>
-                          ))}
-                        </div>
+                        <ServicesList 
+                          services={selectedOrder.services}
+                          isInModal={true}
+                        />
                       ) : (
                         <p className="text-sm text-gray-600">{selectedOrder.testType}</p>
                       )}
