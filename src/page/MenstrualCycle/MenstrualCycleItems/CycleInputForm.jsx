@@ -3,6 +3,7 @@ import { useState, useEffect } from "react";
 import classNames from "classnames/bind";
 import styles from "../MenstrualCycle.module.scss";
 import menstrualService from "../../../services/menstrual.service";
+import * as Yup from "yup";
 
 const cx = classNames.bind(styles);
 
@@ -11,6 +12,36 @@ function CycleInputForm({ cycleData, onDataChange, onSaveSuccess }) {
   const [isTimerActive, setIsTimerActive] = useState(false);
   const [selectedDays, setSelectedDays] = useState([]);
   const [isSaving, setIsSaving] = useState(false);
+  const [validationErrors, setValidationErrors] = useState({});
+
+  // Yup validation schema
+  const validationSchema = Yup.object().shape({
+    lastPeriodDate: Yup.date()
+      .required("Ngày đầu kì kinh nguyệt là bắt buộc")
+      .max(new Date(), "Không thể chọn ngày trong tương lai")
+      .min(
+        new Date(Date.now() - 6 * 30 * 24 * 60 * 60 * 1000),
+        "Ngày không được quá 6 tháng trước"
+      ),
+    cycleLength: Yup.number()
+      .required("Độ dài chu kì là bắt buộc")
+      .integer("Độ dài chu kì phải là số nguyên")
+      .min(21, "Độ dài chu kì phải từ 21 ngày")
+      .max(35, "Độ dài chu kì không được quá 35 ngày")
+      .typeError("Độ dài chu kì phải là số"),
+    periodLength: Yup.number()
+      .required("Số ngày kinh nguyệt là bắt buộc")
+      .integer("Số ngày kinh nguyệt phải là số nguyên")
+      .min(3, "Số ngày kinh nguyệt phải từ 3 ngày")
+      .max(8, "Số ngày kinh nguyệt không được quá 8 ngày")
+      .typeError("Số ngày kinh nguyệt phải là số"),
+    birthControlTime: Yup.string()
+      .matches(
+        /^([01]?[0-9]|2[0-3]):[0-5][0-9]$/,
+        "Thời gian phải có định dạng HH:MM"
+      )
+      .nullable(),
+  });
 
   const daysOfWeek = [
     { value: "monday", label: "Thứ 2", short: "T2" },
@@ -22,43 +53,46 @@ function CycleInputForm({ cycleData, onDataChange, onSaveSuccess }) {
     { value: "sunday", label: "Chủ nhật", short: "CN" },
   ];
 
-  const handleInputChange = (e) => {
+  // Validate single field
+  const validateField = async (fieldName, value) => {
+    try {
+      await Yup.reach(validationSchema, fieldName).validate(value);
+      setValidationErrors((prev) => ({
+        ...prev,
+        [fieldName]: null,
+      }));
+      return true;
+    } catch (error) {
+      setValidationErrors((prev) => ({
+        ...prev,
+        [fieldName]: error.message,
+      }));
+      return false;
+    }
+  };
+
+  const handleInputChange = async (e) => {
     const { name, value } = e.target;
     console.log(`Input changed: ${name} = ${value}`); // Debug log
 
-    // Validate ngày đầu kỳ kinh nguyệt
-    if (name === "lastPeriodDate") {
-      if (value) {
-        // Chỉ validate khi có giá trị
-        const selectedDate = new Date(value);
-        const today = new Date();
-        today.setHours(23, 59, 59, 999); // Đặt về cuối ngày hôm nay
+    let processedValue = value;
 
-        if (selectedDate > today) {
-          alert(
-            "⚠️ Không thể chọn ngày trong tương lai!\nVui lòng chọn ngày hôm nay hoặc trước đó."
-          );
-          return; // Không cập nhật state nếu ngày không hợp lệ
-        }
+    // Only allow numeric input for cycleLength and periodLength
+    if ((name === "cycleLength" || name === "periodLength") && value) {
+      // Remove any non-digit characters
+      processedValue = value.replace(/[^0-9]/g, "");
+
+      // Update the input field to show only numeric value
+      if (processedValue !== value) {
+        e.target.value = processedValue;
       }
     }
 
-    // Validate số với giá trị min/max
-    if (name === "cycleLength") {
-      if (value && (parseInt(value) < 21 || parseInt(value) > 35)) {
-        // Cho phép nhập nhưng hiển thị cảnh báo
-        console.warn("Chu kỳ nên từ 21-35 ngày");
-      }
-    }
+    // Update the parent state
+    onDataChange({ [name]: processedValue });
 
-    if (name === "periodLength") {
-      if (value && (parseInt(value) < 3 || parseInt(value) > 8)) {
-        // Cho phép nhập nhưng hiển thị cảnh báo
-        console.warn("Số ngày kinh nguyệt nên từ 3-8 ngày");
-      }
-    }
-
-    onDataChange({ [name]: value });
+    // Validate the field
+    await validateField(name, processedValue);
   };
 
   const setQuickTime = (time) => {
@@ -203,62 +237,39 @@ function CycleInputForm({ cycleData, onDataChange, onSaveSuccess }) {
       console.log("Access token exists:", !!accessToken);
       if (!accessToken) {
         alert("❌ Bạn cần đăng nhập để lưu dữ liệu!");
-        setIsSaving(false); // Reset saving state
+        setIsSaving(false);
         return;
       }
 
-      // Kiểm tra dữ liệu hợp lệ
-      if (
-        !cycleData?.lastPeriodDate ||
-        cycleData.lastPeriodDate.trim() === ""
-      ) {
-        alert("⚠️ Vui lòng chọn ngày đầu kì kinh nguyệt gần nhất!");
-        setIsSaving(false); // Reset saving state
+      // Validate all data using Yup schema
+      try {
+        await validationSchema.validate(cycleData, { abortEarly: false });
+        // Clear all validation errors if validation passes
+        setValidationErrors({});
+      } catch (validationError) {
+        console.log("Validation errors:", validationError.errors);
+
+        // Set validation errors for display
+        const errors = {};
+        if (validationError.inner) {
+          validationError.inner.forEach((error) => {
+            errors[error.path] = error.message;
+          });
+        }
+        setValidationErrors(errors);
+
+        // Show first error to user
+        alert(`⚠️ Dữ liệu không hợp lệ:\n${validationError.errors[0]}`);
+        setIsSaving(false);
         return;
       }
 
-      if (
-        !cycleData?.cycleLength ||
-        cycleData.cycleLength === "" ||
-        isNaN(cycleData.cycleLength)
-      ) {
-        alert("⚠️ Vui lòng nhập độ dài chu kì hợp lệ!");
-        setIsSaving(false); // Reset saving state
-        return;
-      }
-
-      if (
-        !cycleData?.periodLength ||
-        cycleData.periodLength === "" ||
-        isNaN(cycleData.periodLength)
-      ) {
-        alert("⚠️ Vui lòng nhập số ngày kinh nguyệt hợp lệ!");
-        setIsSaving(false); // Reset saving state
-        return;
-      }
-
-      // Convert to numbers
+      // Convert to numbers for additional checks
       const cycleLength = parseInt(cycleData.cycleLength);
       const periodLength = parseInt(cycleData.periodLength);
 
-      // Validate ngày không được là tương lai
+      // Validate ngày không được quá xa trong quá khứ (warning only)
       const selectedDate = new Date(cycleData.lastPeriodDate);
-      const today = new Date();
-      today.setHours(23, 59, 59, 999);
-
-      if (isNaN(selectedDate.getTime())) {
-        alert("⚠️ Ngày đầu kỳ kinh nguyệt không hợp lệ!");
-        setIsSaving(false); // Reset saving state
-        return;
-      }
-
-      if (selectedDate > today) {
-        alert("⚠️ Ngày đầu kỳ kinh nguyệt không thể là ngày trong tương lai!");
-        setIsSaving(false); // Reset saving state
-        return;
-      }
-
-      // Validate ngày không được quá xa trong quá khứ (ví dụ: không quá 6 tháng)
       const sixMonthsAgo = new Date();
       sixMonthsAgo.setMonth(sixMonthsAgo.getMonth() - 6);
 
@@ -267,21 +278,9 @@ function CycleInputForm({ cycleData, onDataChange, onSaveSuccess }) {
           "⚠️ Ngày bạn chọn đã lâu hơn 6 tháng.\nDữ liệu dự đoán có thể không chính xác.\n\nBạn có muốn tiếp tục không?"
         );
         if (!confirmOldDate) {
-          setIsSaving(false); // Reset saving state
+          setIsSaving(false);
           return;
         }
-      }
-
-      if (cycleLength < 21 || cycleLength > 35) {
-        alert("⚠️ Độ dài chu kì phải từ 21–35 ngày!");
-        setIsSaving(false); // Reset saving state
-        return;
-      }
-
-      if (periodLength < 3 || periodLength > 8) {
-        alert("⚠️ Số ngày kinh nguyệt phải từ 3–8 ngày!");
-        setIsSaving(false); // Reset saving state
-        return;
       }
 
       // Format lại văn bản xác nhận
@@ -398,8 +397,25 @@ function CycleInputForm({ cycleData, onDataChange, onSaveSuccess }) {
           value={cycleData?.lastPeriodDate || ""}
           onChange={handleInputChange}
           max={getTodayString()}
-          style={{ width: "100%" }}
+          style={{
+            width: "100%",
+            borderColor: validationErrors.lastPeriodDate
+              ? "#ff4444"
+              : undefined,
+          }}
         />
+        {validationErrors.lastPeriodDate && (
+          <div
+            style={{
+              color: "#ff4444",
+              fontSize: "0.8rem",
+              marginTop: "4px",
+              display: "block",
+            }}
+          >
+            {validationErrors.lastPeriodDate}
+          </div>
+        )}
         <small
           style={{
             color: "#666",
@@ -421,9 +437,24 @@ function CycleInputForm({ cycleData, onDataChange, onSaveSuccess }) {
           onChange={handleInputChange}
           min="21"
           max="35"
-          style={{ width: "100%" }}
+          style={{
+            width: "100%",
+            borderColor: validationErrors.cycleLength ? "#ff4444" : undefined,
+          }}
           placeholder="Nhập số từ 21-35"
         />
+        {validationErrors.cycleLength && (
+          <div
+            style={{
+              color: "#ff4444",
+              fontSize: "0.8rem",
+              marginTop: "4px",
+              display: "block",
+            }}
+          >
+            {validationErrors.cycleLength}
+          </div>
+        )}
         <small
           style={{
             color: "#666",
@@ -445,9 +476,24 @@ function CycleInputForm({ cycleData, onDataChange, onSaveSuccess }) {
           onChange={handleInputChange}
           min="3"
           max="8"
-          style={{ width: "100%" }}
+          style={{
+            width: "100%",
+            borderColor: validationErrors.periodLength ? "#ff4444" : undefined,
+          }}
           placeholder="Nhập số từ 3-8"
         />
+        {validationErrors.periodLength && (
+          <div
+            style={{
+              color: "#ff4444",
+              fontSize: "0.8rem",
+              marginTop: "4px",
+              display: "block",
+            }}
+          >
+            {validationErrors.periodLength}
+          </div>
+        )}
         <small
           style={{
             color: "#666",
@@ -471,7 +517,25 @@ function CycleInputForm({ cycleData, onDataChange, onSaveSuccess }) {
             min="06:00"
             max="23:00"
             className={cx("time-input")}
+            style={{
+              borderColor: validationErrors.birthControlTime
+                ? "#ff4444"
+                : undefined,
+            }}
           />
+          {validationErrors.birthControlTime && (
+            <div
+              style={{
+                color: "#ff4444",
+                fontSize: "0.8rem",
+                marginTop: "4px",
+                display: "block",
+                width: "100%",
+              }}
+            >
+              {validationErrors.birthControlTime}
+            </div>
+          )}
 
           <button
             type="button"
