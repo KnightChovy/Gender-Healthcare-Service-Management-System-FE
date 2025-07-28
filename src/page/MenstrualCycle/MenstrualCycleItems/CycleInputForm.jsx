@@ -8,9 +8,6 @@ import * as Yup from "yup";
 const cx = classNames.bind(styles);
 
 function CycleInputForm({ cycleData, onDataChange, onSaveSuccess }) {
-  const [timer, setTimer] = useState(null);
-  const [isTimerActive, setIsTimerActive] = useState(false);
-  const [selectedDays, setSelectedDays] = useState([]);
   const [isSaving, setIsSaving] = useState(false);
   const [validationErrors, setValidationErrors] = useState({});
 
@@ -42,16 +39,6 @@ function CycleInputForm({ cycleData, onDataChange, onSaveSuccess }) {
       )
       .nullable(),
   });
-
-  const daysOfWeek = [
-    { value: "monday", label: "Thứ 2", short: "T2" },
-    { value: "tuesday", label: "Thứ 3", short: "T3" },
-    { value: "wednesday", label: "Thứ 4", short: "T4" },
-    { value: "thursday", label: "Thứ 5", short: "T5" },
-    { value: "friday", label: "Thứ 6", short: "T6" },
-    { value: "saturday", label: "Thứ 7", short: "T7" },
-    { value: "sunday", label: "Chủ nhật", short: "CN" },
-  ];
 
   // Validate single field
   const validateField = async (fieldName, value) => {
@@ -106,115 +93,6 @@ function CycleInputForm({ cycleData, onDataChange, onSaveSuccess }) {
     return `${hours}:${minutes}`;
   };
 
-  const handleDaySelection = (dayValue) => {
-    setSelectedDays((prev) => {
-      if (prev.includes(dayValue)) {
-        return prev.filter((day) => day !== dayValue);
-      } else {
-        return [...prev, dayValue];
-      }
-    });
-  };
-
-  const selectAllDays = () => {
-    const allDays = daysOfWeek.map((day) => day.value);
-    setSelectedDays(allDays);
-  };
-
-  const clearAllDays = () => {
-    setSelectedDays([]);
-  };
-
-  const setReminder = () => {
-    if (!cycleData?.birthControlTime) {
-      alert("⚠️ Vui lòng chọn thời gian uống thuốc trước!");
-      return;
-    }
-
-    if (selectedDays.length === 0) {
-      alert("⚠️ Vui lòng chọn ít nhất một ngày trong tuần!");
-      return;
-    }
-
-    if (isTimerActive) {
-      clearTimeout(timer);
-      setIsTimerActive(false);
-      setTimer(null);
-      alert("✅ Đã hủy tất cả hẹn giờ!");
-      return;
-    }
-
-    // Thiết lập nhiều hẹn giờ cho các ngày đã chọn
-    setupMultipleReminders();
-  };
-
-  const setupMultipleReminders = () => {
-    if (!cycleData?.birthControlTime) return;
-
-    const [hours, minutes] = cycleData.birthControlTime.split(":");
-    const now = new Date();
-    let nextReminderTime = null;
-
-    for (let i = 0; i < 7; i++) {
-      const checkDate = new Date(now);
-      checkDate.setDate(now.getDate() + i);
-      checkDate.setHours(parseInt(hours), parseInt(minutes), 0, 0);
-
-      const dayOfWeek = getDayValue(checkDate.getDay());
-
-      if (selectedDays.includes(dayOfWeek) && checkDate > now) {
-        nextReminderTime = checkDate;
-        break;
-      }
-    }
-
-    if (!nextReminderTime) {
-      alert("❌ Không thể tìm thấy thời gian hẹn giờ tiếp theo!");
-      return;
-    }
-
-    const timeUntilReminder = nextReminderTime.getTime() - now.getTime();
-
-    const newTimer = setTimeout(() => {
-      const dayName = daysOfWeek.find(
-        (day) => day.value === getDayValue(nextReminderTime.getDay())
-      )?.label;
-      alert(`⏰ Đến giờ uống thuốc tránh thai rồi! (${dayName})`);
-
-      // Tự động đặt hẹn giờ tiếp theo
-      setIsTimerActive(false);
-      setTimer(null);
-      setTimeout(() => setupMultipleReminders(), 1000);
-    }, timeUntilReminder);
-
-    setTimer(newTimer);
-    setIsTimerActive(true);
-
-    const dayName = daysOfWeek.find(
-      (day) => day.value === getDayValue(nextReminderTime.getDay())
-    )?.label;
-    const timeString = nextReminderTime.toLocaleString("vi-VN");
-    const selectedDayNames = selectedDays
-      .map((day) => daysOfWeek.find((d) => d.value === day)?.short)
-      .join(", ");
-
-    alert(
-      `✅ Đã đặt hẹn giờ!\n📅 Ngày: ${selectedDayNames}\n⏰ Hẹn giờ tiếp theo: ${dayName}, ${timeString}`
-    );
-  };
-
-  const getDayValue = (dayIndex) => {
-    const dayMap = {
-      0: "sunday",
-      1: "monday",
-      2: "tuesday",
-      3: "wednesday",
-      4: "thursday",
-      5: "friday",
-      6: "saturday",
-    };
-    return dayMap[dayIndex];
-  };
   const sendAllEmail = async () => {
     try {
       const result = await menstrualService.sendAllEmail();
@@ -375,15 +253,6 @@ function CycleInputForm({ cycleData, onDataChange, onSaveSuccess }) {
     const today = new Date();
     return today.toISOString().split("T")[0];
   };
-
-  // Cleanup timer on unmount
-  useEffect(() => {
-    return () => {
-      if (timer) {
-        clearTimeout(timer);
-      }
-    };
-  }, [timer]);
 
   return (
     <div className={cx("input-section", "col-span-1")}>
