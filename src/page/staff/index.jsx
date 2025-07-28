@@ -1,4 +1,3 @@
-// Staff Dashboard Components
 export { DashboardStaff } from "./DashboardStaff";
 export { TestManagement } from "./TestManagement";
 export { PatientRecords } from "./PatientRecords";

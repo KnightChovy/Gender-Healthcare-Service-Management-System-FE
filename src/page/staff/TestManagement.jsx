@@ -14,20 +14,7 @@ export const TestManagement = () => {
   const [showResultModal, setShowResultModal] = useState(false);
   const [testResultsData, setTestResultsData] = useState([]);
   const [resultLoading, setResultLoading] = useState(false);
-  const [expandedRows, setExpandedRows] = useState(new Set()); // Track expanded rows
 
-  // Toggle row expansion
-  const toggleRowExpansion = (orderId) => {
-    const newExpandedRows = new Set(expandedRows);
-    if (newExpandedRows.has(orderId)) {
-      newExpandedRows.delete(orderId);
-    } else {
-      newExpandedRows.add(orderId);
-    }
-    setExpandedRows(newExpandedRows);
-  };
-
-  // Component for displaying services with show more functionality
   const ServicesList = ({ services, isInModal = false }) => {
     const [showAll, setShowAll] = useState(false);
     const maxDisplayItems = 3;
@@ -40,7 +27,6 @@ export const TestManagement = () => {
     const hasMore = services.length > maxDisplayItems;
 
     if (isInModal) {
-      // In modal, show all services in a more detailed format
       return (
         <div className="space-y-2">
           {services.map((service, index) => (
@@ -80,7 +66,6 @@ export const TestManagement = () => {
       );
     }
 
-    // In table, show compact format with show more functionality
     return (
       <div className="max-w-xs">
         <div className="space-y-1">
@@ -108,7 +93,6 @@ export const TestManagement = () => {
     );
   };
 
-  // Component for displaying wait times
   const WaitTimesList = ({ waitTimes, services }) => {
     const [showAll, setShowAll] = useState(false);
     const maxDisplayItems = 3;
@@ -117,7 +101,6 @@ export const TestManagement = () => {
       return <span className="text-gray-500 text-xs">Không xác định</span>;
     }
 
-    // If we have services, use their wait times instead
     const actualWaitTimes = services && services.length > 0 
       ? services.map(service => service.result_wait_time || "Không xác định")
       : waitTimes;
@@ -157,10 +140,9 @@ export const TestManagement = () => {
     );
   };
 
-  // Fetch test orders from API
   useEffect(() => {
     fetchTestOrders();
-  }, []); // eslint-disable-line react-hooks/exhaustive-deps
+  }, []);
 
   const fetchTestOrders = async () => {
     try {
@@ -176,18 +158,15 @@ export const TestManagement = () => {
       if (response.data?.status === 'success' && response.data?.data?.orders) {
         console.log('Fetched test orders:', response.data.data.orders);
 
-        // Transform API data to component format
         const transformedData = response.data.data.orders.map((item) => {
           const order = item.order;
           const services = item.services;
           const details = item.details || [];
 
-          // Get exam date and time from details (first detail or null)
           const firstDetail = details.length > 0 ? details[0] : null;
           const examDate = firstDetail?.exam_date;
           const examTime = firstDetail?.exam_time;
 
-          // Only show exam_date and exam_time if they exist
           let displayDate = examDate ? new Date(examDate).toLocaleDateString('vi-VN') : null;
           let displayTime = examTime ? examTime : null;
           let sortableDate = null;
@@ -249,7 +228,6 @@ export const TestManagement = () => {
     } catch (error) {
       console.error("Error fetching test orders:", error);
 
-      // Show user-friendly error message with toast
       if (error.response?.status === 401) {
         toast.error("Phiên đăng nhập đã hết hạn. Vui lòng đăng nhập lại.", {
           autoClose: 1000,
@@ -274,7 +252,6 @@ export const TestManagement = () => {
     }
   };
 
-  // Map order status to test status
   const mapOrderStatusToTestStatus = (orderStatus) => {
     const statusMap = {
       'pending': 'Chờ thanh toán',
@@ -285,7 +262,6 @@ export const TestManagement = () => {
     return statusMap[orderStatus] || 'Chờ thanh toán';
   };
 
-  // Filter orders based on search criteria
   useEffect(() => {
     let filtered = testOrders.filter((order) => {
       const matchesSearch =
@@ -297,7 +273,6 @@ export const TestManagement = () => {
 
       const matchesStatus = statusFilter === "" || order.status === statusFilter;
 
-      // Only filter by exam_date if it exists
       let matchesDate = true;
       if (dateFilter !== "" && order.examDate) {
         const filterDate = new Date(dateFilter);
@@ -343,21 +318,18 @@ export const TestManagement = () => {
     setSelectedOrder(null);
   };
 
-  // Original update status function for payment confirmation
   const handleUpdateStatus = async (orderId) => {
     try {
       const accessToken = localStorage.getItem('accessToken');
 
       console.log("Updating status for order ID:", orderId);
 
-      // Show loading toast
       const toastId = toast.loading("Đang cập nhật trạng thái...");
 
       const data = {
         order_id: orderId,
       };
 
-      // API call to update order status
       const response = await axiosClient.patch('/v1/staff/update-order', data, {
         headers: {
           'x-access-token': accessToken,
@@ -368,7 +340,6 @@ export const TestManagement = () => {
         const updatedOrder = response.data.data;
         const newDisplayStatus = mapOrderStatusToTestStatus(updatedOrder.order_status);
 
-        // Update local state
         setTestOrders(prev =>
           prev.map(order =>
             order.id === updatedOrder.order_id
@@ -377,7 +348,6 @@ export const TestManagement = () => {
           )
         );
 
-        // Dismiss loading toast and show success
         toast.dismiss(toastId);
         toast.success(`Cập nhật trạng thái thành "${newDisplayStatus}" thành công!`, {
           autoClose: 1000,
@@ -392,7 +362,6 @@ export const TestManagement = () => {
     } catch (error) {
       console.error("Error updating status:", error);
 
-      // Show specific error messages with toast
       if (error.response?.status === 401) {
         toast.error("Phiên đăng nhập đã hết hạn. Vui lòng đăng nhập lại.", {
           autoClose: 1000,
@@ -422,17 +391,14 @@ export const TestManagement = () => {
     }
   };
 
-  // New function to complete order
   const handleCompleteOrder = async (orderId) => {
     try {
       const accessToken = localStorage.getItem('accessToken');
 
       console.log("Completing order ID:", orderId);
 
-      // Show loading toast
       const toastId = toast.loading("Đang hoàn thành xét nghiệm...");
 
-      // API call to complete order
       const response = await axiosClient.patch(`/v1/staff/orders/${orderId}/complete`, {}, {
         headers: {
           'x-access-token': accessToken,
@@ -443,7 +409,6 @@ export const TestManagement = () => {
         const updatedOrder = response.data.data;
         const newDisplayStatus = mapOrderStatusToTestStatus(updatedOrder.order_status);
 
-        // Update local state
         setTestOrders(prev =>
           prev.map(order =>
             order.id === updatedOrder.order_id
@@ -452,7 +417,6 @@ export const TestManagement = () => {
           )
         );
 
-        // Dismiss loading toast and show success
         toast.dismiss(toastId);
         toast.success(`Hoàn thành xét nghiệm thành công!`, {
           autoClose: 1000,
@@ -467,7 +431,6 @@ export const TestManagement = () => {
     } catch (error) {
       console.error("Error completing order:", error);
 
-      // Show specific error messages with toast
       if (error.response?.status === 401) {
         toast.error("Phiên đăng nhập đã hết hạn. Vui lòng đăng nhập lại.", {
           autoClose: 1000,
@@ -497,21 +460,17 @@ export const TestManagement = () => {
     }
   };
 
-  // New function to cancel order
   const handleCancelOrder = async (orderId) => {
     try {
       const accessToken = localStorage.getItem('accessToken');
 
       console.log("Cancelling order ID:", orderId);
 
-      // Show confirmation dialog
       const confirmCancel = window.confirm("Bạn có chắc chắn muốn hủy đơn xét nghiệm này không?");
       if (!confirmCancel) return;
 
-      // Show loading toast
       const toastId = toast.loading("Đang hủy đơn xét nghiệm...");
 
-      // API call to cancel order
       const response = await axiosClient.patch(`/v1/staff/orders/${orderId}/cancel`, {}, {
         headers: {
           'x-access-token': accessToken,
@@ -522,7 +481,6 @@ export const TestManagement = () => {
         const updatedOrder = response.data.data;
         const newDisplayStatus = mapOrderStatusToTestStatus(updatedOrder.order_status);
 
-        // Update local state
         setTestOrders(prev =>
           prev.map(order =>
             order.id === updatedOrder.order_id
@@ -531,7 +489,6 @@ export const TestManagement = () => {
           )
         );
 
-        // Dismiss loading toast and show success
         toast.dismiss(toastId);
         toast.success(`Hủy đơn xét nghiệm thành công!`, {
           autoClose: 1000,
@@ -546,7 +503,6 @@ export const TestManagement = () => {
     } catch (error) {
       console.error("Error cancelling order:", error);
 
-      // Show specific error messages with toast
       if (error.response?.status === 401) {
         toast.error("Phiên đăng nhập đã hết hạn. Vui lòng đăng nhập lại.", {
           autoClose: 1000,
@@ -584,7 +540,6 @@ export const TestManagement = () => {
     fetchTestOrders();
   };
 
-  // Fetch test results templates
   const fetchTestResults = async () => {
     try {
       setResultLoading(true);
@@ -626,7 +581,6 @@ export const TestManagement = () => {
     }
   };
 
-  // Save test results
   const handleSaveTestResults = async (orderResults) => {
     try {
       const accessToken = localStorage.getItem('accessToken');
@@ -650,47 +604,92 @@ export const TestManagement = () => {
             (testInfo?.bad_title || 'Xấu'),
           normal_range: resultData.result || '',
           recommendations: resultData.note || '',
-          created_at: new Date().toISOString()
+          created_at: new Date().toISOString(),
+          image: resultData.image || null
         };
       });
 
       console.log("Test results to save:", testResultsToSave);
 
-      const data = {
-        order_id: selectedOrder.order_id,
-        test_results: testResultsToSave
-      }
+      const hasImages = testResultsToSave.some(result => result.image);
 
-      console.log("Dữ liệu gửi xuống: ", data);
-      const response = await axiosClient.post('/v1/test-results/create-testResult', data, {
-        headers: {
-          'x-access-token': accessToken,
-        }
-      });
-
-      if (response.data?.success) {
-        toast.dismiss(toastId);
-        toast.success("Lưu kết quả xét nghiệm thành công!", {
-          autoClose: 1000,
-          position: "top-right",
+      if (hasImages) {
+        const formData = new FormData();
+        formData.append('order_id', selectedOrder.order_id);
+        
+        const resultsWithoutImages = testResultsToSave.map(result => {
+          const { image: _image, ...resultWithoutImage } = result;
+          return resultWithoutImage;
         });
-        
-        // Close modal and refresh data
-        setShowResultModal(false);
-        setSelectedOrder(null);
-        setTestResultsData([]);
-        
-        // Optionally refresh the orders list
-        fetchTestOrders();
+        formData.append('test_results', JSON.stringify(resultsWithoutImages));
+
+        testResultsToSave.forEach((result, index) => {
+          if (result.image) {
+            formData.append(`image_${index}`, result.image.file);
+            formData.append(`image_${index}_service_id`, result.service_id);
+          }
+        });
+
+        console.log("Sending FormData with images...");
+        const response = await axiosClient.post('/v1/test-results/create-testResult', formData, {
+          headers: {
+            'x-access-token': accessToken,
+          }
+        });
+
+        if (response.data?.success) {
+          toast.dismiss(toastId);
+          toast.success("Lưu kết quả xét nghiệm và hình ảnh thành công!", {
+            autoClose: 2000,
+            position: "top-right",
+          });
+          
+          setShowResultModal(false);
+          setSelectedOrder(null);
+          setTestResultsData([]);
+          
+          fetchTestOrders();
+        } else {
+          toast.dismiss(toastId);
+          throw new Error(response.data?.message || 'Lưu kết quả thất bại');
+        }
       } else {
-        toast.dismiss(toastId);
-        throw new Error(response.data?.message || 'Lưu kết quả thất bại');
+        const data = {
+          order_id: selectedOrder.order_id,
+          test_results: testResultsToSave.map(result => {
+            const { image: _image, ...resultWithoutImage } = result;
+            return resultWithoutImage;
+          })
+        }
+
+        console.log("Dữ liệu gửi xuống (không có hình ảnh): ", data);
+        const response = await axiosClient.post('/v1/test-results/create-testResult', data, {
+          headers: {
+            'x-access-token': accessToken,
+          }
+        });
+
+        if (response.data?.success) {
+          toast.dismiss(toastId);
+          toast.success("Lưu kết quả xét nghiệm thành công!", {
+            autoClose: 1000,
+            position: "top-right",
+          });
+          
+          setShowResultModal(false);
+          setSelectedOrder(null);
+          setTestResultsData([]);
+          
+          fetchTestOrders();
+        } else {
+          toast.dismiss(toastId);
+          throw new Error(response.data?.message || 'Lưu kết quả thất bại');
+        }
       }
 
     } catch (error) {
       console.error("Error saving test results:", error);
       
-      // Show specific error messages
       if (error.response?.status === 401) {
         toast.error("Phiên đăng nhập đã hết hạn. Vui lòng đăng nhập lại.", {
           autoClose: 1000,
@@ -715,24 +714,22 @@ export const TestManagement = () => {
     }
   };
 
-  // Open test results modal
   const handleOpenResultModal = (order) => {
     setSelectedOrder(order);
     setShowResultModal(true);
     fetchTestResults();
   };
 
-  // Close test results modal
   const handleCloseResultModal = () => {
     setShowResultModal(false);
     setSelectedOrder(null);
     setTestResultsData([]);
   };
 
-  // Enhanced TestResultsInput component with wait time display
   const TestResultsInput = () => {
     const [results, setResults] = useState({});
     const [validationErrors, setValidationErrors] = useState({});
+    const [uploadedImages, setUploadedImages] = useState({});
 
     const handleResultChange = (testId, field, value) => {
       setResults(prev => ({
@@ -743,7 +740,6 @@ export const TestManagement = () => {
         }
       }));
 
-      // Clear validation error when user starts typing
       if (validationErrors[testId]) {
         setValidationErrors(prev => ({
           ...prev,
@@ -755,18 +751,71 @@ export const TestManagement = () => {
       }
     };
 
+    const handleImageUpload = (testId, files) => {
+      if (files && files.length > 0) {
+        const file = files[0];
+        
+        // Validate file type
+        const allowedTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/gif'];
+        if (!allowedTypes.includes(file.type)) {
+          toast.error('Chỉ chấp nhận file hình ảnh (JPG, PNG, GIF)', {
+            autoClose: 3000,
+            position: "top-right",
+          });
+          return;
+        }
+
+        // Validate file size (max 5MB)
+        const maxSize = 5 * 1024 * 1024; // 5MB
+        if (file.size > maxSize) {
+          toast.error('Kích thước file không được vượt quá 5MB', {
+            autoClose: 3000,
+            position: "top-right",
+          });
+          return;
+        }
+
+        // Create preview URL
+        const previewUrl = URL.createObjectURL(file);
+        
+        setUploadedImages(prev => ({
+          ...prev,
+          [testId]: {
+            file: file,
+            preview: previewUrl,
+            name: file.name
+          }
+        }));
+
+        toast.success('Tải lên hình ảnh thành công', {
+          autoClose: 2000,
+          position: "top-right",
+        });
+      }
+    };
+
+    const removeImage = (testId) => {
+      if (uploadedImages[testId]?.preview) {
+        URL.revokeObjectURL(uploadedImages[testId].preview);
+      }
+      
+      setUploadedImages(prev => {
+        const newImages = { ...prev };
+        delete newImages[testId];
+        return newImages;
+      });
+    };
+
     const validateForm = () => {
       const errors = {};
       let hasErrors = false;
 
-      // Check if at least one result is filled
       const hasAnyResult = Object.values(results).some(result => result.result);
       if (!hasAnyResult) {
         toast.error("Vui lòng chọn kết quả cho ít nhất một xét nghiệm");
         return false;
       }
 
-      // Validate each filled result
       Object.entries(results).forEach(([testId, resultData]) => {
         if (resultData.result && !resultData.result.trim()) {
           errors[testId] = { result: 'Vui lòng chọn kết quả' };
@@ -783,11 +832,13 @@ export const TestManagement = () => {
         return;
       }
 
-      // Filter out empty results
       const filteredResults = Object.entries(results)
         .filter(([, resultData]) => resultData.result && resultData.result.trim())
         .reduce((acc, [testId, resultData]) => {
-          acc[testId] = resultData;
+          acc[testId] = {
+            ...resultData,
+            image: uploadedImages[testId] || null
+          };
           return acc;
         }, {});
 
@@ -796,7 +847,6 @@ export const TestManagement = () => {
         return;
       }
 
-      // Show confirmation dialog with service details
       const resultCount = Object.keys(filteredResults).length;
       const serviceNames = Object.entries(filteredResults)
         .map(([testId]) => {
@@ -805,25 +855,27 @@ export const TestManagement = () => {
         })
         .join(', ');
 
-      const confirmSave = window.confirm(
-        `Bạn có chắc chắn muốn lưu kết quả xét nghiệm cho ${resultCount} dịch vụ không?\n\nDịch vụ: ${serviceNames}`
-      );
+      const hasImages = Object.values(filteredResults).some(result => result.image);
+      const imageCount = Object.values(filteredResults).filter(result => result.image).length;
+
+      const confirmMessage = `Bạn có chắc chắn muốn lưu kết quả xét nghiệm cho ${resultCount} dịch vụ không?\n\nDịch vụ: ${serviceNames}${
+        hasImages ? `\n\nHình ảnh: ${imageCount} file` : ''
+      }`;
+
+      const confirmSave = window.confirm(confirmMessage);
       
       if (confirmSave) {
         handleSaveTestResults(filteredResults);
       }
     };
 
-    // Filter test results to only show those that match ordered services
     const getMatchingTestResults = () => {
       if (!selectedOrder?.services || !testResultsData) return [];
       
-      // Get service names from the order
       const orderedServiceNames = selectedOrder.services.map(service => 
         service.name.toLowerCase().trim()
       );
       
-      // Filter test results to only include those with matching names
       const matchingResults = testResultsData.filter(test => 
         orderedServiceNames.includes(test.name.toLowerCase().trim())
       );
@@ -832,6 +884,16 @@ export const TestManagement = () => {
     };
 
     const matchingTestResults = getMatchingTestResults();
+
+    React.useEffect(() => {
+      return () => {
+        Object.values(uploadedImages).forEach(imageData => {
+          if (imageData.preview) {
+            URL.revokeObjectURL(imageData.preview);
+          }
+        });
+      };
+    }, [uploadedImages]);
 
     return (
       <div className="space-y-6">
@@ -910,7 +972,6 @@ export const TestManagement = () => {
                 </div>
 
                 {matchingTestResults.map((test, index) => {
-                  // Find matching service to show wait time and service ID
                   const matchingService = selectedOrder.services.find(
                     service => service.name.toLowerCase().trim() === test.name.toLowerCase().trim()
                   );
@@ -965,6 +1026,68 @@ export const TestManagement = () => {
                               <p className="text-red-500 text-xs mt-1">{validationErrors[test._id].result}</p>
                             )}
                           </div>
+
+                          <div>
+                            <label className="block text-sm font-medium text-gray-700 mb-2">
+                              Hình ảnh kết quả
+                            </label>
+                            <div className="mt-1 flex justify-center px-6 pt-5 pb-6 border-2 border-gray-300 border-dashed rounded-lg hover:border-gray-400 transition-colors">
+                              <div className="space-y-1 text-center">
+                                {uploadedImages[test._id] ? (
+                                  <div className="relative">
+                                    <img
+                                      src={uploadedImages[test._id].preview}
+                                      alt="Preview"
+                                      className="mx-auto h-32 w-32 object-cover rounded-lg border border-gray-300"
+                                    />
+                                    <button
+                                      type="button"
+                                      onClick={() => removeImage(test._id)}
+                                      className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full w-6 h-6 flex items-center justify-center text-xs hover:bg-red-600 transition-colors"
+                                    >
+                                      ×
+                                    </button>
+                                    <p className="text-xs text-gray-600 mt-2 truncate max-w-32">
+                                      {uploadedImages[test._id].name}
+                                    </p>
+                                  </div>
+                                ) : (
+                                  <>
+                                    <svg
+                                      className="mx-auto h-12 w-12 text-gray-400"
+                                      stroke="currentColor"
+                                      fill="none"
+                                      viewBox="0 0 48 48"
+                                    >
+                                      <path
+                                        d="M28 8H12a4 4 0 00-4 4v20m32-12v8m0 0v8a4 4 0 01-4 4H12a4 4 0 01-4-4v-4m32-4l-3.172-3.172a4 4 0 00-5.656 0L28 28M8 32l9.172-9.172a4 4 0 015.656 0L28 28m0 0l4 4m4-24h8m-4-4v8m-12 4h.02"
+                                        strokeWidth={2}
+                                        strokeLinecap="round"
+                                        strokeLinejoin="round"
+                                      />
+                                    </svg>
+                                    <div className="flex text-sm text-gray-600">
+                                      <label
+                                        htmlFor={`image-upload-${test._id}`}
+                                        className="relative cursor-pointer bg-white rounded-md font-medium text-blue-600 hover:text-blue-500 focus-within:outline-none focus-within:ring-2 focus-within:ring-offset-2 focus-within:ring-blue-500"
+                                      >
+                                        <span>Tải lên hình ảnh</span>
+                                        <input
+                                          id={`image-upload-${test._id}`}
+                                          type="file"
+                                          className="sr-only"
+                                          accept="image/*"
+                                          onChange={(e) => handleImageUpload(test._id, e.target.files)}
+                                        />
+                                      </label>
+                                      <p className="pl-1">hoặc kéo thả</p>
+                                    </div>
+                                    <p className="text-xs text-gray-500">PNG, JPG, GIF tối đa 5MB</p>
+                                  </>
+                                )}
+                              </div>
+                            </div>
+                          </div>
                         </div>
 
                         <div className="mt-6">
@@ -980,7 +1103,6 @@ export const TestManagement = () => {
                           />
                         </div>
 
-                        {/* Show result description based on selection */}
                         {results[test._id]?.result && (
                           <div className={`mt-6 p-4 rounded-lg border-l-4 ${
                             results[test._id]?.result === 'good' 
@@ -1091,7 +1213,6 @@ export const TestManagement = () => {
             </div>
           </div>
 
-          {/* Statistics Cards with adjusted spacing */}
           <div className="grid grid-cols-1 md:grid-cols-5 gap-3 mb-4">
             <div className="bg-blue-50 border border-blue-200 rounded-lg p-3">
               <div className="flex items-center">
@@ -1172,7 +1293,6 @@ export const TestManagement = () => {
             </div>
           </div>
 
-          {/* Filters with adjusted spacing */}
           <div className="grid grid-cols-1 md:grid-cols-4 gap-3 mb-4">
             <input
               type="text"
@@ -1215,14 +1335,12 @@ export const TestManagement = () => {
             </button>
           </div>
 
-          {/* Results Summary */}
           <div className="mb-4">
             <p className="text-sm text-gray-600">
               Hiển thị {filteredOrders.length} / {testOrders.length} đơn xét nghiệm
             </p>
           </div>
 
-          {/* Table */}
           <div className="overflow-x-auto">
             <table className="min-w-full bg-white">
               <thead className="bg-gray-50">
@@ -1374,7 +1492,6 @@ export const TestManagement = () => {
             </table>
           </div>
 
-          {/* Order Detail Modal */}
           {showModal && selectedOrder && (
             <div className="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50">
               <div className="relative top-20 mx-auto p-5 border w-11/12 md:w-3/4 lg:w-1/2 shadow-lg rounded-md bg-white">
@@ -1500,7 +1617,6 @@ export const TestManagement = () => {
             </div>
           )}
 
-          {/* Test Results Modal */}
           {showResultModal && selectedOrder && (
             <div className="fixed inset-0 bg-black bg-opacity-50 overflow-y-auto h-full w-full z-50 flex items-center justify-center p-8 mt-8">
               <div className="relative w-full max-w-4xl bg-white shadow-xl border border-gray-200 max-h-[90vh] overflow-y-auto">

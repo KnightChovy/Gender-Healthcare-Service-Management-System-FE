@@ -87,7 +87,6 @@ export const DashboardStaff = () => {
     const today = new Date();
     const todayStr = today.toISOString().split('T')[0];
     
-    // Basic stats
     const totalOrders = ordersData.length;
     const completedOrders = ordersData.filter(item => item.order.order_status === 'completed').length;
     const cancelledOrders = ordersData.filter(item => item.order.order_status === 'cancelled').length;
@@ -96,15 +95,12 @@ export const DashboardStaff = () => {
       return orderDate === todayStr;
     }).length;
 
-    // Total revenue (from completed orders only)
     const totalRevenue = ordersData
       .filter(item => item.order.order_status === 'completed')
       .reduce((sum, item) => sum + (item.order.total_amount || 0), 0);
 
-    // Unique patients
     const uniquePatients = new Set(ordersData.map(item => item.order.user_id)).size;
 
-    // Weekly orders (last 7 days)
     const weeklyOrders = [];
     for (let i = 6; i >= 0; i--) {
       const date = new Date(today);
@@ -123,7 +119,6 @@ export const DashboardStaff = () => {
       });
     }
 
-    // Service types statistics
     const serviceStats = {};
     ordersData.forEach(item => {
       if (item.services && item.services.length > 0) {
@@ -140,9 +135,8 @@ export const DashboardStaff = () => {
     const serviceTypes = Object.entries(serviceStats)
       .map(([name, count]) => ({ name, value: count }))
       .sort((a, b) => b.value - a.value)
-      .slice(0, 5); // Top 5 services
+      .slice(0, 5);
 
-    // Orders by status
     const ordersByStatus = [
       { name: 'Hoàn thành', value: completedOrders, color: '#10b981' },
       { name: 'Đã hủy', value: cancelledOrders, color: '#ef4444' },
@@ -185,7 +179,6 @@ export const DashboardStaff = () => {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      {/* Header */}
       <div className="bg-white shadow-sm border-b">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center py-4">
@@ -212,7 +205,6 @@ export const DashboardStaff = () => {
         </div>
       </div>
 
-      {/* Tab Navigation */}
       <div className="bg-white shadow-sm">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <nav className="flex space-x-8">
@@ -234,12 +226,9 @@ export const DashboardStaff = () => {
         </div>
       </div>
 
-      {/* Content */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        {/* Overview Tab */}
         {activeTab === "overview" && (
           <div className="space-y-6">
-            {/* Stats Cards */}
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-6 gap-6">
               <div className="bg-white overflow-hidden shadow rounded-lg">
                 <div className="p-5">
@@ -352,9 +341,7 @@ export const DashboardStaff = () => {
               </div>
             </div>
 
-            {/* Charts */}
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-              {/* Weekly Orders Chart */}
               <div className="bg-white p-6 rounded-lg shadow">
                 <h3 className="text-lg font-medium text-gray-900 mb-4">
                   Đơn hàng theo tuần
@@ -370,7 +357,6 @@ export const DashboardStaff = () => {
                 </ResponsiveContainer>
               </div>
 
-              {/* Service Types Distribution */}
               <div className="bg-white p-6 rounded-lg shadow">
                 <h3 className="text-lg font-medium text-gray-900 mb-4">
                   Top 5 dịch vụ phổ biến
@@ -397,7 +383,6 @@ export const DashboardStaff = () => {
                 </ResponsiveContainer>
               </div>
 
-              {/* Orders by Status */}
               <div className="bg-white p-6 rounded-lg shadow lg:col-span-2">
                 <h3 className="text-lg font-medium text-gray-900 mb-4">
                   Phân bố trạng thái đơn hàng
