@@ -216,11 +216,12 @@ function CycleInputForm({ cycleData, onDataChange, onSaveSuccess }) {
           case 401:
             alert("❌ Phiên đăng nhập đã hết hạn. Vui lòng đăng nhập lại!");
             break;
-          case 400:
+          case 400: {
             const errorMsg =
               error.response.data?.message || "Dữ liệu không hợp lệ";
             alert(`❌ Lỗi dữ liệu: ${errorMsg}`);
             break;
+          }
           case 403:
             alert("❌ Bạn không có quyền thực hiện thao tác này!");
             break;
