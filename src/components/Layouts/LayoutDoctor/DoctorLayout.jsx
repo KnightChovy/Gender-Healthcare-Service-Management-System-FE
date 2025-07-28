@@ -66,20 +66,6 @@ const Sidebar = () => {
         </NavLink>
 
         <NavLink
-          to="/doctor/patients"
-          className={({ isActive }) =>
-            `flex items-center space-x-2 py-2.5 px-4 rounded transition duration-200 ${
-              isActive ? "bg-blue-700 text-white" : "hover:bg-blue-700"
-            }`
-          }
-        >
-          <span className="text-xl">
-            <i className="fas fa-user-injured"></i>
-          </span>
-          <span>Bệnh nhân</span>
-        </NavLink>
-
-        <NavLink
           to="/doctor/profile"
           className={({ isActive }) =>
             `flex items-center space-x-2 py-2.5 px-4 rounded transition duration-200 ${
