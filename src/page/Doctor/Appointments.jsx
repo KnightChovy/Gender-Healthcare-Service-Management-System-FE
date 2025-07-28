@@ -2,7 +2,6 @@ import { useState, useEffect } from "react";
 import { useSelector } from "react-redux";
 import { useNavigate, useLocation } from "react-router-dom";
 import doctorService from "../../services/doctor.service";
-import axiosClient from "../../services/axiosClient";
 
 // Mock data for doctor appointments
 

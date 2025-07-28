@@ -346,6 +346,17 @@ const Schedule = () => {
     return date.getDate() + "/" + (date.getMonth() + 1);
   };
 
+  // Function để reset tất cả các slot đã chọn
+  const handleReset = () => {
+    setSchedule(initSchedule);
+    setBookedTimeSlots([]);
+    showNotification(
+      "info",
+      "Đã đặt lại",
+      "Tất cả các slot đã được đặt lại về trạng thái ban đầu."
+    );
+  };
+
   // Xử lý khi submit form
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -678,7 +689,16 @@ const Schedule = () => {
               <span>Không thể chọn</span>
             </div>
           </div>
-          <div>
+          <div className="flex gap-3">
+            <button
+              type="button"
+              onClick={handleReset}
+              disabled={isLoading}
+              className="px-4 py-2 bg-gray-500 text-white rounded-md hover:bg-gray-600 transition-colors disabled:opacity-50"
+            >
+              <i className="fas fa-redo mr-2"></i>
+              Đặt lại
+            </button>
             <button
               type="submit"
               disabled={isLoading || isCurrentWeek()}
