@@ -584,7 +584,10 @@ export const TestManagement = () => {
   const handleSaveTestResults = async (orderResults) => {
     try {
       const accessToken = localStorage.getItem('accessToken');
-      const toastId = toast.loading("Đang lưu kết quả xét nghiệm...");
+      toast.warn("Đang lưu kết quả xét nghiệm...", {
+        autoClose: 2000,
+        position: "top-right",
+      });
 
       const testResultsToSave = Object.entries(orderResults).map(([testId, resultData]) => {
         const testInfo = testResultsData.find(test => test._id === testId);
@@ -605,86 +608,41 @@ export const TestManagement = () => {
           normal_range: resultData.result || '',
           recommendations: resultData.note || '',
           created_at: new Date().toISOString(),
-          image: resultData.image || null
+          image: resultData.image?.name || null
         };
       });
 
       console.log("Test results to save:", testResultsToSave);
 
-      const hasImages = testResultsToSave.some(result => result.image);
+      const hasImages = testResultsToSave.some(result => result.image_name);
 
-      if (hasImages) {
-        const formData = new FormData();
-        formData.append('order_id', selectedOrder.order_id);
+      const data = {
+        order_id: selectedOrder.order_id,
+        test_results: testResultsToSave
+      };
+
+      console.log("Dữ liệu gửi xuống (chỉ có tên hình ảnh): ", data);
+      const response = await axiosClient.post('/v1/test-results/create-testResult', data, {
+        headers: {
+          'x-access-token': accessToken,
+          'Content-Type': 'application/json'
+        }
+      });
+
+      if (response.data?.success) {
+        const successMessage = hasImages ? "Lưu kết quả xét nghiệm và tên hình ảnh thành công!" : "Lưu kết quả xét nghiệm thành công!";
+        toast.success(successMessage, {
+          autoClose: 2000,
+          position: "top-right",
+        });
         
-        const resultsWithoutImages = testResultsToSave.map(result => {
-          const { image: _image, ...resultWithoutImage } = result;
-          return resultWithoutImage;
-        });
-        formData.append('test_results', JSON.stringify(resultsWithoutImages));
-
-        testResultsToSave.forEach((result, index) => {
-          if (result.image) {
-            formData.append(`image_${index}`, result.image.file);
-            formData.append(`image_${index}_service_id`, result.service_id);
-          }
-        });
-
-        console.log("Sending FormData with images...");
-        const response = await axiosClient.post('/v1/test-results/create-testResult', formData, {
-          headers: {
-            'x-access-token': accessToken,
-          }
-        });
-
-        if (response.data?.success) {
-          toast.dismiss(toastId);
-          toast.success("Lưu kết quả xét nghiệm và hình ảnh thành công!", {
-            autoClose: 2000,
-            position: "top-right",
-          });
-          
-          setShowResultModal(false);
-          setSelectedOrder(null);
-          setTestResultsData([]);
-          
-          fetchTestOrders();
-        } else {
-          toast.dismiss(toastId);
-          throw new Error(response.data?.message || 'Lưu kết quả thất bại');
-        }
+        setShowResultModal(false);
+        setSelectedOrder(null);
+        setTestResultsData([]);
+        
+        fetchTestOrders();
       } else {
-        const data = {
-          order_id: selectedOrder.order_id,
-          test_results: testResultsToSave.map(result => {
-            const { image: _image, ...resultWithoutImage } = result;
-            return resultWithoutImage;
-          })
-        }
-
-        console.log("Dữ liệu gửi xuống (không có hình ảnh): ", data);
-        const response = await axiosClient.post('/v1/test-results/create-testResult', data, {
-          headers: {
-            'x-access-token': accessToken,
-          }
-        });
-
-        if (response.data?.success) {
-          toast.dismiss(toastId);
-          toast.success("Lưu kết quả xét nghiệm thành công!", {
-            autoClose: 1000,
-            position: "top-right",
-          });
-          
-          setShowResultModal(false);
-          setSelectedOrder(null);
-          setTestResultsData([]);
-          
-          fetchTestOrders();
-        } else {
-          toast.dismiss(toastId);
-          throw new Error(response.data?.message || 'Lưu kết quả thất bại');
-        }
+        throw new Error(response.data?.message || 'Lưu kết quả thất bại');
       }
 
     } catch (error) {
@@ -755,7 +713,6 @@ export const TestManagement = () => {
       if (files && files.length > 0) {
         const file = files[0];
         
-        // Validate file type
         const allowedTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/gif'];
         if (!allowedTypes.includes(file.type)) {
           toast.error('Chỉ chấp nhận file hình ảnh (JPG, PNG, GIF)', {
@@ -765,8 +722,7 @@ export const TestManagement = () => {
           return;
         }
 
-        // Validate file size (max 5MB)
-        const maxSize = 5 * 1024 * 1024; // 5MB
+        const maxSize = 5 * 1024 * 1024;
         if (file.size > maxSize) {
           toast.error('Kích thước file không được vượt quá 5MB', {
             autoClose: 3000,
@@ -775,15 +731,16 @@ export const TestManagement = () => {
           return;
         }
 
-        // Create preview URL
-        const previewUrl = URL.createObjectURL(file);
+        const imageUrl = URL.createObjectURL(file);
         
         setUploadedImages(prev => ({
           ...prev,
           [testId]: {
             file: file,
-            preview: previewUrl,
-            name: file.name
+            preview: imageUrl,
+            name: file.name,
+            type: file.type,
+            url: imageUrl
           }
         }));
 
@@ -798,11 +755,16 @@ export const TestManagement = () => {
       if (uploadedImages[testId]?.preview) {
         URL.revokeObjectURL(uploadedImages[testId].preview);
       }
-      
+
       setUploadedImages(prev => {
         const newImages = { ...prev };
         delete newImages[testId];
         return newImages;
+      });
+
+      toast.info('Đã xóa hình ảnh', {
+        autoClose: 1500,
+        position: "top-right",
       });
     };
 
