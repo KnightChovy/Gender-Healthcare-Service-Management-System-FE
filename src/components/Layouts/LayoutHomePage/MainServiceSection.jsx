@@ -52,26 +52,27 @@ export const MainServiceSection = () => {
               Đặt lịch tư vấn trực tuyến với các chuyên gia y tế về mọi vấn đề
               sức khỏe giới tính từ bất kỳ đâu.
             </p>
-            <Link to={"/appointment"}>
-              <button
-                className="text-blue-600 font-medium hover:text-blue-800 flex items-center"
-                onClick={() => handleNavigation("/services/appointment")}
+
+            <button
+              className="text-blue-600 font-medium hover:text-blue-800 flex items-center"
+              onClick={() =>
+                handleNavigation("/services/appointment-consultation")
+              }
+            >
+              Đặt lịch ngay
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                className="h-5 w-5 ml-1"
+                viewBox="0 0 20 20"
+                fill="currentColor"
               >
-                Đặt lịch ngay
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  className="h-5 w-5 ml-1"
-                  viewBox="0 0 20 20"
-                  fill="currentColor"
-                >
-                  <path
-                    fillRule="evenodd"
-                    d="M12.293 5.293a1 1 0 011.414 0l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414-1.414L14.586 11H3a1 1 0 110-2h11.586l-2.293-2.293a1 1 0 010-1.414z"
-                    clipRule="evenodd"
-                  />
-                </svg>
-              </button>
-            </Link>
+                <path
+                  fillRule="evenodd"
+                  d="M12.293 5.293a1 1 0 011.414 0l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414-1.414L14.586 11H3a1 1 0 110-2h11.586l-2.293-2.293a1 1 0 010-1.414z"
+                  clipRule="evenodd"
+                />
+              </svg>
+            </button>
           </div>
 
           {/* Dịch vụ 2 */}
@@ -101,7 +102,7 @@ export const MainServiceSection = () => {
             </p>
             <button
               className="text-green-600 font-medium hover:text-green-800 flex items-center"
-              onClick={() => handleNavigation("/services/sti-testing")}
+              onClick={() => handleNavigation("/services/test")}
             >
               Đặt lịch ngay
               <svg
@@ -146,7 +147,9 @@ export const MainServiceSection = () => {
             </p>
             <button
               className="text-purple-600 font-medium hover:text-purple-800 flex items-center"
-              onClick={() => handleNavigation("/services/doctor-consultation")}
+              onClick={() =>
+                handleNavigation("/services/appointment-consultation")
+              }
             >
               Tìm hiểu thêm
               <svg

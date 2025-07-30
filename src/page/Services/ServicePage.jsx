@@ -43,25 +43,27 @@ export const ServicePage = () => {
     fetchServices();
   }, []);
 
-  // Lọc dịch vụ theo tên hoặc mô tả và category
   const filteredServices = services.filter((service) => {
+    const name = service.name ? service.name.toLowerCase() : "";
+    const description = service.description
+      ? service.description.toLowerCase()
+      : "";
     const matchesSearch =
-      service.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      (service.description &&
-        service.description.toLowerCase().includes(searchTerm.toLowerCase()));
+      name.includes(searchTerm.toLowerCase()) ||
+      description.includes(searchTerm.toLowerCase());
     const matchesCategory =
       selectedCategory === "all" || service.category_id === selectedCategory;
     return matchesSearch && matchesCategory;
   });
 
   const testServices = filteredServices.filter(
-    (service) => service.category === "test"
+    (service) => service.category_id === "CAT001"
   );
   const consultationServices = filteredServices.filter(
-    (service) => service.category === "consultation"
+    (service) => service.category_id === "CAT002"
   );
   const cycleServices = filteredServices.filter(
-    (service) => service.category === "cycle"
+    (service) => service.category_id === "CAT003"
   );
 
   const icons = {
@@ -171,7 +173,7 @@ export const ServicePage = () => {
           </div>
         ) : (
           <div>
-            {(selectedCategory === "all" || selectedCategory === "test") && (
+            {(selectedCategory === "all" || selectedCategory === "CAT001") && (
               <ServiceSection
                 title="Dịch vụ Xét nghiệm"
                 icon={icons.test}
@@ -180,8 +182,7 @@ export const ServicePage = () => {
               />
             )}
 
-            {(selectedCategory === "all" ||
-              selectedCategory === "consultation") && (
+            {(selectedCategory === "all" || selectedCategory === "CAT002") && (
               <ServiceSection
                 title="Dịch vụ Tư vấn"
                 icon={icons.consultation}
@@ -191,7 +192,7 @@ export const ServicePage = () => {
             )}
 
             {/* Cycle Services */}
-            {(selectedCategory === "all" || selectedCategory === "cycle") && (
+            {(selectedCategory === "all" || selectedCategory === "CAT003") && (
               <ServiceSection
                 title="Theo dõi chu kỳ kinh nguyệt"
                 icon={icons.cycle}
@@ -203,7 +204,6 @@ export const ServicePage = () => {
         )}
       </div>
 
-      {/* CTA Section */}
       <div className="bg-blue-900 text-white py-16">
         <div className="container mx-auto px-4 text-center">
           <h2 className="text-3xl font-bold mb-6">
@@ -215,13 +215,13 @@ export const ServicePage = () => {
           </p>
           <div className="flex flex-col sm:flex-row justify-center gap-4">
             <Link
-              to="/appointment"
+              to="/services"
               className="bg-white text-blue-900 hover:bg-blue-100 px-6 py-3 rounded-md font-medium transition-colors"
             >
               Đặt lịch khám ngay
             </Link>
             <Link
-              to="/contact"
+              to="/"
               className="border border-white text-white hover:bg-white hover:text-blue-900 px-6 py-3 rounded-md font-medium transition-colors"
             >
               Liên hệ hỗ trợ

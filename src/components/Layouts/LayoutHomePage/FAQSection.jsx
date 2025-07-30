@@ -1,4 +1,3 @@
-
 import React from "react";
 import { Link } from "react-router-dom";
 
@@ -211,7 +210,7 @@ export const FAQSection = () => {
 
           <div className="text-center mt-8">
             <Link
-              to="/faq"
+              to="/"
               className="inline-flex items-center text-blue-600 font-medium hover:text-blue-800"
             >
               Xem thêm câu hỏi khác

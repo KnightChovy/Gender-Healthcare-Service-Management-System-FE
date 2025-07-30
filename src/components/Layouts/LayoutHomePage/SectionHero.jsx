@@ -1,10 +1,8 @@
 import React from "react";
 import banner_page from "../../../assets/banner_gender.jpg";
 import { Link } from "react-router-dom";
-// import { useSelector } from "react-redux";
 
 export const SectionHero = () => {
-  // const user = useSelector((state) => state.auth.user);
   const accessToken = localStorage.getItem("accessToken");
   return (
     <section className="relative">
@@ -93,7 +91,7 @@ export const SectionHero = () => {
                     </svg>
                   </div>
                   <span className="text-gray-800 text-sm font-medium">
-                    Khám phá các dịch vụ xét nghiệm
+                    Khám phá các dịch vụ
                   </span>
                 </Link>
 
