@@ -856,7 +856,7 @@ function CycleInputForm({ cycleData, onDataChange, onSaveSuccess }) {
               width: "100%",
               borderColor: validationErrors.cycleLength ? "#ff4444" : undefined,
             }}
-            placeholder="Nhập số từ 21-35"
+            placeholder="Thường từ 21 đến 35 ngày"
           />
           {validationErrors.cycleLength && (
             <div
@@ -903,7 +903,7 @@ function CycleInputForm({ cycleData, onDataChange, onSaveSuccess }) {
                 ? "#ff4444"
                 : undefined,
             }}
-            placeholder="Nhập số từ 3-8"
+            placeholder="Thường từ 3 đến 8 ngày"
           />
           {validationErrors.periodLength && (
             <div
