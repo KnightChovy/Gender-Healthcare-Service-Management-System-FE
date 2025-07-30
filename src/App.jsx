@@ -30,7 +30,6 @@ import DoctorDashboard from "./page/Doctor/Dashboard";
 import Appointments from "./page/Doctor/Appointments";
 import Schedule from "./page/Doctor/Schedule";
 import Profile from "./page/Doctor/Profile";
-import TestManagement from "./page/Doctor/TestManagement";
 import { ConsultSchedulerManagerment } from "./page/manager/ConsultSchedulerManagerment/ConsultSchedulerManagerment";
 import AddEmployees from "./page/admin/EmployeesManagerment/AddEmployees";
 import ProfilePage from "./page/profile";
@@ -235,7 +234,6 @@ function App() {
           <Route path="appointments" element={<Appointments />} />
           <Route path="schedule" element={<Schedule />} />
           <Route path="profile" element={<Profile />} />
-          <Route path="test-management" element={<TestManagement />} />
         </Route>
         {/* Test Service */}
         <Route
