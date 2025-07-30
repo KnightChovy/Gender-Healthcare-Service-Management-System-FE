@@ -11,12 +11,13 @@ export const DoctorSection = () => {
     const fetchApiDoctor = async () => {
       try {
         const res = await axiosClient.get("v1/doctors");
-        console.log(res);
-        if (res.data.success) {
-          setListDoctor(res.data.listAllDoctors);
-        } else {
-          setError(res.data.message);
-        }
+        console.log(res.data);
+        const doctors = res.data.listAllDoctors.filter(
+          (item) => item.status === 1
+        );
+        console.log(doctors);
+
+        setListDoctor(doctors);
       } catch (error) {
         setError(`Loi ket noi: ${error.message}`);
       } finally {
@@ -52,20 +53,29 @@ export const DoctorSection = () => {
                 className="bg-white rounded-lg shadow-md overflow-hidden"
               >
                 <div className="w-full h-64 bg-gray-200 flex items-center justify-center">
-                  <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    className="h-20 w-20 text-gray-400"
-                    fill="none"
-                    viewBox="0 0 24 24"
-                    stroke="currentColor"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={1}
-                      d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"
+                  {doctor.avatar ? (
+                    <img
+                      src={doctor.avatar}
+                      alt={doctor.last_name + " " + doctor.first_name}
+                      className="w-full h-full object-cover object-top transition-transform duration-300 hover:scale-105"
+                      style={{ display: "block" }}
                     />
-                  </svg>
+                  ) : (
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      className="h-20 w-20 text-gray-400"
+                      fill="none"
+                      viewBox="0 0 24 24"
+                      stroke="currentColor"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={1}
+                        d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"
+                      />
+                    </svg>
+                  )}
                 </div>
                 <div className="p-5">
                   <h3 className="text-xl font-bold mb-1">

@@ -459,7 +459,7 @@ export const MedicalRecord = ({
           </h2>
           <div className="flex items-center gap-3 text-gray-600">
             <span>
-              <strong className="text-blue-600">{medicalRecords.length}</strong>{" "}
+              <strong className="text-blue-600">{medicalRecords.length}</strong>
               kết quả xét nghiệm
             </span>
             {medicalLoading && (

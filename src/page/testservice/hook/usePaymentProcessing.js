@@ -7,7 +7,6 @@ export const usePaymentProcessing = ({
   selectedServices,
   selectedDate,
   selectedTimeSlot,
-  medicalHistory,
   calculateTotalAmount,
   appointmentId,
   completeBookingProcess,
@@ -18,18 +17,16 @@ export const usePaymentProcessing = ({
   const [paymentProcessing, setPaymentProcessing] = useState(false);
   const [webhookStatus, setWebhookStatus] = useState(null);
 
-  // Hàm format thời gian từ "13:30 - 14:00" thành "13:30:00"
   const formatExamTime = (timeSlot) => {
     if (!timeSlot) return "";
-    
-    // Tách lấy phần thời gian bắt đầu (trước dấu " - ")
+
     const startTime = timeSlot.split(" - ")[0];
-    
+
     // Thêm :00 nếu chưa có giây
     if (startTime.split(":").length === 2) {
       return `${startTime}:00`;
     }
-    
+
     return startTime;
   };
 
@@ -40,55 +37,22 @@ export const usePaymentProcessing = ({
     setPaymentProcessing(true);
 
     try {
-      // Kiểm tra dữ liệu
-      if (!userInfo.user_id) {
+      if (!userInfo.user_id)
         throw new Error("Thiếu thông tin user ID - Vui lòng đăng nhập lại");
-      }
-
-      if (selectedServices.length === 0) {
-        throw new Error("Chưa chọn dịch vụ");
-      }
-
-      if (!selectedDate || !selectedTimeSlot) {
+      if (selectedServices.length === 0) throw new Error("Chưa chọn dịch vụ");
+      if (!selectedDate || !selectedTimeSlot)
         throw new Error("Chưa chọn ngày hoặc giờ hẹn");
-      }
 
-      // Format dữ liệu
-      const serviceId = selectedServices.map((ser) => ({
-        service_id: ser.service_id,
-      }));
-
+      const services = selectedServices;
       const totalAmount = calculateTotalAmount();
-      const paymentMethod = "cash";
       const formattedExamTime = formatExamTime(selectedTimeSlot);
 
-      localStorage.setItem(
-        "currentPaymentSession",
-        JSON.stringify({
-          sessionId: `session_${Date.now()}`,
-          appointmentId: appointmentId || null,
-          amount: Math.floor(totalAmount),
-          paymentMethod: paymentMethod,
-          createdAt: new Date().toISOString(),
-          status: "pending",
-          appointmentData: {
-            user_id: userInfo.user_id,
-            appointment_date: format(selectedDate, "yyyy-MM-dd"),
-            appointment_time: formattedExamTime,
-            services: selectedServices,
-            medical_history: medicalHistory,
-            price_apm: Math.floor(totalAmount),
-          },
-        })
-      );
-
-      // Thanh toán tiền mặt
       const requestBody = {
         bookingData: {
           appointment_id: appointmentId || null,
           user_id: userInfo.user_id,
-          serviceData: serviceId,
-          payment_method: paymentMethod,
+          serviceData: services,
+          payment_method: "cash",
           exam_date: format(selectedDate, "yyyy-MM-dd"),
           exam_time: formattedExamTime,
         },
@@ -99,7 +63,6 @@ export const usePaymentProcessing = ({
         requestBody,
         { timeout: 15000 }
       );
-      // console.log(res.data.data.order.order_id);
 
       if (res && res.data && res.data.success) {
         completeBookingProcess(res.data);
@@ -110,14 +73,12 @@ export const usePaymentProcessing = ({
       console.error("❌ Payment error:", err);
 
       if (err.response) {
-        // Lỗi từ server
         setPaymentErrorMessage(
           `Lỗi máy chủ (${err.response.status}): ${
             err.response.data?.message || "Vui lòng liên hệ hỗ trợ"
           }`
         );
       } else if (err.request) {
-        // Không nhận được phản hồi
         setPaymentErrorMessage(
           "Không nhận được phản hồi từ máy chủ. Vui lòng kiểm tra kết nối mạng."
         );

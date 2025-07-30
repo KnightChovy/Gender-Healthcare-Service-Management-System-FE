@@ -1,9 +1,12 @@
 import React, { useEffect, useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import axiosClient from "../../../services/axiosClient";
+import { toast } from "react-toastify";
 
 export const FeaturedSection = () => {
   const [services, setServices] = useState([]);
+  const user = localStorage.getItem("user");
+  const navigate = useNavigate();
 
   useEffect(() => {
     const fetchServicesTest = async () => {
@@ -113,9 +116,22 @@ export const FeaturedSection = () => {
                     </ul>
                   </div>
                   <Link
-                    to={`/services/test`}
+                    to={user && "/services/test"}
                     className="block w-full bg-blue-600 hover:bg-blue-700 text-white font-medium text-center py-3 rounded-lg transition-colors mt-5"
                     style={{ marginTop: "auto" }}
+                    onClick={(e) => {
+                      if (!user) {
+                        e.preventDefault();
+                        toast.error(
+                          "Vui lòng đăng nhập để sử dụng dịch vụ này!",
+                          {
+                            autoClose: 1000,
+                            position: "top-right",
+                          }
+                        );
+                        navigate("/login");
+                      }
+                    }}
                   >
                     Đặt lịch ngay
                   </Link>

@@ -183,16 +183,6 @@ export default function LayoutManager() {
       icon: <CalendarMonthIcon />,
     },
     {
-      text: "Quản lí lịch làm việc",
-      path: "/manager/schedulemanagerment",
-      icon: <WorkHistoryIcon />,
-    },
-    {
-      text: "Quản lí đánh giá",
-      path: "/manager/feedbackmanagerment",
-      icon: <RateReviewIcon />,
-    },
-    {
       text: "Quản lí doanh thu",
       path: "/manager/revenuamanagerment",
       icon: <AccountBalanceWalletIcon />,

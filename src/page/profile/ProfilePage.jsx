@@ -1105,7 +1105,6 @@ const ProfilePage = () => {
               )}
             </div>
 
-            {/* Modal Footer */}
             <div className="p-5 border-t border-gray-200 flex justify-between items-center flex-wrap gap-4 bg-gray-50">
               <div>
                 <div className="flex items-center gap-2 text-sm text-gray-500">

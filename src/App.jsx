@@ -48,6 +48,8 @@ import { TestManagement as StaffTestManagement } from "./page/staff/TestManageme
 import { useEffect, useState } from "react";
 import { TestAppointment } from "./page/manager/TestAppointment/TestAppointment";
 import { ScrollTop } from "./components/ui/ScrollTop";
+import UserManagement from "./page/admin/UserManagement";
+import RevenueManagement from "./page/manager/RevenueManagement";
 function App() {
   const [isAuthen, setIsAuthen] = useState(false);
   useEffect(() => {
@@ -226,6 +228,7 @@ function App() {
           <Route index element={<DashboardAdmin />} />
           <Route path="employees" element={<EmployeesManagerment />} />
           <Route path="employees/addEmployees" element={<AddEmployees />} />
+          <Route path="users" element={<UserManagement />} />
         </Route>{" "}
         {/* Doctor */}
         <Route path="/doctor" element={<DoctorLayout />}>
@@ -261,6 +264,10 @@ function App() {
           <Route
             path="/manager/test_appointment"
             element={<TestAppointment />}
+          />
+          <Route
+            path="/manager/revenuamanagerment"
+            element={<RevenueManagement />}
           />
         </Route>
         {/* Staff */}

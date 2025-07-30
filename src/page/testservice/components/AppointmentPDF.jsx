@@ -116,10 +116,7 @@ const AppointmentPDF = ({ appointmentDetails }) => (
           Giờ khám: {appointmentDetails.exam_time}
         </Text>
         <Text style={styles.content}>
-          Phương thức thanh toán:{" "}
-          {appointmentDetails.payment_method === "cash"
-            ? "Tiền mặt (tại cơ sở)"
-            : "VNPay (Đã thanh toán)"}
+          Phương thức thanh toán: Thanh toán tại cơ sở y tế
         </Text>
       </View>
 

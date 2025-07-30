@@ -84,8 +84,8 @@ export default function AdminMenu() {
           >
             <Avatar
               sx={{
-                width: 38,
-                height: 38,
+                width: 36,
+                height: 36,
                 border: "2px solid rgba(255,255,255,0.2)",
               }}
             >
@@ -95,12 +95,11 @@ export default function AdminMenu() {
               <Typography
                 variant="body2"
                 fontWeight="500"
+                color="white"
+                marginLeft={"10px"}
                 sx={{ lineHeight: 1.2 }}
               >
                 Admin
-              </Typography>
-              <Typography variant="caption" sx={{ opacity: 0.7 }}>
-                {user?.role || "Administrator"}
               </Typography>
             </Box>
           </IconButton>
@@ -143,11 +142,6 @@ export default function AdminMenu() {
         transformOrigin={{ horizontal: "right", vertical: "top" }}
         anchorOrigin={{ horizontal: "right", vertical: "bottom" }}
       >
-        <MenuItem onClick={handleClose}>
-          <Avatar />
-          <Link to="/profile">Hồ sơ</Link>
-        </MenuItem>
-
         <MenuItem
           onClick={() => {
             handleClose();

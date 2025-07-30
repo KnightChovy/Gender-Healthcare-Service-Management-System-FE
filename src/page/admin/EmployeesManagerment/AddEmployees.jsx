@@ -7,6 +7,7 @@ import {
   API_ADMIN_CREATESTAFF,
   API_ADMIN_UPDATESTAFF,
 } from "../../../constants/Apis";
+import { toast } from "react-toastify";
 
 const AddEmployees = () => {
   const navigate = useNavigate();
@@ -76,10 +77,9 @@ const AddEmployees = () => {
     }),
   });
 
-
   const initialValues = {
     username: staffData?.username || "",
-    password: "", 
+    password: "",
     confirm_password: "",
     first_name: staffData?.first_name || "",
     last_name: staffData?.last_name || "",
@@ -139,6 +139,10 @@ const AddEmployees = () => {
         });
       }
 
+      toast.success("Tạo thành công", {
+        autoClose: 1000,
+        position: "top-right",
+      });
       console.log("Success:", response.data);
 
       setTimeout(() => {
@@ -411,6 +415,7 @@ const AddEmployees = () => {
                 </option>
                 <option value="manager">Quản lí</option>
                 <option value="doctor">Bác sĩ</option>
+                <option value="staff">Nhân viên</option>
               </Field>
               <ErrorMessage
                 name="role"
