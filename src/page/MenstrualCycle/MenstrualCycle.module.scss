@@ -204,6 +204,35 @@
   margin-top: 8px;
 }
 
+.general-tip-upgraded {
+  background-color: #e8f5e9;
+  border: 1px solid #4caf50;
+  border-radius: 8px;
+  padding: 16px 20px;
+  margin-bottom: 24px;
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+
+  .general-tip-icon {
+    font-size: 1.5rem;
+    line-height: 1;
+  }
+
+  .general-tip-title {
+    font-weight: 600;
+    color: #2e7d32;
+    margin-bottom: 6px;
+    font-size: 1rem;
+  }
+
+  .general-tip-content {
+    color: #333;
+    line-height: 1.6;
+    font-size: 0.95rem;
+  }
+}
+
 /* Header Styles - Cải tiến spacing */
 .header {
   background: linear-gradient(135deg, #d4d8ed 0%, #d7539a 100%);

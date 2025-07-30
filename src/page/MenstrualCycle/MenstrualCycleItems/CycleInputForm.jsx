@@ -25,15 +25,13 @@ function CycleInputForm({ cycleData, onDataChange, onSaveSuccess }) {
       ),
     cycleLength: Yup.number()
       .required("Độ dài chu kì là bắt buộc")
+      .min(1, "Độ dài chu kỳ phải lớn hơn 0")
       .integer("Độ dài chu kì phải là số nguyên")
-      .min(21, "Độ dài chu kì phải từ 21 ngày")
-      .max(35, "Độ dài chu kì không được quá 35 ngày")
       .typeError("Độ dài chu kì phải là số"),
     periodLength: Yup.number()
       .required("Số ngày kinh nguyệt là bắt buộc")
+      .min(1, "Độ dài chu kỳ phải lớn hơn 0")
       .integer("Số ngày kinh nguyệt phải là số nguyên")
-      .min(3, "Số ngày kinh nguyệt phải từ 3 ngày")
-      .max(8, "Số ngày kinh nguyệt không được quá 8 ngày")
       .typeError("Số ngày kinh nguyệt phải là số"),
     birthControlTime: Yup.string()
       .matches(
@@ -497,6 +495,18 @@ function CycleInputForm({ cycleData, onDataChange, onSaveSuccess }) {
 
         <div className={cx("form-group")} style={{ display: "block" }}>
           <span>Ngày đầu kì kinh nguyệt gần nhất:</span>
+
+          <small
+            style={{
+              color: "#666",
+              fontSize: "0.8rem",
+              marginTop: "4px",
+              display: "block",
+            }}
+          >
+            * Bạn chỉ có thể chọn ngày trong quá khứ hoặc hôm nay. Không thể
+            chọn ngày trong tương lai.
+          </small>
           <input
             type="date"
             name="lastPeriodDate"
@@ -522,16 +532,6 @@ function CycleInputForm({ cycleData, onDataChange, onSaveSuccess }) {
               {validationErrors.lastPeriodDate}
             </div>
           )}
-          <small
-            style={{
-              color: "#666",
-              fontSize: "0.8rem",
-              marginTop: "4px",
-              display: "block",
-            }}
-          >
-            * Chọn ngày bắt đầu chu kỳ kinh nguyệt gần nhất
-          </small>
         </div>
 
         <div className={cx("form-group")} style={{ display: "block" }}>
@@ -541,8 +541,6 @@ function CycleInputForm({ cycleData, onDataChange, onSaveSuccess }) {
             name="cycleLength"
             value={cycleData?.cycleLength || ""}
             onChange={handleInputChange}
-            min="21"
-            max="35"
             style={{
               width: "100%",
               borderColor: validationErrors.cycleLength ? "#ff4444" : undefined,
@@ -561,16 +559,24 @@ function CycleInputForm({ cycleData, onDataChange, onSaveSuccess }) {
               {validationErrors.cycleLength}
             </div>
           )}
-          <small
-            style={{
-              color: "#666",
-              fontSize: "0.8rem",
-              marginTop: "4px",
-              display: "block",
-            }}
-          >
-            * Nhập độ dài chu kỳ kinh nguyệt (21-35 ngày)
-          </small>
+          {cycleData?.cycleLength > 35 || cycleData?.cycleLength < 21 ? (
+            <div
+              style={{
+                color: "#e67e22",
+                fontSize: "0.85rem",
+                marginTop: "4px",
+                display: "block",
+              }}
+            >
+              ⚠️ Chu kỳ bạn nhập nằm ngoài khoảng phổ biến (21–35 ngày).
+              <div>
+                <small style={{ color: "#aaa", fontSize: "0.75rem" }}>
+                  * Nếu bạn có chu kỳ hoặc số ngày hành kinh bất thường, vẫn có
+                  thể lưu và sử dụng bình thường.
+                </small>
+              </div>
+            </div>
+          ) : null}
         </div>
 
         <div className={cx("form-group")} style={{ display: "block" }}>
@@ -580,8 +586,6 @@ function CycleInputForm({ cycleData, onDataChange, onSaveSuccess }) {
             name="periodLength"
             value={cycleData?.periodLength || ""}
             onChange={handleInputChange}
-            min="3"
-            max="8"
             style={{
               width: "100%",
               borderColor: validationErrors.periodLength
@@ -602,16 +606,25 @@ function CycleInputForm({ cycleData, onDataChange, onSaveSuccess }) {
               {validationErrors.periodLength}
             </div>
           )}
-          <small
-            style={{
-              color: "#666",
-              fontSize: "0.8rem",
-              marginTop: "4px",
-              display: "block",
-            }}
-          >
-            * Nhập số ngày hành kinh (3-8 ngày)
-          </small>
+          {cycleData?.periodLength > 8 || cycleData?.periodLength < 3 ? (
+            <div
+              style={{
+                color: "#e67e22",
+                fontSize: "0.85rem",
+                marginTop: "4px",
+                display: "block",
+              }}
+            >
+              ⚠️ Số ngày kinh nguyệt bạn nhập nằm ngoài khoảng phổ biến (3–8
+              ngày).
+              <div>
+                <small style={{ color: "#aaa", fontSize: "0.75rem" }}>
+                  * Nếu bạn có chu kỳ hoặc số ngày hành kinh bất thường, vẫn có
+                  thể lưu và sử dụng bình thường.
+                </small>
+              </div>
+            </div>
+          ) : null}
         </div>
 
         <div className={cx("form-group")}>
