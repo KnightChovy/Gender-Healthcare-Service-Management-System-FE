@@ -1,10 +1,13 @@
 import React from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
+import { toast } from "react-toastify";
 const hashServiceId = (serviceId) => {
   return btoa(serviceId.toString()).replace(/=/g, "");
 };
 export const ServiceCards = ({ service }) => {
   console.log(service);
+  const navigate = useNavigate();
+  const user = localStorage.getItem("user");
 
   const cateConfig = {
     CAT001: {
@@ -99,13 +102,27 @@ export const ServiceCards = ({ service }) => {
 
         <div className="mt-6 flex justify-end">
           <Link
-            to={{
-              pathname: config.pathName,
-              search:
-                service.service_id &&
-                config.pathName !== "/services/menstrual-cycle"
-                  ? `?serviceId=${hashServiceId(service.service_id)}`
-                  : "",
+            to={
+              user
+                ? {
+                    pathname: config.pathName,
+                    search:
+                      service.service_id &&
+                      config.pathName !== "/services/menstrual-cycle"
+                        ? `?serviceId=${hashServiceId(service.service_id)}`
+                        : "",
+                  }
+                : "#"
+            }
+            onClick={(e) => {
+              if (!user) {
+                e.preventDefault();
+                toast.error("Vui lòng đăng nhập để sử dụng dịch vụ này!", {
+                  autoClose: 1000,
+                  position: "top-right",
+                });
+                navigate("/login");
+              }
             }}
             className={`bg-${config.color}-600 hover:bg-${config.color}-700 text-white px-4 py-2 rounded-md transition-colors `}
           >

@@ -26,7 +26,7 @@ const DoctorAppointments = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedAppointment, setSelectedAppointment] = useState(null);
   const { user } = useSelector((state) => state.auth);
-
+  console.log("Current user:", selectedAppointment);
   useEffect(() => {
     // Hiển thị thông báo success nếu có
     if (location.state?.message) {
@@ -546,12 +546,7 @@ const DoctorAppointments = () => {
                                 {formatDate(selectedAppointment.created_at)}
                               </span>
                             </div>
-                            <div className="flex justify-between">
-                              <span className="text-gray-600">Bác sĩ:</span>
-                              <span className="font-medium">
-                                {selectedAppointment.doctor_id}
-                              </span>
-                            </div>
+
                             {selectedAppointment.time_start && (
                               <div className="flex justify-between">
                                 <span className="text-gray-600">
@@ -586,18 +581,6 @@ const DoctorAppointments = () => {
 
                   {selectedAppointment.status === "confirmed" && (
                     <>
-                      <button
-                        onClick={() => {
-                          closeModal();
-                          navigate(
-                            `/doctor/consultation-result/${selectedAppointment.appointment_id}`
-                          );
-                        }}
-                        className="px-4 py-2 bg-green-600 text-white rounded-md text-sm font-medium hover:bg-green-700"
-                      >
-                        Nhập kết quả tư vấn
-                      </button>
-
                       {isToday(selectedAppointment.date) && (
                         <button
                           onClick={() => {
