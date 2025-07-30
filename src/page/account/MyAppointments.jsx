@@ -2,16 +2,37 @@ import React, { useState, useEffect } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
-  faCalendarAlt, faClock, faUserMd, faPhone, faEnvelope, faStethoscope,
-  faNotesMedical, faMoneyBillWave, faEye, faTrash, faFilter, faSearch,
-  faSpinner, faExclamationTriangle, faCheckCircle, faTimesCircle, faHourglassHalf,
-  faCalendarCheck, faRefresh, faCreditCard, faVideo, faStar, faFlaskVial, faFileAlt, faDownload
-} from '@fortawesome/free-solid-svg-icons';
-import axiosClient from '../../services/axiosClient';
-import { toast } from 'react-toastify';
-import classNames from 'classnames/bind';
-import styles from './MyAppointments.module.scss';
-import ConfirmModal from '../../components/ui/ConfirmModal';
+  faCalendarAlt,
+  faClock,
+  faUserMd,
+  faPhone,
+  faEnvelope,
+  faStethoscope,
+  faNotesMedical,
+  faMoneyBillWave,
+  faEye,
+  faTrash,
+  faFilter,
+  faSearch,
+  faSpinner,
+  faExclamationTriangle,
+  faCheckCircle,
+  faTimesCircle,
+  faHourglassHalf,
+  faCalendarCheck,
+  faRefresh,
+  faCreditCard,
+  faVideo,
+  faStar,
+  faFlaskVial,
+  faFileAlt,
+  faDownload,
+} from "@fortawesome/free-solid-svg-icons";
+import axiosClient from "../../services/axiosClient";
+import { toast } from "react-toastify";
+import classNames from "classnames/bind";
+import styles from "./MyAppointments.module.scss";
+import ConfirmModal from "../../components/ui/ConfirmModal";
 
 const cx = classNames.bind(styles);
 
@@ -37,7 +58,7 @@ function MyAppointments() {
   const [currentPage, setCurrentPage] = useState(1);
   const [appointmentsPerPage] = useState(6);
 
-  const [activeTab, setActiveTab] = useState('appointments');
+  const [activeTab, setActiveTab] = useState("appointments");
 
   const [testOrders, setTestOrders] = useState([]);
   const [filteredTestOrders, setFilteredTestOrders] = useState([]);
@@ -58,43 +79,48 @@ function MyAppointments() {
 
   const [modalConfig, setModalConfig] = useState({
     isOpen: false,
-    type: 'confirm',
-    title: '',
-    message: '',
+    type: "confirm",
+    title: "",
+    message: "",
     onConfirm: null,
-    confirmText: 'Xác nhận',
-    cancelText: 'Hủy'
+    confirmText: "Xác nhận",
+    cancelText: "Hủy",
   });
 
   const user = JSON.parse(localStorage.getItem("user") || "{}");
   const accessToken = localStorage.getItem("accessToken");
 
-  const showConfirmModal = (message, onConfirm, title = 'Xác nhận', confirmText = 'Xác nhận') => {
+  const showConfirmModal = (
+    message,
+    onConfirm,
+    title = "Xác nhận",
+    confirmText = "Xác nhận"
+  ) => {
     setModalConfig({
       isOpen: true,
-      type: 'confirm',
+      type: "confirm",
       title,
       message,
       onConfirm,
       confirmText,
-      cancelText: 'Hủy'
+      cancelText: "Hủy",
     });
   };
 
-  const showAlertModal = (message, title = 'Thông báo') => {
+  const showAlertModal = (message, title = "Thông báo") => {
     setModalConfig({
       isOpen: true,
-      type: 'alert',
+      type: "alert",
       title,
       message,
       onConfirm: null,
-      confirmText: 'OK',
-      cancelText: ''
+      confirmText: "OK",
+      cancelText: "",
     });
   };
 
   const closeModal = () => {
-    setModalConfig(prev => ({ ...prev, isOpen: false }));
+    setModalConfig((prev) => ({ ...prev, isOpen: false }));
   };
 
   const checkFeedbackStatus = (appointment) => {
@@ -180,8 +206,10 @@ function MyAppointments() {
     },
   };
 
-  const getStatusInfo = (status) => statusConfig[status] || statusConfig['pending'];
-  const getTestStatusInfo = (status) => testStatusConfig[status] || testStatusConfig['pending'];
+  const getStatusInfo = (status) =>
+    statusConfig[status] || statusConfig["pending"];
+  const getTestStatusInfo = (status) =>
+    testStatusConfig[status] || testStatusConfig["pending"];
 
   const handleFilterChange = (filterType, value) => {
     setFilters((prev) => ({ ...prev, [filterType]: value }));
@@ -197,18 +225,22 @@ function MyAppointments() {
   const handlePayment = (appointment) => {
     const appointmentId = appointment.id || appointment.appointment_id;
 
-    if (!appointmentId || !appointment.price_apm || appointment.price_apm <= 0) {
-      showAlertModal('Cuộc hẹn này không thể thanh toán');
+    if (
+      !appointmentId ||
+      !appointment.price_apm ||
+      appointment.price_apm <= 0
+    ) {
+      showAlertModal("Cuộc hẹn này không thể thanh toán");
       return;
     }
 
-    if (appointment.status === 'rejected') {
-      showAlertModal('Không thể thanh toán cho cuộc hẹn đã bị hủy');
+    if (appointment.status === "rejected") {
+      showAlertModal("Không thể thanh toán cho cuộc hẹn đã bị hủy");
       return;
     }
 
-    if (!['confirmed', '1'].includes(appointment.status)) {
-      showAlertModal('Chỉ có thể thanh toán cho các cuộc hẹn đã được xác nhận');
+    if (!["confirmed", "1"].includes(appointment.status)) {
+      showAlertModal("Chỉ có thể thanh toán cho các cuộc hẹn đã được xác nhận");
       return;
     }
 
@@ -217,7 +249,7 @@ function MyAppointments() {
     });
   };
 
-  const handleRebook = () => navigate('/services/appointment-consultation');
+  const handleRebook = () => navigate("/services/appointment-consultation");
 
   const viewAppointmentDetails = (appointment) => {
     setSelectedAppointment(appointment);
@@ -236,180 +268,105 @@ function MyAppointments() {
   };
 
   const handleViewTestResult = (order) => {
-    const results = testResults.filter(r => r.order_id === order.order.order_id);
+    const results = testResults.filter(
+      (r) => r.order_id === order.order.order_id
+    );
     if (results.length > 0) {
       setSelectedResults(results);
       setShowResultModal(true);
     }
   };
 
-  const handleCancelTestOrder = (order) => {
-    console.log('Hủy đơn xét nghiệm:', order.order.order_id);
+  const handleCancelTestOrder = async (order) => {
+    try {
+      const res = await axiosClient.post("/v1/users/cancel-order", {
+        "x-access-token": accessToken,
+        order_id: order.order.order_id,
+      });
+      if (res.data?.success || res.data?.status === "success") {
+        toast.success("Hủy đơn xét nghiệm thành công!", {
+          position: "top-right",
+          autoClose: 2000,
+        });
+        await refreshAllData();
+      } else {
+        toast.error(res.data?.message || "Hủy đơn thất bại!", {
+          position: "top-right",
+          autoClose: 3000,
+        });
+      }
+    } catch (error) {
+      toast.error(
+        error.response?.data?.message || "Có lỗi xảy ra khi hủy đơn!",
+        {
+          position: "top-right",
+          autoClose: 3000,
+        }
+      );
+      console.log(error, "Lỗi rồi");
+    }
+    console.log("Hủy đơn xét nghiệm:", order.order.order_id);
   };
-
-  const handleDownloadResult = (result) => {
+  const handleDownloadAllResults = (results) => {
     try {
       const user = JSON.parse(localStorage.getItem("user") || "{}");
 
       const textContent = `
-KẾT QUẢ XÉT NGHIỆM
-==================
+KẾT QUẢ XÉT NGHIỆM - BÁO CÁO TỔNG HỢP
+==========================================
 
 THÔNG TIN BỆNH NHÂN:
 - Họ và tên: ${user.last_name} ${user.first_name}
 - Số điện thoại: ${user.phone}
 - Email: ${user.email}
-- Mã kết quả: ${result.testresult_id}
 
-THÔNG TIN XÉT NGHIỆM:
+${results
+  .map(
+    (result, index) => `
+KẾT QUẢ ${index + 1}:
+===================
+- Mã kết quả: ${result.testresult_id}
 - Tên xét nghiệm: ${result.service.name}
 - Mô tả: ${result.service.description}
 - Ngày xét nghiệm: ${new Date(result.exam_date).toLocaleDateString("vi-VN")} ${
-        result.exam_time
-      }
+      result.exam_time
+    }
 
 KẾT QUẢ:
 - Kết quả: ${result.result.result}
 - Kết luận: ${result.result.conclusion}
 - Chỉ số tham chiếu: ${result.result.normal_range || "Không có"}
 - Ghi chú bác sĩ: ${result.result.recommendation || "Không có"}
+`
+  )
+  .join("\n")}
 
 ---
 Tạo lúc: ${new Date().toLocaleString("vi-VN")}
-    `;
+      `;
 
-      // Download as text file
-      const blob = new Blob([textContent], { type: 'text/plain;charset=utf-8' });
+      const blob = new Blob([textContent], {
+        type: "text/plain;charset=utf-8",
+      });
       const url = window.URL.createObjectURL(blob);
       const link = document.createElement("a");
       link.href = url;
-      link.download = `KetQua_${result.testresult_id}.txt`;
+      link.download = `KetQua_TongHop_${
+        results[0]?.order_id || "XetNghiem"
+      }.txt`;
 
       document.body.appendChild(link);
       link.click();
       document.body.removeChild(link);
       window.URL.revokeObjectURL(url);
 
-      toast.success("Tải xuống thành công!", {
+      toast.success("Tải xuống tất cả kết quả thành công!", {
         position: "top-right",
         autoClose: 3000,
       });
     } catch (error) {
-      console.error("Error downloading result:", error);
+      console.error("Error downloading all results:", error);
       toast.error("Có lỗi xảy ra khi tải xuống", {
-        position: "top-right",
-        autoClose: 4000,
-      });
-    }
-  };
-
-  const handleDownloadAllResults = (results) => {
-    try {
-      const user = JSON.parse(localStorage.getItem('user') || '{}');
-
-      const textContent = `
-KẾT QUẢ XÉT NGHIỆM - BÁO CÁO TỔNG HỢP
-==========================================
-
-THÔNG TIN BỆNH NHÂN:
-- Họ và tên: ${user.last_name} ${user.first_name}
-- Số điện thoại: ${user.phone}
-- Email: ${user.email}
-
-${results.map((result, index) => `
-KẾT QUẢ ${index + 1}:
-===================
-- Mã kết quả: ${result.testresult_id}
-- Tên xét nghiệm: ${result.service.name}
-- Mô tả: ${result.service.description}
-- Ngày xét nghiệm: ${new Date(result.exam_date).toLocaleDateString('vi-VN')} ${result.exam_time}
-
-KẾT QUẢ:
-- Kết quả: ${result.result.result}
-- Kết luận: ${result.result.conclusion}
-- Chỉ số tham chiếu: ${result.result.normal_range || 'Không có'}
-- Ghi chú bác sĩ: ${result.result.recommendation || 'Không có'}
-
----
-Tạo lúc: ${new Date().toLocaleString('vi-VN')}
-    `;
-
-      const blob = new Blob([textContent], { type: 'text/plain;charset=utf-8' });
-      const url = window.URL.createObjectURL(blob);
-      const link = document.createElement('a');
-      link.href = url;
-      link.download = `KetQua_TongHop_${results[0]?.order_id || 'XetNghiem'}.txt`;
-
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
-      window.URL.revokeObjectURL(url);
-
-      toast.success('Tải xuống thành công!', {
-        position: "top-right",
-        autoClose: 3000,
-      });
-
-    } catch (error) {
-      console.error('Error downloading result:', error);
-      toast.error('Có lỗi xảy ra khi tải xuống', {
-        position: "top-right",
-        autoClose: 4000,
-      });
-    }
-  };
-
-  const handleDownloadAllResults = (results) => {
-    try {
-      const user = JSON.parse(localStorage.getItem('user') || '{}');
-
-      const textContent = `
-KẾT QUẢ XÉT NGHIỆM - BÁO CÁO TỔNG HỢP
-==========================================
-
-THÔNG TIN BỆNH NHÂN:
-- Họ và tên: ${user.last_name} ${user.first_name}
-- Số điện thoại: ${user.phone}
-- Email: ${user.email}
-
-${results.map((result, index) => `
-KẾT QUẢ ${index + 1}:
-===================
-- Mã kết quả: ${result.testresult_id}
-- Tên xét nghiệm: ${result.service.name}
-- Mô tả: ${result.service.description}
-- Ngày xét nghiệm: ${new Date(result.exam_date).toLocaleDateString('vi-VN')} ${result.exam_time}
-
-KẾT QUẢ:
-- Kết quả: ${result.result.result}
-- Kết luận: ${result.result.conclusion}
-- Chỉ số tham chiếu: ${result.result.normal_range || 'Không có'}
-- Ghi chú bác sĩ: ${result.result.recommendation || 'Không có'}
-`).join('\n')}
-
----
-Tạo lúc: ${new Date().toLocaleString('vi-VN')}
-      `;
-
-      const blob = new Blob([textContent], { type: 'text/plain;charset=utf-8' });
-      const url = window.URL.createObjectURL(blob);
-      const link = document.createElement('a');
-      link.href = url;
-      link.download = `KetQua_TongHop_${results[0]?.order_id || 'XetNghiem'}.txt`;
-
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
-      window.URL.revokeObjectURL(url);
-
-      toast.success('Tải xuống tất cả kết quả thành công!', {
-        position: "top-right",
-        autoClose: 3000,
-      });
-
-    } catch (error) {
-      console.error('Error downloading all results:', error);
-      toast.error('Có lỗi xảy ra khi tải xuống', {
         position: "top-right",
         autoClose: 4000,
       });
@@ -433,7 +390,9 @@ Tạo lúc: ${new Date().toLocaleString('vi-VN')}
     });
   };
 
-  const totalTestPages = Math.ceil(filteredTestOrders.length / testOrdersPerPage);
+  const totalTestPages = Math.ceil(
+    filteredTestOrders.length / testOrdersPerPage
+  );
   const currentTestOrders = filteredTestOrders.slice(
     (currentTestPage - 1) * testOrdersPerPage,
     currentTestPage * testOrdersPerPage
@@ -464,113 +423,144 @@ Tạo lúc: ${new Date().toLocaleString('vi-VN')}
   const handleCancelPaidAppointment = async (appointment) => {
     const appointmentId = appointment.appointment_id || appointment.id;
 
-    const message = `⚠️ HỦY CUỘC HẸN ⚠️\n\n` +
+    const message =
+      `⚠️ HỦY CUỘC HẸN ⚠️\n\n` +
       `Cuộc hẹn: ${appointment.consultant_type}\n` +
       `Ngày: ${formatDate(appointment.appointment_date)}\n` +
       `Phí tư vấn: ${formatCurrency(appointment.price_apm)}\n\n` +
       `Bạn có chắc chắn muốn hủy và yêu cầu hoàn tiền?`;
 
-    showConfirmModal(message, async () => {
-      try {
-        setIsCancelling(true);
-
+    showConfirmModal(
+      message,
+      async () => {
         try {
-          await axiosClient.post('/v1/emails/send-appointment-cancellation', {
-            appointment_id: appointmentId,
-            reason: 'Thay đổi lịch trình cá nhân'
-          }, {
-            headers: { 'x-access-token': accessToken }
-          });
-          console.log('✅ Email đã được gửi thành công');
-        } catch (emailError) {
-          console.warn('⚠️ Email thất bại, tiếp tục...', emailError);
-        }
+          setIsCancelling(true);
 
-        const response = await axiosClient.post('/v1/users/cancel-appointment', {
-          appointment_id: appointmentId
-        }, {
-          headers: { 'x-access-token': accessToken }
-        });
+          try {
+            await axiosClient.post(
+              "/v1/emails/send-appointment-cancellation",
+              {
+                appointment_id: appointmentId,
+                reason: "Thay đổi lịch trình cá nhân",
+              },
+              {
+                headers: { "x-access-token": accessToken },
+              }
+            );
+            console.log("✅ Email đã được gửi thành công");
+          } catch (emailError) {
+            console.warn("⚠️ Email thất bại, tiếp tục...", emailError);
+          }
 
-        if (response.data?.success) {
+          const response = await axiosClient.post(
+            "/v1/users/cancel-appointment",
+            {
+              appointment_id: appointmentId,
+            },
+            {
+              headers: { "x-access-token": accessToken },
+            }
+          );
+
+          if (response.data?.success) {
+            showAlertModal(
+              `✅ HỦY CUỘC HẸN THÀNH CÔNG!\n\n` +
+                `📧 Email thông báo đã được gửi đến: ${user.email}\n` +
+                `💰 Hoàn tiền sẽ được xử lý trong 3-5 ngày làm việc\n\n` +
+                `Vui lòng kiểm tra email để theo dõi.`
+            );
+
+            setAppointments((prevAppointments) =>
+              prevAppointments.map((apt) =>
+                apt.appointment_id === appointmentId || apt.id === appointmentId
+                  ? { ...apt, status: "rejected" }
+                  : apt
+              )
+            );
+
+            await refreshAllData();
+          } else {
+            throw new Error(response.data?.message || "Không thể hủy cuộc hẹn");
+          }
+        } catch (error) {
+          console.error("❌ Lỗi:", error);
           showAlertModal(
-            `✅ HỦY CUỘC HẸN THÀNH CÔNG!\n\n` +
-            `📧 Email thông báo đã được gửi đến: ${user.email}\n` +
-            `💰 Hoàn tiền sẽ được xử lý trong 3-5 ngày làm việc\n\n` +
-            `Vui lòng kiểm tra email để theo dõi.`
+            error.response?.data?.message ||
+              "Có lỗi xảy ra. Vui lòng liên hệ hỗ trợ."
           );
-
-          setAppointments(prevAppointments =>
-            prevAppointments.map(apt =>
-              (apt.appointment_id === appointmentId || apt.id === appointmentId)
-                ? { ...apt, status: 'rejected' }
-                : apt
-            )
-          );
-
-          await refreshAllData();
-
-        } else {
-          throw new Error(response.data?.message || 'Không thể hủy cuộc hẹn');
+        } finally {
+          setIsCancelling(false);
         }
-      } catch (error) {
-        console.error('❌ Lỗi:', error);
-        showAlertModal(
-          error.response?.data?.message ||
-          'Có lỗi xảy ra. Vui lòng liên hệ hỗ trợ.'
-        );
-      } finally {
-        setIsCancelling(false);
-      }
-    }, 'Xác nhận hủy cuộc hẹn', 'Hủy cuộc hẹn');
+      },
+      "Xác nhận hủy cuộc hẹn",
+      "Hủy cuộc hẹn"
+    );
   };
 
   const handleCancel = async (appointment) => {
     const appointmentId = appointment.appointment_id || appointment.id;
 
-    const message = `Bạn có chắc chắn muốn hủy cuộc hẹn ${appointment.consultant_type} vào ngày ${formatDate(appointment.appointment_date)}?\n\nLưu ý: Sau khi hủy, bạn sẽ không thể hoàn tác được.`;
+    const message = `Bạn có chắc chắn muốn hủy cuộc hẹn ${
+      appointment.consultant_type
+    } vào ngày ${formatDate(
+      appointment.appointment_date
+    )}?\n\nLưu ý: Sau khi hủy, bạn sẽ không thể hoàn tác được.`;
 
-    showConfirmModal(message, async () => {
-      try {
-        setIsCancelling(true);
+    showConfirmModal(
+      message,
+      async () => {
+        try {
+          setIsCancelling(true);
 
-        const response = await axiosClient.post('/v1/users/cancel-appointment', {
-          appointment_id: appointmentId
-        }, {
-          headers: { 'x-access-token': accessToken }
-        });
-
-        if (response.data?.success) {
-          showAlertModal('Hủy cuộc hẹn thành công!');
-
-          setAppointments(prevAppointments =>
-            prevAppointments.map(apt =>
-              (apt.appointment_id === appointmentId || apt.id === appointmentId)
-                ? { ...apt, status: 'rejected' }
-                : apt
-            )
+          const response = await axiosClient.post(
+            "/v1/users/cancel-appointment",
+            {
+              appointment_id: appointmentId,
+            },
+            {
+              headers: { "x-access-token": accessToken },
+            }
           );
 
-          await refreshAllData();
-        } else {
-          throw new Error(response.data?.message || 'Không thể hủy cuộc hẹn');
-        }
-      } catch (error) {
-        console.error('❌ Lỗi khi hủy cuộc hẹn:', error);
+          if (response.data?.success) {
+            showAlertModal("Hủy cuộc hẹn thành công!");
 
-        if (error.response?.status === 400) {
-          showAlertModal('Không thể hủy cuộc hẹn này. Vui lòng kiểm tra trạng thái cuộc hẹn.');
-        } else if (error.response?.status === 404) {
-          showAlertModal('Không tìm thấy cuộc hẹn để hủy.');
-        } else if (error.response?.status === 403) {
-          showAlertModal('Bạn không có quyền hủy cuộc hẹn này.');
-        } else {
-          showAlertModal(error.response?.data?.message || 'Có lỗi xảy ra khi hủy cuộc hẹn. Vui lòng thử lại.');
+            setAppointments((prevAppointments) =>
+              prevAppointments.map((apt) =>
+                apt.appointment_id === appointmentId || apt.id === appointmentId
+                  ? { ...apt, status: "rejected" }
+                  : apt
+              )
+            );
+
+            await refreshAllData();
+          } else {
+            throw new Error(response.data?.message || "Không thể hủy cuộc hẹn");
+          }
+        } catch (error) {
+          console.error("❌ Lỗi khi hủy cuộc hẹn:", error);
+
+          if (error.response?.status === 400) {
+            showAlertModal(
+              "Không thể hủy cuộc hẹn này. Vui lòng kiểm tra trạng thái cuộc hẹn."
+            );
+          } else if (error.response?.status === 404) {
+            showAlertModal("Không tìm thấy cuộc hẹn để hủy.");
+          } else if (error.response?.status === 403) {
+            showAlertModal("Bạn không có quyền hủy cuộc hẹn này.");
+          } else {
+            showAlertModal(
+              error.response?.data?.message ||
+                "Có lỗi xảy ra khi hủy cuộc hẹn. Vui lòng thử lại."
+            );
+          }
+        } finally {
+          setIsCancelling(false);
         }
-      } finally {
-        setIsCancelling(false);
-      }
-    }, 'Xác nhận hủy cuộc hẹn', 'Hủy cuộc hẹn');
+      },
+      "Xác nhận hủy cuộc hẹn",
+      "Hủy cuộc hẹn"
+    );
   };
 
   useEffect(() => {
@@ -582,39 +572,43 @@ Tạo lúc: ${new Date().toLocaleString('vi-VN')}
           setError(null);
           setTestError(null);
 
-          const [appointmentsRes, testOrdersRes, testResultsRes] = await Promise.all([
-            axiosClient.get(`/v1/appointments/user/${user.user_id}`, {
-              headers: { 'x-access-token': accessToken }
-            }),
-            axiosClient.get(`/v1/users/test-appointments/user/${user.user_id}`, {
-              headers: { 'x-access-token': accessToken }
-            }),
-            axiosClient.get(`/v1/users/test-results`, {
-              headers: { 'x-access-token': accessToken }
-            })
-          ]);
+          const [appointmentsRes, testOrdersRes, testResultsRes] =
+            await Promise.all([
+              axiosClient.get(`/v1/appointments/user/${user.user_id}`, {
+                headers: { "x-access-token": accessToken },
+              }),
+              axiosClient.get(
+                `/v1/users/test-appointments/user/${user.user_id}`,
+                {
+                  headers: { "x-access-token": accessToken },
+                }
+              ),
+              axiosClient.get(`/v1/users/test-results`, {
+                headers: { "x-access-token": accessToken },
+              }),
+            ]);
 
           if (appointmentsRes.data?.success) {
             const userAppointments = appointmentsRes.data.data
-              .filter(appointment => appointment.user_id === user.user_id)
+              .filter((appointment) => appointment.user_id === user.user_id)
               .sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
             setAppointments(userAppointments);
             setFilteredAppointments(userAppointments);
           }
 
-          if (testOrdersRes.data?.status === 'success') {
+          if (testOrdersRes.data?.status === "success") {
             const userTestOrders = testOrdersRes.data.data?.orders || [];
             setTestOrders(userTestOrders);
             setFilteredTestOrders(userTestOrders);
           }
 
-          if (testResultsRes.data?.status === 'success') {
+          if (testResultsRes.data?.status === "success") {
             setTestResults(testResultsRes.data.data?.results || []);
           }
         } catch (error) {
-          console.error('Lỗi khi tải dữ liệu:', error);
-          setError('Không thể tải dữ liệu. Vui lòng thử lại.');
-          setTestError('Không thể tải dữ liệu. Vui lòng thử lại.');
+          console.error("Lỗi khi tải dữ liệu:", error);
+          setError("Không thể tải dữ liệu. Vui lòng thử lại.");
+          setTestError("Không thể tải dữ liệu. Vui lòng thử lại.");
         } finally {
           setIsLoading(false);
           setTestIsLoading(false);
@@ -628,24 +622,27 @@ Tạo lúc: ${new Date().toLocaleString('vi-VN')}
   useEffect(() => {
     let filtered = [...appointments];
 
-    if (filters.status !== 'all') {
-      filtered = filtered.filter(apt => apt.status === filters.status);
+    if (filters.status !== "all") {
+      filtered = filtered.filter((apt) => apt.status === filters.status);
     }
 
-    if (filters.dateRange !== 'all') {
+    if (filters.dateRange !== "all") {
       const today = new Date();
       const days = { week: 7, month: 30, quarter: 90 }[filters.dateRange];
       const filterDate = new Date(today.getTime() - days * 24 * 60 * 60 * 1000);
-      filtered = filtered.filter(apt => new Date(apt.created_at) >= filterDate);
+      filtered = filtered.filter(
+        (apt) => new Date(apt.created_at) >= filterDate
+      );
     }
 
     if (filters.searchTerm.trim()) {
       const searchTerm = filters.searchTerm.toLowerCase();
-      filtered = filtered.filter(apt =>
-        apt.fullName?.toLowerCase().includes(searchTerm) ||
-        apt.doctor_name?.toLowerCase().includes(searchTerm) ||
-        apt.consultant_type?.toLowerCase().includes(searchTerm) ||
-        apt.symptoms?.toLowerCase().includes(searchTerm)
+      filtered = filtered.filter(
+        (apt) =>
+          apt.fullName?.toLowerCase().includes(searchTerm) ||
+          apt.doctor_name?.toLowerCase().includes(searchTerm) ||
+          apt.consultant_type?.toLowerCase().includes(searchTerm) ||
+          apt.symptoms?.toLowerCase().includes(searchTerm)
       );
     }
 
@@ -656,23 +653,28 @@ Tạo lúc: ${new Date().toLocaleString('vi-VN')}
   useEffect(() => {
     let filtered = [...testOrders];
 
-    if (testFilters.status !== 'all') {
-      filtered = filtered.filter(order => order.order.order_status === testFilters.status);
+    if (testFilters.status !== "all") {
+      filtered = filtered.filter(
+        (order) => order.order.order_status === testFilters.status
+      );
     }
 
-    if (testFilters.dateRange !== 'all') {
+    if (testFilters.dateRange !== "all") {
       const today = new Date();
       const days = { week: 7, month: 30, quarter: 90 }[testFilters.dateRange];
       const filterDate = new Date(today.getTime() - days * 24 * 60 * 60 * 1000);
-      filtered = filtered.filter(order => new Date(order.order.created_at) >= filterDate);
+      filtered = filtered.filter(
+        (order) => new Date(order.order.created_at) >= filterDate
+      );
     }
 
     if (testFilters.searchTerm.trim()) {
       const searchTerm = testFilters.searchTerm.toLowerCase();
-      filtered = filtered.filter(order =>
-        order.services.some(service =>
-          service.name.toLowerCase().includes(searchTerm) ||
-          service.description.toLowerCase().includes(searchTerm)
+      filtered = filtered.filter((order) =>
+        order.services.some(
+          (service) =>
+            service.name.toLowerCase().includes(searchTerm) ||
+            service.description.toLowerCase().includes(searchTerm)
         )
       );
     }
@@ -685,35 +687,39 @@ Tạo lúc: ${new Date().toLocaleString('vi-VN')}
     if (accessToken && user.user_id) {
       const refreshInterval = setInterval(async () => {
         try {
-          const [appointmentsRes, testOrdersRes, testResultsRes] = await Promise.all([
-            axiosClient.get(`/v1/appointments/user/${user.user_id}`, {
-              headers: { 'x-access-token': accessToken }
-            }),
-            axiosClient.get(`/v1/users/test-appointments/user/${user.user_id}`, {
-              headers: { 'x-access-token': accessToken }
-            }),
-            axiosClient.get(`/v1/users/test-results`, {
-              headers: { 'x-access-token': accessToken }
-            })
-          ]);
+          const [appointmentsRes, testOrdersRes, testResultsRes] =
+            await Promise.all([
+              axiosClient.get(`/v1/appointments/user/${user.user_id}`, {
+                headers: { "x-access-token": accessToken },
+              }),
+              axiosClient.get(
+                `/v1/users/test-appointments/user/${user.user_id}`,
+                {
+                  headers: { "x-access-token": accessToken },
+                }
+              ),
+              axiosClient.get(`/v1/users/test-results`, {
+                headers: { "x-access-token": accessToken },
+              }),
+            ]);
 
           if (appointmentsRes.data?.success) {
             const userAppointments = appointmentsRes.data.data
-              .filter(appointment => appointment.user_id === user.user_id)
+              .filter((appointment) => appointment.user_id === user.user_id)
               .sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
             setAppointments(userAppointments);
           }
 
-          if (testOrdersRes.data?.status === 'success') {
+          if (testOrdersRes.data?.status === "success") {
             const userTestOrders = testOrdersRes.data.data?.orders || [];
             setTestOrders(userTestOrders);
           }
 
-          if (testResultsRes.data?.status === 'success') {
+          if (testResultsRes.data?.status === "success") {
             setTestResults(testResultsRes.data.data?.results || []);
           }
         } catch (error) {
-          console.error('Auto-refresh error:', error);
+          console.error("Auto-refresh error:", error);
         }
       }, 30000);
 
@@ -723,79 +729,84 @@ Tạo lúc: ${new Date().toLocaleString('vi-VN')}
 
   useEffect(() => {
     const handleStorageChange = async (e) => {
-      if (e.key === 'data_updated') {
-        console.log('Storage change detected: Đang cập nhật dữ liệu...');
+      if (e.key === "data_updated") {
+        console.log("Storage change detected: Đang cập nhật dữ liệu...");
         try {
-          const [appointmentsRes, testOrdersRes, testResultsRes] = await Promise.all([
-            axiosClient.get(`/v1/appointments/user/${user.user_id}`, {
-              headers: { 'x-access-token': accessToken }
-            }),
-            axiosClient.get(`/v1/users/test-appointments/user/${user.user_id}`, {
-              headers: { 'x-access-token': accessToken }
-            }),
-            axiosClient.get(`/v1/users/test-results`, {
-              headers: { 'x-access-token': accessToken }
-            })
-          ]);
+          const [appointmentsRes, testOrdersRes, testResultsRes] =
+            await Promise.all([
+              axiosClient.get(`/v1/appointments/user/${user.user_id}`, {
+                headers: { "x-access-token": accessToken },
+              }),
+              axiosClient.get(
+                `/v1/users/test-appointments/user/${user.user_id}`,
+                {
+                  headers: { "x-access-token": accessToken },
+                }
+              ),
+              axiosClient.get(`/v1/users/test-results`, {
+                headers: { "x-access-token": accessToken },
+              }),
+            ]);
 
           if (appointmentsRes.data?.success) {
             const userAppointments = appointmentsRes.data.data
-              .filter(appointment => appointment.user_id === user.user_id)
+              .filter((appointment) => appointment.user_id === user.user_id)
               .sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
             setAppointments(userAppointments);
           }
 
-          if (testOrdersRes.data?.status === 'success') {
+          if (testOrdersRes.data?.status === "success") {
             const userTestOrders = testOrdersRes.data.data?.orders || [];
             setTestOrders(userTestOrders);
           }
 
-          if (testResultsRes.data?.status === 'success') {
+          if (testResultsRes.data?.status === "success") {
             setTestResults(testResultsRes.data.data?.results || []);
           }
         } catch (error) {
-          console.error('Storage sync error:', error);
+          console.error("Storage sync error:", error);
         }
       }
     };
 
-    window.addEventListener('storage', handleStorageChange);
-    return () => window.removeEventListener('storage', handleStorageChange);
+    window.addEventListener("storage", handleStorageChange);
+    return () => window.removeEventListener("storage", handleStorageChange);
   }, [accessToken, user.user_id]);
 
   const refreshAllData = async () => {
     try {
-      const [appointmentsRes, testOrdersRes, testResultsRes] = await Promise.all([
-        axiosClient.get(`/v1/appointments/user/${user.user_id}`, {
-          headers: { 'x-access-token': accessToken }
-        }),
-        axiosClient.get(`/v1/users/test-appointments/user/${user.user_id}`, {
-          headers: { 'x-access-token': accessToken }
-        }),
-        axiosClient.get(`/v1/users/test-results`, {
-          headers: { 'x-access-token': accessToken }
-        })
-      ]);
+      const [appointmentsRes, testOrdersRes, testResultsRes] =
+        await Promise.all([
+          axiosClient.get(`/v1/appointments/user/${user.user_id}`, {
+            headers: { "x-access-token": accessToken },
+          }),
+          axiosClient.get(`/v1/users/test-appointments/user/${user.user_id}`, {
+            headers: { "x-access-token": accessToken },
+          }),
+          axiosClient.get(`/v1/users/test-results`, {
+            headers: { "x-access-token": accessToken },
+          }),
+        ]);
 
       if (appointmentsRes.data?.success) {
         const userAppointments = appointmentsRes.data.data
-          .filter(appointment => appointment.user_id === user.user_id)
+          .filter((appointment) => appointment.user_id === user.user_id)
           .sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
         setAppointments(userAppointments);
       }
 
-      if (testOrdersRes.data?.status === 'success') {
+      if (testOrdersRes.data?.status === "success") {
         const userTestOrders = testOrdersRes.data.data?.orders || [];
         setTestOrders(userTestOrders);
       }
 
-      if (testResultsRes.data?.status === 'success') {
+      if (testResultsRes.data?.status === "success") {
         setTestResults(testResultsRes.data.data?.results || []);
       }
 
-      localStorage.setItem('data_updated', Date.now().toString());
+      localStorage.setItem("data_updated", Date.now().toString());
     } catch (error) {
-      console.error('Manual refresh error:', error);
+      console.error("Manual refresh error:", error);
     }
   };
 
@@ -824,7 +835,7 @@ Tạo lúc: ${new Date().toLocaleString('vi-VN')}
           />
           <h3>Có lỗi xảy ra</h3>
           <p>{error || testError}</p>
-          <button className={cx('retry-btn')} onClick={refreshAllData}>
+          <button className={cx("retry-btn")} onClick={refreshAllData}>
             <FontAwesomeIcon icon={faRefresh} /> Thử lại
           </button>
         </div>
@@ -888,10 +899,10 @@ Tạo lúc: ${new Date().toLocaleString('vi-VN')}
   ];
 
   return (
-    <div className={cx('appointments-page')}>
-      <div className={cx('page-header')}>
-        <div className={cx('header-content')}>
-          <h1 className={cx('page-title')}>
+    <div className={cx("appointments-page")}>
+      <div className={cx("page-header")}>
+        <div className={cx("header-content")}>
+          <h1 className={cx("page-title")}>
             <FontAwesomeIcon icon={faCalendarAlt} />
             Lịch hẹn của tôi
           </h1>
@@ -900,7 +911,7 @@ Tạo lúc: ${new Date().toLocaleString('vi-VN')}
           </p>
         </div>
 
-        <div className={cx('tab-navigation')}>
+        <div className={cx("tab-navigation")}>
           <button
             className={cx("tab-btn", { active: activeTab === "appointments" })}
             onClick={() => setActiveTab("appointments")}
@@ -917,8 +928,8 @@ Tạo lúc: ${new Date().toLocaleString('vi-VN')}
           </button>
         </div>
 
-        <div className={cx('header-stats')}>
-          {activeTab === 'appointments'
+        <div className={cx("header-stats")}>
+          {activeTab === "appointments"
             ? stats.map((stat, index) => (
                 <div key={index} className={cx("stat-item")}>
                   <span className={cx("stat-number")}>{stat.value}</span>
@@ -934,10 +945,10 @@ Tạo lúc: ${new Date().toLocaleString('vi-VN')}
         </div>
       </div>
 
-      <div className={cx('filters-section')}>
-        <div className={cx('filters-container')}>
-          <div className={cx('search-box')}>
-            <FontAwesomeIcon icon={faSearch} className={cx('search-icon')} />
+      <div className={cx("filters-section")}>
+        <div className={cx("filters-container")}>
+          <div className={cx("search-box")}>
+            <FontAwesomeIcon icon={faSearch} className={cx("search-icon")} />
             <input
               type="text"
               placeholder={
@@ -1030,8 +1041,8 @@ Tạo lúc: ${new Date().toLocaleString('vi-VN')}
         </div>
       </div>
 
-      {activeTab === 'appointments' ? (
-        <div className={cx('appointments-container')}>
+      {activeTab === "appointments" ? (
+        <div className={cx("appointments-container")}>
           {currentAppointments.length > 0 ? (
             <div className={cx("appointments-grid")}>
               {currentAppointments.map((appointment) => {
@@ -1061,12 +1072,15 @@ Tạo lúc: ${new Date().toLocaleString('vi-VN')}
                   appointment.price_apm > 0;
 
                 return (
-                  <div key={appointment.id} className={cx('appointment-card')}>
-                    <div className={cx('card-header')}>
-                      <div className={cx('status-badge')} style={{
-                        backgroundColor: statusInfo.bgColor,
-                        color: statusInfo.textColor
-                      }}>
+                  <div key={appointment.id} className={cx("appointment-card")}>
+                    <div className={cx("card-header")}>
+                      <div
+                        className={cx("status-badge")}
+                        style={{
+                          backgroundColor: statusInfo.bgColor,
+                          color: statusInfo.textColor,
+                        }}
+                      >
                         <FontAwesomeIcon icon={statusInfo.icon} />
                         {appointment.status === "confirmed" &&
                           appointment.booking === 0 &&
@@ -1094,8 +1108,12 @@ Tạo lúc: ${new Date().toLocaleString('vi-VN')}
                         </div>
                       )}
 
-                      {appointment.status === 'completed' && (
-                        <div className={cx('feedback-indicator', { 'has-feedback': hasFeedback })}>
+                      {appointment.status === "completed" && (
+                        <div
+                          className={cx("feedback-indicator", {
+                            "has-feedback": hasFeedback,
+                          })}
+                        >
                           <FontAwesomeIcon icon={faStar} />
                           <span>
                             {hasFeedback ? "Đã đánh giá" : "Chưa đánh giá"}
@@ -1104,9 +1122,9 @@ Tạo lúc: ${new Date().toLocaleString('vi-VN')}
                       )}
                     </div>
 
-                    <div className={cx('card-content')}>
-                      <div className={cx('info-section')}>
-                        <h3 className={cx('patient-name')}>
+                    <div className={cx("card-content")}>
+                      <div className={cx("info-section")}>
+                        <h3 className={cx("patient-name")}>
                           {user.last_name} {user.first_name}
                         </h3>
                         <div className={cx("contact-info")}>
@@ -1172,7 +1190,7 @@ Tạo lúc: ${new Date().toLocaleString('vi-VN')}
                       )}
                     </div>
 
-                    <div className={cx('card-actions')}>
+                    <div className={cx("card-actions")}>
                       {needsPayment && (
                         <button
                           className={cx("action-btn", "payment-btn")}
@@ -1229,48 +1247,64 @@ Tạo lúc: ${new Date().toLocaleString('vi-VN')}
                         </button>
                       )}
 
-                      {appointment.status === 'rejected' && appointment.is_refunded && (
-                        <div className={cx('refund-status-indicator')}>
-                          <FontAwesomeIcon icon={faRefresh} />
-                          <div className={cx('refund-info')}>
-                            <span className={cx('refund-label')}>✅ Đã hủy và hoàn tiền</span>
-                            <span className={cx('refund-amount')}>
-                              💰 Số tiền hoàn: {formatCurrency(appointment.refund_amount)}
-                            </span>
-                            <span className={cx('refund-status-text')}>
-                              📋 Trạng thái: {appointment.refund_status === 'processing' ? '🔄 Đang xử lý' : '✅ Hoàn thành'}
-                            </span>
-                            {appointment.refund_reference && (
-                              <span className={cx('refund-reference')}>
-                                🔗 Mã tham chiếu: {appointment.refund_reference}
+                      {appointment.status === "rejected" &&
+                        appointment.is_refunded && (
+                          <div className={cx("refund-status-indicator")}>
+                            <FontAwesomeIcon icon={faRefresh} />
+                            <div className={cx("refund-info")}>
+                              <span className={cx("refund-label")}>
+                                ✅ Đã hủy và hoàn tiền
                               </span>
-                            )}
-                            <span className={cx('refund-note')}>
-                              📧 Vui lòng kiểm tra email để theo dõi tiến trình hoàn tiền
-                            </span>
+                              <span className={cx("refund-amount")}>
+                                💰 Số tiền hoàn:{" "}
+                                {formatCurrency(appointment.refund_amount)}
+                              </span>
+                              <span className={cx("refund-status-text")}>
+                                📋 Trạng thái:{" "}
+                                {appointment.refund_status === "processing"
+                                  ? "🔄 Đang xử lý"
+                                  : "✅ Hoàn thành"}
+                              </span>
+                              {appointment.refund_reference && (
+                                <span className={cx("refund-reference")}>
+                                  🔗 Mã tham chiếu:{" "}
+                                  {appointment.refund_reference}
+                                </span>
+                              )}
+                              <span className={cx("refund-note")}>
+                                📧 Vui lòng kiểm tra email để theo dõi tiến
+                                trình hoàn tiền
+                              </span>
+                            </div>
                           </div>
-                        </div>
-                      )}
+                        )}
 
-                      {appointment.status === 'confirmed' && appointment.booking === 1 && (
-                        <button
-                          className={cx('action-btn', 'meeting-btn', {
-                            'disabled': !canJoinMeeting || isCancelling
-                          })}
-                          onClick={() => canJoinMeeting ? handleJoinMeeting(appointment) : null}
-                          disabled={!canJoinMeeting || isCancelling}
-                          title={
-                            !canJoinMeeting
-                              ? 'Chỉ có thể tham gia vào ngày tư vấn'
-                              : 'Tham gia cuộc tư vấn'
-                          }
-                        >
-                          <FontAwesomeIcon icon={faVideo} />
-                          {canJoinMeeting ? 'Tham gia tư vấn' : 'Chưa tư vấn được'}
-                        </button>
-                      )}
+                      {appointment.status === "confirmed" &&
+                        appointment.booking === 1 && (
+                          <button
+                            className={cx("action-btn", "meeting-btn", {
+                              disabled: !canJoinMeeting || isCancelling,
+                            })}
+                            onClick={() =>
+                              canJoinMeeting
+                                ? handleJoinMeeting(appointment)
+                                : null
+                            }
+                            disabled={!canJoinMeeting || isCancelling}
+                            title={
+                              !canJoinMeeting
+                                ? "Chỉ có thể tham gia vào ngày tư vấn"
+                                : "Tham gia cuộc tư vấn"
+                            }
+                          >
+                            <FontAwesomeIcon icon={faVideo} />
+                            {canJoinMeeting
+                              ? "Tham gia tư vấn"
+                              : "Chưa tư vấn được"}
+                          </button>
+                        )}
 
-                      {appointment.status === 'rejected' && (
+                      {appointment.status === "rejected" && (
                         <button
                           className={cx("action-btn", "rebook-btn")}
                           onClick={handleRebook}
@@ -1280,9 +1314,9 @@ Tạo lúc: ${new Date().toLocaleString('vi-VN')}
                         </button>
                       )}
 
-                      {appointment.status === 'completed' && (
-                        <div className={cx('completed-actions')}>
-                          <div className={cx('top-actions')}>
+                      {appointment.status === "completed" && (
+                        <div className={cx("completed-actions")}>
+                          <div className={cx("top-actions")}>
                             <button
                               className={cx("action-btn", "view-btn")}
                               onClick={() =>
@@ -1344,7 +1378,7 @@ Tạo lúc: ${new Date().toLocaleString('vi-VN')}
                         </div>
                       )}
 
-                      {appointment.status !== 'completed' && (
+                      {appointment.status !== "completed" && (
                         <button
                           className={cx("action-btn", "view-btn")}
                           onClick={() => viewAppointmentDetails(appointment)}
@@ -1354,14 +1388,17 @@ Tạo lúc: ${new Date().toLocaleString('vi-VN')}
                         </button>
                       )}
 
-                      {appointment.status === 'confirmed' && appointment.booking === 1 && !canJoinMeeting && (
-                        <div className={cx('meeting-info')}>
-                          <FontAwesomeIcon icon={faClock} />
-                          <span>
-                            Có thể tham gia từ ngày {formatDate(appointment.appointment_date)}
-                          </span>
-                        </div>
-                      )}
+                      {appointment.status === "confirmed" &&
+                        appointment.booking === 1 &&
+                        !canJoinMeeting && (
+                          <div className={cx("meeting-info")}>
+                            <FontAwesomeIcon icon={faClock} />
+                            <span>
+                              Có thể tham gia từ ngày{" "}
+                              {formatDate(appointment.appointment_date)}
+                            </span>
+                          </div>
+                        )}
 
                       {isCancelling && (
                         <div className={cx("cancel-loading")}>
@@ -1402,7 +1439,7 @@ Tạo lúc: ${new Date().toLocaleString('vi-VN')}
           )}
         </div>
       ) : (
-        <div className={cx('test-orders-container')}>
+        <div className={cx("test-orders-container")}>
           {currentTestOrders.length > 0 ? (
             <div className={cx("test-orders-grid")}>
               {currentTestOrders.map((order) => {
@@ -1641,8 +1678,8 @@ Tạo lúc: ${new Date().toLocaleString('vi-VN')}
         </div>
       )}
 
-      {activeTab === 'tests' && totalTestPages > 1 && (
-        <div className={cx('pagination')}>
+      {activeTab === "tests" && totalTestPages > 1 && (
+        <div className={cx("pagination")}>
           <button
             className={cx("page-btn", { disabled: currentTestPage === 1 })}
             onClick={() => setCurrentTestPage((prev) => Math.max(prev - 1, 1))}
@@ -1677,8 +1714,8 @@ Tạo lúc: ${new Date().toLocaleString('vi-VN')}
         </div>
       )}
 
-      {activeTab === 'appointments' && totalPages > 1 && (
-        <div className={cx('pagination')}>
+      {activeTab === "appointments" && totalPages > 1 && (
+        <div className={cx("pagination")}>
           <button
             className={cx("page-btn", { disabled: currentPage === 1 })}
             onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 1))}
@@ -1813,8 +1850,9 @@ Tạo lúc: ${new Date().toLocaleString('vi-VN')}
                   </div>
                 </div>
 
-                {(selectedTestOrder.order.exam_date || selectedTestOrder.order.exam_time) && (
-                  <div className={cx('detail-section')}>
+                {(selectedTestOrder.order.exam_date ||
+                  selectedTestOrder.order.exam_time) && (
+                  <div className={cx("detail-section")}>
                     <h3>Lịch hẹn xét nghiệm</h3>
                     <div className={cx("appointment-schedule")}>
                       {selectedTestOrder.order.exam_date && (
@@ -1859,70 +1897,97 @@ Tạo lúc: ${new Date().toLocaleString('vi-VN')}
       )}
 
       {showResultModal && selectedResults.length > 0 && (
-        <div className={cx('modal-overlay')} onClick={() => setShowResultModal(false)}>
-          <div className={cx('modal-content', 'result-modal')} onClick={(e) => e.stopPropagation()}>
-            <div className={cx('modal-header')}>
+        <div
+          className={cx("modal-overlay")}
+          onClick={() => setShowResultModal(false)}
+        >
+          <div
+            className={cx("modal-content", "result-modal")}
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className={cx("modal-header")}>
               <h2>Kết quả xét nghiệm ({selectedResults.length} kết quả)</h2>
-              <button className={cx('close-btn')} onClick={() => setShowResultModal(false)}>×</button>
+              <button
+                className={cx("close-btn")}
+                onClick={() => setShowResultModal(false)}
+              >
+                ×
+              </button>
             </div>
 
-            <div className={cx('modal-body')}>
+            <div className={cx("modal-body")}>
               {selectedResults.map((result, index) => (
-                <div key={result.testresult_id} className={cx('result-details')}>
+                <div
+                  key={result.testresult_id}
+                  className={cx("result-details")}
+                >
                   {selectedResults.length > 1 && (
-                    <div className={cx('result-separator')}>
+                    <div className={cx("result-separator")}>
                       <h4>Kết quả {index + 1}</h4>
                     </div>
                   )}
-                  
-                  <div className={cx('result-header')}>
+
+                  <div className={cx("result-header")}>
                     <h3>{result.service.name}</h3>
-                    <div className={cx('result-meta')}>
-                      <span>Ngày xét nghiệm: {formatDate(result.exam_date)} {result.exam_time}</span>
+                    <div className={cx("result-meta")}>
+                      <span>
+                        Ngày xét nghiệm: {formatDate(result.exam_date)}{" "}
+                        {result.exam_time}
+                      </span>
                       <span>Mã kết quả: {result.testresult_id}</span>
                     </div>
                   </div>
 
-                  <div className={cx('result-content')}>
-                    <div className={cx('result-item')}>
+                  <div className={cx("result-content")}>
+                    <div className={cx("result-item")}>
                       <label>Kết quả:</label>
-                      <div className={cx('result-value')}>{result.result.result}</div>
+                      <div className={cx("result-value")}>
+                        {result.result.result}
+                      </div>
                     </div>
 
-                    <div className={cx('result-item')}>
+                    <div className={cx("result-item")}>
                       <label>Kết luận:</label>
-                      <div className={cx('result-conclusion', {
-                        'positive': result.result.conclusion.toLowerCase().includes('bình thường'),
-                        'negative': !result.result.conclusion.toLowerCase().includes('bình thường')
-                      })}>
+                      <div
+                        className={cx("result-conclusion", {
+                          positive: result.result.conclusion
+                            .toLowerCase()
+                            .includes("bình thường"),
+                          negative: !result.result.conclusion
+                            .toLowerCase()
+                            .includes("bình thường"),
+                        })}
+                      >
                         {result.result.conclusion}
                       </div>
                     </div>
 
                     {result.result.normal_range && (
-                      <div className={cx('result-item')}>
+                      <div className={cx("result-item")}>
                         <label>Chỉ số:</label>
-                        <div className={cx('result-value')}>{result.result.normal_range}</div>
+                        <div className={cx("result-value")}>
+                          {result.result.normal_range}
+                        </div>
                       </div>
                     )}
 
                     {result.result.recommendations && (
-                      <div className={cx('result-item')}>
+                      <div className={cx("result-item")}>
                         <label>Khuyến nghị:</label>
-                        <div className={cx('result-recommendations')}>
+                        <div className={cx("result-recommendations")}>
                           {result.result.recommendations}
                         </div>
                       </div>
                     )}
                   </div>
 
-                  <div className={cx('result-footer')}>
-                    <div className={cx('result-timestamp')}>
+                  <div className={cx("result-footer")}>
+                    <div className={cx("result-timestamp")}>
                       Tạo kết quả: {formatDate(result.result.created_at)}
                     </div>
-                    <div className={cx('result-actions')}>
+                    <div className={cx("result-actions")}>
                       <button
-                        className={cx('action-btn', 'download-btn')}
+                        className={cx("action-btn", "download-btn")}
                         onClick={() => handleDownloadResult(result)}
                       >
                         <FontAwesomeIcon icon={faDownload} /> Tải xuống
@@ -1931,18 +1996,19 @@ Tạo lúc: ${new Date().toLocaleString('vi-VN')}
                   </div>
 
                   {index < selectedResults.length - 1 && (
-                    <hr className={cx('result-divider')} />
+                    <hr className={cx("result-divider")} />
                   )}
                 </div>
               ))}
-              
+
               {selectedResults.length > 1 && (
-                <div className={cx('modal-footer', 'result-modal-footer')}>
+                <div className={cx("modal-footer", "result-modal-footer")}>
                   <button
-                    className={cx('action-btn', 'download-all-btn')}
+                    className={cx("action-btn", "download-all-btn")}
                     onClick={() => handleDownloadAllResults(selectedResults)}
                   >
-                    <FontAwesomeIcon icon={faDownload} /> Tải xuống tất cả ({selectedResults.length} kết quả)
+                    <FontAwesomeIcon icon={faDownload} /> Tải xuống tất cả (
+                    {selectedResults.length} kết quả)
                   </button>
                 </div>
               )}
@@ -2039,44 +2105,54 @@ Tạo lúc: ${new Date().toLocaleString('vi-VN')}
                   <span>{formatDate(selectedAppointment.created_at)}</span>
                 </div>
 
-                {selectedAppointment.status === 'rejected' && selectedAppointment.is_refunded && (
-                  <>
-                    <div className={cx('detail-row')}>
-                      <strong>Trạng thái hoàn tiền:</strong>
-                      <span className={cx('refund-status', {
-                        'processing': selectedAppointment.refund_status === 'processing'
-                      })}>
-                        <FontAwesomeIcon icon={faRefresh} />
-                        {selectedAppointment.refund_status === 'processing' ? '🔄 Đang xử lý' : '✅ Hoàn thành'}
-                      </span>
-                    </div>
-                    {selectedAppointment.refund_amount && (
-                      <div className={cx('detail-row')}>
-                        <strong>Số tiền hoàn:</strong>
-                        <span className={cx('refund-amount-text')}>
-                          💰 {formatCurrency(selectedAppointment.refund_amount)}
+                {selectedAppointment.status === "rejected" &&
+                  selectedAppointment.is_refunded && (
+                    <>
+                      <div className={cx("detail-row")}>
+                        <strong>Trạng thái hoàn tiền:</strong>
+                        <span
+                          className={cx("refund-status", {
+                            processing:
+                              selectedAppointment.refund_status ===
+                              "processing",
+                          })}
+                        >
+                          <FontAwesomeIcon icon={faRefresh} />
+                          {selectedAppointment.refund_status === "processing"
+                            ? "🔄 Đang xử lý"
+                            : "✅ Hoàn thành"}
                         </span>
                       </div>
-                    )}
-                    {selectedAppointment.refund_reference && (
-                      <div className={cx('detail-row')}>
-                        <strong>Mã tham chiếu:</strong>
-                        <span className={cx('refund-reference-text')}>
-                          🔗 {selectedAppointment.refund_reference}
-                        </span>
-                      </div>
-                    )}
-                    {selectedAppointment.refund_date && (
-                      <div className={cx('detail-row')}>
-                        <strong>Ngày yêu cầu hoàn tiền:</strong>
-                        <span>{formatDate(selectedAppointment.refund_date)}</span>
-                      </div>
-                    )}
-                  </>
-                )}
+                      {selectedAppointment.refund_amount && (
+                        <div className={cx("detail-row")}>
+                          <strong>Số tiền hoàn:</strong>
+                          <span className={cx("refund-amount-text")}>
+                            💰{" "}
+                            {formatCurrency(selectedAppointment.refund_amount)}
+                          </span>
+                        </div>
+                      )}
+                      {selectedAppointment.refund_reference && (
+                        <div className={cx("detail-row")}>
+                          <strong>Mã tham chiếu:</strong>
+                          <span className={cx("refund-reference-text")}>
+                            🔗 {selectedAppointment.refund_reference}
+                          </span>
+                        </div>
+                      )}
+                      {selectedAppointment.refund_date && (
+                        <div className={cx("detail-row")}>
+                          <strong>Ngày yêu cầu hoàn tiền:</strong>
+                          <span>
+                            {formatDate(selectedAppointment.refund_date)}
+                          </span>
+                        </div>
+                      )}
+                    </>
+                  )}
 
-                {selectedAppointment.status === 'completed' && (
-                  <div className={cx('detail-row')}>
+                {selectedAppointment.status === "completed" && (
+                  <div className={cx("detail-row")}>
                     <strong>Trạng thái đánh giá:</strong>
                     <span
                       className={cx("feedback-status", {
@@ -2104,10 +2180,10 @@ Tạo lúc: ${new Date().toLocaleString('vi-VN')}
               )}
             </div>
 
-            {selectedAppointment.status === 'completed' && (
-              <div className={cx('modal-actions')}>
+            {selectedAppointment.status === "completed" && (
+              <div className={cx("modal-actions")}>
                 <h3>Hành động khả dụng</h3>
-                <div className={cx('action-buttons-horizontal')}>
+                <div className={cx("action-buttons-horizontal")}>
                   <button
                     className={cx("modal-action-btn", "feedback-btn", {
                       "has-feedback": checkFeedbackStatus(selectedAppointment),
