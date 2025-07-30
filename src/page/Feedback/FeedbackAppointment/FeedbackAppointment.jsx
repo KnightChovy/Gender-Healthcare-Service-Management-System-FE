@@ -22,7 +22,6 @@ function FeedbackAppointment() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState(null);
   
-  // FIX: Separate hover states for each rating category
   const [hoverRating, setHoverRating] = useState({
     doctor_rating: 0,
     consultation_rating: 0
@@ -42,7 +41,6 @@ function FeedbackAppointment() {
       setAppointmentData(location.state.appointmentData);
       setIsLoading(false);
     } else {
-      // FIX: Handle case when no appointment data
       setError('Không tìm thấy thông tin cuộc hẹn');
       setIsLoading(false);
     }
@@ -70,7 +68,6 @@ function FeedbackAppointment() {
         const arrayAppointments = response.data.data || [];
         const appointment = arrayAppointments.find(app => app.appointment_id === appointmentId);
         
-        // FIX: Handle case when appointment not found
         if (!appointment) {
           setError('Không tìm thấy cuộc hẹn này');
         } else {
@@ -82,7 +79,6 @@ function FeedbackAppointment() {
     } catch (error) {
       console.error('Error fetching appointment:', error);
       
-      // FIX: More specific error messages
       if (error.response?.status === 401) {
         setError('Phiên đăng nhập đã hết hạn. Vui lòng đăng nhập lại');
       } else if (error.response?.status === 404) {
@@ -97,7 +93,6 @@ function FeedbackAppointment() {
 
   const handleRatingChange = (category, value) => {
     setFeedback(prev => ({ ...prev, [category]: value }));
-    // FIX: Reset hover when rating is set
     setHoverRating(prev => ({ ...prev, [category]: 0 }));
   };
 
@@ -105,7 +100,6 @@ function FeedbackAppointment() {
     setFeedback(prev => ({ ...prev, [field]: value }));
   };
 
-  // FIX: Handle hover for specific category
   const handleStarHover = (category, value) => {
     setHoverRating(prev => ({ ...prev, [category]: value }));
   };
@@ -117,7 +111,6 @@ function FeedbackAppointment() {
   const handleSubmit = async (e) => {
     e.preventDefault();
     
-    // FIX: Better validation messages
     if (feedback.doctor_rating === 0) {
       alert('Vui lòng đánh giá bác sĩ');
       return;
@@ -131,12 +124,9 @@ function FeedbackAppointment() {
     setIsSubmitting(true);
     
     try {
-      const user = JSON.parse(localStorage.getItem('user'));
       const accessToken = localStorage.getItem('accessToken');
 
       const feedbackData = {
-        // appointment_id: appointmentId || appointmentData?.appointment_id,
-        // user_id: user.user_id,
         rating: parseInt((feedback.doctor_rating + feedback.consultation_rating) / 2),
         feedback: feedback.comment.trim()
       };
@@ -164,7 +154,6 @@ function FeedbackAppointment() {
     }
   };
 
-  // FIX: Corrected star rating logic
   const renderStarRating = (category, currentRating) => {
     const stars = [];
     const starSize = '1.5rem';
