@@ -13,6 +13,14 @@ function CycleInputForm({ cycleData, onDataChange, onSaveSuccess }) {
   const [showConfirmModal, setShowConfirmModal] = useState(false);
   const [modalData, setModalData] = useState(null);
   const [showSuccessModal, setShowSuccessModal] = useState(false);
+  const [showAlertModal, setShowAlertModal] = useState(false);
+  const [alertModalData, setAlertModalData] = useState({
+    title: "",
+    message: "",
+    type: "info",
+  });
+  const [showConfirmWarningModal, setShowConfirmWarningModal] = useState(false);
+  const [pendingSaveData, setPendingSaveData] = useState(null);
 
   // Yup validation schema
   const validationSchema = Yup.object().shape({
@@ -40,6 +48,17 @@ function CycleInputForm({ cycleData, onDataChange, onSaveSuccess }) {
       )
       .nullable(),
   });
+
+  // Hàm hiển thị alert modal
+  const showAlert = (message, title = "", type = "info") => {
+    setAlertModalData({ title, message, type });
+    setShowAlertModal(true);
+  };
+
+  const hideAlert = () => {
+    setShowAlertModal(false);
+    setAlertModalData({ title: "", message: "", type: "info" });
+  };
 
   // Validate single field
   const validateField = async (fieldName, value) => {
@@ -117,35 +136,51 @@ function CycleInputForm({ cycleData, onDataChange, onSaveSuccess }) {
       if (error.response) {
         switch (error.response.status) {
           case 401:
-            alert("❌ Phiên đăng nhập đã hết hạn. Vui lòng đăng nhập lại!");
+            showAlert(
+              "Phiên đăng nhập đã hết hạn. Vui lòng đăng nhập lại!",
+              "Lỗi xác thực",
+              "error"
+            );
             break;
           case 400: {
             const errorMsg =
               error.response.data?.message || "Dữ liệu không hợp lệ";
-            alert(`❌ Lỗi dữ liệu: ${errorMsg}`);
+            showAlert(`Lỗi dữ liệu: ${errorMsg}`, "Lỗi dữ liệu", "error");
             break;
           }
           case 403:
-            alert("❌ Bạn không có quyền thực hiện thao tác này!");
+            showAlert(
+              "Bạn không có quyền thực hiện thao tác này!",
+              "Lỗi phân quyền",
+              "error"
+            );
             break;
           case 500:
-            alert("❌ Lỗi server. Vui lòng thử lại sau!");
+            showAlert(
+              "Lỗi server. Vui lòng thử lại sau!",
+              "Lỗi server",
+              "error"
+            );
             break;
           default:
-            alert(
-              `❌ Lỗi từ server (${error.response.status}): ${
+            showAlert(
+              `Lỗi từ server (${error.response.status}): ${
                 error.response.data?.message || "Không xác định"
-              }`
+              }`,
+              "Lỗi không xác định",
+              "error"
             );
         }
       } else if (error.request) {
         console.error("No response received:", error.request);
-        alert(
-          "❌ Không thể kết nối đến server. Vui lòng kiểm tra kết nối mạng!"
+        showAlert(
+          "Không thể kết nối đến server. Vui lòng kiểm tra kết nối mạng!",
+          "Lỗi kết nối",
+          "error"
         );
       } else {
         console.error("Error:", error.message);
-        alert(`❌ Có lỗi xảy ra: ${error.message}`);
+        showAlert(`Có lỗi xảy ra: ${error.message}`, "Lỗi", "error");
       }
     }
   };
@@ -162,7 +197,11 @@ function CycleInputForm({ cycleData, onDataChange, onSaveSuccess }) {
       const accessToken = localStorage.getItem("accessToken");
       console.log("Access token exists:", !!accessToken);
       if (!accessToken) {
-        alert("❌ Bạn cần đăng nhập để lưu dữ liệu!");
+        showAlert(
+          "Bạn cần đăng nhập để lưu dữ liệu!",
+          "Yêu cầu đăng nhập",
+          "warning"
+        );
         setIsSaving(false);
         return;
       }
@@ -185,7 +224,11 @@ function CycleInputForm({ cycleData, onDataChange, onSaveSuccess }) {
         setValidationErrors(errors);
 
         // Show first error to user
-        alert(`⚠️ Dữ liệu không hợp lệ:\n${validationError.errors[0]}`);
+        showAlert(
+          `Dữ liệu không hợp lệ:\n${validationError.errors[0]}`,
+          "Lỗi xác thực dữ liệu",
+          "warning"
+        );
         setIsSaving(false);
         return;
       }
@@ -200,13 +243,17 @@ function CycleInputForm({ cycleData, onDataChange, onSaveSuccess }) {
       sixMonthsAgo.setMonth(sixMonthsAgo.getMonth() - 6);
 
       if (selectedDate < sixMonthsAgo) {
-        const confirmOldDate = window.confirm(
-          "⚠️ Ngày bạn chọn đã lâu hơn 6 tháng.\nDữ liệu dự đoán có thể không chính xác.\n\nBạn có muốn tiếp tục không?"
-        );
-        if (!confirmOldDate) {
-          setIsSaving(false);
-          return;
-        }
+        // Prepare data and show warning modal instead of confirm
+        const saveData = {
+          lastPeriodDate: cycleData.lastPeriodDate,
+          cycleLength: cycleLength,
+          periodLength: periodLength,
+          pillTime: cycleData.birthControlTime || "",
+        };
+        setPendingSaveData(saveData);
+        setShowConfirmWarningModal(true);
+        setIsSaving(false);
+        return;
       }
 
       // Prepare data for modal
@@ -239,7 +286,7 @@ function CycleInputForm({ cycleData, onDataChange, onSaveSuccess }) {
       setIsSaving(false); // Reset saving state since we're showing modal
     } catch (error) {
       console.error("Error preparing save data:", error);
-      alert(`❌ Có lỗi xảy ra: ${error.message}`);
+      showAlert(`Có lỗi xảy ra: ${error.message}`, "Lỗi", "error");
       setIsSaving(false);
     }
   };
@@ -266,6 +313,32 @@ function CycleInputForm({ cycleData, onDataChange, onSaveSuccess }) {
     setShowSuccessModal(false);
   };
 
+  const handleWarningModalConfirm = () => {
+    setShowConfirmWarningModal(false);
+    if (pendingSaveData) {
+      // Prepare data for main modal
+      const cycleLength = parseInt(pendingSaveData.cycleLength);
+      const periodLength = parseInt(pendingSaveData.periodLength);
+
+      setModalData({
+        lastPeriodDate: new Date(
+          pendingSaveData.lastPeriodDate
+        ).toLocaleDateString("vi-VN"),
+        cycleLength: cycleLength,
+        periodLength: periodLength,
+        saveData: pendingSaveData,
+      });
+      setShowConfirmModal(true);
+      setPendingSaveData(null);
+    }
+  };
+
+  const handleWarningModalCancel = () => {
+    setShowConfirmWarningModal(false);
+    setPendingSaveData(null);
+    setIsSaving(false);
+  };
+
   // Thêm helper function để lấy ngày hôm nay theo format YYYY-MM-DD
   const getTodayString = () => {
     const today = new Date();
@@ -274,6 +347,244 @@ function CycleInputForm({ cycleData, onDataChange, onSaveSuccess }) {
 
   return (
     <>
+      {/* Alert Modal */}
+      {showAlertModal && (
+        <div
+          style={{
+            position: "fixed",
+            top: 0,
+            left: 0,
+            right: 0,
+            bottom: 0,
+            backgroundColor: "rgba(0, 0, 0, 0.5)",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            zIndex: 1000,
+          }}
+          onClick={hideAlert}
+        >
+          <div
+            style={{
+              backgroundColor: "white",
+              borderRadius: "12px",
+              padding: "32px",
+              maxWidth: "500px",
+              width: "90%",
+              boxShadow: "0 10px 25px rgba(0, 0, 0, 0.2)",
+              position: "relative",
+              textAlign: "center",
+            }}
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div
+              style={{
+                fontSize: "3rem",
+                marginBottom: "16px",
+                color:
+                  alertModalData.type === "error"
+                    ? "#dc3545"
+                    : alertModalData.type === "warning"
+                    ? "#ffc107"
+                    : "#17a2b8",
+              }}
+            >
+              {alertModalData.type === "error"
+                ? "❌"
+                : alertModalData.type === "warning"
+                ? "⚠️"
+                : "ℹ️"}
+            </div>
+
+            {alertModalData.title && (
+              <h3
+                style={{
+                  margin: "0 0 16px 0",
+                  fontSize: "1.5rem",
+                  fontWeight: "bold",
+                  color:
+                    alertModalData.type === "error"
+                      ? "#dc3545"
+                      : alertModalData.type === "warning"
+                      ? "#856404"
+                      : "#0c5460",
+                }}
+              >
+                {alertModalData.title}
+              </h3>
+            )}
+
+            <p
+              style={{
+                margin: "0 0 24px 0",
+                fontSize: "1rem",
+                color: "#6c757d",
+                lineHeight: "1.5",
+                whiteSpace: "pre-line",
+              }}
+            >
+              {alertModalData.message}
+            </p>
+
+            <button
+              onClick={hideAlert}
+              style={{
+                padding: "12px 32px",
+                borderRadius: "6px",
+                border: "none",
+                backgroundColor:
+                  alertModalData.type === "error"
+                    ? "#dc3545"
+                    : alertModalData.type === "warning"
+                    ? "#ffc107"
+                    : "#17a2b8",
+                color: alertModalData.type === "warning" ? "#212529" : "white",
+                cursor: "pointer",
+                fontSize: "1rem",
+                fontWeight: "500",
+              }}
+              onMouseOver={(e) => {
+                const colors = {
+                  error: "#c82333",
+                  warning: "#e0a800",
+                  info: "#138496",
+                };
+                e.target.style.backgroundColor =
+                  colors[alertModalData.type] || colors.info;
+              }}
+              onMouseOut={(e) => {
+                const colors = {
+                  error: "#dc3545",
+                  warning: "#ffc107",
+                  info: "#17a2b8",
+                };
+                e.target.style.backgroundColor =
+                  colors[alertModalData.type] || colors.info;
+              }}
+            >
+              Đóng
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* Warning Confirmation Modal */}
+      {showConfirmWarningModal && (
+        <div
+          style={{
+            position: "fixed",
+            top: 0,
+            left: 0,
+            right: 0,
+            bottom: 0,
+            backgroundColor: "rgba(0, 0, 0, 0.5)",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            zIndex: 1000,
+          }}
+          onClick={handleWarningModalCancel}
+        >
+          <div
+            style={{
+              backgroundColor: "white",
+              borderRadius: "12px",
+              padding: "32px",
+              maxWidth: "500px",
+              width: "90%",
+              boxShadow: "0 10px 25px rgba(0, 0, 0, 0.2)",
+              position: "relative",
+              textAlign: "center",
+            }}
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div
+              style={{
+                fontSize: "3rem",
+                marginBottom: "16px",
+                color: "#ffc107",
+              }}
+            >
+              ⚠️
+            </div>
+
+            <h3
+              style={{
+                margin: "0 0 16px 0",
+                fontSize: "1.5rem",
+                fontWeight: "bold",
+                color: "#856404",
+              }}
+            >
+              Cảnh báo về dữ liệu
+            </h3>
+
+            <p
+              style={{
+                margin: "0 0 24px 0",
+                fontSize: "1rem",
+                color: "#6c757d",
+                lineHeight: "1.5",
+              }}
+            >
+              Ngày bạn chọn đã lâu hơn 6 tháng.
+              <br />
+              Dữ liệu dự đoán có thể không chính xác.
+              <br />
+              <br />
+              Bạn có muốn tiếp tục không?
+            </p>
+
+            <div
+              style={{
+                display: "flex",
+                gap: "12px",
+                justifyContent: "center",
+              }}
+            >
+              <button
+                onClick={handleWarningModalCancel}
+                style={{
+                  padding: "12px 24px",
+                  borderRadius: "6px",
+                  border: "1px solid #ddd",
+                  backgroundColor: "#f8f9fa",
+                  color: "#6c757d",
+                  cursor: "pointer",
+                  fontSize: "1rem",
+                  fontWeight: "500",
+                }}
+                onMouseOver={(e) =>
+                  (e.target.style.backgroundColor = "#e9ecef")
+                }
+                onMouseOut={(e) => (e.target.style.backgroundColor = "#f8f9fa")}
+              >
+                Hủy
+              </button>
+              <button
+                onClick={handleWarningModalConfirm}
+                style={{
+                  padding: "12px 24px",
+                  borderRadius: "6px",
+                  border: "none",
+                  backgroundColor: "#ffc107",
+                  color: "#212529",
+                  cursor: "pointer",
+                  fontSize: "1rem",
+                  fontWeight: "500",
+                }}
+                onMouseOver={(e) =>
+                  (e.target.style.backgroundColor = "#e0a800")
+                }
+                onMouseOut={(e) => (e.target.style.backgroundColor = "#ffc107")}
+              >
+                Tiếp tục
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Confirm Modal */}
       {showConfirmModal && modalData && (
         <div
