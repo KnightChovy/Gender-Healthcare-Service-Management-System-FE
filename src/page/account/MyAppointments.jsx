@@ -11,10 +11,10 @@ import axiosClient from '../../services/axiosClient';
 import { toast } from 'react-toastify';
 import classNames from 'classnames/bind';
 import styles from './MyAppointments.module.scss';
+import ConfirmModal from '../../components/ui/ConfirmModal';
 
 const cx = classNames.bind(styles);
 
-// Mã hóa ID cuộc hẹn
 const hashAppointmentId = (appointmentId) => {
   return btoa(appointmentId.toString()).replace(/=/g, "");
 };
@@ -22,7 +22,6 @@ const hashAppointmentId = (appointmentId) => {
 function MyAppointments() {
   const navigate = useNavigate();
 
-  // State cho cuộc hẹn tư vấn
   const [appointments, setAppointments] = useState([]);
   const [filteredAppointments, setFilteredAppointments] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -36,15 +35,13 @@ function MyAppointments() {
     searchTerm: ''
   });
   const [currentPage, setCurrentPage] = useState(1);
-  const [appointmentsPerPage] = useState(6); // Đã thêm biến này
+  const [appointmentsPerPage] = useState(6);
 
-  // State cho tab hiện tại
-  const [activeTab, setActiveTab] = useState('appointments'); // Đã thêm state này
+  const [activeTab, setActiveTab] = useState('appointments');
 
-  // State cho đơn xét nghiệm
   const [testOrders, setTestOrders] = useState([]);
   const [filteredTestOrders, setFilteredTestOrders] = useState([]);
-  const [testResults, setTestResults] = useState([]); // Đã thêm state này
+  const [testResults, setTestResults] = useState([]);
   const [testIsLoading, setTestIsLoading] = useState(true);
   const [testError, setTestError] = useState(null);
   const [selectedTestOrder, setSelectedTestOrder] = useState(null);
@@ -56,18 +53,54 @@ function MyAppointments() {
     dateRange: 'all',
     searchTerm: ''
   });
-  const [selectedResult, setSelectedResult] = useState(null);
+  const [selectedResults, setSelectedResults] = useState([]);
   const [showResultModal, setShowResultModal] = useState(false);
+
+  const [modalConfig, setModalConfig] = useState({
+    isOpen: false,
+    type: 'confirm',
+    title: '',
+    message: '',
+    onConfirm: null,
+    confirmText: 'Xác nhận',
+    cancelText: 'Hủy'
+  });
 
   const user = JSON.parse(localStorage.getItem('user') || '{}');
   const accessToken = localStorage.getItem('accessToken');
 
-  // Hàm kiểm tra trạng thái phản hồi
+  const showConfirmModal = (message, onConfirm, title = 'Xác nhận', confirmText = 'Xác nhận') => {
+    setModalConfig({
+      isOpen: true,
+      type: 'confirm',
+      title,
+      message,
+      onConfirm,
+      confirmText,
+      cancelText: 'Hủy'
+    });
+  };
+
+  const showAlertModal = (message, title = 'Thông báo') => {
+    setModalConfig({
+      isOpen: true,
+      type: 'alert',
+      title,
+      message,
+      onConfirm: null,
+      confirmText: 'OK',
+      cancelText: ''
+    });
+  };
+
+  const closeModal = () => {
+    setModalConfig(prev => ({ ...prev, isOpen: false }));
+  };
+
   const checkFeedbackStatus = (appointment) => {
     return !!appointment.feedback;
   };
 
-  // Xử lý điều hướng phản hồi
   const handleFeedbackNavigation = (appointment) => {
     const appointmentId = appointment.appointment_id || appointment.id;
     const hasFeedback = checkFeedbackStatus(appointment);
@@ -86,7 +119,6 @@ function MyAppointments() {
     }
   };
 
-  // Cấu hình trạng thái cuộc hẹn
   const statusConfig = {
     'pending': { label: 'Chờ xác nhận', icon: faHourglassHalf, bgColor: '#fff8e1', textColor: '#e65100' },
     'confirmed': { label: 'Đã xác nhận', icon: faCheckCircle, bgColor: '#e8f5e8', textColor: '#2e7d32' },
@@ -95,7 +127,6 @@ function MyAppointments() {
     'rejected': { label: 'Đã hủy', icon: faTimesCircle, bgColor: '#ffebee', textColor: '#d32f2f' }
   };
 
-  // Cấu hình trạng thái đơn xét nghiệm
   const testStatusConfig = {
     'pending': { label: 'Chờ xác nhận', icon: faHourglassHalf, bgColor: '#fff8e1', textColor: '#e65100' },
     'paid': { label: 'Đã thanh toán', icon: faCheckCircle, bgColor: '#e8f5e8', textColor: '#2e7d32' },
@@ -104,140 +135,12 @@ function MyAppointments() {
   };
 
   const getStatusInfo = (status) => statusConfig[status] || statusConfig['pending'];
-  const getTestStatusInfo = (status) => testStatusConfig[status] || testStatusConfig['pending']; // Đã thêm hàm này
+  const getTestStatusInfo = (status) => testStatusConfig[status] || testStatusConfig['pending'];
 
-  // Tải danh sách cuộc hẹn
-  const fetchAppointments = async () => {
-    try {
-      setIsLoading(true);
-      setError(null);
-
-      const response = await axiosClient.get(`/v1/appointments/user/${user.user_id}`, {
-        headers: { 'x-access-token': accessToken }
-      });
-
-      if (response.data?.success) {
-        const userAppointments = response.data.data
-          .filter(appointment => appointment.user_id === user.user_id)
-          .sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
-
-        setAppointments(userAppointments);
-        setFilteredAppointments(userAppointments);
-      } else {
-        throw new Error('Định dạng phản hồi không hợp lệ');
-      }
-    } catch (error) {
-      console.error('❌ Lỗi khi tải cuộc hẹn:', error);
-      setError('Không thể tải danh sách cuộc hẹn. Vui lòng thử lại.');
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  // Tải danh sách đơn xét nghiệm
-  const fetchTestOrders = async () => {
-    try {
-      setTestIsLoading(true);
-      setTestError(null);
-
-      const response = await axiosClient.get(`/v1/users/test-appointments/user/${user.user_id}`, {
-        headers: { 'x-access-token': accessToken }
-      });
-
-      if (response.data?.status === 'success') {
-        const userTestOrders = response.data.data?.orders || [];
-        setTestOrders(userTestOrders);
-        setFilteredTestOrders(userTestOrders);
-      } else {
-        throw new Error('Định dạng phản hồi không hợp lệ');
-      }
-    } catch (error) {
-      console.error('❌ Lỗi khi tải đơn xét nghiệm:', error);
-      setTestError('Không thể tải danh sách đơn xét nghiệm. Vui lòng thử lại.');
-    } finally {
-      setTestIsLoading(false);
-    }
-  };
-
-  // Tải kết quả xét nghiệm
-  const fetchTestResults = async () => {
-    try {
-      const response = await axiosClient.get(`/v1/users/test-results`, {
-        headers: { 'x-access-token': accessToken }
-      });
-
-      if (response.data?.status === 'success') {
-        setTestResults(response.data.data?.results || []);
-      }
-    } catch (error) {
-      console.error('❌ Lỗi khi tải kết quả xét nghiệm:', error);
-    }
-  };
-
-  // Áp dụng bộ lọc cho cuộc hẹn
-  const applyFilters = () => {
-    let filtered = [...appointments];
-
-    if (filters.status !== 'all') {
-      filtered = filtered.filter(apt => apt.status === filters.status);
-    }
-
-    if (filters.dateRange !== 'all') {
-      const today = new Date();
-      const days = { week: 7, month: 30, quarter: 90 }[filters.dateRange];
-      const filterDate = new Date(today.getTime() - days * 24 * 60 * 60 * 1000);
-      filtered = filtered.filter(apt => new Date(apt.created_at) >= filterDate);
-    }
-
-    if (filters.searchTerm.trim()) {
-      const searchTerm = filters.searchTerm.toLowerCase();
-      filtered = filtered.filter(apt =>
-        apt.fullName?.toLowerCase().includes(searchTerm) ||
-        apt.doctor_name?.toLowerCase().includes(searchTerm) ||
-        apt.consultant_type?.toLowerCase().includes(searchTerm) ||
-        apt.symptoms?.toLowerCase().includes(searchTerm)
-      );
-    }
-
-    setFilteredAppointments(filtered);
-    setCurrentPage(1);
-  };
-
-  // Áp dụng bộ lọc cho đơn xét nghiệm
-  const applyTestFilters = () => {
-    let filtered = [...testOrders];
-
-    if (testFilters.status !== 'all') {
-      filtered = filtered.filter(order => order.order.order_status === testFilters.status);
-    }
-
-    if (testFilters.dateRange !== 'all') {
-      const today = new Date();
-      const days = { week: 7, month: 30, quarter: 90 }[testFilters.dateRange];
-      const filterDate = new Date(today.getTime() - days * 24 * 60 * 60 * 1000);
-      filtered = filtered.filter(order => new Date(order.order.created_at) >= filterDate);
-    }
-
-    if (testFilters.searchTerm.trim()) {
-      const searchTerm = testFilters.searchTerm.toLowerCase();
-      filtered = filtered.filter(order =>
-        order.services.some(service =>
-          service.name.toLowerCase().includes(searchTerm) ||
-          service.description.toLowerCase().includes(searchTerm)
-        )
-      );
-    }
-
-    setFilteredTestOrders(filtered);
-    setCurrentTestPage(1);
-  };
-
-  // Xử lý thay đổi bộ lọc cuộc hẹn
   const handleFilterChange = (filterType, value) => {
     setFilters(prev => ({ ...prev, [filterType]: value }));
   };
 
-  // Xử lý thay đổi bộ lọc đơn xét nghiệm
   const handleTestFilterChange = (filterType, value) => {
     setTestFilters(prev => ({
       ...prev,
@@ -245,22 +148,21 @@ function MyAppointments() {
     }));
   };
 
-  // Xử lý thanh toán
   const handlePayment = (appointment) => {
     const appointmentId = appointment.id || appointment.appointment_id;
 
     if (!appointmentId || !appointment.price_apm || appointment.price_apm <= 0) {
-      alert('Cuộc hẹn này không thể thanh toán');
+      showAlertModal('Cuộc hẹn này không thể thanh toán');
       return;
     }
 
     if (appointment.status === 'rejected') {
-      alert('Không thể thanh toán cho cuộc hẹn đã bị hủy');
+      showAlertModal('Không thể thanh toán cho cuộc hẹn đã bị hủy');
       return;
     }
 
     if (!['confirmed', '1'].includes(appointment.status)) {
-      alert('Chỉ có thể thanh toán cho các cuộc hẹn đã được xác nhận');
+      showAlertModal('Chỉ có thể thanh toán cho các cuộc hẹn đã được xác nhận');
       return;
     }
 
@@ -269,49 +171,40 @@ function MyAppointments() {
     });
   };
 
-  // Xử lý đặt lại lịch
   const handleRebook = () => navigate('/services/appointment-consultation');
 
-  // Xem chi tiết cuộc hẹn
   const viewAppointmentDetails = (appointment) => {
     setSelectedAppointment(appointment);
     setShowModal(true);
   };
 
-  // Tham gia cuộc họp
   const handleJoinMeeting = (appointment) => {
     const meetUrl = 'https://meet.google.com/gzq-fqau-uix';
     window.open(meetUrl, '_blank', 'noopener,noreferrer');
     console.log(`Người dùng tham gia cuộc họp cho cuộc hẹn ${appointment.id}`);
   };
 
-  // Xử lý xem đơn xét nghiệm
   const handleViewTestOrder = (order) => {
     setSelectedTestOrder(order);
     setShowTestModal(true);
   };
 
-  // Xử lý xem kết quả xét nghiệm
   const handleViewTestResult = (order) => {
-    const result = testResults.find(r => r.order_id === order.order.order_id);
-    if (result) {
-      setSelectedResult(result);
+    const results = testResults.filter(r => r.order_id === order.order.order_id);
+    if (results.length > 0) {
+      setSelectedResults(results);
       setShowResultModal(true);
     }
   };
 
-  // Xử lý hủy đơn xét nghiệm
   const handleCancelTestOrder = (order) => {
-    // Thêm logic hủy đơn xét nghiệm ở đây
     console.log('Hủy đơn xét nghiệm:', order.order.order_id);
   };
 
-  // Xử lý tải xuống kết quả
   const handleDownloadResult = (result) => {
     try {
       const user = JSON.parse(localStorage.getItem('user') || '{}');
 
-      // Create text content
       const textContent = `
 KẾT QUẢ XÉT NGHIỆM
 ==================
@@ -337,7 +230,6 @@ KẾT QUẢ:
 Tạo lúc: ${new Date().toLocaleString('vi-VN')}
     `;
 
-      // Download as text file
       const blob = new Blob([textContent], { type: 'text/plain;charset=utf-8' });
       const url = window.URL.createObjectURL(blob);
       const link = document.createElement('a');
@@ -363,7 +255,63 @@ Tạo lúc: ${new Date().toLocaleString('vi-VN')}
     }
   };
 
-  // Hàm tiện ích
+  const handleDownloadAllResults = (results) => {
+    try {
+      const user = JSON.parse(localStorage.getItem('user') || '{}');
+
+      const textContent = `
+KẾT QUẢ XÉT NGHIỆM - BÁO CÁO TỔNG HỢP
+==========================================
+
+THÔNG TIN BỆNH NHÂN:
+- Họ và tên: ${user.last_name} ${user.first_name}
+- Số điện thoại: ${user.phone}
+- Email: ${user.email}
+
+${results.map((result, index) => `
+KẾT QUẢ ${index + 1}:
+===================
+- Mã kết quả: ${result.testresult_id}
+- Tên xét nghiệm: ${result.service.name}
+- Mô tả: ${result.service.description}
+- Ngày xét nghiệm: ${new Date(result.exam_date).toLocaleDateString('vi-VN')} ${result.exam_time}
+
+KẾT QUẢ:
+- Kết quả: ${result.result.result}
+- Kết luận: ${result.result.conclusion}
+- Chỉ số tham chiếu: ${result.result.normal_range || 'Không có'}
+- Ghi chú bác sĩ: ${result.result.recommendation || 'Không có'}
+`).join('\n')}
+
+---
+Tạo lúc: ${new Date().toLocaleString('vi-VN')}
+      `;
+
+      const blob = new Blob([textContent], { type: 'text/plain;charset=utf-8' });
+      const url = window.URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = `KetQua_TongHop_${results[0]?.order_id || 'XetNghiem'}.txt`;
+
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      window.URL.revokeObjectURL(url);
+
+      toast.success('Tải xuống tất cả kết quả thành công!', {
+        position: "top-right",
+        autoClose: 3000,
+      });
+
+    } catch (error) {
+      console.error('Error downloading all results:', error);
+      toast.error('Có lỗi xảy ra khi tải xuống', {
+        position: "top-right",
+        autoClose: 4000,
+      });
+    }
+  };
+
   const formatCurrency = (amount) => {
     return new Intl.NumberFormat('vi-VN', {
       style: 'currency',
@@ -381,7 +329,6 @@ Tạo lúc: ${new Date().toLocaleString('vi-VN')}
     });
   };
 
-  // Tính toán phân trang
   const totalTestPages = Math.ceil(filteredTestOrders.length / testOrdersPerPage);
   const currentTestOrders = filteredTestOrders.slice(
     (currentTestPage - 1) * testOrdersPerPage,
@@ -393,7 +340,6 @@ Tạo lúc: ${new Date().toLocaleString('vi-VN')}
   const currentAppointments = filteredAppointments.slice(indexOfFirstAppointment, indexOfLastAppointment);
   const totalPages = Math.ceil(filteredAppointments.length / appointmentsPerPage);
 
-  // Kiểm tra ngày tư vấn
   const isConsultationDay = (appointmentDate) => {
     if (!appointmentDate) return false;
 
@@ -406,145 +352,344 @@ Tạo lúc: ${new Date().toLocaleString('vi-VN')}
     return today.getTime() === consultationDate.getTime();
   };
 
-  // Xử lý hủy cuộc hẹn có hoàn tiền
   const handleCancelPaidAppointment = async (appointment) => {
     const appointmentId = appointment.appointment_id || appointment.id;
 
-    const confirmCancel = window.confirm(
-      `⚠️ HỦY CUỘC HẸN ⚠️\n\n` +
+    const message = `⚠️ HỦY CUỘC HẸN ⚠️\n\n` +
       `Cuộc hẹn: ${appointment.consultant_type}\n` +
       `Ngày: ${formatDate(appointment.appointment_date)}\n` +
       `Phí tư vấn: ${formatCurrency(appointment.price_apm)}\n\n` +
-      `Bạn có chắc chắn muốn hủy và yêu cầu hoàn tiền?`
-    );
+      `Bạn có chắc chắn muốn hủy và yêu cầu hoàn tiền?`;
 
-    if (!confirmCancel) return;
-
-    try {
-      setIsCancelling(true);
-
-      // Bước 1: Gửi email thông báo
+    showConfirmModal(message, async () => {
       try {
-        await axiosClient.post('/v1/emails/send-appointment-cancellation', {
-          appointment_id: appointmentId,
-          reason: 'Thay đổi lịch trình cá nhân'
+        setIsCancelling(true);
+
+        try {
+          await axiosClient.post('/v1/emails/send-appointment-cancellation', {
+            appointment_id: appointmentId,
+            reason: 'Thay đổi lịch trình cá nhân'
+          }, {
+            headers: { 'x-access-token': accessToken }
+          });
+          console.log('✅ Email đã được gửi thành công');
+        } catch (emailError) {
+          console.warn('⚠️ Email thất bại, tiếp tục...', emailError);
+        }
+
+        const response = await axiosClient.post('/v1/users/cancel-appointment', {
+          appointment_id: appointmentId
         }, {
           headers: { 'x-access-token': accessToken }
         });
-        console.log('✅ Email đã được gửi thành công');
-      } catch (emailError) {
-        console.warn('⚠️ Email thất bại, tiếp tục...', emailError);
-      }
 
-      // Bước 2: Hủy cuộc hẹn
-      const response = await axiosClient.post('/v1/users/cancel-appointment', {
-        appointment_id: appointmentId
-      }, {
-        headers: { 'x-access-token': accessToken }
-      });
+        if (response.data?.success) {
+          showAlertModal(
+            `✅ HỦY CUỘC HẸN THÀNH CÔNG!\n\n` +
+            `📧 Email thông báo đã được gửi đến: ${user.email}\n` +
+            `💰 Hoàn tiền sẽ được xử lý trong 3-5 ngày làm việc\n\n` +
+            `Vui lòng kiểm tra email để theo dõi.`
+          );
 
-      if (response.data?.success) {
-        alert(
-          `✅ HỦY CUỘC HẸN THÀNH CÔNG!\n\n` +
-          `📧 Email thông báo đã được gửi đến: ${user.email}\n` +
-          `💰 Hoàn tiền sẽ được xử lý trong 3-5 ngày làm việc\n\n` +
-          `Vui lòng kiểm tra email để theo dõi.`
+          setAppointments(prevAppointments =>
+            prevAppointments.map(apt =>
+              (apt.appointment_id === appointmentId || apt.id === appointmentId)
+                ? { ...apt, status: 'rejected' }
+                : apt
+            )
+          );
+
+          await refreshAllData();
+
+        } else {
+          throw new Error(response.data?.message || 'Không thể hủy cuộc hẹn');
+        }
+      } catch (error) {
+        console.error('❌ Lỗi:', error);
+        showAlertModal(
+          error.response?.data?.message ||
+          'Có lỗi xảy ra. Vui lòng liên hệ hỗ trợ.'
         );
-
-        // Cập nhật trạng thái
-        setAppointments(prevAppointments =>
-          prevAppointments.map(apt =>
-            (apt.appointment_id === appointmentId || apt.id === appointmentId)
-              ? { ...apt, status: 'rejected' }
-              : apt
-          )
-        );
-
-        await fetchAppointments();
-
-      } else {
-        throw new Error(response.data?.message || 'Không thể hủy cuộc hẹn');
+      } finally {
+        setIsCancelling(false);
       }
-    } catch (error) {
-      console.error('❌ Lỗi:', error);
-      alert(
-        error.response?.data?.message ||
-        'Có lỗi xảy ra. Vui lòng liên hệ hỗ trợ.'
-      );
-    } finally {
-      setIsCancelling(false);
-    }
+    }, 'Xác nhận hủy cuộc hẹn', 'Hủy cuộc hẹn');
   };
 
-  // Xử lý hủy cuộc hẹn
   const handleCancel = async (appointment) => {
     const appointmentId = appointment.appointment_id || appointment.id;
 
-    const confirmCancel = window.confirm(
-      `Bạn có chắc chắn muốn hủy cuộc hẹn ${appointment.consultant_type} vào ngày ${formatDate(appointment.appointment_date)}?\n\nLưu ý: Sau khi hủy, bạn sẽ không thể hoàn tác được.`
-    );
+    const message = `Bạn có chắc chắn muốn hủy cuộc hẹn ${appointment.consultant_type} vào ngày ${formatDate(appointment.appointment_date)}?\n\nLưu ý: Sau khi hủy, bạn sẽ không thể hoàn tác được.`;
 
-    if (!confirmCancel) return;
+    showConfirmModal(message, async () => {
+      try {
+        setIsCancelling(true);
 
-    try {
-      setIsCancelling(true);
+        const response = await axiosClient.post('/v1/users/cancel-appointment', {
+          appointment_id: appointmentId
+        }, {
+          headers: { 'x-access-token': accessToken }
+        });
 
-      const response = await axiosClient.post('/v1/users/cancel-appointment', {
-        appointment_id: appointmentId
-      }, {
-        headers: { 'x-access-token': accessToken }
-      });
+        if (response.data?.success) {
+          showAlertModal('Hủy cuộc hẹn thành công!');
 
-      if (response.data?.success) {
-        alert('Hủy cuộc hẹn thành công!');
+          setAppointments(prevAppointments =>
+            prevAppointments.map(apt =>
+              (apt.appointment_id === appointmentId || apt.id === appointmentId)
+                ? { ...apt, status: 'rejected' }
+                : apt
+            )
+          );
 
-        setAppointments(prevAppointments =>
-          prevAppointments.map(apt =>
-            (apt.appointment_id === appointmentId || apt.id === appointmentId)
-              ? { ...apt, status: 'rejected' }
-              : apt
-          )
-        );
+          await refreshAllData();
+        } else {
+          throw new Error(response.data?.message || 'Không thể hủy cuộc hẹn');
+        }
+      } catch (error) {
+        console.error('❌ Lỗi khi hủy cuộc hẹn:', error);
 
-        await fetchAppointments();
-      } else {
-        throw new Error(response.data?.message || 'Không thể hủy cuộc hẹn');
+        if (error.response?.status === 400) {
+          showAlertModal('Không thể hủy cuộc hẹn này. Vui lòng kiểm tra trạng thái cuộc hẹn.');
+        } else if (error.response?.status === 404) {
+          showAlertModal('Không tìm thấy cuộc hẹn để hủy.');
+        } else if (error.response?.status === 403) {
+          showAlertModal('Bạn không có quyền hủy cuộc hẹn này.');
+        } else {
+          showAlertModal(error.response?.data?.message || 'Có lỗi xảy ra khi hủy cuộc hẹn. Vui lòng thử lại.');
+        }
+      } finally {
+        setIsCancelling(false);
       }
-    } catch (error) {
-      console.error('❌ Lỗi khi hủy cuộc hẹn:', error);
-
-      if (error.response?.status === 400) {
-        alert('Không thể hủy cuộc hẹn này. Vui lòng kiểm tra trạng thái cuộc hẹn.');
-      } else if (error.response?.status === 404) {
-        alert('Không tìm thấy cuộc hẹn để hủy.');
-      } else if (error.response?.status === 403) {
-        alert('Bạn không có quyền hủy cuộc hẹn này.');
-      } else {
-        alert(error.response?.data?.message || 'Có lỗi xảy ra khi hủy cuộc hẹn. Vui lòng thử lại.');
-      }
-    } finally {
-      setIsCancelling(false);
-    }
+    }, 'Xác nhận hủy cuộc hẹn', 'Hủy cuộc hẹn');
   };
 
-  // Hooks useEffect
   useEffect(() => {
     if (accessToken && user.user_id) {
-      fetchAppointments();
-      fetchTestOrders();
-      fetchTestResults();
+      const fetchData = async () => {
+        try {
+          setIsLoading(true);
+          setTestIsLoading(true);
+          setError(null);
+          setTestError(null);
+
+          const [appointmentsRes, testOrdersRes, testResultsRes] = await Promise.all([
+            axiosClient.get(`/v1/appointments/user/${user.user_id}`, {
+              headers: { 'x-access-token': accessToken }
+            }),
+            axiosClient.get(`/v1/users/test-appointments/user/${user.user_id}`, {
+              headers: { 'x-access-token': accessToken }
+            }),
+            axiosClient.get(`/v1/users/test-results`, {
+              headers: { 'x-access-token': accessToken }
+            })
+          ]);
+
+          if (appointmentsRes.data?.success) {
+            const userAppointments = appointmentsRes.data.data
+              .filter(appointment => appointment.user_id === user.user_id)
+              .sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
+            setAppointments(userAppointments);
+            setFilteredAppointments(userAppointments);
+          }
+
+          if (testOrdersRes.data?.status === 'success') {
+            const userTestOrders = testOrdersRes.data.data?.orders || [];
+            setTestOrders(userTestOrders);
+            setFilteredTestOrders(userTestOrders);
+          }
+
+          if (testResultsRes.data?.status === 'success') {
+            setTestResults(testResultsRes.data.data?.results || []);
+          }
+        } catch (error) {
+          console.error('Lỗi khi tải dữ liệu:', error);
+          setError('Không thể tải dữ liệu. Vui lòng thử lại.');
+          setTestError('Không thể tải dữ liệu. Vui lòng thử lại.');
+        } finally {
+          setIsLoading(false);
+          setTestIsLoading(false);
+        }
+      };
+
+      fetchData();
     }
   }, [accessToken, user.user_id]);
 
   useEffect(() => {
-    applyFilters();
-  }, [filters, appointments]);
+    let filtered = [...appointments];
+
+    if (filters.status !== 'all') {
+      filtered = filtered.filter(apt => apt.status === filters.status);
+    }
+
+    if (filters.dateRange !== 'all') {
+      const today = new Date();
+      const days = { week: 7, month: 30, quarter: 90 }[filters.dateRange];
+      const filterDate = new Date(today.getTime() - days * 24 * 60 * 60 * 1000);
+      filtered = filtered.filter(apt => new Date(apt.created_at) >= filterDate);
+    }
+
+    if (filters.searchTerm.trim()) {
+      const searchTerm = filters.searchTerm.toLowerCase();
+      filtered = filtered.filter(apt =>
+        apt.fullName?.toLowerCase().includes(searchTerm) ||
+        apt.doctor_name?.toLowerCase().includes(searchTerm) ||
+        apt.consultant_type?.toLowerCase().includes(searchTerm) ||
+        apt.symptoms?.toLowerCase().includes(searchTerm)
+      );
+    }
+
+    setFilteredAppointments(filtered);
+    setCurrentPage(1);
+  }, [appointments, filters]);
 
   useEffect(() => {
-    applyTestFilters();
-  }, [testFilters, testOrders]);
+    let filtered = [...testOrders];
 
-  // Xử lý loading
+    if (testFilters.status !== 'all') {
+      filtered = filtered.filter(order => order.order.order_status === testFilters.status);
+    }
+
+    if (testFilters.dateRange !== 'all') {
+      const today = new Date();
+      const days = { week: 7, month: 30, quarter: 90 }[testFilters.dateRange];
+      const filterDate = new Date(today.getTime() - days * 24 * 60 * 60 * 1000);
+      filtered = filtered.filter(order => new Date(order.order.created_at) >= filterDate);
+    }
+
+    if (testFilters.searchTerm.trim()) {
+      const searchTerm = testFilters.searchTerm.toLowerCase();
+      filtered = filtered.filter(order =>
+        order.services.some(service =>
+          service.name.toLowerCase().includes(searchTerm) ||
+          service.description.toLowerCase().includes(searchTerm)
+        )
+      );
+    }
+
+    setFilteredTestOrders(filtered);
+    setCurrentTestPage(1);
+  }, [testOrders, testFilters]);
+
+  useEffect(() => {
+    if (accessToken && user.user_id) {
+      const refreshInterval = setInterval(async () => {
+        try {
+          const [appointmentsRes, testOrdersRes, testResultsRes] = await Promise.all([
+            axiosClient.get(`/v1/appointments/user/${user.user_id}`, {
+              headers: { 'x-access-token': accessToken }
+            }),
+            axiosClient.get(`/v1/users/test-appointments/user/${user.user_id}`, {
+              headers: { 'x-access-token': accessToken }
+            }),
+            axiosClient.get(`/v1/users/test-results`, {
+              headers: { 'x-access-token': accessToken }
+            })
+          ]);
+
+          if (appointmentsRes.data?.success) {
+            const userAppointments = appointmentsRes.data.data
+              .filter(appointment => appointment.user_id === user.user_id)
+              .sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
+            setAppointments(userAppointments);
+          }
+
+          if (testOrdersRes.data?.status === 'success') {
+            const userTestOrders = testOrdersRes.data.data?.orders || [];
+            setTestOrders(userTestOrders);
+          }
+
+          if (testResultsRes.data?.status === 'success') {
+            setTestResults(testResultsRes.data.data?.results || []);
+          }
+        } catch (error) {
+          console.error('Auto-refresh error:', error);
+        }
+      }, 30000);
+
+      return () => clearInterval(refreshInterval);
+    }
+  }, [accessToken, user.user_id]);
+
+  useEffect(() => {
+    const handleStorageChange = async (e) => {
+      if (e.key === 'data_updated') {
+        console.log('Storage change detected: Đang cập nhật dữ liệu...');
+        try {
+          const [appointmentsRes, testOrdersRes, testResultsRes] = await Promise.all([
+            axiosClient.get(`/v1/appointments/user/${user.user_id}`, {
+              headers: { 'x-access-token': accessToken }
+            }),
+            axiosClient.get(`/v1/users/test-appointments/user/${user.user_id}`, {
+              headers: { 'x-access-token': accessToken }
+            }),
+            axiosClient.get(`/v1/users/test-results`, {
+              headers: { 'x-access-token': accessToken }
+            })
+          ]);
+
+          if (appointmentsRes.data?.success) {
+            const userAppointments = appointmentsRes.data.data
+              .filter(appointment => appointment.user_id === user.user_id)
+              .sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
+            setAppointments(userAppointments);
+          }
+
+          if (testOrdersRes.data?.status === 'success') {
+            const userTestOrders = testOrdersRes.data.data?.orders || [];
+            setTestOrders(userTestOrders);
+          }
+
+          if (testResultsRes.data?.status === 'success') {
+            setTestResults(testResultsRes.data.data?.results || []);
+          }
+        } catch (error) {
+          console.error('Storage sync error:', error);
+        }
+      }
+    };
+
+    window.addEventListener('storage', handleStorageChange);
+    return () => window.removeEventListener('storage', handleStorageChange);
+  }, [accessToken, user.user_id]);
+
+  const refreshAllData = async () => {
+    try {
+      const [appointmentsRes, testOrdersRes, testResultsRes] = await Promise.all([
+        axiosClient.get(`/v1/appointments/user/${user.user_id}`, {
+          headers: { 'x-access-token': accessToken }
+        }),
+        axiosClient.get(`/v1/users/test-appointments/user/${user.user_id}`, {
+          headers: { 'x-access-token': accessToken }
+        }),
+        axiosClient.get(`/v1/users/test-results`, {
+          headers: { 'x-access-token': accessToken }
+        })
+      ]);
+
+      if (appointmentsRes.data?.success) {
+        const userAppointments = appointmentsRes.data.data
+          .filter(appointment => appointment.user_id === user.user_id)
+          .sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
+        setAppointments(userAppointments);
+      }
+
+      if (testOrdersRes.data?.status === 'success') {
+        const userTestOrders = testOrdersRes.data.data?.orders || [];
+        setTestOrders(userTestOrders);
+      }
+
+      if (testResultsRes.data?.status === 'success') {
+        setTestResults(testResultsRes.data.data?.results || []);
+      }
+
+      localStorage.setItem('data_updated', Date.now().toString());
+    } catch (error) {
+      console.error('Manual refresh error:', error);
+    }
+  };
+
   if (isLoading || testIsLoading) {
     return (
       <div className={cx('appointments-page')}>
@@ -556,7 +701,6 @@ Tạo lúc: ${new Date().toLocaleString('vi-VN')}
     );
   }
 
-  // Xử lý lỗi
   if (error || testError) {
     return (
       <div className={cx('appointments-page')}>
@@ -564,11 +708,7 @@ Tạo lúc: ${new Date().toLocaleString('vi-VN')}
           <FontAwesomeIcon icon={faExclamationTriangle} className={cx('error-icon')} />
           <h3>Có lỗi xảy ra</h3>
           <p>{error || testError}</p>
-          <button className={cx('retry-btn')} onClick={() => {
-            fetchAppointments();
-            fetchTestOrders();
-            fetchTestResults();
-          }}>
+          <button className={cx('retry-btn')} onClick={refreshAllData}>
             <FontAwesomeIcon icon={faRefresh} /> Thử lại
           </button>
         </div>
@@ -576,7 +716,6 @@ Tạo lúc: ${new Date().toLocaleString('vi-VN')}
     );
   }
 
-  // Thống kê
   const stats = [
     { label: 'Tổng cuộc hẹn', value: appointments.length },
     { label: 'Chờ xác nhận', value: appointments.filter(apt => apt.status === 'pending').length },
@@ -596,7 +735,6 @@ Tạo lúc: ${new Date().toLocaleString('vi-VN')}
 
   return (
     <div className={cx('appointments-page')}>
-      {/* Phần header */}
       <div className={cx('page-header')}>
         <div className={cx('header-content')}>
           <h1 className={cx('page-title')}>
@@ -608,7 +746,6 @@ Tạo lúc: ${new Date().toLocaleString('vi-VN')}
           </p>
         </div>
 
-        {/* Điều hướng tab */}
         <div className={cx('tab-navigation')}>
           <button
             className={cx('tab-btn', { active: activeTab === 'appointments' })}
@@ -626,7 +763,6 @@ Tạo lúc: ${new Date().toLocaleString('vi-VN')}
           </button>
         </div>
 
-        {/* Phần thống kê */}
         <div className={cx('header-stats')}>
           {activeTab === 'appointments'
             ? stats.map((stat, index) => (
@@ -645,7 +781,6 @@ Tạo lúc: ${new Date().toLocaleString('vi-VN')}
         </div>
       </div>
 
-      {/* Phần bộ lọc */}
       <div className={cx('filters-section')}>
         <div className={cx('filters-container')}>
           <div className={cx('search-box')}>
@@ -727,9 +862,7 @@ Tạo lúc: ${new Date().toLocaleString('vi-VN')}
         </div>
       </div>
 
-      {/* Nội dung dựa trên tab hiện tại */}
       {activeTab === 'appointments' ? (
-        // Nội dung cuộc hẹn tư vấn
         <div className={cx('appointments-container')}>
           {currentAppointments.length > 0 ? (
             <div className={cx('appointments-grid')}>
@@ -756,7 +889,6 @@ Tạo lúc: ${new Date().toLocaleString('vi-VN')}
 
                 return (
                   <div key={appointment.id} className={cx('appointment-card')}>
-                    {/* Header */}
                     <div className={cx('card-header')}>
                       <div className={cx('status-badge')} style={{
                         backgroundColor: statusInfo.bgColor,
@@ -778,7 +910,6 @@ Tạo lúc: ${new Date().toLocaleString('vi-VN')}
                         </div>
                       )}
 
-                      {/* Feedback status indicator */}
                       {appointment.status === 'completed' && (
                         <div className={cx('feedback-indicator', { 'has-feedback': hasFeedback })}>
                           <FontAwesomeIcon icon={faStar} />
@@ -787,7 +918,6 @@ Tạo lúc: ${new Date().toLocaleString('vi-VN')}
                       )}
                     </div>
 
-                    {/* Nội dung */}
                     <div className={cx('card-content')}>
                       <div className={cx('info-section')}>
                         <h3 className={cx('patient-name')}>
@@ -839,9 +969,7 @@ Tạo lúc: ${new Date().toLocaleString('vi-VN')}
                       )}
                     </div>
 
-                    {/* Hành động */}
                     <div className={cx('card-actions')}>
-                      {/* Payment button */}
                       {needsPayment && (
                         <button
                           className={cx('action-btn', 'payment-btn')}
@@ -852,7 +980,6 @@ Tạo lúc: ${new Date().toLocaleString('vi-VN')}
                         </button>
                       )}
 
-                      {/* Cancel button for unpaid appointments */}
                       {canCancel && (
                         <button
                           className={cx('action-btn', 'cancel-btn', {
@@ -873,7 +1000,6 @@ Tạo lúc: ${new Date().toLocaleString('vi-VN')}
                         </button>
                       )}
 
-                      {/* Cancel with refund button for paid appointments */}
                       {canCancelPaid && (
                         <button
                           className={cx('action-btn', 'refund-cancel-btn', {
@@ -895,7 +1021,6 @@ Tạo lúc: ${new Date().toLocaleString('vi-VN')}
                         </button>
                       )}
 
-                      {/* Refund status indicator for cancelled paid appointments */}
                       {appointment.status === 'rejected' && appointment.is_refunded && (
                         <div className={cx('refund-status-indicator')}>
                           <FontAwesomeIcon icon={faRefresh} />
@@ -919,7 +1044,6 @@ Tạo lúc: ${new Date().toLocaleString('vi-VN')}
                         </div>
                       )}
 
-                      {/* Join Meeting button */}
                       {appointment.status === 'confirmed' && appointment.booking === 1 && (
                         <button
                           className={cx('action-btn', 'meeting-btn', {
@@ -938,7 +1062,6 @@ Tạo lúc: ${new Date().toLocaleString('vi-VN')}
                         </button>
                       )}
 
-                      {/* Rebook button */}
                       {appointment.status === 'rejected' && (
                         <button
                           className={cx('action-btn', 'rebook-btn')}
@@ -949,7 +1072,6 @@ Tạo lúc: ${new Date().toLocaleString('vi-VN')}
                         </button>
                       )}
 
-                      {/* Actions cho completed */}
                       {appointment.status === 'completed' && (
                         <div className={cx('completed-actions')}>
                           <div className={cx('top-actions')}>
@@ -994,7 +1116,6 @@ Tạo lúc: ${new Date().toLocaleString('vi-VN')}
                         </div>
                       )}
 
-                      {/* View button cho status khác */}
                       {appointment.status !== 'completed' && (
                         <button
                           className={cx('action-btn', 'view-btn')}
@@ -1005,7 +1126,6 @@ Tạo lúc: ${new Date().toLocaleString('vi-VN')}
                         </button>
                       )}
 
-                      {/* Meeting info */}
                       {appointment.status === 'confirmed' && appointment.booking === 1 && !canJoinMeeting && (
                         <div className={cx('meeting-info')}>
                           <FontAwesomeIcon icon={faClock} />
@@ -1015,7 +1135,6 @@ Tạo lúc: ${new Date().toLocaleString('vi-VN')}
                         </div>
                       )}
 
-                      {/* Cancel loading indicator */}
                       {isCancelling && (
                         <div className={cx('cancel-loading')}>
                           <FontAwesomeIcon icon={faSpinner} spin />
@@ -1053,7 +1172,6 @@ Tạo lúc: ${new Date().toLocaleString('vi-VN')}
           )}
         </div>
       ) : (
-        // Phần đơn xét nghiệm
         <div className={cx('test-orders-container')}>
           {currentTestOrders.length > 0 ? (
             <div className={cx('test-orders-grid')}>
@@ -1237,7 +1355,6 @@ Tạo lúc: ${new Date().toLocaleString('vi-VN')}
         </div>
       )}
 
-      {/* Phân trang cho đơn xét nghiệm */}
       {activeTab === 'tests' && totalTestPages > 1 && (
         <div className={cx('pagination')}>
           <button
@@ -1268,7 +1385,6 @@ Tạo lúc: ${new Date().toLocaleString('vi-VN')}
         </div>
       )}
 
-      {/* Phân trang cho cuộc hẹn */}
       {activeTab === 'appointments' && totalPages > 1 && (
         <div className={cx('pagination')}>
           <button
@@ -1299,7 +1415,6 @@ Tạo lúc: ${new Date().toLocaleString('vi-VN')}
         </div>
       )}
 
-      {/* Modal chi tiết đơn xét nghiệm */}
       {showTestModal && selectedTestOrder && (
         <div className={cx('modal-overlay')} onClick={() => setShowTestModal(false)}>
           <div className={cx('modal-content', 'test-modal')} onClick={(e) => e.stopPropagation()}>
@@ -1340,7 +1455,6 @@ Tạo lúc: ${new Date().toLocaleString('vi-VN')}
                       <span>{formatDate(selectedTestOrder.order.created_at)}</span>
                     </div>
 
-                    {/* Add exam date and time to modal */}
                     {selectedTestOrder.order.exam_date && (
                       <div className={cx('detail-row')}>
                         <strong>Ngày xét nghiệm:</strong>
@@ -1378,7 +1492,6 @@ Tạo lúc: ${new Date().toLocaleString('vi-VN')}
                   </div>
                 </div>
 
-                {/* Add appointment schedule section if exam date/time exists */}
                 {(selectedTestOrder.order.exam_date || selectedTestOrder.order.exam_time) && (
                   <div className={cx('detail-section')}>
                     <h3>Lịch hẹn xét nghiệm</h3>
@@ -1417,78 +1530,99 @@ Tạo lúc: ${new Date().toLocaleString('vi-VN')}
         </div>
       )}
 
-      {/* Modal kết quả xét nghiệm */}
-      {showResultModal && selectedResult && (
+      {showResultModal && selectedResults.length > 0 && (
         <div className={cx('modal-overlay')} onClick={() => setShowResultModal(false)}>
           <div className={cx('modal-content', 'result-modal')} onClick={(e) => e.stopPropagation()}>
             <div className={cx('modal-header')}>
-              <h2>Kết quả xét nghiệm</h2>
+              <h2>Kết quả xét nghiệm ({selectedResults.length} kết quả)</h2>
               <button className={cx('close-btn')} onClick={() => setShowResultModal(false)}>×</button>
             </div>
 
             <div className={cx('modal-body')}>
-              <div className={cx('result-details')}>
-                <div className={cx('result-header')}>
-                  <h3>{selectedResult.service.name}</h3>
-                  <div className={cx('result-meta')}>
-                    <span>Ngày xét nghiệm: {formatDate(selectedResult.exam_date)} {selectedResult.exam_time}</span>
-                    <span>Mã kết quả: {selectedResult.testresult_id}</span>
-                  </div>
-                </div>
-
-                <div className={cx('result-content')}>
-                  <div className={cx('result-item')}>
-                    <label>Kết quả:</label>
-                    <div className={cx('result-value')}>{selectedResult.result.result}</div>
-                  </div>
-
-                  <div className={cx('result-item')}>
-                    <label>Kết luận:</label>
-                    <div className={cx('result-conclusion', {
-                      'positive': selectedResult.result.conclusion.toLowerCase().includes('bình thường'),
-                      'negative': !selectedResult.result.conclusion.toLowerCase().includes('bình thường')
-                    })}>
-                      {selectedResult.result.conclusion}
-                    </div>
-                  </div>
-
-                  {selectedResult.result.normal_range && (
-                    <div className={cx('result-item')}>
-                      <label>Chỉ số bình thường:</label>
-                      <div className={cx('result-value')}>{selectedResult.result.normal_range}</div>
+              {selectedResults.map((result, index) => (
+                <div key={result.testresult_id} className={cx('result-details')}>
+                  {selectedResults.length > 1 && (
+                    <div className={cx('result-separator')}>
+                      <h4>Kết quả {index + 1}</h4>
                     </div>
                   )}
+                  
+                  <div className={cx('result-header')}>
+                    <h3>{result.service.name}</h3>
+                    <div className={cx('result-meta')}>
+                      <span>Ngày xét nghiệm: {formatDate(result.exam_date)} {result.exam_time}</span>
+                      <span>Mã kết quả: {result.testresult_id}</span>
+                    </div>
+                  </div>
 
-                  {selectedResult.result.recommendations && (
+                  <div className={cx('result-content')}>
                     <div className={cx('result-item')}>
-                      <label>Khuyến nghị:</label>
-                      <div className={cx('result-recommendations')}>
-                        {selectedResult.result.recommendations}
+                      <label>Kết quả:</label>
+                      <div className={cx('result-value')}>{result.result.result}</div>
+                    </div>
+
+                    <div className={cx('result-item')}>
+                      <label>Kết luận:</label>
+                      <div className={cx('result-conclusion', {
+                        'positive': result.result.conclusion.toLowerCase().includes('bình thường'),
+                        'negative': !result.result.conclusion.toLowerCase().includes('bình thường')
+                      })}>
+                        {result.result.conclusion}
                       </div>
                     </div>
+
+                    {result.result.normal_range && (
+                      <div className={cx('result-item')}>
+                        <label>Chỉ số:</label>
+                        <div className={cx('result-value')}>{result.result.normal_range}</div>
+                      </div>
+                    )}
+
+                    {result.result.recommendations && (
+                      <div className={cx('result-item')}>
+                        <label>Khuyến nghị:</label>
+                        <div className={cx('result-recommendations')}>
+                          {result.result.recommendations}
+                        </div>
+                      </div>
+                    )}
+                  </div>
+
+                  <div className={cx('result-footer')}>
+                    <div className={cx('result-timestamp')}>
+                      Tạo kết quả: {formatDate(result.result.created_at)}
+                    </div>
+                    <div className={cx('result-actions')}>
+                      <button
+                        className={cx('action-btn', 'download-btn')}
+                        onClick={() => handleDownloadResult(result)}
+                      >
+                        <FontAwesomeIcon icon={faDownload} /> Tải xuống
+                      </button>
+                    </div>
+                  </div>
+
+                  {index < selectedResults.length - 1 && (
+                    <hr className={cx('result-divider')} />
                   )}
                 </div>
-
-                <div className={cx('result-footer')}>
-                  <div className={cx('result-timestamp')}>
-                    Tạo kết quả: {formatDate(selectedResult.result.created_at)}
-                  </div>
-                  <div className={cx('result-actions')}>
-                    <button
-                      className={cx('action-btn', 'download-btn')}
-                      onClick={() => handleDownloadResult(selectedResult)}
-                    >
-                      <FontAwesomeIcon icon={faDownload} /> Tải xuống
-                    </button>
-                  </div>
+              ))}
+              
+              {selectedResults.length > 1 && (
+                <div className={cx('modal-footer', 'result-modal-footer')}>
+                  <button
+                    className={cx('action-btn', 'download-all-btn')}
+                    onClick={() => handleDownloadAllResults(selectedResults)}
+                  >
+                    <FontAwesomeIcon icon={faDownload} /> Tải xuống tất cả ({selectedResults.length} kết quả)
+                  </button>
                 </div>
-              </div>
+              )}
             </div>
           </div>
         </div>
       )}
 
-      {/* Modal */}
       {showModal && selectedAppointment && (
         <div className={cx('modal-overlay')} onClick={() => setShowModal(false)}>
           <div className={cx('modal-content')} onClick={(e) => e.stopPropagation()}>
@@ -1549,7 +1683,6 @@ Tạo lúc: ${new Date().toLocaleString('vi-VN')}
                   <span>{formatDate(selectedAppointment.created_at)}</span>
                 </div>
 
-                {/* Refund status trong modal */}
                 {selectedAppointment.status === 'rejected' && selectedAppointment.is_refunded && (
                   <>
                     <div className={cx('detail-row')}>
@@ -1586,7 +1719,6 @@ Tạo lúc: ${new Date().toLocaleString('vi-VN')}
                   </>
                 )}
 
-                {/* Feedback status trong modal */}
                 {selectedAppointment.status === 'completed' && (
                   <div className={cx('detail-row')}>
                     <strong>Trạng thái đánh giá:</strong>
@@ -1611,12 +1743,10 @@ Tạo lúc: ${new Date().toLocaleString('vi-VN')}
               )}
             </div>
 
-            {/* Modal Actions */}
             {selectedAppointment.status === 'completed' && (
               <div className={cx('modal-actions')}>
                 <h3>Hành động khả dụng</h3>
                 <div className={cx('action-buttons-horizontal')}>
-                  {/* Updated feedback button trong modal */}
                   <button
                     className={cx('modal-action-btn', 'feedback-btn', {
                       'has-feedback': checkFeedbackStatus(selectedAppointment)
@@ -1658,6 +1788,17 @@ Tạo lúc: ${new Date().toLocaleString('vi-VN')}
           </div>
         </div>
       )}
+
+      <ConfirmModal
+        isOpen={modalConfig.isOpen}
+        onClose={closeModal}
+        onConfirm={modalConfig.onConfirm}
+        title={modalConfig.title}
+        message={modalConfig.message}
+        confirmText={modalConfig.confirmText}
+        cancelText={modalConfig.cancelText}
+        type={modalConfig.type}
+      />
     </div>
   );
 }

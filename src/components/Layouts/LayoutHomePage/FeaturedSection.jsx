@@ -1,7 +1,26 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
+import axiosClient from "../../../services/axiosClient";
 
 export const FeaturedSection = () => {
+  const [services, setServices] = useState([]);
+
+  useEffect(() => {
+    const fetchServicesTest = async () => {
+      try {
+        const res = await axiosClient.get("/v1/services");
+        console.log(res.data);
+
+        const testServices = res.data.data
+          .filter((item) => item.category_id === "CAT001")
+          .slice(0, 3);
+        setServices(testServices);
+      } catch (error) {
+        console.log(error);
+      }
+    };
+    fetchServicesTest();
+  }, []);
   return (
     <section className="py-16 bg-white">
       <div className="container mx-auto px-4">
@@ -16,257 +35,94 @@ export const FeaturedSection = () => {
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-          {/* Gói 1 */}
-          <div className="bg-white border border-gray-200 rounded-xl shadow-md overflow-hidden transition-transform hover:-translate-y-1">
-            <div className="bg-blue-50 p-4">
-              <h3 className="text-xl font-bold text-center text-blue-800">
-                Gói kiểm tra cơ bản
-              </h3>
+          {services.length === 0 ? (
+            <div className="col-span-3 text-center text-gray-500">
+              Không có dịch vụ xét nghiệm nào.
             </div>
-            <div className="p-6">
-              <p className="text-3xl font-bold text-center mb-6">950.000 đ</p>
-              <ul className="space-y-3 mb-8">
-                <li className="flex items-center">
-                  <svg
-                    className="h-5 w-5 text-green-500 mr-2"
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
-                    xmlns="http://www.w3.org/2000/svg"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                      d="M5 13l4 4L19 7"
-                    ></path>
-                  </svg>
-                  <span>Xét nghiệm HIV</span>
-                </li>
-                <li className="flex items-center">
-                  <svg
-                    className="h-5 w-5 text-green-500 mr-2"
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
-                    xmlns="http://www.w3.org/2000/svg"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                      d="M5 13l4 4L19 7"
-                    ></path>
-                  </svg>
-                  <span>Xét nghiệm giang mai</span>
-                </li>
-                <li className="flex items-center">
-                  <svg
-                    className="h-5 w-5 text-green-500 mr-2"
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
-                    xmlns="http://www.w3.org/2000/svg"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                      d="M5 13l4 4L19 7"
-                    ></path>
-                  </svg>
-                  <span>Tư vấn kết quả</span>
-                </li>
-              </ul>
-              <Link
-                to="/packages/basic"
-                className="block w-full bg-blue-600 hover:bg-blue-700 text-white font-medium text-center py-3 rounded-lg transition-colors"
+          ) : (
+            services.map((service) => (
+              <div
+                key={service.service_id}
+                className="bg-white border border-gray-200 rounded-xl shadow-md overflow-hidden transition-transform hover:-translate-y-1 flex flex-col h-full"
               >
-                Đặt lịch ngay
-              </Link>
-            </div>
-          </div>
-
-          {/* Gói 2 */}
-          <div className="bg-white border-2 border-blue-500 rounded-xl shadow-lg overflow-hidden transform scale-105 relative">
-            <div className="absolute top-0 right-0">
-              <div className="bg-blue-600 text-white text-xs font-bold px-3 py-1 rounded-bl-lg">
-                PHỔ BIẾN NHẤT
+                <div className="bg-blue-50 p-4">
+                  <h3 className="text-xl font-bold text-center text-blue-800">
+                    {service.name}
+                  </h3>
+                </div>
+                <div className="p-6 flex flex-col flex-1 justify-between">
+                  <div>
+                    <p className="text-3xl font-bold text-center mb-6">
+                      {Number(service.price).toLocaleString("vi-VN")} đ
+                    </p>
+                    <ul className="space-y-3 mb-8">
+                      <li className="flex items-center">
+                        <svg
+                          className="h-5 w-5 text-green-500 mr-2"
+                          fill="none"
+                          stroke="currentColor"
+                          viewBox="0 0 24 24"
+                        >
+                          <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            strokeWidth={2}
+                            d="M5 13l4 4L19 7"
+                          ></path>
+                        </svg>
+                        <span>{service.description}</span>
+                      </li>
+                      <li className="flex items-center">
+                        <svg
+                          className="h-5 w-5 text-green-500 mr-2"
+                          fill="none"
+                          stroke="currentColor"
+                          viewBox="0 0 24 24"
+                        >
+                          <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            strokeWidth={2}
+                            d="M5 13l4 4L19 7"
+                          ></path>
+                        </svg>
+                        <span>
+                          {service.preparation_guidelines ||
+                            "Không có hướng dẫn chuẩn bị"}
+                        </span>
+                      </li>
+                      <li className="flex items-center">
+                        <svg
+                          className="h-5 w-5 text-green-500 mr-2"
+                          fill="none"
+                          stroke="currentColor"
+                          viewBox="0 0 24 24"
+                        >
+                          <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            strokeWidth={2}
+                            d="M5 13l4 4L19 7"
+                          ></path>
+                        </svg>
+                        <span>
+                          Thời gian trả kết quả:{" "}
+                          {service.result_wait_time || "3-5 ngày"}
+                        </span>
+                      </li>
+                    </ul>
+                  </div>
+                  <Link
+                    to={`/services/test`}
+                    className="block w-full bg-blue-600 hover:bg-blue-700 text-white font-medium text-center py-3 rounded-lg transition-colors mt-5"
+                    style={{ marginTop: "auto" }}
+                  >
+                    Đặt lịch ngay
+                  </Link>
+                </div>
               </div>
-            </div>
-            <div className="bg-blue-600 p-4">
-              <h3 className="text-xl font-bold text-center text-white">
-                Gói kiểm tra toàn diện
-              </h3>
-            </div>
-            <div className="p-6">
-              <p className="text-3xl font-bold text-center mb-6">1.950.000 đ</p>
-              <ul className="space-y-3 mb-8">
-                <li className="flex items-center">
-                  <svg
-                    className="h-5 w-5 text-green-500 mr-2"
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
-                    xmlns="http://www.w3.org/2000/svg"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                      d="M5 13l4 4L19 7"
-                    ></path>
-                  </svg>
-                  <span>Xét nghiệm HIV</span>
-                </li>
-                <li className="flex items-center">
-                  <svg
-                    className="h-5 w-5 text-green-500 mr-2"
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
-                    xmlns="http://www.w3.org/2000/svg"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                      d="M5 13l4 4L19 7"
-                    ></path>
-                  </svg>
-                  <span>Xét nghiệm STI toàn diện (8 loại)</span>
-                </li>
-                <li className="flex items-center">
-                  <svg
-                    className="h-5 w-5 text-green-500 mr-2"
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
-                    xmlns="http://www.w3.org/2000/svg"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                      d="M5 13l4 4L19 7"
-                    ></path>
-                  </svg>
-                  <span>Tư vấn tâm lý</span>
-                </li>
-                <li className="flex items-center">
-                  <svg
-                    className="h-5 w-5 text-green-500 mr-2"
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
-                    xmlns="http://www.w3.org/2000/svg"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                      d="M5 13l4 4L19 7"
-                    ></path>
-                  </svg>
-                  <span>Tư vấn giáo dục giới tính</span>
-                </li>
-              </ul>
-              <Link
-                to="/packages/comprehensive"
-                className="block w-full bg-blue-600 hover:bg-blue-700 text-white font-medium text-center py-3 rounded-lg transition-colors"
-              >
-                Đặt lịch ngay
-              </Link>
-            </div>
-          </div>
-
-          {/* Gói 3 */}
-          <div className="bg-white border border-gray-200 rounded-xl shadow-md overflow-hidden transition-transform hover:-translate-y-1">
-            <div className="bg-blue-50 p-4">
-              <h3 className="text-xl font-bold text-center text-blue-800">
-                Gói Premium
-              </h3>
-            </div>
-            <div className="p-6">
-              <p className="text-3xl font-bold text-center mb-6">2.950.000 đ</p>
-              <ul className="space-y-3 mb-8">
-                <li className="flex items-center">
-                  <svg
-                    className="h-5 w-5 text-green-500 mr-2"
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
-                    xmlns="http://www.w3.org/2000/svg"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                      d="M5 13l4 4L19 7"
-                    ></path>
-                  </svg>
-                  <span>Tất cả dịch vụ gói toàn diện</span>
-                </li>
-                <li className="flex items-center">
-                  <svg
-                    className="h-5 w-5 text-green-500 mr-2"
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
-                    xmlns="http://www.w3.org/2000/svg"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                      d="M5 13l4 4L19 7"
-                    ></path>
-                  </svg>
-                  <span>Khám tổng quát</span>
-                </li>
-                <li className="flex items-center">
-                  <svg
-                    className="h-5 w-5 text-green-500 mr-2"
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
-                    xmlns="http://www.w3.org/2000/svg"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                      d="M5 13l4 4L19 7"
-                    ></path>
-                  </svg>
-                  <span>Tư vấn định kỳ (3 tháng)</span>
-                </li>
-                <li className="flex items-center">
-                  <svg
-                    className="h-5 w-5 text-green-500 mr-2"
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
-                    xmlns="http://www.w3.org/2000/svg"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                      d="M5 13l4 4L19 7"
-                    ></path>
-                  </svg>
-                  <span>Hỗ trợ tâm lý không giới hạn</span>
-                </li>
-              </ul>
-              <Link
-                to="/packages/premium"
-                className="block w-full bg-blue-600 hover:bg-blue-700 text-white font-medium text-center py-3 rounded-lg transition-colors"
-              >
-                Đặt lịch ngay
-              </Link>
-            </div>
-          </div>
+            ))
+          )}
         </div>
       </div>
     </section>

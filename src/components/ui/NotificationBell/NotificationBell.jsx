@@ -14,11 +14,11 @@ import {
   faTimesCircle,
   faSpinner,
   faStar,
-  faFlaskVial, // Icon cho xét nghiệm
-  faClipboardCheck, // Icon cho kết quả
-  faPrescriptionBottle, // Icon cho đơn thuốc
-  faVial, // Icon cho mẫu xét nghiệm
-  faClock, // Icon cho chờ đợi
+  faFlaskVial,
+  faClipboardCheck,
+  faPrescriptionBottle,
+  faVial,
+  faClock,
 } from "@fortawesome/free-solid-svg-icons";
 import classNames from "classnames/bind";
 import styles from "./NotificationBell.module.scss";

@@ -48,6 +48,7 @@ import { TestManagement as StaffTestManagement } from "./page/staff/TestManageme
 
 import { useEffect, useState } from "react";
 import { TestAppointment } from "./page/manager/TestAppointment/TestAppointment";
+import { ScrollTop } from "./components/ui/ScrollTop";
 function App() {
   const [isAuthen, setIsAuthen] = useState(false);
   useEffect(() => {
@@ -68,6 +69,7 @@ function App() {
   return (
     <>
       <ToastContainer />
+      <ScrollTop />
       <Routes>
         <Route
           path="/"

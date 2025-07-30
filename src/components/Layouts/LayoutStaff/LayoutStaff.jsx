@@ -19,11 +19,8 @@ import ListItemText from "@mui/material/ListItemText";
 import DashboardIcon from "@mui/icons-material/Dashboard";
 import ScienceIcon from "@mui/icons-material/Science";
 import LogoutIcon from "@mui/icons-material/Logout";
-import NotificationsNoneIcon from "@mui/icons-material/NotificationsNone";
 import SearchIcon from "@mui/icons-material/Search";
-import ArticleIcon from "@mui/icons-material/Article";
 import InputBase from "@mui/material/InputBase";
-import Badge from "@mui/material/Badge";
 import { Outlet, useNavigate, useLocation } from "react-router-dom";
 import { useSelector } from "react-redux";
 
@@ -224,12 +221,6 @@ export default function LayoutStaff() {
           </Search>
 
           <Box sx={{ display: "flex", alignItems: "center", gap: 2 }}>
-            <IconButton color="inherit" size="large">
-              <Badge badgeContent={2} color="error">
-                <NotificationsNoneIcon />
-              </Badge>
-            </IconButton>
-
             <ToogleStaffMenu />
           </Box>
         </Toolbar>

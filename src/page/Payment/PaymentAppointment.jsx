@@ -37,10 +37,10 @@ function PaymentAppointment() {
 
   const paymentMethods = [
     {
-      id: "vnpay",
-      name: "VNPay",
+      id: "stripe",
+      name: "Stripe",
       icon: faMobileAlt,
-      description: "Thanh toán qua cổng VNPay",
+      description: "Thanh toán qua cổng Stripe",
     },
   ];
 

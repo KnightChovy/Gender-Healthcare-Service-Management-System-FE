@@ -21,7 +21,6 @@ import AssignmentIndIcon from "@mui/icons-material/AssignmentInd";
 import DatasetIcon from "@mui/icons-material/Dataset";
 import DashboardIcon from "@mui/icons-material/Dashboard";
 import LogoutIcon from "@mui/icons-material/Logout";
-import NotificationsNoneIcon from "@mui/icons-material/NotificationsNone";
 import SearchIcon from "@mui/icons-material/Search";
 import InputBase from "@mui/material/InputBase";
 import Badge from "@mui/material/Badge";
@@ -242,12 +241,6 @@ export default function LayoutAdmin() {
 
           {/* Right section with user profile */}
           <Box sx={{ display: "flex", alignItems: "center", gap: 2 }}>
-            <IconButton color="inherit" size="large">
-              <Badge badgeContent={4} color="error">
-                <NotificationsNoneIcon />
-              </Badge>
-            </IconButton>
-
             <AdminMenu />
           </Box>
         </Toolbar>
