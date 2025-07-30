@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { useSelector } from "react-redux";
 import { useNavigate, useLocation } from "react-router-dom";
 import doctorService from "../../services/doctor.service";
@@ -27,6 +27,21 @@ const DoctorAppointments = () => {
   const [selectedAppointment, setSelectedAppointment] = useState(null);
   const { user } = useSelector((state) => state.auth);
   console.log("Current user:", selectedAppointment);
+
+  // Sử dụng useCallback để tạo hàm fetch có thể tái sử dụng
+  const fetchAppointments = useCallback(async () => {
+    if (user && user.user_id) {
+      try {
+        const data = await doctorService.fetchDoctorAppointmentsById(
+          user.user_id
+        );
+        setDoctorAppointments(data.data);
+      } catch (error) {
+        console.error("Error fetching appointments:", error);
+      }
+    }
+  }, [user?.user_id]);
+
   useEffect(() => {
     // Hiển thị thông báo success nếu có
     if (location.state?.message) {
@@ -47,22 +62,17 @@ const DoctorAppointments = () => {
   }, [location.state, navigate, location.pathname]);
 
   useEffect(() => {
-    const fetchAppointments = async () => {
-      if (user && user.user_id) {
-        try {
-          // Lấy ngày hiện tại khi component được mount
-          const data = await doctorService.fetchDoctorAppointmentsById(
-            user.user_id
-          );
-          setDoctorAppointments(data.data);
-        } catch (error) {
-          console.error("Error fetching appointments:", error);
-        }
-      }
-    };
-
     fetchAppointments();
-  }, [user?.user_id]);
+  }, [fetchAppointments]);
+
+  // Tự động reload mỗi 30 giây
+  useEffect(() => {
+    const interval = setInterval(() => {
+      fetchAppointments();
+    }, 30000); // 30 giây
+
+    return () => clearInterval(interval);
+  }, [fetchAppointments]);
   console.log("DoctorAppointments:", doctorAppointments);
 
   // Filter appointments by status and search term
@@ -135,49 +145,57 @@ const DoctorAppointments = () => {
   };
 
   // Handle status change
-  const handleStatusChange = async (appointmentId) => {
-    try {
-      console.log("Đang cập nhật trạng thái cho appointment:", appointmentId);
+  const handleStatusChange = useCallback(
+    async (appointmentId) => {
+      try {
+        console.log("Đang cập nhật trạng thái cho appointment:", appointmentId);
 
-      const appointment = {
-        appointment_id: appointmentId,
-        status: "completed", // Cập nhật trạng thái thành "completed"
-        doctor_id: user.user_id, // Thêm ID bác sĩ để xác định
-      };
+        const appointment = {
+          appointment_id: appointmentId,
+          status: "completed", // Cập nhật trạng thái thành "completed"
+          doctor_id: user.user_id, // Thêm ID bác sĩ để xác định
+        };
 
-      const res = await doctorService.fetchDoctorAppointmentsCompleted(
-        user.user_id,
-        appointment
-      );
-
-      console.log("Kết quả từ API:", res);
-
-      if (res) {
-        // Cập nhật state local với ID đúng
-        setDoctorAppointments((prevAppointments) =>
-          prevAppointments.map((app) =>
-            app.appointment_id === appointmentId || app.id === appointmentId
-              ? { ...app, status: "completed" }
-              : app
-          )
+        const res = await doctorService.fetchDoctorAppointmentsCompleted(
+          user.user_id,
+          appointment
         );
 
-        alert("Đã hoàn thành cuộc hẹn thành công!");
-        const request =
-          await doctorService.fetchEmailRequestAppointmentFeedback(
-            appointmentId
+        console.log("Kết quả từ API:", res);
+
+        if (res) {
+          // Cập nhật state local với ID đúng
+          setDoctorAppointments((prevAppointments) =>
+            prevAppointments.map((app) =>
+              app.appointment_id === appointmentId || app.id === appointmentId
+                ? { ...app, status: "completed" }
+                : app
+            )
           );
-        console.log("Email request feedback:", request);
-      } else {
-        throw new Error(res?.message || "Cập nhật không thành công");
+
+          alert("Đã hoàn thành cuộc hẹn thành công!");
+          const request =
+            await doctorService.fetchEmailRequestAppointmentFeedback(
+              appointmentId
+            );
+          console.log("Email request feedback:", request);
+
+          // Tự động reload dữ liệu sau khi cập nhật thành công
+          setTimeout(() => {
+            fetchAppointments();
+          }, 1000);
+        } else {
+          throw new Error(res?.message || "Cập nhật không thành công");
+        }
+      } catch (error) {
+        console.error("Error updating appointment status:", error);
+        alert(
+          "Lỗi khi cập nhật trạng thái: " + (error.message || "Đã xảy ra lỗi")
+        );
       }
-    } catch (error) {
-      console.error("Error updating appointment status:", error);
-      alert(
-        "Lỗi khi cập nhật trạng thái: " + (error.message || "Đã xảy ra lỗi")
-      );
-    }
-  };
+    },
+    [user.user_id, fetchAppointments]
+  );
 
   // View appointment details
   const viewAppointmentDetails = (appointment) => {
@@ -595,20 +613,6 @@ const DoctorAppointments = () => {
                         </button>
                       )}
                     </>
-                  )}
-
-                  {selectedAppointment.status === "completed" && (
-                    <button
-                      onClick={() => {
-                        closeModal();
-                        navigate(
-                          `/doctor/consultation-result/${selectedAppointment.appointment_id}`
-                        );
-                      }}
-                      className="px-4 py-2 bg-orange-600 text-white rounded-md text-sm font-medium hover:bg-orange-700"
-                    >
-                      Xem kết quả tư vấn
-                    </button>
                   )}
                 </div>
               </div>

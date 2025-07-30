@@ -22,7 +22,6 @@ import WorkHistoryIcon from "@mui/icons-material/WorkHistory";
 import AccountBalanceWalletIcon from "@mui/icons-material/AccountBalanceWallet";
 import RateReviewIcon from "@mui/icons-material/RateReview";
 import LogoutIcon from "@mui/icons-material/Logout";
-import NotificationsNoneIcon from "@mui/icons-material/NotificationsNone";
 import SearchIcon from "@mui/icons-material/Search";
 import InputBase from "@mui/material/InputBase";
 import Badge from "@mui/material/Badge";

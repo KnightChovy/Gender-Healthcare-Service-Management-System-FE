@@ -161,10 +161,11 @@ const Schedule = () => {
     }
   };
 
-  // Load dữ liệu khi component mount hoặc khi thay đổi
   useEffect(() => {
-    loadDoctorSchedule();
-  }, [user?.user_id, selectedDate]);
+    if (doctor) {
+      loadDoctorSchedule();
+    }
+  }, [doctor, selectedDate]);
 
   // Function để hiển thị notification
   const showNotification = (type, title, message) => {
@@ -319,12 +320,18 @@ const Schedule = () => {
     mondayOfPrevWeek.setDate(diff);
     mondayOfPrevWeek.setHours(0, 0, 0, 0);
 
-    // Không cho phép quay về tuần trong quá khứ
-    if (mondayOfPrevWeek < today) {
+    const currentWeekMonday = new Date(today);
+    const currentDay = currentWeekMonday.getDay();
+    const currentWeekDiff =
+      currentWeekMonday.getDate() - currentDay + (currentDay === 0 ? -6 : 1);
+    currentWeekMonday.setDate(currentWeekDiff);
+    currentWeekMonday.setHours(0, 0, 0, 0);
+
+    if (mondayOfPrevWeek < currentWeekMonday) {
       showNotification(
         "warning",
         "Không thể chọn",
-        "Không thể chọn lịch làm việc trong quá khứ"
+        "Không thể chọn lịch làm việc trước tuần hiện tại."
       );
       return;
     }
@@ -693,12 +700,13 @@ const Schedule = () => {
             <button
               type="button"
               onClick={handleReset}
-              disabled={isLoading}
+              disabled={isLoading || isCurrentWeek() || weekDates[0] < today}
               className="px-4 py-2 bg-gray-500 text-white rounded-md hover:bg-gray-600 transition-colors disabled:opacity-50"
             >
               <i className="fas fa-redo mr-2"></i>
               Đặt lại
             </button>
+
             <button
               type="submit"
               disabled={isLoading || isCurrentWeek()}

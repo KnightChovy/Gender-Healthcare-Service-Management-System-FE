@@ -100,14 +100,13 @@ function DoctorSelection({ formData, errors, onChange }) {
 
   useEffect(() => {
     if (formData.consultationType && allDoctors.length > 0) {
-      const filtered = allDoctors.filter((doctor) => {
-        // Ensure consultationTypes is an array
-        const consultationTypes = Array.isArray(doctor.consultationTypes)
-          ? doctor.consultationTypes
+      const filtered = allDoctors.filter(doctor => {
+        const consultationTypes = Array.isArray(doctor.consultationTypes) 
+          ? doctor.consultationTypes 
           : [doctor.consultationTypes].filter(Boolean);
 
         if (consultationTypes.length === 0) {
-          return true; // Include doctor if no consultation types specified
+          return true;
         }
 
         return consultationTypes.some(
