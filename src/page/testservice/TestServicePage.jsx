@@ -302,7 +302,6 @@ const TestAppointmentPage = () => {
     window.scrollTo(0, 0);
   };
 
-  // Xử lý khi nhấn nút quay lại
   const handlePreviousStep = () => {
     setCurrentStep(currentStep - 1);
     window.scrollTo(0, 0);
@@ -398,7 +397,6 @@ const TestAppointmentPage = () => {
 
         <BookingStepIndicator currentStep={currentStep} />
 
-        {/* Render component theo bước hiện tại */}
         {currentStep === 1 && (
           <PersonalInfoStep
             userInfo={userInfo}

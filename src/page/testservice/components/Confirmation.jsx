@@ -14,6 +14,8 @@ const ConfirmationStep = ({
   handlePreviousStep,
   loading,
   paymentProcessing,
+  paymentMethod,
+  setPaymentMethod,
 }) => {
   return (
     <div className="bg-white shadow overflow-hidden sm:rounded-lg">
@@ -140,22 +142,10 @@ const ConfirmationStep = ({
               Phương thức thanh toán
             </dt>
             <dd className="mt-1 text-sm text-gray-900 sm:mt-0">
-              <div className="flex items-center">
-                <input
-                  id="payment-cash"
-                  name="payment-method"
-                  type="radio"
-                  value="cash"
-                  checked={true}
-                  disabled={true}
-                  className="focus:ring-blue-500 h-4 w-4 text-blue-600 border-gray-300"
-                />
-                <label
-                  htmlFor="payment-cash"
-                  className="ml-3 block text-sm font-medium text-gray-700"
-                >
-                  Thanh toán tiền mặt (tại cơ sở y tế)
-                </label>
+              <div className="flex flex-col gap-2">
+                <span className="block text-sm font-medium text-gray-700">
+                  Thanh toán tại cơ sở y tế
+                </span>
               </div>
             </dd>
           </div>

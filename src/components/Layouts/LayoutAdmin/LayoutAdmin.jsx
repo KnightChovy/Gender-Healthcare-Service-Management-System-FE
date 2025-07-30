@@ -177,11 +177,7 @@ export default function LayoutAdmin() {
       path: "/admin/employees",
       icon: <AssignmentIndIcon />,
     },
-    {
-      text: "Quản lí dữ liệu",
-      path: "/admin/data",
-      icon: <DatasetIcon />,
-    },
+
     {
       text: "Quản lí người dùng",
       path: "/admin/users",
@@ -189,13 +185,10 @@ export default function LayoutAdmin() {
     },
   ];
 
-  // Function to get initials from name
-
   return (
     <Box sx={{ display: "flex", height: "100vh" }}>
       <CssBaseline />
 
-      {/* App Bar with gradient and enhanced styling */}
       <AppBar position="fixed" open={open} elevation={0}>
         <Toolbar sx={{ justifyContent: "space-between", minHeight: 64 }}>
           {/* Left section with brand and toggle */}
@@ -225,7 +218,7 @@ export default function LayoutAdmin() {
                 WebkitTextFillColor: "transparent",
               }}
             >
-              GenCare Admin Portal
+              GenCare Admin
             </Typography>
           </Box>
 
@@ -242,12 +235,6 @@ export default function LayoutAdmin() {
 
           {/* Right section with user profile */}
           <Box sx={{ display: "flex", alignItems: "center", gap: 2 }}>
-            <IconButton color="inherit" size="large">
-              <Badge badgeContent={4} color="error">
-                <NotificationsNoneIcon />
-              </Badge>
-            </IconButton>
-
             <AdminMenu />
           </Box>
         </Toolbar>
@@ -368,7 +355,7 @@ export default function LayoutAdmin() {
         <List sx={{ px: 1, mb: 2 }}>
           <ListItem disablePadding sx={{ display: "block" }}>
             <ListItemButton
-              onClick={handleLogout}
+              onClick={() => navigate("/")}
               sx={{
                 minHeight: 48,
                 px: 2.5,
@@ -392,7 +379,7 @@ export default function LayoutAdmin() {
                 <LogoutIcon />
               </ListItemIcon>
               <ListItemText
-                primary="Đăng xuất"
+                primary="Về trang chủ"
                 sx={{
                   opacity: open ? 1 : 0,
                   "& .MuiTypography-root": {

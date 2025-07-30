@@ -11,6 +11,7 @@ export const API_MANAGER_APPOINTMENT = "/v1/managers/appointments";
 //Admin
 export const API_ADMIN_CREATESTAFF = "/v1/admins/createStaff";
 export const API_ADMIN_UPDATESTAFF = "";
+export const API_ADMIN_REMOVESTAFF = "/v1/admins/deleteStaff";
 //Appointment
 
 //Service Test

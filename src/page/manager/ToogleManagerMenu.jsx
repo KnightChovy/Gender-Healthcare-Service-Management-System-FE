@@ -127,11 +127,6 @@ export default function ManagerMenu() {
         transformOrigin={{ horizontal: "right", vertical: "top" }}
         anchorOrigin={{ horizontal: "right", vertical: "bottom" }}
       >
-        <MenuItem onClick={handleClose}>
-          <Avatar />
-          <Link to="/profile">Hồ sơ</Link>
-        </MenuItem>
-
         <MenuItem
           onClick={() => {
             handleClose();

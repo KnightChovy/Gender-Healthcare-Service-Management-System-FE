@@ -960,7 +960,6 @@ const ProfilePage = () => {
                   </div>
                 </div>
 
-                {/* Test Info */}
                 <div className="mb-7 bg-white rounded-lg border border-gray-200 overflow-hidden shadow-sm">
                   <div className="p-4 bg-gray-50 border-b border-gray-200">
                     <h3 className="m-0 text-lg text-gray-700 font-semibold flex items-center gap-3">
@@ -1188,7 +1187,6 @@ const ProfilePage = () => {
               </div>
             </div>
 
-            {/* Modal Footer */}
             <div className="p-5 border-t border-gray-200 flex justify-between items-center flex-wrap gap-4 bg-gray-50">
               <div>
                 <div className="flex items-center gap-2 text-sm text-gray-500">

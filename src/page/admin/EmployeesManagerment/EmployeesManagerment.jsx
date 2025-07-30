@@ -10,8 +10,9 @@ import EditIcon from "@mui/icons-material/Edit";
 import DeleteIcon from "@mui/icons-material/Delete";
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { API_GET_STAFF } from "../../../constants/Apis";
+import { API_ADMIN_REMOVESTAFF, API_GET_STAFF } from "../../../constants/Apis";
 import axiosClient from "../../../services/axiosClient";
+import { toast } from "react-toastify";
 
 export const EmployeesManagerment = () => {
   const navigate = useNavigate();
@@ -50,7 +51,7 @@ export const EmployeesManagerment = () => {
     });
   };
 
-  const handleRemove = (id) => {
+  const handleRemove = async (id) => {
     if (window.confirm("Bạn có chắc chắn muốn xóa nhân viên này?")) {
       setStaff((prevStaff) =>
         prevStaff.map((staffMember) =>
@@ -59,8 +60,21 @@ export const EmployeesManagerment = () => {
             : staffMember
         )
       );
-      // Gọi API xóa nhân viên ở đây (nếu cần)
+      try {
+        await axiosClient.patch(API_ADMIN_REMOVESTAFF, { staff_id: id });
+        toast.success("Xóa nhân viên thành công", {
+          autoClose: 1000,
+          position: "top-right",
+        });
+      } catch (error) {
+        toast.error("Xóa nhân viên thất bại", {
+          autoClose: 1000,
+          position: "top-right",
+        });
+        console.log(error);
+      }
     }
+    return id;
   };
 
   return (

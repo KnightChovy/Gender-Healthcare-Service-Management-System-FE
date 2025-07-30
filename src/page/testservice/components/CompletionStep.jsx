@@ -112,7 +112,7 @@ const CompletionStep = ({ appointmentDetails, formatPrice, navigate }) => {
               Phương thức thanh toán
             </dt>
             <dd className="mt-1 text-sm text-gray-900 sm:mt-0 sm:col-span-2 capitalize">
-              Tiền mặt (tại cơ sở y tế)
+              Tại cơ sở y tế
             </dd>
           </div>
           {/* Thông tin y tế */}
@@ -137,6 +137,9 @@ const CompletionStep = ({ appointmentDetails, formatPrice, navigate }) => {
                 <li>
                   Vui lòng đến trước giờ hẹn 15 phút để hoàn tất thủ tục đăng
                   ký.
+                </li>
+                <li className="text-red-500">
+                  Mang theo phiếu hẹn xét nghiệm(Bắt buộc)
                 </li>
                 <li>Mang theo CMND/CCCD và thẻ BHYT (nếu có).</li>
                 <li>
@@ -163,7 +166,7 @@ const CompletionStep = ({ appointmentDetails, formatPrice, navigate }) => {
                 }}
               />
             }
-            fileName={`Appointment-${orderID || "details"}.pdf`}
+            fileName={`Phiếu xét nghiệm-${orderID || "details"}.pdf`}
             className="inline-flex items-center px-4 py-2 border border-gray-300 shadow-sm text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
           >
             {({ loading }) =>
@@ -173,16 +176,16 @@ const CompletionStep = ({ appointmentDetails, formatPrice, navigate }) => {
         </div>
         <div className="flex space-x-3">
           <button
-            onClick={() => navigate("/dashboard")}
+            onClick={() => navigate("/profile")}
             className="inline-flex items-center px-4 py-2 border border-gray-300 shadow-sm text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
           >
-            Đến trang quản lý
+            Đến hồ sơ cá nhân
           </button>
           <button
-            onClick={() => navigate("/services")}
+            onClick={() => navigate("/")}
             className="inline-flex items-center px-4 py-2 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
           >
-            Quay lại trang dịch vụ
+            Quay lại trang chính
           </button>
         </div>
       </div>

@@ -184,16 +184,6 @@ export default function LayoutManager() {
       icon: <CalendarMonthIcon />,
     },
     {
-      text: "Quản lí lịch làm việc",
-      path: "/manager/schedulemanagerment",
-      icon: <WorkHistoryIcon />,
-    },
-    {
-      text: "Quản lí đánh giá",
-      path: "/manager/feedbackmanagerment",
-      icon: <RateReviewIcon />,
-    },
-    {
       text: "Quản lí doanh thu",
       path: "/manager/revenuamanagerment",
       icon: <AccountBalanceWalletIcon />,
@@ -250,12 +240,6 @@ export default function LayoutManager() {
           </Search>
 
           <Box sx={{ display: "flex", alignItems: "center", gap: 2 }}>
-            <IconButton color="inherit" size="large">
-              <Badge badgeContent={3} color="error">
-                <NotificationsNoneIcon />
-              </Badge>
-            </IconButton>
-
             <ManagerMenu />
           </Box>
         </Toolbar>
