@@ -80,6 +80,12 @@ const styles = StyleSheet.create({
     backgroundColor: "#EFF6FF",
     fontWeight: "bold",
   },
+  important: {
+    color: "red",
+    fontSize: 12,
+    lineHeight: 1.5,
+    fontWeight: "bold",
+  },
 });
 
 const AppointmentPDF = ({ appointmentDetails }) => (
@@ -173,6 +179,9 @@ const AppointmentPDF = ({ appointmentDetails }) => (
         <Text style={styles.title}>Lưu ý quan trọng:</Text>
         <Text style={styles.content}>
           - Vui lòng đến trước giờ hẹn 15 phút để hoàn tất thủ tục.
+        </Text>
+        <Text style={styles.important}>
+          - Mang theo phiếu hẹn xét nghiệm (bắt buộc).
         </Text>
         <Text style={styles.content}>
           - Mang theo CMND/CCCD và thẻ BHYT (nếu có).
