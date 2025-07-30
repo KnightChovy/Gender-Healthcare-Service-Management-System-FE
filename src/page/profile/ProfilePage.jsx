@@ -25,9 +25,7 @@ import {
   faVial,
   faHourglass,
   faRulerHorizontal,
-  faHeartbeat,
   faLightbulb,
-  faStickyNote,
   faPrint,
   faClipboardCheck,
   faFileAlt,
@@ -51,7 +49,6 @@ const ProfilePage = () => {
   const [medicalLoading, setMedicalLoading] = useState(false);
   const [medicalError, setMedicalError] = useState(null);
 
-  // Add function to fetch medical records from API
   const fetchMedicalRecords = useCallback(async () => {
     try {
       setMedicalLoading(true);
@@ -71,7 +68,6 @@ const ProfilePage = () => {
       if (response.data?.status === "success") {
         const testResults = response.data.data?.results || [];
 
-        // Transform API data to match the expected medical record format
         const transformedRecords = testResults.map((result, index) => ({
           id: result.testresult_id || `record_${index}`,
           visitDate: result.exam_date,
@@ -176,7 +172,6 @@ const ProfilePage = () => {
             address: transformedData.address || "",
           });
 
-          // Fetch medical records from API instead of using mock data
           await fetchMedicalRecords();
 
           console.log("✅ User profile loaded:", transformedData);
@@ -264,7 +259,6 @@ const ProfilePage = () => {
     }
   };
 
-  // Handler cho xem chi tiết hồ sơ bệnh án
   const viewMedicalRecord = (record) => {
     setSelectedRecord(record);
     setShowMedicalModal(true);
@@ -769,7 +763,7 @@ const ProfilePage = () => {
           onClick={() => setShowMedicalModal(false)}
         >
           <div
-            className="w-full max-w-4xl max-h-[90vh] bg-white rounded-xl shadow-2xl flex flex-col overflow-hidden animate-[modalFadeIn_0.3s_ease-out_forwards]"
+            className="w-full max-w-5xl max-h-[90vh] bg-white rounded-xl shadow-2xl flex flex-col overflow-hidden"
             onClick={(e) => e.stopPropagation()}
           >
             {/* Modal Header */}
@@ -781,7 +775,10 @@ const ProfilePage = () => {
                 />
                 <div>
                   <h2 className="m-0 text-xl font-semibold text-gray-800">
-                    Kết quả xét nghiệm
+                    {selectedRecord.individualResults?.length > 1 
+                      ? `Kết quả xét nghiệm (${selectedRecord.individualResults.length} kết quả)`
+                      : 'Kết quả xét nghiệm'
+                    }
                   </h2>
                   <p className="mt-1 mb-0 text-sm text-gray-500">
                     {formatDate(selectedRecord.visitDate)} | Mã đơn:{" "}
@@ -799,393 +796,313 @@ const ProfilePage = () => {
 
             {/* Modal Body */}
             <div className="flex-1 p-6 overflow-y-auto">
-              {/* Result Summary */}
-              <div
-                className={`flex items-center gap-5 p-5 rounded-lg mb-6 border-l-4 ${getResultClass(
-                  selectedRecord.testResult?.conclusion
-                )}`}
-              >
-                <div
-                  className={`w-12 h-12 rounded-full flex items-center justify-center flex-shrink-0 ${getResultIconColor(
-                    selectedRecord.testResult?.conclusion
-                  )}`}
-                >
-                  <FontAwesomeIcon
-                    icon={
-                      selectedRecord.testResult?.conclusion
-                        ?.toLowerCase()
-                        .includes("bình thường") ||
-                      selectedRecord.testResult?.conclusion
-                        ?.toLowerCase()
-                        .includes("âm tính")
-                        ? faCheckCircle
-                        : faExclamationTriangle
-                    }
-                    className="text-xl"
-                  />
-                </div>
-                <div className="flex-1">
-                  <div className="text-lg font-semibold text-gray-700 mb-1">
-                    {selectedRecord.testResult?.conclusion
-                      ?.toLowerCase()
-                      .includes("bình thường") ||
-                    selectedRecord.testResult?.conclusion
-                      ?.toLowerCase()
-                      .includes("âm tính")
-                      ? "Kết quả xét nghiệm bình thường"
-                      : "Kết quả xét nghiệm cần chú ý"}
-                  </div>
-                  <div className="text-lg text-gray-600 font-medium">
-                    {selectedRecord.testResult?.result}
-                    {selectedRecord.testResult?.normal_range && (
-                      <span className="text-sm font-normal text-gray-500 ml-2">
-                        (Tham chiếu: {selectedRecord.testResult.normal_range})
-                      </span>
-                    )}
-                  </div>
-                </div>
-              </div>
-
-              {/* Service Info */}
-              <div className="mb-6">
-                <h4 className="m-0 mb-3 text-lg text-gray-800">
-                  {selectedRecord.serviceInfo?.name}
-                </h4>
-                <div className="flex flex-wrap gap-3">
-                  <span className="inline-flex items-center gap-2 py-2 px-3 bg-gray-100 rounded-full text-sm text-gray-600">
-                    <FontAwesomeIcon
-                      icon={faCalendarAlt}
-                      className="text-gray-500 text-sm"
-                    />
-                    {formatDate(selectedRecord.visitDate)}
-                  </span>
-                  <span className="inline-flex items-center gap-2 py-2 px-3 bg-gray-100 rounded-full text-sm text-gray-600">
-                    <FontAwesomeIcon
-                      icon={faClock}
-                      className="text-gray-500 text-sm"
-                    />
-                    {selectedRecord.visitTime}
-                  </span>
-                  <span className="inline-flex items-center gap-2 py-2 px-3 bg-blue-50 rounded-full text-sm text-blue-600">
-                    <FontAwesomeIcon
-                      icon={faUserMd}
-                      className="text-blue-500 text-sm"
-                    />
-                    Trung tâm GenCare
-                  </span>
-                </div>
-              </div>
-
-              {/* Tab Navigation */}
-              <div className="flex border-b border-gray-200 mb-6 gap-1 overflow-x-auto pb-px">
-                <button className="py-3 px-5 bg-transparent border-0 border-b-2 border-blue-500 text-blue-500 font-medium text-sm flex items-center gap-2 cursor-pointer transition-all bg-blue-50 whitespace-nowrap">
-                  <FontAwesomeIcon
-                    icon={faClipboardCheck}
-                    className="text-sm"
-                  />
-                  Chi tiết kết quả
-                </button>
-                <button className="py-3 px-5 bg-transparent border-0 border-b-2 border-transparent text-gray-500 font-medium text-sm flex items-center gap-2 cursor-pointer transition-all hover:text-gray-700 hover:bg-gray-50 whitespace-nowrap">
-                  <FontAwesomeIcon icon={faUserMd} className="text-sm" />
-                  Thông tin bệnh nhân
-                </button>
-                <button className="py-3 px-5 bg-transparent border-0 border-b-2 border-transparent text-gray-500 font-medium text-sm flex items-center gap-2 cursor-pointer transition-all hover:text-gray-700 hover:bg-gray-50 whitespace-nowrap">
-                  <FontAwesomeIcon icon={faFileAlt} className="text-sm" />
-                  Khuyến nghị
-                </button>
-              </div>
-
-              {/* Main Content Areas */}
-              <div className="tab-content">
-                {/* Patient Info */}
-                <div className="mb-7 bg-white rounded-lg border border-gray-200 overflow-hidden shadow-sm">
-                  <div className="p-4 bg-gray-50 border-b border-gray-200">
-                    <h3 className="m-0 text-lg text-gray-700 font-semibold flex items-center gap-3">
-                      <FontAwesomeIcon
-                        icon={faUser}
-                        className="text-blue-500"
-                      />
-                      Thông tin bệnh nhân
-                    </h3>
-                  </div>
-                  <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-5 p-5">
-                    <div className="flex flex-col gap-1.5">
-                      <div className="font-medium text-gray-500 text-sm">
-                        Họ tên:
-                      </div>
-                      <div className="text-gray-700 text-base font-medium">
-                        {profile.last_name} {profile.first_name}
-                      </div>
-                    </div>
-                    <div className="flex flex-col gap-1.5">
-                      <div className="font-medium text-gray-500 text-sm">
-                        Mã đơn hàng:
-                      </div>
-                      <div className="text-gray-700 text-base">
-                        {selectedRecord.orderInfo?.order_id || "---"}
-                      </div>
-                    </div>
-                    <div className="flex flex-col gap-1.5">
-                      <div className="font-medium text-gray-500 text-sm">
-                        Mã dịch vụ:
-                      </div>
-                      <div className="text-gray-700 text-base">
-                        {selectedRecord.orderInfo?.service_id || "---"}
-                      </div>
-                    </div>
-                    <div className="flex flex-col gap-1.5">
-                      <div className="font-medium text-gray-500 text-sm">
-                        Số điện thoại:
-                      </div>
-                      <div className="text-gray-700 text-base">
-                        {profile.phone || "---"}
-                      </div>
-                    </div>
-                    <div className="flex flex-col gap-1.5">
-                      <div className="font-medium text-gray-500 text-sm">
-                        Ngày sinh:
-                      </div>
-                      <div className="text-gray-700 text-base">
-                        {formatDate(profile.birthday) || "---"}
-                      </div>
-                    </div>
-                    <div className="flex flex-col gap-1.5">
-                      <div className="font-medium text-gray-500 text-sm">
-                        Giới tính:
-                      </div>
-                      <div className="text-gray-700 text-base">
-                        {getGenderText(profile.gender) || "---"}
-                      </div>
-                    </div>
-                  </div>
-                </div>
-
-                {/* Test Info */}
-                <div className="mb-7 bg-white rounded-lg border border-gray-200 overflow-hidden shadow-sm">
-                  <div className="p-4 bg-gray-50 border-b border-gray-200">
-                    <h3 className="m-0 text-lg text-gray-700 font-semibold flex items-center gap-3">
-                      <FontAwesomeIcon
-                        icon={faVial}
-                        className="text-blue-500"
-                      />
-                      Chi tiết xét nghiệm
-                    </h3>
-                  </div>
-                  <div className="p-5">
-                    <div className="mb-6">
-                      <h4 className="text-base text-gray-700 m-0 mb-2">
-                        Mô tả dịch vụ
-                      </h4>
-                      <p className="text-gray-600 leading-relaxed m-0">
-                        {selectedRecord.serviceInfo?.description ||
-                          "Không có mô tả"}
-                      </p>
-                    </div>
-
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                      <div>
-                        <h4 className="text-base text-gray-700 m-0 mb-3">
-                          Thông tin thực hiện
-                        </h4>
-                        <ul className="list-none p-0 m-0 flex flex-col gap-3">
-                          <li className="flex flex-col gap-1 p-3 bg-gray-50 rounded-md">
-                            <span className="flex items-center gap-2 font-medium text-gray-500 text-sm">
+              {/* Check if we have individual results to display separately */}
+              {selectedRecord.individualResults && selectedRecord.individualResults.length > 0 ? (
+                <div className="space-y-6">
+                  {selectedRecord.individualResults.map((result, index) => (
+                    <div key={result.testresult_id || index} className="bg-white border border-gray-200 rounded-lg overflow-hidden shadow-sm">
+                      {/* Result Header */}
+                      {selectedRecord.individualResults.length > 1 && (
+                        <div className="bg-blue-50 border-b border-blue-200 p-4">
+                          <h4 className="m-0 text-lg font-semibold text-blue-800">
+                            Kết quả {index + 1}: {result.service?.name}
+                          </h4>
+                        </div>
+                      )}
+                      
+                      {/* Result Content */}
+                      <div className="p-5">
+                        {/* Service Info */}
+                        <div className="mb-6">
+                          <h4 className="m-0 mb-3 text-lg text-gray-800">
+                            {result.service?.name}
+                          </h4>
+                          <div className="flex flex-wrap gap-3">
+                            <span className="inline-flex items-center gap-2 py-2 px-3 bg-gray-100 rounded-full text-sm text-gray-600">
                               <FontAwesomeIcon
                                 icon={faCalendarAlt}
-                                className="text-gray-500"
-                              />{" "}
-                              Ngày xét nghiệm:
+                                className="text-gray-500 text-sm"
+                              />
+                              {formatDate(result.exam_date)}
                             </span>
-                            <span className="text-base text-gray-700">
-                              {formatDateTime(selectedRecord.visitDate)}
-                            </span>
-                          </li>
-                          <li className="flex flex-col gap-1 p-3 bg-gray-50 rounded-md">
-                            <span className="flex items-center gap-2 font-medium text-gray-500 text-sm">
+                            <span className="inline-flex items-center gap-2 py-2 px-3 bg-gray-100 rounded-full text-sm text-gray-600">
                               <FontAwesomeIcon
                                 icon={faClock}
-                                className="text-gray-500"
-                              />{" "}
-                              Giờ xét nghiệm:
+                                className="text-gray-500 text-sm"
+                              />
+                              {result.exam_time}
                             </span>
-                            <span className="text-base text-gray-700">
-                              {selectedRecord.visitTime}
-                            </span>
-                          </li>
-                          <li className="flex flex-col gap-1 p-3 bg-gray-50 rounded-md">
-                            <span className="flex items-center gap-2 font-medium text-gray-500 text-sm">
+                            <span className="inline-flex items-center gap-2 py-2 px-3 bg-blue-50 rounded-full text-sm text-blue-600">
                               <FontAwesomeIcon
-                                icon={faHourglass}
-                                className="text-gray-500"
-                              />{" "}
-                              Thời gian chờ kết quả:
+                                icon={faUserMd}
+                                className="text-blue-500 text-sm"
+                              />
+                              {result.doctor || 'Trung tâm GenCare'}
                             </span>
-                            <span className="text-base text-gray-700">
-                              {selectedRecord.serviceInfo?.result_wait_time
-                                ? `${selectedRecord.serviceInfo?.result_wait_time} giờ`
-                                : "---"}
-                            </span>
-                          </li>
-                        </ul>
-                      </div>
+                          </div>
+                        </div>
 
-                      <div>
-                        <h4 className="text-base text-gray-700 m-0 mb-3">
-                          Kết quả chi tiết
-                        </h4>
-                        <ul className="list-none p-0 m-0 flex flex-col gap-3">
-                          <li
-                            className={`flex flex-col gap-1 p-3 rounded-md border-l-[3px] ${getResultClass(
-                              selectedRecord.testResult?.conclusion
+                        {/* Result Summary */}
+                        <div
+                          className={`flex items-center gap-5 p-5 rounded-lg mb-6 border-l-4 ${getResultClass(
+                            result.result?.conclusion
+                          )}`}
+                        >
+                          <div
+                            className={`w-12 h-12 rounded-full flex items-center justify-center flex-shrink-0 ${getResultIconColor(
+                              result.result?.conclusion
                             )}`}
                           >
-                            <span className="flex items-center gap-2 font-medium text-gray-500 text-sm">
-                              <FontAwesomeIcon
-                                icon={faVial}
-                                className="text-gray-500"
-                              />{" "}
-                              Kết quả:
-                            </span>
-                            <span
-                              className={`text-base font-medium ${getResultTextColor(
-                                selectedRecord.testResult?.conclusion
-                              )}`}
-                            >
-                              {selectedRecord.testResult?.result ||
-                                "Chưa có kết quả"}
-                            </span>
-                          </li>
-                          <li
-                            className={`flex flex-col gap-1 p-3 rounded-md border-l-[3px] ${getResultClass(
-                              selectedRecord.testResult?.conclusion
-                            )}`}
-                          >
-                            <span className="flex items-center gap-2 font-medium text-gray-500 text-sm">
-                              <FontAwesomeIcon
-                                icon={faClipboardCheck}
-                                className="text-gray-500"
-                              />{" "}
-                              Kết luận:
-                            </span>
-                            <span
-                              className={`text-base font-medium ${getResultTextColor(
-                                selectedRecord.testResult?.conclusion
-                              )}`}
-                            >
-                              {selectedRecord.testResult?.conclusion ||
-                                "Chưa có kết luận"}
-                            </span>
-                          </li>
-                          {selectedRecord.testResult?.normal_range && (
-                            <li className="flex flex-col gap-1 p-3 bg-gray-50 rounded-md">
-                              <span className="flex items-center gap-2 font-medium text-gray-500 text-sm">
-                                <FontAwesomeIcon
-                                  icon={faRulerHorizontal}
-                                  className="text-gray-500"
-                                />{" "}
-                                Giá trị tham chiếu:
-                              </span>
-                              <span className="text-base text-gray-700">
-                                {selectedRecord.testResult.normal_range}
-                              </span>
-                            </li>
-                          )}
-                          <li className="flex flex-col gap-1 p-3 bg-gray-50 rounded-md">
-                            <span className="flex items-center gap-2 font-medium text-gray-500 text-sm">
-                              <FontAwesomeIcon
-                                icon={faCalendarCheck}
-                                className="text-gray-500"
-                              />{" "}
-                              Ngày tạo kết quả:
-                            </span>
-                            <span className="text-base text-gray-700">
-                              {formatDateTime(
-                                selectedRecord.testResult?.created_at
-                              ) || "---"}
-                            </span>
-                          </li>
-                        </ul>
-                      </div>
-                    </div>
-                  </div>
-                </div>
+                            <FontAwesomeIcon
+                              icon={
+                                result.result?.conclusion
+                                  ?.toLowerCase()
+                                  .includes("bình thường") ||
+                                result.result?.conclusion
+                                  ?.toLowerCase()
+                                  .includes("âm tính")
+                                  ? faCheckCircle
+                                  : faExclamationTriangle
+                              }
+                              className="text-xl"
+                            />
+                          </div>
+                          <div className="flex-1">
+                            <div className="text-lg font-semibold text-gray-700 mb-1">
+                              {result.result?.conclusion
+                                ?.toLowerCase()
+                                .includes("bình thường") ||
+                              result.result?.conclusion
+                                ?.toLowerCase()
+                                .includes("âm tính")
+                                ? "Kết quả xét nghiệm bình thường"
+                                : "Kết quả xét nghiệm cần chú ý"}
+                            </div>
+                            <div className="text-lg text-gray-600 font-medium">
+                              {result.result?.result}
+                              {result.result?.normal_range && (
+                                <span className="text-sm font-normal text-gray-500 ml-2">
+                                  (Tham chiếu: {result.result.normal_range})
+                                </span>
+                              )}
+                            </div>
+                          </div>
+                        </div>
 
-                <div className="mb-7 bg-white rounded-lg border border-gray-200 overflow-hidden shadow-sm">
-                  <div className="p-4 bg-gray-50 border-b border-gray-200">
-                    <h3 className="m-0 text-lg text-gray-700 font-semibold flex items-center gap-3">
-                      <FontAwesomeIcon
-                        icon={faHeartbeat}
-                        className="text-blue-500"
-                      />
-                      Khuyến cáo từ kết quả xét nghiệm
-                    </h3>
-                  </div>
-                  <div className="p-5">
-                    <div className="flex items-center gap-3 mb-4">
-                      <FontAwesomeIcon
-                        icon={faLightbulb}
-                        className="text-amber-500 text-xl"
-                      />
-                      <h4 className="m-0 text-base text-gray-700">
-                        Đề xuất từ bác sĩ
-                      </h4>
-                    </div>
-
-                    {selectedRecord.testResult?.recommendations ? (
-                      <div className="bg-gray-50 p-5 rounded-lg">
-                        <p className="m-0 leading-7 text-gray-600">
-                          {selectedRecord.testResult.recommendations}
-                        </p>
-                      </div>
-                    ) : (
-                      <div className="flex flex-col gap-3">
-                        {selectedRecord.treatment?.recommendations?.length >
-                        0 ? (
-                          selectedRecord.treatment.recommendations.map(
-                            (rec, index) => (
+                        {/* Detailed Results */}
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                          <div>
+                            <h4 className="text-base text-gray-700 m-0 mb-3">Thông tin chi tiết</h4>
+                            <div className="space-y-3">
                               <div
-                                key={index}
-                                className="flex gap-3 items-start bg-gray-50 p-4 rounded-lg"
+                                className={`flex flex-col gap-1 p-3 rounded-md border-l-[3px] ${getResultClass(
+                                  result.result?.conclusion
+                                )}`}
                               >
-                                <FontAwesomeIcon
-                                  icon={faCheckCircle}
-                                  className="text-green-500 mt-0.5"
-                                />
-                                <span className="text-gray-600 leading-normal flex-1">
-                                  {rec}
+                                <span className="flex items-center gap-2 font-medium text-gray-500 text-sm">
+                                  <FontAwesomeIcon
+                                    icon={faVial}
+                                    className="text-gray-500"
+                                  />
+                                  Kết quả:
+                                </span>
+                                <span
+                                  className={`text-base font-medium ${getResultTextColor(
+                                    result.result?.conclusion
+                                  )}`}
+                                >
+                                  {result.result?.result || "Chưa có kết quả"}
                                 </span>
                               </div>
-                            )
-                          )
-                        ) : (
-                          <div className="flex justify-center bg-gray-50 p-4 rounded-lg italic text-gray-500">
-                            <span>Không có khuyến cáo cụ thể</span>
+                              
+                              <div
+                                className={`flex flex-col gap-1 p-3 rounded-md border-l-[3px] ${getResultClass(
+                                  result.result?.conclusion
+                                )}`}
+                              >
+                                <span className="flex items-center gap-2 font-medium text-gray-500 text-sm">
+                                  <FontAwesomeIcon
+                                    icon={faClipboardCheck}
+                                    className="text-gray-500"
+                                  />
+                                  Kết luận:
+                                </span>
+                                <span
+                                  className={`text-base font-medium ${getResultTextColor(
+                                    result.result?.conclusion
+                                  )}`}
+                                >
+                                  {result.result?.conclusion || "Chưa có kết luận"}
+                                </span>
+                              </div>
+
+                              {result.result?.normal_range && (
+                                <div className="flex flex-col gap-1 p-3 bg-gray-50 rounded-md">
+                                  <span className="flex items-center gap-2 font-medium text-gray-500 text-sm">
+                                    <FontAwesomeIcon
+                                      icon={faRulerHorizontal}
+                                      className="text-gray-500"
+                                    />
+                                    Giá trị tham chiếu:
+                                  </span>
+                                  <span className="text-base text-gray-700">
+                                    {result.result.normal_range}
+                                  </span>
+                                </div>
+                              )}
+                            </div>
+                          </div>
+
+                          <div>
+                            <h4 className="text-base text-gray-700 m-0 mb-3">Thông tin dịch vụ</h4>
+                            <div className="space-y-3">
+                              <div className="flex flex-col gap-1 p-3 bg-gray-50 rounded-md">
+                                <span className="flex items-center gap-2 font-medium text-gray-500 text-sm">
+                                  <FontAwesomeIcon
+                                    icon={faFileAlt}
+                                    className="text-gray-500"
+                                  />
+                                  Mô tả:
+                                </span>
+                                <span className="text-base text-gray-700">
+                                  {result.service?.description || "Không có mô tả"}
+                                </span>
+                              </div>
+
+                              <div className="flex flex-col gap-1 p-3 bg-gray-50 rounded-md">
+                                <span className="flex items-center gap-2 font-medium text-gray-500 text-sm">
+                                  <FontAwesomeIcon
+                                    icon={faHourglass}
+                                    className="text-gray-500"
+                                  />
+                                  Thời gian chờ kết quả:
+                                </span>
+                                <span className="text-base text-gray-700">
+                                  {result.service?.result_wait_time || "Không xác định"}
+                                </span>
+                              </div>
+
+                              <div className="flex flex-col gap-1 p-3 bg-gray-50 rounded-md">
+                                <span className="flex items-center gap-2 font-medium text-gray-500 text-sm">
+                                  <FontAwesomeIcon
+                                    icon={faCalendarCheck}
+                                    className="text-gray-500"
+                                  />
+                                  Ngày tạo kết quả:
+                                </span>
+                                <span className="text-base text-gray-700">
+                                  {formatDateTime(result.result?.created_at) || "---"}
+                                </span>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+
+                        {/* Recommendations */}
+                        {result.result?.recommendations && (
+                          <div className="mt-6 bg-amber-50 rounded-lg p-4 border border-amber-200">
+                            <div className="flex items-center gap-3 mb-3">
+                              <FontAwesomeIcon
+                                icon={faLightbulb}
+                                className="text-amber-500 text-xl"
+                              />
+                              <h4 className="m-0 text-base text-amber-800">Khuyến nghị từ bác sĩ</h4>
+                            </div>
+                            <p className="m-0 text-amber-700 leading-relaxed">
+                              {result.result.recommendations}
+                            </p>
                           </div>
                         )}
                       </div>
-                    )}
 
-                    {selectedRecord.notes && (
-                      <div className="mt-6 bg-gray-50 rounded-lg overflow-hidden">
-                        <div className="flex items-center gap-3 p-3 bg-gray-100">
-                          <FontAwesomeIcon
-                            icon={faStickyNote}
-                            className="text-gray-500"
-                          />
-                          <h4 className="m-0 text-sm text-gray-700">
-                            Ghi chú bổ sung
-                          </h4>
-                        </div>
-                        <div className="p-4">
-                          <p className="m-0 text-gray-600 leading-relaxed italic">
-                            {selectedRecord.notes}
-                          </p>
-                        </div>
+                      {/* Divider between results */}
+                      {index < selectedRecord.individualResults.length - 1 && (
+                        <hr className="border-gray-200 border-t-2" />
+                      )}
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                /* Fallback to single result display */
+                <div className="space-y-6">
+                  {/* Single Result Summary */}
+                  <div
+                    className={`flex items-center gap-5 p-5 rounded-lg mb-6 border-l-4 ${getResultClass(
+                      selectedRecord.testResult?.conclusion
+                    )}`}
+                  >
+                    <div
+                      className={`w-12 h-12 rounded-full flex items-center justify-center flex-shrink-0 ${getResultIconColor(
+                        selectedRecord.testResult?.conclusion
+                      )}`}
+                    >
+                      <FontAwesomeIcon
+                        icon={
+                          selectedRecord.testResult?.conclusion
+                            ?.toLowerCase()
+                            .includes("bình thường") ||
+                          selectedRecord.testResult?.conclusion
+                            ?.toLowerCase()
+                            .includes("âm tính")
+                            ? faCheckCircle
+                            : faExclamationTriangle
+                        }
+                        className="text-xl"
+                      />
+                    </div>
+                    <div className="flex-1">
+                      <div className="text-lg font-semibold text-gray-700 mb-1">
+                        {selectedRecord.testResult?.conclusion
+                          ?.toLowerCase()
+                          .includes("bình thường") ||
+                        selectedRecord.testResult?.conclusion
+                          ?.toLowerCase()
+                          .includes("âm tính")
+                          ? "Kết quả xét nghiệm bình thường"
+                          : "Kết quả xét nghiệm cần chú ý"}
                       </div>
-                    )}
+                      <div className="text-lg text-gray-600 font-medium">
+                        {selectedRecord.testResult?.result}
+                        {selectedRecord.testResult?.normal_range && (
+                          <span className="text-sm font-normal text-gray-500 ml-2">
+                            (Tham chiếu: {selectedRecord.testResult.normal_range})
+                          </span>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Service Info */}
+                  <div className="mb-6">
+                    <h4 className="m-0 mb-3 text-lg text-gray-800">
+                      {selectedRecord.serviceInfo?.name}
+                    </h4>
+                    <div className="flex flex-wrap gap-3">
+                      <span className="inline-flex items-center gap-2 py-2 px-3 bg-gray-100 rounded-full text-sm text-gray-600">
+                        <FontAwesomeIcon
+                          icon={faCalendarAlt}
+                          className="text-gray-500 text-sm"
+                        />
+                        {formatDate(selectedRecord.visitDate)}
+                      </span>
+                      <span className="inline-flex items-center gap-2 py-2 px-3 bg-gray-100 rounded-full text-sm text-gray-600">
+                        <FontAwesomeIcon
+                          icon={faClock}
+                          className="text-gray-500 text-sm"
+                        />
+                        {selectedRecord.visitTime}
+                      </span>
+                      <span className="inline-flex items-center gap-2 py-2 px-3 bg-blue-50 rounded-full text-sm text-blue-600">
+                        <FontAwesomeIcon
+                          icon={faUserMd}
+                          className="text-blue-500 text-sm"
+                        />
+                        Trung tâm GenCare
+                      </span>
+                    </div>
                   </div>
                 </div>
-              </div>
+              )}
             </div>
 
             {/* Modal Footer */}

@@ -22,10 +22,18 @@ export const TestAppointment = () => {
     searchTerm: ''
   });
 
-  // Get access token
   const accessToken = localStorage.getItem('accessToken');
 
-  // Fetch test appointments from API
+  const mapOrderStatusToTestStatus = (orderStatus) => {
+    const statusMap = {
+      'pending': 'pending',
+      'paid': 'paid',
+      'completed': 'completed',
+      'cancelled': 'cancelled'
+    };
+    return statusMap[orderStatus] || 'pending';
+  };
+
   const fetchTestAppointments = async () => {
     try {
       setIsLoading(true);
@@ -38,28 +46,23 @@ export const TestAppointment = () => {
       });
 
       if (response.data?.status === 'success' && response.data?.data?.orders) {
-        // Transform API data to component format
         const transformedData = response.data.data.orders.map((item) => {
           const order = item.order;
           const services = item.services;
           const details = item.details || [];
 
-          // Gắn exam_date, exam_time vào từng service
           const servicesWithDetails = services.map(service => {
-            // Tìm detail tương ứng với service_id
             const detail = details.find(d => d.service.service_id === service.service_id);
             return {
               ...service,
               exam_date: detail?.exam_date ?? null,
               exam_time: detail?.exam_time ?? null,
-              // Có thể bổ sung các trường khác của detail nếu muốn
               order_detail_id: detail?.order_detail_id ?? null,
               detail_description: detail?.service?.description ?? service.description,
               result_wait_time: detail?.service?.result_wait_time ?? service.result_wait_time,
             };
           });
 
-          // Nếu muốn tổng hợp ngày/giờ xét nghiệm chung (nếu chỉ có 1 dịch vụ)
           let test_date = null, test_time = null;
           if (details.length === 1) {
             test_date = details[0].exam_date;
@@ -74,14 +77,13 @@ export const TestAppointment = () => {
             user_phone: order.user.phone,
             user_email: order.user.email,
             test_type: services.map(service => service.name).join(', '),
-            services: servicesWithDetails, // sử dụng service đã gắn detail
+            services: servicesWithDetails,
             total_amount: order.total_amount,
             order_type: order.order_type,
             payment_method: order.payment_method,
             status: mapOrderStatusToTestStatus(order.order_status),
             original_status: order.order_status,
             created_at: order.created_at,
-            // Thông tin test cụ thể (nếu muốn show ngoài bảng)
             test_date,
             test_time,
             notes: null,
@@ -104,20 +106,79 @@ export const TestAppointment = () => {
     }
   };
 
-  // Map order status to test status
-  const mapOrderStatusToTestStatus = (orderStatus) => {
-    const statusMap = {
-      'pending': 'pending',
-      'paid': 'paid',
-      'completed': 'completed',
-      'cancelled': 'cancelled'
-    };
-    return statusMap[orderStatus] || 'pending';
-  };
-
-  // Fetch data on component mount
   useEffect(() => {
     if (accessToken) {
+      const fetchTestAppointments = async () => {
+        try {
+          setIsLoading(true);
+          setError(null);
+
+          const response = await axiosClient.get('/v1/staff/getAllOrder', {
+            headers: {
+              'x-access-token': accessToken,
+            }
+          });
+
+          if (response.data?.status === 'success' && response.data?.data?.orders) {
+            const transformedData = response.data.data.orders.map((item) => {
+              const order = item.order;
+              const services = item.services;
+              const details = item.details || [];
+
+              const servicesWithDetails = services.map(service => {
+                const detail = details.find(d => d.service.service_id === service.service_id);
+                return {
+                  ...service,
+                  exam_date: detail?.exam_date ?? null,
+                  exam_time: detail?.exam_time ?? null,
+                  order_detail_id: detail?.order_detail_id ?? null,
+                  detail_description: detail?.service?.description ?? service.description,
+                  result_wait_time: detail?.service?.result_wait_time ?? service.result_wait_time,
+                };
+              });
+
+              let test_date = null, test_time = null;
+              if (details.length === 1) {
+                test_date = details[0].exam_date;
+                test_time = details[0].exam_time;
+              }
+
+              return {
+                id: order.order_id,
+                order_id: order.order_id,
+                user_id: order.user_id,
+                user_name: `${order.user.last_name} ${order.user.first_name}`,
+                user_phone: order.user.phone,
+                user_email: order.user.email,
+                test_type: services.map(service => service.name).join(', '),
+                services: servicesWithDetails,
+                total_amount: order.total_amount,
+                order_type: order.order_type,
+                payment_method: order.payment_method,
+                status: mapOrderStatusToTestStatus(order.order_status),
+                original_status: order.order_status,
+                created_at: order.created_at,
+                test_date,
+                test_time,
+                notes: null,
+                result_summary: null,
+                detailed_results: null,
+                doctor_notes: null,
+                result_file: null
+              };
+            });
+
+            setTestAppointments(transformedData);
+          } else {
+            throw new Error('Không thể tải dữ liệu đơn hàng');
+          }
+        } catch (error) {
+          console.error('Error fetching test appointments:', error);
+          setError(error.response?.data?.message || 'Không thể tải danh sách đơn hàng xét nghiệm');
+        } finally {
+          setIsLoading(false);
+        }
+      };
       fetchTestAppointments();
     } else {
       setError('Không tìm thấy token xác thực');
