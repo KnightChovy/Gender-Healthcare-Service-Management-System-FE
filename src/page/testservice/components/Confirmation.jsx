@@ -14,8 +14,6 @@ const ConfirmationStep = ({
   handlePreviousStep,
   loading,
   paymentProcessing,
-  paymentMethod,
-  setPaymentMethod,
 }) => {
   return (
     <div className="bg-white shadow overflow-hidden sm:rounded-lg">

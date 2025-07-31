@@ -15,14 +15,12 @@ export const usePaymentProcessing = ({
   const [paymentError, setPaymentError] = useState(false);
   const [paymentErrorMessage, setPaymentErrorMessage] = useState("");
   const [paymentProcessing, setPaymentProcessing] = useState(false);
-  const [webhookStatus, setWebhookStatus] = useState(null);
 
   const formatExamTime = (timeSlot) => {
     if (!timeSlot) return "";
 
     const startTime = timeSlot.split(" - ")[0];
 
-    // Thêm :00 nếu chưa có giây
     if (startTime.split(":").length === 2) {
       return `${startTime}:00`;
     }
@@ -98,7 +96,6 @@ export const usePaymentProcessing = ({
     paymentError,
     paymentErrorMessage,
     paymentProcessing,
-    webhookStatus,
     processPayment,
     setPaymentError,
   };
