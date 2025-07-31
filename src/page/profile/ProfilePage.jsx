@@ -775,10 +775,9 @@ const ProfilePage = () => {
                 />
                 <div>
                   <h2 className="m-0 text-xl font-semibold text-gray-800">
-                    {selectedRecord.individualResults?.length > 1 
+                    {selectedRecord.individualResults?.length > 1
                       ? `Kết quả xét nghiệm (${selectedRecord.individualResults.length} kết quả)`
-                      : 'Kết quả xét nghiệm'
-                    }
+                      : "Kết quả xét nghiệm"}
                   </h2>
                   <p className="mt-1 mb-0 text-sm text-gray-500">
                     {formatDate(selectedRecord.visitDate)} | Mã đơn:{" "}
@@ -797,10 +796,14 @@ const ProfilePage = () => {
             {/* Modal Body */}
             <div className="flex-1 p-6 overflow-y-auto">
               {/* Check if we have individual results to display separately */}
-              {selectedRecord.individualResults && selectedRecord.individualResults.length > 0 ? (
+              {selectedRecord.individualResults &&
+              selectedRecord.individualResults.length > 0 ? (
                 <div className="space-y-6">
                   {selectedRecord.individualResults.map((result, index) => (
-                    <div key={result.testresult_id || index} className="bg-white border border-gray-200 rounded-lg overflow-hidden shadow-sm">
+                    <div
+                      key={result.testresult_id || index}
+                      className="bg-white border border-gray-200 rounded-lg overflow-hidden shadow-sm"
+                    >
                       {/* Result Header */}
                       {selectedRecord.individualResults.length > 1 && (
                         <div className="bg-blue-50 border-b border-blue-200 p-4">
@@ -809,7 +812,7 @@ const ProfilePage = () => {
                           </h4>
                         </div>
                       )}
-                      
+
                       {/* Result Content */}
                       <div className="p-5">
                         {/* Service Info */}
@@ -837,7 +840,7 @@ const ProfilePage = () => {
                                 icon={faUserMd}
                                 className="text-blue-500 text-sm"
                               />
-                              {result.doctor || 'Trung tâm GenCare'}
+                              {result.doctor || "Trung tâm GenCare"}
                             </span>
                           </div>
                         </div>
@@ -892,7 +895,9 @@ const ProfilePage = () => {
                         {/* Detailed Results */}
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                           <div>
-                            <h4 className="text-base text-gray-700 m-0 mb-3">Thông tin chi tiết</h4>
+                            <h4 className="text-base text-gray-700 m-0 mb-3">
+                              Thông tin chi tiết
+                            </h4>
                             <div className="space-y-3">
                               <div
                                 className={`flex flex-col gap-1 p-3 rounded-md border-l-[3px] ${getResultClass(
@@ -914,7 +919,7 @@ const ProfilePage = () => {
                                   {result.result?.result || "Chưa có kết quả"}
                                 </span>
                               </div>
-                              
+
                               <div
                                 className={`flex flex-col gap-1 p-3 rounded-md border-l-[3px] ${getResultClass(
                                   result.result?.conclusion
@@ -932,7 +937,8 @@ const ProfilePage = () => {
                                     result.result?.conclusion
                                   )}`}
                                 >
-                                  {result.result?.conclusion || "Chưa có kết luận"}
+                                  {result.result?.conclusion ||
+                                    "Chưa có kết luận"}
                                 </span>
                               </div>
 
@@ -954,7 +960,9 @@ const ProfilePage = () => {
                           </div>
 
                           <div>
-                            <h4 className="text-base text-gray-700 m-0 mb-3">Thông tin dịch vụ</h4>
+                            <h4 className="text-base text-gray-700 m-0 mb-3">
+                              Thông tin dịch vụ
+                            </h4>
                             <div className="space-y-3">
                               <div className="flex flex-col gap-1 p-3 bg-gray-50 rounded-md">
                                 <span className="flex items-center gap-2 font-medium text-gray-500 text-sm">
@@ -965,7 +973,8 @@ const ProfilePage = () => {
                                   Mô tả:
                                 </span>
                                 <span className="text-base text-gray-700">
-                                  {result.service?.description || "Không có mô tả"}
+                                  {result.service?.description ||
+                                    "Không có mô tả"}
                                 </span>
                               </div>
 
@@ -978,7 +987,8 @@ const ProfilePage = () => {
                                   Thời gian chờ kết quả:
                                 </span>
                                 <span className="text-base text-gray-700">
-                                  {result.service?.result_wait_time || "Không xác định"}
+                                  {result.service?.result_wait_time ||
+                                    "Không xác định"}
                                 </span>
                               </div>
 
@@ -988,10 +998,11 @@ const ProfilePage = () => {
                                     icon={faCalendarCheck}
                                     className="text-gray-500"
                                   />
-                                  Ngày tạo kết quả:
+                                  Ngày có kết quả:
                                 </span>
                                 <span className="text-base text-gray-700">
-                                  {formatDateTime(result.result?.created_at) || "---"}
+                                  {formatDateTime(result.result?.created_at) ||
+                                    "---"}
                                 </span>
                               </div>
                             </div>
@@ -1006,7 +1017,9 @@ const ProfilePage = () => {
                                 icon={faLightbulb}
                                 className="text-amber-500 text-xl"
                               />
-                              <h4 className="m-0 text-base text-amber-800">Khuyến nghị từ bác sĩ</h4>
+                              <h4 className="m-0 text-base text-amber-800">
+                                Khuyến nghị từ bác sĩ
+                              </h4>
                             </div>
                             <p className="m-0 text-amber-700 leading-relaxed">
                               {result.result.recommendations}
@@ -1065,7 +1078,8 @@ const ProfilePage = () => {
                         {selectedRecord.testResult?.result}
                         {selectedRecord.testResult?.normal_range && (
                           <span className="text-sm font-normal text-gray-500 ml-2">
-                            (Tham chiếu: {selectedRecord.testResult.normal_range})
+                            (Tham chiếu:{" "}
+                            {selectedRecord.testResult.normal_range})
                           </span>
                         )}
                       </div>
@@ -1117,19 +1131,6 @@ const ProfilePage = () => {
                     )}
                   </span>
                 </div>
-              </div>
-              <div className="flex gap-3">
-                <button className="inline-flex items-center gap-2 py-2.5 px-5 rounded-md font-medium cursor-pointer transition-all border border-gray-200 bg-gray-100 text-gray-600 hover:bg-gray-200 text-sm">
-                  <FontAwesomeIcon icon={faDownload} className="text-sm" /> Tải
-                  PDF
-                </button>
-                <button
-                  className="inline-flex items-center gap-2 py-2.5 px-5 rounded-md font-medium cursor-pointer transition-all bg-blue-500 text-white hover:bg-blue-600 text-sm"
-                  onClick={() => window.print()}
-                >
-                  <FontAwesomeIcon icon={faPrint} className="text-sm" /> In kết
-                  quả
-                </button>
               </div>
             </div>
           </div>
