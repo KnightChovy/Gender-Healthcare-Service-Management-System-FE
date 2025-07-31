@@ -10,10 +10,10 @@ export const DoctorSection = () => {
   useEffect(() => {
     const fetchApiDoctor = async () => {
       try {
-        const res = await axiosClient.get("v1/doctors");
-        console.log(res.data);
-        const doctors = res.data.listAllDoctors.filter(
-          (item) => item.status === 1
+        const res = await axiosClient.get("v1/users");
+        console.log(res.data.listAllUsers);
+        const doctors = res.data.listAllUsers.filter(
+          (item) => item.status === 1 && item.role === "doctor"
         );
         console.log(doctors);
 
